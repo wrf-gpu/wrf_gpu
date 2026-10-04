@@ -1,0 +1,5 @@
+{
+  "control_oracle.f90": "116209fa21f248768b2388e7c2f3112209fcd837141ebfac4a251517805634f7",
+  "solar_oracle.f90": "862ca4202959ef9ffc2015eff27ff237562c25ea7c2fd4f75a4dc8bdf69dd76c",
+  "cadence_oracle.f90": "faaf4cae67caacb024a63866407054efed69d6e5e43cb844cf5574a21f557302"
+}

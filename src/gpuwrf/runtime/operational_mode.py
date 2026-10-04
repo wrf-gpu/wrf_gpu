@@ -11,13 +11,14 @@ from gpuwrf._x64_config import configure_jax_x64
 
 import os
 import dataclasses
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as dataclass_replace
 from functools import partial
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import jax
 from jax import config
 import jax.numpy as jnp
+import numpy as np
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.state import BaseState, State, Tendencies
@@ -25,6 +26,10 @@ from gpuwrf.contracts.precision import (
     DEFAULT_ACOUSTIC_PRECISION_MODE,
     DEFAULT_DTYPES,
     STATE_FIELD_ORDER,
+    SURFACE_LAYER_CARRY_LEAVES,
+    MYNN_DIAGNOSTIC_LEAVES,
+    GWDO_DIAGNOSTIC_LEAVES,
+    GWDO_SURFACE_DIAGNOSTIC_LEAVES,
     acoustic_precision_mode_label,
     is_mixed_perturb_fp32_mode,
 )
@@ -51,6 +56,7 @@ from gpuwrf.coupling.physics_couplers import (
     dudhia_sw_theta_tendency,
     gsfc_sw_theta_tendency,
     gwdo_adapter,
+    gwdo_tendencies,
     held_suarez_theta_tendency,
     mynn_adapter,
     mynn_adapter_with_source_leaves,
@@ -65,6 +71,8 @@ from gpuwrf.coupling.physics_couplers import (
     thompson_aero_adapter,
     thompson_aero_coldstart_init,
     time_utc_clock_base,
+    RadiationClock,
+    RRTMGRadiationDiagnostics,
 )
 from gpuwrf.coupling.noahmp_surface_hook import (
     noahmp_surface_step,
@@ -118,6 +126,7 @@ from gpuwrf.physics.myj_adapters import (
     janjic_sfclay_adapter,
     myj_pbl_adapter,
 )
+from gpuwrf.physics.wrf_clwrf_ghg import CLWRFGasClock, clwrf_gas_clock
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.explicit_diffusion import (
     C_S_DEFAULT,
@@ -186,6 +195,9 @@ from gpuwrf.dynamics.core.rk_addtend_dry import (
     large_step_coriolis,
     large_step_horizontal_curvature,
     large_step_horizontal_pgf,
+    large_step_uv_fused,
+    large_step_uv_fused_enabled,
+    large_step_uv_nested_only,
     rk_addtend_dry,
 )
 from gpuwrf.dynamics.core.small_step_finish import small_step_finish_wrf
@@ -195,6 +207,22 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 
 
 configure_jax_x64()
+
+_M0_EVIDENCE_FLAG = "GPUWRF_M0_EVIDENCE"
+_M0_EVIDENCE_PATH = "GPUWRF_M0_EVIDENCE_PATH"
+_M0_EVIDENCE_RUN_ID = "GPUWRF_M0_RUN_ID"
+_M0_EVIDENCE_SOURCE_SHA256 = "GPUWRF_M0_SOURCE_SHA256"
+_M0_EVIDENCE_CONFIG_SHA256 = "GPUWRF_M0_CONFIG_SHA256"
+_M0_EVIDENCE_INPUT_SHA256 = "GPUWRF_M0_INPUT_MANIFEST_SHA256"
+_M0_EVIDENCE_DEVICE_UUID = "GPUWRF_M0_DEVICE_UUID"
+_M0_EVIDENCE_RANGE = "GPUWRF_M0_FORECAST_INTEGRATION"
+_M0_EVIDENCE_SCHEMA = "wrf_gpu2.v025.m0.forecast_allocator.v1"
+_M0_EVIDENCE_RUN_ID_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$"
+_M0_EVIDENCE_SHA256_PATTERN = r"^[0-9a-f]{64}$"
+_M0_EVIDENCE_DEVICE_UUID_PATTERN = (
+    r"^GPU-[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-"
+    r"[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+)
 
 _THETA_LIMITER_MIN_K = 0.0
 # v0.14 Switzerland venting ROOT CAUSE (proofs/v014/switzerland_midlevel_momentum_budget,
@@ -216,6 +244,7 @@ _THETA_LIMITER_MIN_K = 0.0
 # 1000 K keeps the guard a genuine NaN/blow-up trap and nothing else.
 _THETA_LIMITER_MAX_K = 1000.0
 _RVRD = 461.6 / 287.0
+_RVRD_REAL = np.float32(np.float32(461.6) / np.float32(287.0))  # WRF REAL r_v/r_d
 # WRF reciprocal earth radius (share/module_model_constants.F:43), consumed by
 # the rk_tendency curvature term on the vertical momentum.
 _W_RERADIUS = 1.0 / 6370.0e3
@@ -311,6 +340,69 @@ class _StaticHolder:
         return isinstance(other, _StaticHolder) and self.value is other.value
 
 
+# Per-CASE Noah-MP inputs (WRF TMN, VEGFRA): read from each case's wrfinput, not from
+# the static geography. Baked as compile constants they made every new forecast case
+# recompile the whole step (wn3 W4, 2026-10-03), so the namelist carries them as
+# TRACED children; the static aux keeps a case-free NoahMPStatic (these slots None).
+_NOAHMP_CASE_FIELDS = ("tbot", "shdfac")
+# id(full static) -> (full static, case-free holder); pins the object so ids are not reused.
+_NOAHMP_CASE_SPLIT_MEMO: dict[int, tuple[Any, _StaticHolder]] = {}
+# content digest -> canonical case-free static: equal content shares one object, so the
+# identity-hashed holder (and the jit treedef) is the same for every case of one grid.
+_NOAHMP_CASE_FREE_INTERN: dict[str, Any] = {}
+
+
+def _noahmp_case_free_digest(static) -> str | None:
+    """Content digest of the non-case slots; None if any of them is traced."""
+    import hashlib
+
+    import numpy as np
+
+    h = hashlib.sha256()
+    for name in type(static).__slots__:
+        if name in _NOAHMP_CASE_FIELDS:
+            continue
+        leaves, treedef = jax.tree_util.tree_flatten(getattr(static, name))
+        h.update(name.encode())
+        h.update(str(treedef).encode())
+        for leaf in leaves:
+            if isinstance(leaf, jax.core.Tracer):
+                return None
+            if hasattr(leaf, "shape") and hasattr(leaf, "dtype"):
+                arr = np.ascontiguousarray(np.asarray(leaf))
+                h.update(f"{arr.shape}{arr.dtype}".encode())
+                h.update(arr.tobytes())
+            else:
+                h.update(repr(leaf).encode())
+    return h.hexdigest()
+
+
+def _noahmp_case_split(static) -> tuple[_StaticHolder, tuple[Any, Any] | None]:
+    """(static-aux holder, traced case tuple) for ``OperationalNamelist.tree_flatten``."""
+    if static is None or not all(hasattr(static, f) for f in _NOAHMP_CASE_FIELDS):
+        return _StaticHolder(static), None
+    hit = _NOAHMP_CASE_SPLIT_MEMO.get(id(static))
+    if hit is not None and hit[0] is static:
+        return hit[1], tuple(getattr(static, f) for f in _NOAHMP_CASE_FIELDS)
+    digest = _noahmp_case_free_digest(static)
+    if digest is None:
+        # Traced geography (not a product path): keep the old identity holder.
+        return _StaticHolder(static), None
+    case_free = _NOAHMP_CASE_FREE_INTERN.get(digest)
+    if case_free is None:
+        case_free = static.replace(**{f: None for f in _NOAHMP_CASE_FIELDS})
+        _NOAHMP_CASE_FREE_INTERN[digest] = case_free
+    holder = _StaticHolder(case_free)
+    _noahmp_case_memo(static, holder)
+    return holder, tuple(getattr(static, f) for f in _NOAHMP_CASE_FIELDS)
+
+
+def _noahmp_case_memo(static, holder: _StaticHolder) -> None:
+    if len(_NOAHMP_CASE_SPLIT_MEMO) >= 512:
+        _NOAHMP_CASE_SPLIT_MEMO.clear()  # safe: interning keeps holders equal after a miss
+    _NOAHMP_CASE_SPLIT_MEMO[id(static)] = (static, holder)
+
+
 class _DateClockAux:
     """Non-keying carrier for the date-derived clock scalars (#114 fix).
 
@@ -335,7 +427,14 @@ class _DateClockAux:
     Safety of the constant hash: this holder appears EXACTLY ONCE per namelist treedef,
     so there is no within-treedef collision; every OTHER aux entry (grid, options, dt_s,
     table holders, ...) still discriminates compiles correctly. The only merge is the
-    intended one (date axis)."""
+    intended one (date axis).
+
+    v0.25 S3: the merge is only correct if NO traced code reads these values. The
+    RRTMG CLWRF gases used to (host-interpolated from ``time_utc`` at trace time),
+    so a cache hit for a new date silently reused the first date's gases. They now
+    come from ``_ClockBase.ghg_clock``; a dated RRTMG call with a traced clock but
+    no gas clock fails closed.  Clock-less (``clock_base=None``) legacy entries still
+    read ``time_utc`` at trace time and are NOT cross-date cache-safe."""
 
     __slots__ = ("time_utc", "noahmp_julian", "noahmp_yearlen")
 
@@ -386,6 +485,14 @@ _PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
 
 
 _PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
+    # MYNN prognosed variance and diagnosed BL clouds must survive RK. WRF
+    # radiation_driver consumes the previous PBL call's cloud fields before
+    # the next PBL call (icloud_bl=1); dropping them makes radiation clear.
+    "qsq",
+    "qc_bl",
+    "qi_bl",
+    "cldfra_bl",
+    *MYNN_DIAGNOSTIC_LEAVES,
     "ustar",
     "theta_flux",
     "qv_flux",
@@ -405,6 +512,16 @@ _PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
     "snow_acc",
     "graupel_acc",
     "ice_acc",
+    # B39 MYNN surface-layer carry (WRF grid%MOL/HFX/QFX/QSFC/PBLH).
+    "mol",
+    "hfx",
+    "qfx",
+    "qsfc",
+    "pblh",
+    "dtaux3d",
+    "dtauy3d",
+    "dusfcg",
+    "dvsfcg",
 )
 
 _SHARDED_CARRY_HALO_CONTEXT: tuple[object, int] | None = None
@@ -878,6 +995,9 @@ class OperationalNamelist:
     # slope/aspect, map rotation). Kept as a pytree child so large arrays remain
     # device leaves rather than static cache-key payload.
     radiation_static: object = None
+    # Optional auxinput4 operands, loaded before stepping; None preserves the
+    # legacy namelist pytree/step graph for sst_update=0.
+    lower_boundary: object = None
     topo_shading: int = 0
     slope_rad: int = 0
     topo_shadow_length_m: float = 25000.0
@@ -1023,6 +1143,9 @@ class OperationalNamelist:
     # future explicit mixed acoustic mode gets a separate JIT/cache variant and
     # report label, and unknown mode strings fail closed at construction.
     acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE
+    radiation_interval_s: float = 0.0
+    cumulus_cadence_steps: int = 1
+    cudt_minutes: float = 0.0
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -1030,6 +1153,23 @@ class OperationalNamelist:
             "acoustic_precision_mode",
             acoustic_precision_mode_label(self.acoustic_precision_mode),
         )
+        if (os.environ.get("GPUWRF_CARRY_REAL_ALL", "0") == "1"
+                and os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1"
+                and os.environ.get("GPUWRF_DYN_REAL_ALL", "0") != "1"):
+            # b-carry G10: the REAL carry without the REAL dycore operators splits the
+            # Noah-MP fusion (+3 % ordinary root); the release runs the pair only.
+            raise ValueError("GPUWRF_CARRY_REAL_ALL requires GPUWRF_DYN_REAL_ALL=1 (the v0.3 "
+                             "release pairs them); set both, or GPUWRF_FAST_DEFAULTS=0")
+        if os.environ.get("GPUWRF_DYN_REAL_ALL", "0") == "1":
+            # S2-DYN: WRF REAL grid metrics as executable parameters (no per-call
+            # converts); a no-op when they are already REAL (unflatten in traces).
+            from gpuwrf.kernels.dyn_real_fp32 import real, require_native
+            require_native()
+            if getattr(self.metrics, "precision", "fp32") != "fp32":
+                object.__setattr__(self, "metrics", dataclass_replace(self.metrics, precision="fp32"))
+            if self.tendencies is not None:
+                # Resident base tendencies are WRF REAL too (else they promote augment).
+                object.__setattr__(self, "tendencies", jax.tree_util.tree_map(real, self.tendencies))
 
     @classmethod
     def from_grid(
@@ -1043,7 +1183,7 @@ class OperationalNamelist:
         radiation_cadence_steps: int = 60,
         boundary_config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
         use_vertical_solver: bool = True,
-        disable_guards: bool = False,
+        disable_guards: bool | None = None,
         epssm: float = 0.1,
         top_lid: bool = False,
         w_damping: int = 0,
@@ -1085,6 +1225,8 @@ class OperationalNamelist:
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
+        if disable_guards is None:
+            disable_guards = _strict_guards_enabled()
         if tendencies is None:
             tendencies = Tendencies.zeros(grid)
         if metrics is None:
@@ -1153,14 +1295,20 @@ class OperationalNamelist:
         # scan (isurban, nroot, table scalars), so they must be COMPILE CONSTANTS,
         # not tracers. They are wrapped in an identity-hashable holder so the jit
         # cache keys on per-run object identity (one run -> one compile). use_noahmp
-        # + clock scalars are also static aux.
+        # + clock scalars are also static aux. Exception: the per-case tbot/shdfac
+        # (TMN/VEGFRA) ride as the traced ``noahmp_case`` child, so one grid -> one
+        # compile across forecast cases (see _noahmp_case_split).
+        noahmp_static_holder, noahmp_case = _noahmp_case_split(self.noahmp_static)
         children = (
             self.tendencies,
             self.metrics,
             self.radiation_static,
             self.gwdo_statics,
             self.data_assimilation,
+            noahmp_case,
         )
+        if self.lower_boundary is not None:
+            children += (self.lower_boundary,)
         aux = (
             self.grid,
             float(self.dt_s),
@@ -1214,7 +1362,7 @@ class OperationalNamelist:
             float(self.topo_shadow_length_m),
             bool(self.use_noahmp),
             int(self.noahmp_nroot),
-            _StaticHolder(self.noahmp_static),
+            noahmp_static_holder,
             _StaticHolder(self.noahmp_energy_params),
             _StaticHolder(self.noahmp_rad_params),
             _StaticHolder(self.noahmp_land),
@@ -1239,6 +1387,9 @@ class OperationalNamelist:
             int(self.ra_lw_physics),
             int(self.rad_rk_tendf),
             self.acoustic_precision_mode,
+            float(self.radiation_interval_s),
+            int(self.cumulus_cadence_steps),
+            float(self.cudt_minutes),
             int(self.hypsometric_opt),
             int(self.h_sca_adv_order),
             bool(self.specified_bdy_cadence),
@@ -1248,7 +1399,8 @@ class OperationalNamelist:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        tendencies, metrics, radiation_static, gwdo_statics, data_assimilation = children
+        lower_boundary = children[6] if len(children) == 7 else None
+        tendencies, metrics, radiation_static, gwdo_statics, data_assimilation, noahmp_case = children[:6]
         (
             grid,
             dt_s,
@@ -1315,6 +1467,9 @@ class OperationalNamelist:
             ra_lw_physics,
             rad_rk_tendf,
             acoustic_precision_mode,
+            radiation_interval_s,
+            cumulus_cadence_steps,
+            cudt_minutes,
             hypsometric_opt,
             h_sca_adv_order,
             specified_bdy_cadence,
@@ -1326,6 +1481,9 @@ class OperationalNamelist:
         noahmp_julian = date_clock.noahmp_julian
         noahmp_yearlen = date_clock.noahmp_yearlen
         noahmp_static = noahmp_static_holder.value
+        if noahmp_case is not None:
+            noahmp_static = noahmp_static.replace(**dict(zip(_NOAHMP_CASE_FIELDS, noahmp_case)))
+            _noahmp_case_memo(noahmp_static, noahmp_static_holder)
         noahmp_energy_params = noahmp_energy_holder.value
         noahmp_rad_params = noahmp_rad_holder.value
         noahmp_land = noahmp_land_holder.value
@@ -1377,6 +1535,7 @@ class OperationalNamelist:
             use_deformation_momentum_diffusion=use_deformation_momentum_diffusion,
             time_utc=time_utc,
             radiation_static=radiation_static,
+            lower_boundary=lower_boundary,
             topo_shading=topo_shading,
             slope_rad=slope_rad,
             topo_shadow_length_m=topo_shadow_length_m,
@@ -1411,6 +1570,9 @@ class OperationalNamelist:
             ra_lw_physics=ra_lw_physics,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
+            radiation_interval_s=radiation_interval_s,
+            cumulus_cadence_steps=cumulus_cadence_steps,
+            cudt_minutes=cudt_minutes,
             hypsometric_opt=hypsometric_opt,
             h_sca_adv_order=h_sca_adv_order,
             specified_bdy_cadence=specified_bdy_cadence,
@@ -1549,17 +1711,22 @@ def _enforce_operational_precision(
         updates = {}
         for field in STATE_FIELD_ORDER:
             value = getattr(state, field)
-            if value is None:
+            if value is None or field in (*SURFACE_LAYER_CARRY_LEAVES, *MYNN_DIAGNOSTIC_LEAVES, *GWDO_DIAGNOSTIC_LEAVES):
+                # B39: WRF-REAL surface-layer carry is never upcast.
                 continue
             if value.dtype != jnp.float64:
                 updates[field] = value.astype(jnp.float64)
-        if not updates:
-            return state.replace(_cast=False)
         # _cast=False so the fp64 upcast is NOT canonicalised back to each
         # field's loaded dtype.  Real-case states arrive mixed-precision
         # (DEFAULT_DTYPES perf matrix: theta/u/v fp32, w/mu/ph fp64); without
         # this the force_fp64 path is a silent no-op (Sprint U P0-1).
-        return state.replace(_cast=False, **updates)
+        result = state.replace(_cast=False, **updates) if updates else state.replace(_cast=False)
+        if base_state is not None and os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1":
+            # Default-off WRF REAL carry: the native RK/acoustic step stores the
+            # dycore prognostics REAL; the wide copy above only serves BC40's base.
+            from gpuwrf.kernels.dyn_carry_fp32 import real_state
+            result = real_state(result)
+        return result
     updates = {}
     for field in STATE_FIELD_ORDER:
         value = getattr(state, field)
@@ -1743,6 +1910,10 @@ def _positive_definite_theta_increment_limiter(
     available room, so feasible updates preserve the raw dycore scalar integral.
     """
 
+    if os.environ.get("GPUWRF_DYN_REAL_ALL", "0") == "1":
+        return _positive_definite_theta_increment_limiter_real(
+            candidate, origin, mass, minimum_k=minimum_k, maximum_k=maximum_k,
+            lower_bound=lower_bound, upper_bound=upper_bound)
     output_dtype = jnp.asarray(candidate).dtype
     candidate64 = jnp.asarray(candidate, dtype=jnp.float64)
     origin64 = jnp.asarray(origin, dtype=jnp.float64)
@@ -1793,6 +1964,78 @@ def _positive_definite_theta_increment_limiter(
         "theta_mass_before": target_mass.astype(output_dtype),
         "theta_mass_after": after_mass.astype(output_dtype),
         "theta_mass_residual": (after_mass - target_mass).astype(output_dtype),
+    }
+    return limited, diagnostics
+
+
+def _positive_definite_theta_increment_limiter_real(
+    candidate: jax.Array,
+    origin: jax.Array,
+    mass: jax.Array,
+    *,
+    minimum_k: float,
+    maximum_k: float,
+    lower_bound: jax.Array | None,
+    upper_bound: jax.Array | None,
+) -> tuple[jax.Array, dict[str, jax.Array]]:
+    """GPUWRF_DYN_REAL_ALL form of the theta limiter in WRF REAL.
+
+    Same algorithm, but the conserved-mass residual is summed from the per-cell
+    difference sum((candidate - limited) * mass) -- exactly zero off the limited
+    cells -- instead of the difference of two domain-wide sums, which would cancel
+    catastrophically in REAL. With no limited cell the output equals the input.
+    """
+
+    f32 = jnp.float32
+    output_dtype = jnp.asarray(candidate).dtype
+    cand = jnp.asarray(candidate, dtype=f32)
+    orig = jnp.asarray(origin, dtype=f32)
+    weight = jnp.asarray(mass, dtype=f32)
+    lower = jnp.asarray(float(minimum_k), dtype=f32)
+    upper = jnp.asarray(float(maximum_k), dtype=f32)
+    if lower_bound is not None:
+        lower = jnp.maximum(lower, jnp.asarray(lower_bound, dtype=f32))
+    if upper_bound is not None:
+        upper = jnp.minimum(upper, jnp.asarray(upper_bound, dtype=f32))
+    upper = jnp.maximum(upper, lower)
+    midpoint = f32(0.5) * (lower + upper)
+
+    safe_origin = jnp.where(jnp.isfinite(orig), orig, midpoint)
+    safe_origin = jnp.minimum(jnp.maximum(safe_origin, lower), upper)
+    finite_candidate = jnp.where(jnp.isfinite(cand), cand, safe_origin)
+    raw_delta = finite_candidate - safe_origin
+
+    over_upper = finite_candidate > upper
+    under_lower = finite_candidate < lower
+    invalid = ~jnp.isfinite(cand)
+    limited_mask = invalid | over_upper | under_lower
+
+    positive_delta = raw_delta > 0
+    negative_delta = raw_delta < 0
+    upper_alpha = (upper - safe_origin) / jnp.where(positive_delta, raw_delta, f32(1))
+    lower_alpha = (lower - safe_origin) / jnp.where(negative_delta, raw_delta, f32(-1))
+    alpha = jnp.where(positive_delta, upper_alpha, jnp.where(negative_delta, lower_alpha, f32(1)))
+    alpha = jnp.where(limited_mask, jnp.minimum(jnp.maximum(alpha, f32(0)), f32(1)), f32(1))
+    limited0 = jnp.where(limited_mask, safe_origin + alpha * raw_delta, finite_candidate)
+
+    residual = jnp.sum((finite_candidate - limited0) * weight)
+    add_room = upper - limited0
+    subtract_room = limited0 - lower
+    room = jnp.where(residual >= 0, add_room, subtract_room)
+    capacity = jnp.sum(room * weight)
+    fraction = jnp.where(capacity > 0, jnp.minimum(jnp.abs(residual) / capacity, f32(1)), f32(0))
+    limited = limited0 + jnp.sign(residual) * fraction * room
+    limited = jnp.minimum(jnp.maximum(limited, lower), upper)
+    limited = limited.astype(output_dtype)
+
+    target_mass = jnp.sum(finite_candidate * weight)
+    mass_residual = jnp.sum((limited.astype(f32) - finite_candidate) * weight)
+    diagnostics = {
+        "theta_limited_cell_count": jnp.sum(limited_mask.astype(jnp.int32)),
+        "theta_first_limited_cell_xyz": _first_limited_cell_xyz(limited_mask),
+        "theta_mass_before": target_mass.astype(output_dtype),
+        "theta_mass_after": (target_mass + mass_residual).astype(output_dtype),
+        "theta_mass_residual": mass_residual.astype(output_dtype),
     }
     return limited, diagnostics
 
@@ -2021,6 +2264,45 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
     )
 
 
+
+def _w_coriolis_curvature(u, v, muu, muv, mts, dtype, *, wrf_real=False):
+    """WRF rk_tendency coriolis + curvature ``rw_tend`` terms on interior w faces 1..nz-1.
+
+    ``ru``/``rv`` follow couple_momentum; ``wrf_real`` (GPUWRF_CARRY_REAL_ALL) uses WRF's
+    REAL ``rv = v*(c1h*muv+c2h)*msfv_inv`` (reciprocal multiply) instead of the division.
+    """
+    c1h_col = mts.c1h[:, None, None]
+    c2h_col = mts.c2h[:, None, None]
+    u_stage = u.astype(dtype)
+    v_stage = v.astype(dtype)
+    ru_stage = (c1h_col * muu[None, :, :] + c2h_col) * u_stage / mts.msfuy[None, :, :]
+    if wrf_real:
+        rv_stage = v_stage * (c1h_col * muv[None, :, :] + c2h_col) * (1.0 / mts.msfvx)[None, :, :]
+    else:
+        rv_stage = (c1h_col * muv[None, :, :] + c2h_col) * v_stage / mts.msfvx[None, :, :]
+    # x/y de-stagger to mass points, then fnm/fnp vertical face average.
+    ru_m = 0.5 * (ru_stage[:, :, :-1] + ru_stage[:, :, 1:])
+    u_m = 0.5 * (u_stage[:, :, :-1] + u_stage[:, :, 1:])
+    rv_m = 0.5 * (rv_stage[:, :-1, :] + rv_stage[:, 1:, :])
+    v_m = 0.5 * (v_stage[:, :-1, :] + v_stage[:, 1:, :])
+    nzs = int(ru_m.shape[0])
+    fnm_f = mts.fnm[1:nzs, None, None]
+    fnp_f = mts.fnp[1:nzs, None, None]
+
+    def _face(field):
+        return fnm_f * field[1:nzs, :, :] + fnp_f * field[: nzs - 1, :, :]
+
+    ru_f = _face(ru_m)
+    u_f = _face(u_m)
+    rv_f = _face(rv_m)
+    v_f = _face(v_m)
+    mxy = (mts.msftx / mts.msfty)[None, :, :]
+    cor_f = mts.e[None, :, :] * (
+        mts.cosa[None, :, :] * ru_f - mxy * mts.sina[None, :, :] * rv_f
+    )
+    curv_f = _W_RERADIUS * (ru_f * u_f + mxy * rv_f * v_f)
+    return cor_f + curv_f
+
 def _acoustic_core_state_from_prep(
     carry: OperationalCarry,
     prep: SmallStepPrepState,
@@ -2035,15 +2317,31 @@ def _acoustic_core_state_from_prep(
 
     state = prep.entry_state
     nested_frozen_bundle = _nested_frozen_wrf_boundary_active(namelist)
+    # GPUWRF_CARRY_REAL_ALL: the glue below (coupled stage momenta, Coriolis/curvature,
+    # boundary work masses, staged work fields) runs in WRF REAL with REAL metrics;
+    # the pg_buoy_w/rhs_ph operator inputs keep their owners' precision.
+    from gpuwrf.kernels.dyn_carry_fp32 import real_all_enabled
+    real_glue = real_all_enabled()
+    glue_dtype = jnp.float32 if real_glue else jnp.float64
+    if real_glue:
+        from gpuwrf.kernels.dyn_rk_fp32 import real_metrics
+        glue_metrics = real_metrics(namelist.metrics)
+    else:
+        glue_metrics = namelist.metrics
+    # REAL grid%p / ph' operands for pg_buoy_w and rhs_ph under either REAL flag
+    # (b-diff's GPUWRF_DYN_REAL_ALL owns those operators; it composes with this one).
+    operator_dtype = (
+        jnp.float32 if real_glue or os.environ.get("GPUWRF_DYN_REAL_ALL", "0") == "1" else jnp.float64
+    )
     # ``lead_seconds`` is the candidate package endpoint.  The corrected nested
     # path consumes its retained record tendency directly; released specified
     # callers retain their historical stage-end target clock below.
-    theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
+    theta_pert = (state.theta - prep.theta_offset).astype(glue_dtype)
     ph_base = prep.phb
     # F7H: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
     # stage in rk_tendency (module_em.F:1361-1368) by calling pg_buoy_w with the
     # stage diagnostic ``grid%p`` and the stage perturbation dry mass
-    # ``mu' = mut - mub``.  In WRF that ``grid%p`` is the FULL-perturbation
+    # ``mu'`` (grid%mu_2).  In WRF that ``grid%p`` is the FULL-perturbation
     # ``calc_p_rho_phi`` diagnostic (module_big_step_utilities_em.F:1029,1083-1087)
     # built from the FULL ``ph'``, ``mu'`` and ``theta'`` — NOT the small-step
     # work-delta pressure.  Its ``rdn*(p[k]-p[k-1])`` interior PGF term
@@ -2076,8 +2374,10 @@ def _acoustic_core_state_from_prep(
     nz_stage = int(prep.theta_work.shape[0])
     ny_stage = int(prep.theta_work.shape[1])
     nx_stage = int(prep.theta_work.shape[2])
-    mu_prime_stage = prep.mut - prep.mub  # stage perturbation dry mass mu' (WRF grid%mu_2)
-    grid_p_full = state.p_perturbation.astype(jnp.float64)
+    # WRF rk_tendency passes grid%mu_2 itself (module_em.F:730); small_step_prep saves the same
+    # array as mu_save (module_small_step_em.F:1904). mut - mub would difference a rounded total.
+    mu_prime_stage = prep.mu_save  # stage perturbation dry mass mu' (WRF grid%mu_2)
+    grid_p_full = state.p_perturbation.astype(operator_dtype)
     # MOIST-CQW (default ON, GPUWRF_MOIST_CQW=0 disables for bisection): WRF builds the large-step
     # vertical PGF/buoyancy with the full moist water-mass loading
     # (calc_cq cqw=0.5*qtot then pg_buoy_w cq1/cq2, module_big_step_utilities_em.F:
@@ -2125,6 +2425,8 @@ def _acoustic_core_state_from_prep(
     # the stage ``rw_tend`` so the WRF assembly order is preserved.  Without #1
     # below it does not stabilise the mode (F7I wadv_fix_probe), but it is
     # WRF-correct and required together with the geopotential RHS.
+    if real_glue:
+        rw_tend_stage = rw_tend_stage.astype(glue_dtype)
     rw_tend_stage = rw_tend_stage + tendencies.w
 
     # v0.14 WRF-native advance_w oracle: WRF rk_tendency ALSO adds the
@@ -2137,35 +2439,10 @@ def _acoustic_core_state_from_prep(
     # (curvature) of the 1318-rms total rw_tend, the second-largest rw_tend gap
     # after the carried-p fix above.  GPUWRF_W_CORIOLIS=0 disables for bisection.
     if os.environ.get("GPUWRF_W_CORIOLIS", "1") != "0":
-        mts = namelist.metrics
-        c1h_col = mts.c1h[:, None, None]
-        c2h_col = mts.c2h[:, None, None]
-        u_stage = state.u.astype(jnp.float64)
-        v_stage = state.v.astype(jnp.float64)
-        ru_stage = (c1h_col * prep.muu[None, :, :] + c2h_col) * u_stage / mts.msfuy[None, :, :]
-        rv_stage = (c1h_col * prep.muv[None, :, :] + c2h_col) * v_stage / mts.msfvx[None, :, :]
-        # x/y de-stagger to mass points, then fnm/fnp vertical face average.
-        ru_m = 0.5 * (ru_stage[:, :, :-1] + ru_stage[:, :, 1:])
-        u_m = 0.5 * (u_stage[:, :, :-1] + u_stage[:, :, 1:])
-        rv_m = 0.5 * (rv_stage[:, :-1, :] + rv_stage[:, 1:, :])
-        v_m = 0.5 * (v_stage[:, :-1, :] + v_stage[:, 1:, :])
-        nzs = int(ru_m.shape[0])
-        fnm_f = mts.fnm[1:nzs, None, None]
-        fnp_f = mts.fnp[1:nzs, None, None]
-
-        def _face(field):
-            return fnm_f * field[1:nzs, :, :] + fnp_f * field[: nzs - 1, :, :]
-
-        ru_f = _face(ru_m)
-        u_f = _face(u_m)
-        rv_f = _face(rv_m)
-        v_f = _face(v_m)
-        mxy = (mts.msftx / mts.msfty)[None, :, :]
-        cor_f = mts.e[None, :, :] * (
-            mts.cosa[None, :, :] * ru_f - mxy * mts.sina[None, :, :] * rv_f
-        )
-        curv_f = _W_RERADIUS * (ru_f * u_f + mxy * rv_f * v_f)
-        rw_tend_stage = rw_tend_stage.at[1:nzs, :, :].add(cor_f + curv_f)
+        nzs = int(state.u.shape[0])
+        rw_tend_stage = rw_tend_stage.at[1:nzs, :, :].add(_w_coriolis_curvature(
+            state.u, state.v, prep.muu, prep.muv, glue_metrics, glue_dtype, wrf_real=real_glue,
+        ))
 
     # F7J item 1 (PRIME): the large-step geopotential-equation RHS ``rhs_ph`` was
     # stubbed (``carry.ph_tend`` stayed 0; ``accumulate_ph_tend`` never wired in),
@@ -2178,10 +2455,10 @@ def _acoustic_core_state_from_prep(
     # tendency; ``advance_w_wrf`` adds the small-step half (omega/ph_1 evolution).
     # v0.14 acoustic continuation: WRF top-row extrapolation weights cfn/cfn1
     # (used by the real-case rhs_ph top-face advection row when open-top).
-    _dn_top = namelist.metrics.dn[-1]
+    _dn_top = glue_metrics.dn[-1]
     _dn_safe = jnp.where(jnp.abs(_dn_top) > 1.0e-30, _dn_top, jnp.asarray(1.0, dtype=_dn_top.dtype))
-    _cfn = (0.5 * namelist.metrics.dnw[-1] + namelist.metrics.dn[-1]) / _dn_safe
-    _cfn1 = -0.5 * namelist.metrics.dnw[-1] / _dn_safe
+    _cfn = (0.5 * glue_metrics.dnw[-1] + glue_metrics.dn[-1]) / _dn_safe
+    _cfn1 = -0.5 * glue_metrics.dnw[-1] / _dn_safe
     _periodic_x, _specified, _nested = _acoustic_lateral_bc_flags(namelist)
     ph_tend_stage = rhs_ph_wrf(
         u=state.u,
@@ -2190,7 +2467,7 @@ def _acoustic_core_state_from_prep(
         # omega (grid%ww), not a carried post-acoustic omega; prep.ww_save now
         # holds exactly that (see advance_stage).
         ww=prep.ww_save,
-        ph=state.ph_perturbation.astype(jnp.float64),
+        ph=state.ph_perturbation.astype(operator_dtype),
         phb=ph_base,
         w=state.w,
         mut=prep.mut,
@@ -2254,8 +2531,8 @@ def _acoustic_core_state_from_prep(
                 config=namelist.boundary_config,
             )
         else:
-            c1h = namelist.metrics.c1h[:, None, None]
-            c2h = namelist.metrics.c2h[:, None, None]
+            c1h = glue_metrics.c1h[:, None, None]
+            c2h = glue_metrics.c2h[:, None, None]
             mass_u_cur = c1h * prep.muu[None, :, :] + c2h
             # small_step_finish uses the stage-frozen muus/muvs face masses.
             mass_u_stage = c1h * prep.muus[None, :, :] + c2h
@@ -2375,6 +2652,8 @@ def _acoustic_core_state_from_prep(
         # (a) relax-zone ph tendency (relax_bdy_dry 'h' from the step-start
         # reference, step-constant) -> flows through advance_w every substep.
         if bdy_relax is not None:
+            if real_glue:
+                ph_tend_stage = ph_tend_stage.astype(glue_dtype)
             ph_tend_stage = ph_tend_stage + bdy_relax.ph
         if _nested_cadence:
             # Exact pristine-WRF live-nest ring cadence.  spec_bdy_dry writes
@@ -2446,8 +2725,8 @@ def _acoustic_core_state_from_prep(
             th_pin = _full_ring_target_from_leaf(
                 th_strip, nz_m, ny_m, nx_m, dtype_s
             )
-            _c1h = namelist.metrics.c1h[:, None, None]
-            _c2h = namelist.metrics.c2h[:, None, None]
+            _c1h = glue_metrics.c1h[:, None, None]
+            _c2h = glue_metrics.c2h[:, None, None]
             mass_pin = _c1h * muts_pin[None, :, :] + _c2h
             mass_cur = _c1h * prep.mut[None, :, :] + _c2h
             mu_spec_target = mu_pin
@@ -2459,8 +2738,8 @@ def _acoustic_core_state_from_prep(
             )
             # TANGENTIAL ring-0 wind work pins; normal targets cover W/E u and
             # S/N v only on this released path.
-            _c1h3 = namelist.metrics.c1h[:, None, None]
-            _c2h3 = namelist.metrics.c2h[:, None, None]
+            _c1h3 = glue_metrics.c1h[:, None, None]
+            _c2h3 = glue_metrics.c2h[:, None, None]
             mass_u_cur_t = _c1h3 * prep.muu[None, :, :] + _c2h3
             mass_u_stage_t = _c1h3 * prep.muus[None, :, :] + _c2h3
             mass_v_cur_t = _c1h3 * prep.muv[None, :, :] + _c2h3
@@ -2502,13 +2781,13 @@ def _acoustic_core_state_from_prep(
         v=prep.v_work,
         v_1=prep.v_save,
         w=prep.w_work,
-        mu=(prep.mu_save + prep.mu_work).astype(jnp.float64),
-        mut=prep.mut.astype(jnp.float64),
+        mu=(prep.mu_save + prep.mu_work).astype(glue_dtype),
+        mut=prep.mut.astype(glue_dtype),
         # F7G: stage-entry small-step mass-WORK average is ZERO; advance_mu_t
         # (module_small_step_em.F:1102-1108) rebuilds it from actual small-step
         # mass evolution.  For a fixed-mass mu'=0 thermal it stays zero.
-        muave=jnp.zeros_like(prep.mu_work, dtype=jnp.float64),
-        muts=prep.muts.astype(jnp.float64),
+        muave=jnp.zeros_like(prep.mu_work, dtype=glue_dtype),
+        muts=prep.muts.astype(glue_dtype),
         muu=prep.muu,
         muv=prep.muv,
         # Pristine small_step_prep zeroes mudf at RK1 before the first
@@ -2532,8 +2811,8 @@ def _acoustic_core_state_from_prep(
         theta_tend=tendencies.theta,
         mu_tend=tendencies.mu,
         # F7J: real WRF rhs_ph large-step geopotential tendency (was stub=0).
-        ph_tend=ph_tend_stage.astype(jnp.float64),
-        ph=prep.ph_work.astype(jnp.float64),
+        ph_tend=ph_tend_stage.astype(glue_dtype),
+        ph=prep.ph_work.astype(glue_dtype),
         p=pressure.p,
         t_2ave=jnp.zeros_like(prep.theta_work),
         dnw=namelist.metrics.dnw,
@@ -2543,7 +2822,7 @@ def _acoustic_core_state_from_prep(
         c1h=namelist.metrics.c1h,
         c2h=namelist.metrics.c2h,
         msfuy=namelist.metrics.msfuy,
-        msfvx_inv=1.0 / namelist.metrics.msfvx,
+        msfvx_inv=1.0 / glue_metrics.msfvx,
         msftx=namelist.metrics.msftx,
         msfty=namelist.metrics.msfty,
         coef_mut=prep.muts,
@@ -2589,7 +2868,7 @@ def _acoustic_core_state_from_prep(
         pm1=pressure.pm1,
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
-        ww_m=jnp.zeros_like(carry.ww, dtype=jnp.float64),
+        ww_m=jnp.zeros_like(carry.ww, dtype=glue_dtype),
         # F7G: the once-per-RK-stage pg_buoy_w tendency from the stage grid%p/mu'
         # (computed above), carried UNCHANGED through all acoustic substeps.  The
         # legacy per-substep ``p_buoy`` recompute is disabled (None).
@@ -2668,10 +2947,13 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
     # perturbation-authoritative design avoids. Gate on the static acoustic
     # precision mode (compile-time -> zero runtime cost; the fp64 branch re-emits
     # the exact pre-S4 HLO -> byte-identical).
-    _mixed = is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
+    _keep_base = (
+        is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
+        or os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1"
+    )
     base = BaseState(
         pb=prep.pb,  # pb was prep.pb pre-merge too (unchanged); only phb regressed.
-        phb=prep.phb if _mixed else (next_state.ph_total - next_state.ph_perturbation),
+        phb=prep.phb if _keep_base else (next_state.ph_total - next_state.ph_perturbation),
         mub=prep.mub,
         t0=jnp.asarray(prep.theta_offset),
         theta_base=jnp.full_like(next_state.theta, prep.theta_offset),
@@ -2679,7 +2961,7 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
     p_pert, _al, _alt = diagnose_pressure_al_alt(
         next_state, base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
     )
-    if _mixed:
+    if _keep_base:
         p_total = prep.pb + p_pert
     else:
         p_base = next_state.p_total - next_state.p_perturbation
@@ -2694,8 +2976,21 @@ def _carry_from_finished_stage(
     prep: SmallStepPrepState,
     acoustic: AcousticCoreState,
     namelist: OperationalNamelist | None = None,
+    stage: "_RKStageDescriptor | None" = None,
 ) -> OperationalCarry:
-    next_state = small_step_finish_wrf(prep, acoustic)
+    if (
+        carry.h_diabatic is not None
+        and stage is not None
+        and namelist is not None
+        and int(stage.rk_step) == int(namelist.rk_order)
+    ):
+        # module_small_step_em.F:417-423: final stage removes dts*N*mass*h_diabatic.
+        next_state = small_step_finish_wrf(
+            prep, acoustic, h_diabatic=carry.h_diabatic,
+            h_diabatic_seconds=float(stage.dts_rk) * int(stage.number_of_small_timesteps),
+        )
+    else:
+        next_state = small_step_finish_wrf(prep, acoustic)
     if namelist is not None:
         next_state = _refresh_grid_p_from_finished(next_state, prep, namelist)
     if (
@@ -2861,12 +3156,30 @@ def _acoustic_scan(
     | CorrectedNiPhaseTapResult
     | _AcousticScalarTransportResult
 ):
+    from gpuwrf.diagnostics.census import count_work
+
     if sum(bool(value) for value in (capture_pre_halo, capture_rca, capture_phase_tap)) > 1:
         raise ValueError("pre-halo, RCA, and phase-tap captures are mutually exclusive")
     acoustic = _acoustic_core_state_from_prep(
         carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds,
         bdy_relax=bdy_relax,
     )
+    native_fp32 = os.environ.get("GPUWRF_DYN_FP32", "0") == "1"
+    if native_fp32:
+        if capture_rca or capture_phase_tap:
+            raise ValueError("GPUWRF_DYN_FP32 does not support legacy RCA/phase-tap capture")
+        # Stage exactly once, before rounding. Never recover the small work
+        # delta from fp32 total masses inside the acoustic recurrence.
+        spec_work = None
+        if acoustic.muts_spec_target is not None:
+            spec_work = (acoustic.muts_spec_target - prep.mut
+                         if not _nested_frozen_wrf_boundary_active(namelist)
+                         else acoustic.mu_spec_target)
+        acoustic = acoustic.replace(mu_work=prep.mu_work,mu_work_spec_target=spec_work)
+        acoustic = jax.tree_util.tree_map(
+            lambda x: x.astype(jnp.float32) if jnp.issubdtype(x.dtype,jnp.floating) else x,
+            acoustic,
+        )
     if bool(namelist.use_vertical_solver):
         # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
         # real ``c2a`` from small_step_prep, and the real dry ``cqw``.
@@ -2883,15 +3196,42 @@ def _acoustic_scan(
                 int(prep.theta_work.shape[2]),
                 dtype=prep.theta_work.dtype,
             )
-        a, alpha, gamma = calc_coef_w_wrf_coefficients(
-            prep.mut,
-            namelist.metrics,
-            dt=float(stage.dts_rk),
-            epssm=float(namelist.epssm),
-            top_lid=bool(namelist.top_lid),
-            cqw=cqw_field,
-            c2a=prep.c2a,
-        )
+        # ADR-038/M2 seam (env-gated, default OFF): fused Pallas coefficient kernel,
+        # bitwise-exact vs XLA:GPU in the device bake-off (verdict:
+        # <DATA_ROOT>/wrf_gpu2/v025/m2/bakeoff_20260918_rerun/
+        # m2_bakeoff_verdict_device_final.json, PASS). Metrics namespace flattened
+        # to the arrays the wrapper takes; otherwise identical arguments.
+        if native_fp32:
+            # Built below, once stage_cfg is available.
+            a = alpha = gamma = None
+        elif os.environ.get("GPUWRF_FUSED_VERTICAL", "0") == "1":
+            from gpuwrf.kernels.fused_vertical_implicit import calc_coef_w_pallas
+            _m = namelist.metrics
+            a, alpha, gamma = calc_coef_w_pallas(
+                prep.mut,
+                _m.c1h,
+                _m.c2h,
+                _m.c1f,
+                _m.c2f,
+                _m.rdn,
+                _m.rdnw,
+                dt=float(stage.dts_rk),
+                epssm=float(namelist.epssm),
+                top_lid=bool(namelist.top_lid),
+                cqw=cqw_field,
+                c2a=prep.c2a,
+                interpret=False,
+            )
+        else:
+            a, alpha, gamma = calc_coef_w_wrf_coefficients(
+                prep.mut,
+                namelist.metrics,
+                dt=float(stage.dts_rk),
+                epssm=float(namelist.epssm),
+                top_lid=bool(namelist.top_lid),
+                cqw=cqw_field,
+                c2a=prep.c2a,
+            )
         # NOTE (v0.15 kernel probe, NEGATIVE result): precomputing the four
         # advance_w stage-constant denominator arrays here (like a/alpha/gamma)
         # and closing them into the substep scan was tried and REVERTED -- it
@@ -2928,6 +3268,11 @@ def _acoustic_scan(
             ),
             spec_zone=int(namelist.boundary_config.spec_zone),
         )
+        if native_fp32:
+            from gpuwrf.kernels.dyn_acoustic_fp32 import (
+                calc_coef_fp32,acoustic_substep_fp32,evolving_payload,state_from_payload,
+            )
+            native_coefficients = calc_coef_fp32(acoustic,stage_cfg,apply_boundary_forcing=True)
 
         # v0.10.0 Wave-A (Opus#1 unroll):
         # NOTE on the reverted carry-split (Opus#2): threading only the ~19
@@ -2938,15 +3283,37 @@ def _acoustic_scan(
         # any carry split with the corrected cache-hit timing protocol before
         # changing it.
         # See proofs/v0100/inefficiency_ledger.md (Opus#2 = REVERTED).
-        def body(scan_acoustic: AcousticCoreState, _):
-            return acoustic_substep_core(
-                scan_acoustic,
-                a=a,
-                alpha=alpha,
-                gamma=gamma,
-                cfg=stage_cfg,
-                cqw=cqw_field,
-            ), None
+        counted = carry.census is not None
+        native_template = acoustic
+        def encode_acoustic(value):
+            return evolving_payload(value) if native_fp32 else value
+        def decode_acoustic(value):
+            return state_from_payload(native_template,value) if native_fp32 else value
+        seed_value = encode_acoustic(acoustic)
+        scan_seed = (seed_value, carry.census) if counted else seed_value
+
+        def body(scan_value, _):
+            encoded, census = scan_value if counted else (scan_value, None)
+            scan_acoustic = decode_acoustic(encoded)
+            if native_fp32:
+                native_result = acoustic_substep_fp32(
+                    scan_acoustic,coefficients=native_coefficients,cfg=stage_cfg,
+                    apply_boundary_forcing=True,return_guard_events=counted,
+                )
+                if counted:
+                    from gpuwrf.diagnostics.census import count_native_mass_guard_events
+                    next_acoustic, guard_events = native_result
+                    census = count_native_mass_guard_events(census,guard_events)
+                else:
+                    next_acoustic = native_result
+            else:
+                next_acoustic = acoustic_substep_core(
+                    scan_acoustic,a=a,alpha=alpha,gamma=gamma,
+                    cfg=stage_cfg,cqw=cqw_field,
+                )
+            encoded_next = encode_acoustic(next_acoustic)
+            value = (encoded_next,count_work(census,"acoustic_trips")) if counted else encoded_next
+            return value, None
 
         acoustic_health = None
         acoustic_target = None
@@ -2961,17 +3328,19 @@ def _acoustic_scan(
                 cqw=cqw_field,
                 capture_phase_tap=True,
             )
+            scan_seed = (acoustic, count_work(carry.census, "acoustic_trips")) if counted else acoustic
             remaining_substeps = int(stage.number_of_small_timesteps) - 1
             if remaining_substeps:
-                acoustic, _ = jax.lax.scan(
+                scan_seed, _ = jax.lax.scan(
                     body,
-                    acoustic,
+                    scan_seed,
                     xs=None,
                     length=remaining_substeps,
                     unroll=_acoustic_unroll(),
                 )
         elif capture_rca:
-            def observed_body(scan_acoustic: AcousticCoreState, _):
+            def observed_body(scan_value, _):
+                scan_acoustic, census = scan_value if counted else (scan_value, None)
                 next_acoustic, observation = acoustic_substep_core(
                     scan_acoustic,
                     a=a,
@@ -2981,26 +3350,33 @@ def _acoustic_scan(
                     cqw=cqw_field,
                     observe_mass_primitive=True,
                 )
-                return next_acoustic, (
+                value = (next_acoustic, count_work(census, "acoustic_trips")) if counted else next_acoustic
+                return value, (
                     _rca_acoustic_health(next_acoustic, observation),
                     _rca_acoustic_target(next_acoustic, observation),
                 )
 
-            acoustic, (acoustic_health, acoustic_target) = jax.lax.scan(
+            scan_seed, (acoustic_health, acoustic_target) = jax.lax.scan(
                 observed_body,
-                acoustic,
+                scan_seed,
                 xs=None,
                 length=int(stage.number_of_small_timesteps),
                 unroll=_acoustic_unroll(),
             )
         else:
-            acoustic, _ = jax.lax.scan(
+            scan_seed, _ = jax.lax.scan(
                 body,
-                acoustic,
+                scan_seed,
                 xs=None,
                 length=int(stage.number_of_small_timesteps),
                 unroll=_acoustic_unroll(),
             )
+        if counted:
+            encoded, census = scan_seed
+            acoustic = decode_acoustic(encoded)
+            carry = carry.replace(census=census)
+        else:
+            acoustic = decode_acoustic(scan_seed)
         scalar_mass_fluxes = (
             _finalize_time_averaged_scalar_mass_fluxes(
                 acoustic,
@@ -3010,7 +3386,14 @@ def _acoustic_scan(
             if bool(return_scalar_transport)
             else None
         )
-        next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
+        next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist, stage)
+        if native_fp32:
+            # The native recurrence is fp32; its retained outer-loop interface
+            # must match the declared carry types (including mixed storage).
+            next_carry = next_carry.replace(**{
+                name: getattr(next_carry,name).astype(getattr(carry,name).dtype)
+                for name in ("mudf","muave","muts","ph_tend")
+            })
         next_carry = _maybe_exchange_sharded_carry_halos(next_carry)
         post_halo_carry = next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
         if capture_pre_halo:
@@ -3481,8 +3864,14 @@ def _diffopt1_dry_forward_tendencies(
     namelist: OperationalNamelist,
     *,
     base_state: BaseState | None = None,
-) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    return_scalar_xkhh: bool = False,
+) -> tuple[jax.Array, ...]:
     """Build WRF's RK1-frozen dry horizontal-diffusion ``*_tendf`` bundle.
+
+    ``return_scalar_xkhh`` appends the scalar diffusivity ``xkhh`` that the
+    theta branch used; WRF passes the same ``grid%xkhh`` to rk_scalar_tend's
+    moist/other-scalar ``horizontal_diffusion`` (see
+    :func:`_diffopt1_scalar_horizontal_diffusion`).
 
     Pristine ``module_first_rk_step_part2.F`` computes the Smagorinsky
     coefficients from the time-t fields, then ``module_em.F::rk_tendency``
@@ -3585,7 +3974,14 @@ def _diffopt1_dry_forward_tendencies(
     # subtracting the latter is the identical full-theta representation.  A
     # 106-leaf operational carry has no explicit BaseState, so the alternate
     # branch reconstructs that same profile from its resident base components.
-    if base_state is not None:
+    # Native RK's retained BaseState captures PB/PHB/MUB; its 300 K theta
+    # offset is not WRF's terrain-dependent t0+t_init diffusion reference.
+    # Preserve the pre-native-RK reconstruction for this consumer.
+    _native_rk_base_only = (
+        os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1"
+        and not is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
+    )
+    if base_state is not None and not _native_rk_base_only:
         theta_base = jnp.asarray(base_state.theta_base, dtype=haloed.theta.dtype)
     else:
         # The released fp64 carry deliberately has no explicit BaseState leaf
@@ -3681,7 +4077,55 @@ def _diffopt1_dry_forward_tendencies(
             dx_m=dx,
             dy_m=dy,
         )
+    if return_scalar_xkhh:
+        return du, dv, dw, theta_diffusion, xkhh
     return du, dv, dw, theta_diffusion
+
+
+def _diffopt1_scalar_horizontal_diffusion(
+    reference: State,
+    xkhh: jax.Array,
+    muts: jax.Array,
+    namelist: OperationalNamelist,
+) -> dict[str, jax.Array]:
+    """WRF diff_opt=1 2nd-order horizontal mixing of moist and other scalars.
+
+    Pristine ``rk_scalar_tend`` (module_em.F:1380-1390) calls
+    ``horizontal_diffusion('m', scalar, scalar_tends, mut, ..., xkmhd)`` at RK1
+    for every moist species and every other scalar (QNI/QNR), with
+    ``moist_mix2_off``/``scalar_mix2_off`` defaulting to ``.false.``.  The
+    caller (solve_em.F:2299-2314, :2869-2884) passes ``grid%muts`` (post-RK1
+    acoustic total mass) as ``mut`` and the step's ``grid%xkhh`` as ``xkmhd``.
+    The result lands in ``moist_tend``/``scalar_tend`` and is reused by all
+    three ``rk_update_scalar`` calls, unscaled by ``msfty``.  The stencil is the
+    scalar branch of ``horizontal_diffusion`` (full field, no base profile) with
+    the same specified/nested ownership as theta's ``horizontal_diffusion_3dmp``.
+    """
+
+    metrics = namelist.metrics
+    _, specified, nested = _acoustic_lateral_bc_flags(namelist)
+    source_scalar_path = bool(specified or nested)
+    mass = metrics.c1h[:, None, None] * muts[None, :, :] + metrics.c2h[:, None, None]
+    tendencies: dict[str, jax.Array] = {}
+    for name in NESTED_BOUNDARY_SCALAR_SPECIES:
+        field = getattr(reference, name, None)
+        if field is None:
+            continue
+        tendencies[name] = horizontal_diffusion_coord_scalar_tendency(
+            field,
+            xkhh,
+            mass,
+            dx_m=float(namelist.grid.projection.dx_m),
+            dy_m=float(namelist.grid.projection.dy_m),
+            msftx=metrics.msftx if source_scalar_path else None,
+            msfty=metrics.msfty if source_scalar_path else None,
+            msfux=metrics.msfux if source_scalar_path else None,
+            msfuy=metrics.msfuy if source_scalar_path else None,
+            msfvx=metrics.msfvx if source_scalar_path else None,
+            msfvy=metrics.msfvy if source_scalar_path else None,
+            nonperiodic_owned=source_scalar_path,
+        )
+    return tendencies
 
 
 def _augment_large_step_tendencies(
@@ -3995,18 +4439,35 @@ def _augment_large_step_tendencies(
     # forward-Euler per acoustic substep, u += dts*ru_tend), matching WRF; the
     # earlier add_scaled_tendencies forward-Euler of the dynamics fields has been
     # removed so there is no double-application.
-    ru_pgf, rv_pgf = large_step_horizontal_pgf(
-        haloed,
-        metrics,
-        dx_m=dx,
-        dy_m=dy,
-        non_hydrostatic=True,
-        top_lid=bool(namelist.top_lid),
-        hypsometric_opt=int(namelist.hypsometric_opt),
-        base_state=base_state,
-    )
-    u_t = u_t + ru_pgf
-    v_t = v_t + rv_pgf
+    _fused_uv = bool(namelist.run_boundary) and large_step_uv_fused_enabled(u_t, v_t, base_state) and (
+        _acoustic_lateral_bc_flags(namelist)[2] or not large_step_uv_nested_only())
+    if _fused_uv:
+        # GPUWRF_DYN_GLUE_FUSED: PGF + Coriolis + curvature (below) in one REAL
+        # stencil per stagger, same operands and add order.
+        u_t, v_t = large_step_uv_fused(
+            haloed,
+            metrics,
+            u_t,
+            v_t,
+            dx_m=dx,
+            dy_m=dy,
+            top_lid=bool(namelist.top_lid),
+            hypsometric_opt=int(namelist.hypsometric_opt),
+            base_state=base_state,
+        )
+    else:
+        ru_pgf, rv_pgf = large_step_horizontal_pgf(
+            haloed,
+            metrics,
+            dx_m=dx,
+            dy_m=dy,
+            non_hydrostatic=True,
+            top_lid=bool(namelist.top_lid),
+            hypsometric_opt=int(namelist.hypsometric_opt),
+            base_state=base_state,
+        )
+        u_t = u_t + ru_pgf
+        v_t = v_t + rv_pgf
 
     # WRF rk_tendency adds the Coriolis force to the SAME coupled ru/rv_tend
     # immediately AFTER the horizontal PGF (module_em.F:717 PGF then :761 coriolis;
@@ -4018,20 +4479,21 @@ def _augment_large_step_tendencies(
     # / oracle dycore gates stay bit-identical.  ``specified`` follows WRF's
     # nested/specified boundary edge-face exclusion for the real (boundary-driven)
     # case; for periodic idealized runs the choice is moot under f=0.
-    ru_cor, rv_cor = large_step_coriolis(
-        haloed,
-        metrics,
-        specified=bool(namelist.run_boundary),
-    )
-    u_t = u_t + ru_cor
-    v_t = v_t + rv_cor
+    if not _fused_uv:
+        ru_cor, rv_cor = large_step_coriolis(
+            haloed,
+            metrics,
+            specified=bool(namelist.run_boundary),
+        )
+        u_t = u_t + ru_cor
+        v_t = v_t + rv_cor
 
     # WRF calls normal-map curvature immediately after Coriolis
     # (module_em.F:773-781; module_big_step_utilities_em.F:4239-4446). The
     # source correction is intentionally bound to the authenticated
     # specified/nested path; periodic idealized programs retain their prior
     # bytes under the contract amendment.
-    if bool(namelist.run_boundary):
+    if bool(namelist.run_boundary) and not _fused_uv:
         ru_curv, rv_curv = large_step_horizontal_curvature(
             haloed,
             metrics,
@@ -4168,8 +4630,8 @@ def _advected_scalar_species(namelist: "OperationalNamelist") -> tuple[str, ...]
 
     The selection is STATIC (``mp_physics`` is a jit static aux), so every
     program that selects none of these schemes is byte-for-byte unchanged. The
-    remaining number concentrations (Ni/Nr/Nc) keep the port-wide no-transport
-    convention used by mp=8/10/14/16. The extra leaves also cold-start at zero,
+    Ni/Nr use the separate other-scalar transport loop and ``scalar_adv_opt``.
+    The extra leaves also cold-start at zero,
     so even the FIRST enabling of one of these schemes cannot perturb the
     dynamics until that scheme produces the species.
     """
@@ -4254,6 +4716,7 @@ def _scalar_transport_coupled_tendencies(
         fzp=metrics.fnp,
         dt=float(namelist.dt_s),
         species_batch_width=int(species_batch_width),
+        msfty=metrics.msfty,
     )
 
 
@@ -4495,6 +4958,45 @@ def _nested_scalar_stage_tendencies(
     return species, tuple(merged)
 
 
+def _root_scalar_stage_tendencies(
+    advected_tendencies: tuple[jax.Array, ...],
+    species: tuple[str, ...],
+    state: State,
+    config: BoundaryConfig,
+    msfty: jax.Array,
+    *,
+    bounded: bool,
+    sc_tendencies: dict[str, jax.Array] | None = None,
+) -> tuple[jax.Array, ...]:
+    """Root-domain ``rk_update_scalar`` advection term (module_em.F:1587-1799).
+
+    WRF multiplies the raw ``advect_tend`` by ``msfty`` inside the advection
+    rectangle, which excludes the outer ``spec_zone`` only on a specified or
+    nested domain (``bounded``; periodic runs advect everywhere).  The root's
+    lateral forcing stays the end-of-step ``apply_lateral_boundaries`` pass, so
+    the ring is excluded only for species that carry a boundary leaf (the pass
+    owns that ring); a species without one keeps its ring advection because the
+    root has no ``flow_dep_bdy`` substitute.  ``sc_tendencies`` is WRF's
+    RK1-frozen ``sc_tend`` (sixth-order diffusion), added unscaled on the full
+    mass grid as rk_update_scalar does.
+    """
+
+    spec_zone = int(config.spec_zone) if bool(bounded) else 0
+    merged: list[jax.Array] = []
+    for name, adv in zip(species, advected_tendencies, strict=True):
+        adv = adv * jnp.asarray(msfty, dtype=adv.dtype)[None, :, :]
+        if spec_zone > 0 and getattr(state, f"{name}_bdy", None) is not None:
+            y_stop = int(adv.shape[-2]) - spec_zone
+            x_stop = int(adv.shape[-1]) - spec_zone
+            adv = jnp.zeros_like(adv).at[
+                ..., spec_zone:y_stop, spec_zone:x_stop
+            ].set(adv[..., spec_zone:y_stop, spec_zone:x_stop])
+        if sc_tendencies is not None and name in sc_tendencies:
+            adv = adv + jnp.asarray(sc_tendencies[name], dtype=adv.dtype)
+        merged.append(adv)
+    return tuple(merged)
+
+
 def _rk_scan_step(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -4509,6 +5011,14 @@ def _rk_scan_step(
 ) -> OperationalCarry | _PreHaloCaptureResult | _RcaRkResult | CorrectedNiPhaseTapResult | _RkLadderResult:
     if sum(bool(value) for value in (capture_pre_halo, capture_rca, capture_phase_tap, capture_ladder)) > 1:
         raise ValueError("pre-halo, RCA, phase-tap, and ladder captures are mutually exclusive")
+    if carry.h_diabatic is not None:
+        # WRF h_diabatic pair: the previous microphysics heating enters t_tend at
+        # every stage (rk_addtend_dry, module_em.F:1079) and the final-stage
+        # finish removes it (_carry_from_finished_stage); one carry leaf feeds both.
+        physics_tendencies = dataclass_replace(
+            DryPhysicsTendencies() if physics_tendencies is None else physics_tendencies,
+            h_diabatic=carry.h_diabatic,
+        )
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
     nested_frozen_bundle = _nested_frozen_wrf_boundary_active(namelist)
@@ -4518,23 +5028,35 @@ def _rk_scan_step(
     # ru/rv/rw/t_tendf bundle in all three RK stages.  Hoist that immutable
     # device bundle beside the other step-origin forcing; no carry leaf or
     # host/device transfer is introduced.
-    rk1_forward_diffopt1 = (
+    # The same RK1 Smagorinsky ``xkhh`` drives rk_scalar_tend's moist/other-
+    # scalar horizontal_diffusion (module_em.F:1380); keep it beside the bundle.
+    rk1_diffopt1_bundle = (
         _diffopt1_dry_forward_tendencies(
             rk1_reference,
             namelist,
             base_state=carry.base_state,
+            return_scalar_xkhh=True,
         )
         if int(namelist.diff_opt) == 1 and int(namelist.km_opt) == 4
         else None
     )
+    rk1_forward_diffopt1 = None if rk1_diffopt1_bundle is None else rk1_diffopt1_bundle[:4]
+    rk1_scalar_xkhh = None if rk1_diffopt1_bundle is None else rk1_diffopt1_bundle[4]
     # Canonical real-data nests select diff_6th_opt=2.  WRF builds theta's
     # sixth-order contribution once from the time-t/RK1 field into ``t_tendf``;
     # the previous operational path rebuilt a periodic, cell-mass approximation
     # in all three stages, including physical rings where WRF owns no stencil.
     # Keep this correction behind the coherent live-child bundle so every
     # released/candidate-off program remains byte-identical.
+    # WRF sixth_order_diffusion treats specified exactly like nested
+    # (``specified = config_flags%specified .or. config_flags%nested``,
+    # module_big_step_utilities_em.F:6334), so the specified root takes the same
+    # RK1-frozen ownership-ring form; the released per-stage periodic form wraps
+    # opposite-boundary values into rings 0-2 (BC44: 18x theta ring-1 error vs
+    # pristine WRF after one d01 step).  Periodic idealized programs keep it.
+    sixth_order_frozen = nested_frozen_bundle or _acoustic_lateral_bc_flags(namelist)[1]
     rk1_forward_diff6_theta = None
-    if nested_frozen_bundle and int(namelist.diff_6th_opt) != 0:
+    if sixth_order_frozen and int(namelist.diff_6th_opt) != 0:
         theta_tendf = wrf_sixth_order_scalar_tendf(
             rk1_reference.theta - _theta_base_offset(rk1_reference.theta),
             rk1_reference.mu_total,
@@ -4559,7 +5081,7 @@ def _rk_scan_step(
     # the prior per-stage periodic form explained 97.8% of the frozen 8105x
     # rk_tendency nonspec residual (relax band 98.05%, corr 0.992).
     rk1_forward_diff6_uvw = None
-    if nested_frozen_bundle and int(namelist.diff_6th_opt) != 0:
+    if sixth_order_frozen and int(namelist.diff_6th_opt) != 0:
         rk1_forward_diff6_uvw = wrf_sixth_order_uvw_tendf(
             rk1_reference.u,
             rk1_reference.v,
@@ -4579,6 +5101,62 @@ def _rk_scan_step(
             diff_6th_factor=float(namelist.diff_6th_factor),
             monotonic=(int(namelist.diff_6th_opt) == 2),
         )
+    # Root (specified) counterpart of the child's RK1 scalar sc_tend bundle:
+    # rk_scalar_tend forms the moist/other-scalar sixth-order diffusion only at
+    # RK1 with dt_step (module_em.F:1423) and rk_update_scalar reuses it in all
+    # stages.  The root previously had no scalar sixth-order diffusion at all.
+    # rk_scalar_tend runs AFTER the RK1 acoustic loop and receives grid%muts
+    # (solve_em.F:2303), so the mass weights use the post-acoustic RK1 total
+    # mass; the stage function forms it once at RK1 and caches it (stages are
+    # Python-unrolled in one trace).
+    rk1_scalar_cache: dict[str, object] = {}
+    root_scalar_diff6_active = (
+        not nested_frozen_bundle
+        and sixth_order_frozen
+        and int(namelist.diff_6th_opt) != 0
+        and bool(namelist.use_flux_advection)
+    )
+    # rk_scalar_tend's diff_opt=1 horizontal_diffusion shares that RK1 sc_tend
+    # (added before the sixth-order term, module_em.F:1380-1423).
+    root_scalar_hdiff_active = (
+        not nested_frozen_bundle
+        and rk1_scalar_xkhh is not None
+        and bool(namelist.use_flux_advection)
+    )
+
+    def _root_scalar_sc_tend(muts_rk1):
+        hdiff = (
+            _diffopt1_scalar_horizontal_diffusion(rk1_reference, rk1_scalar_xkhh, muts_rk1, namelist)
+            if root_scalar_hdiff_active
+            else {}
+        )
+        if not root_scalar_diff6_active:
+            return hdiff
+        diff6 = _root_scalar_diff6(muts_rk1)
+        return {
+            name: (hdiff[name].astype(d.dtype) + d) if name in hdiff else d
+            for name, d in diff6.items()
+        }
+
+    def _root_scalar_diff6(muts_rk1):
+        rk1_dt = float(namelist.dt_s) / float(namelist.rk_order)
+        return {
+            name: wrf_sixth_order_scalar_tendf(
+                getattr(rk1_reference, name),
+                muts_rk1,
+                c1=namelist.metrics.c1h,
+                c2=namelist.metrics.c2h,
+                msftx=namelist.metrics.msftx,
+                msfty=namelist.metrics.msfty,
+                dt=rk1_dt,
+                diff_6th_factor=float(namelist.diff_6th_factor),
+                monotonic=(int(namelist.diff_6th_opt) == 2),
+                specified_or_nested=True,
+            )
+            for name in NESTED_BOUNDARY_SCALAR_SPECIES
+            if getattr(rk1_reference, name, None) is not None
+        }
+
     # Pristine relax_bdy_dry runs at RK1 and stores *_tendf for reuse.  Hoist the
     # candidate child's construction outside advance_stage so it is traced once
     # from the immutable step-start fields.  The released specified path remains
@@ -4607,7 +5185,37 @@ def _rk_scan_step(
     # sc_tend arrays as the RK1 boundary tendency above.  Form it once from the
     # time-t fields with dt/3, then add it without map rescaling before all three
     # scalar updates.  Rings 0--2 remain exact zero by source ownership.
+    nested_frozen_scalar_bdy = nested_frozen_scalar
+
+    def _child_frozen_scalar(muts_rk1):
+        # Post-acoustic RK1 sc_tend: boundary part (time-t) + diff_opt=1
+        # horizontal mixing + sixth-order with grid%muts as rk_scalar_tend
+        # receives it (solve_em.F:2303, module_em.F:1380-1423).
+        hdiff = (
+            _diffopt1_scalar_horizontal_diffusion(rk1_reference, rk1_scalar_xkhh, muts_rk1, namelist)
+            if rk1_scalar_xkhh is not None
+            else None
+        )
+        if int(namelist.diff_6th_opt) == 0:
+            if hdiff is None:
+                return nested_frozen_scalar_bdy
+            return tuple(
+                b + hdiff[name].astype(b.dtype)
+                for b, name in zip(nested_frozen_scalar_bdy, NESTED_BOUNDARY_SCALAR_SPECIES, strict=True)
+            )
+        diffusion = _nested_scalar_sixth_order_tendencies(
+            rk1_reference.replace(mu_total=muts_rk1), namelist,
+        )
+        if hdiff is not None:
+            diffusion = tuple(
+                hdiff[name].astype(d.dtype) + d
+                for name, d in zip(NESTED_BOUNDARY_SCALAR_SPECIES, diffusion, strict=True)
+            )
+        return tuple(b + d for b, d in zip(nested_frozen_scalar_bdy, diffusion, strict=True))
+
     if nested_frozen_scalar is not None and int(namelist.diff_6th_opt) != 0:
+        # C1 compatibility arm (pre-acoustic, both scalar options 0) keeps the
+        # released time-t bundle byte-identical.
         rk1_forward_diff6_scalar = _nested_scalar_sixth_order_tendencies(
             rk1_reference,
             namelist,
@@ -4620,6 +5228,12 @@ def _rk_scan_step(
                 strict=True,
             )
         )
+
+    def _rk1_cached(key, stage, muts_now, build):
+        if int(stage.rk_step) == 1 or key not in rk1_scalar_cache:
+            assert int(stage.rk_step) == 1, "RK1 must form the frozen scalar sc_tend first"
+            rk1_scalar_cache[key] = build(muts_now)
+        return rk1_scalar_cache[key]
 
     def advance_stage(
         stage_carry: OperationalCarry,
@@ -4735,11 +5349,13 @@ def _rk_scan_step(
                     namelist.metrics.msfty,
                 )
         else:
-            number_scalars_advected = False
-            q_species = _advected_scalar_species(namelist)
-            moist_species = q_species if moisture_advected else ()
+            number_scalars_advected = bool(namelist.use_flux_advection) and (
+                haloed.Ni is not None and haloed.Nr is not None
+            )
+            moist_species = _advected_scalar_species(namelist) if moisture_advected else ()
+            q_species = moist_species + (("Ni", "Nr") if number_scalars_advected else ())
             q_tendencies = None
-            post_acoustic_scalar_transport = bool(moisture_advected)
+            post_acoustic_scalar_transport = bool(moisture_advected or number_scalars_advected)
         tke_advected = int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 5)
         if tke_advected:
             ph = haloed.ph_total
@@ -4922,19 +5538,50 @@ def _rk_scan_step(
                 q_species, q_tendencies = _nested_scalar_stage_tendencies(
                     scalar_tendencies,
                     advected_species,
-                    nested_frozen_scalar,
+                    _rk1_cached("child", stage, stage_carry.state.mu_total, _child_frozen_scalar),
                     namelist.boundary_config,
                     namelist.metrics.msfty,
                 )
             else:
-                q_tendencies = _moisture_coupled_tendencies(
+                if (
+                    moisture_advected
+                    and number_scalars_advected
+                    and int(namelist.moist_adv_opt) == int(namelist.scalar_adv_opt)
+                ):
+                    # Same equation/option for both WRF scalar loops: one call so
+                    # the native stencils see all species in one stacked launch.
+                    root_advection = _scalar_transport_coupled_tendencies(
+                        stage_carry.state, namelist, rk_step=int(stage.rk_step),
+                        step_origin=rk1_reference, species=q_species,
+                        advection_opt=int(namelist.moist_adv_opt),
+                        transport_velocities=scalar_transport_velocities,
+                    )
+                else:
+                    root_advection = (
+                        _moisture_coupled_tendencies(
+                            stage_carry.state, namelist, rk_step=int(stage.rk_step),
+                            step_origin=rk1_reference,
+                            transport_velocities=scalar_transport_velocities,
+                        ) if moisture_advected else ()
+                    ) + (
+                        _nested_number_scalar_coupled_tendencies(
+                            stage_carry.state, namelist, rk_step=int(stage.rk_step),
+                            step_origin=rk1_reference,
+                            transport_velocities=scalar_transport_velocities,
+                        ) if number_scalars_advected else ()
+                    )
+                q_tendencies = _root_scalar_stage_tendencies(
+                    root_advection,
+                    q_species,
                     stage_carry.state,
-                    namelist,
-                    rk_step=int(stage.rk_step),
-                    step_origin=rk1_reference,
-                    transport_velocities=scalar_transport_velocities,
+                    namelist.boundary_config,
+                    namelist.metrics.msfty,
+                    bounded=any(_acoustic_lateral_bc_flags(namelist)[1:]),
+                    sc_tendencies=_rk1_cached(
+                        "root", stage, stage_carry.state.mu_total, _root_scalar_sc_tend,
+                    ) if (root_scalar_diff6_active or root_scalar_hdiff_active) else None,
                 )
-        if moisture_advected or nested_frozen_bundle:
+        if moisture_advected or number_scalars_advected or nested_frozen_bundle:
             stage_carry = stage_carry.replace(
                 state=_apply_moisture_large_step(
                     stage_carry.state,
@@ -5191,7 +5838,7 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
         float(namelist.dt_s),
         rthraten=carry.rthraten,
         base_state=carry.base_state,
-    )
+    ).replace(census=carry.census)
 
 
 class _NoahMPClock(NamedTuple):
@@ -5218,37 +5865,118 @@ class _ClockBase(NamedTuple):
       ``rad_julian`` / ``rad_minute`` : WRF-style Julian day + UTC minute-of-day for
           the radiation/solar geometry (``physics_couplers._time_utc_parts``).
       ``noahmp_julian`` / ``noahmp_yearlen`` : the Noah-MP phenology greenness clock.
+
+    Tenerife B=4 batch extension (2026-09-18 pilot): the three OPTIONAL trailing
+    fields carry the genuinely per-lane Noah-MP static arrays (``tbot`` /
+    ``shdfac`` / ``shdmax``) as TRACED per-lane inputs for the batched-ensemble
+    vmap. The closed-over batch namelist must keep a lane-INVARIANT static aux
+    (the jit treedef keys on it), so these arrays cannot stay on the namelist for
+    B>1: they ride the per-lane clock base instead (same traced-argument pattern
+    as #91). Defaults ``None``; the B=1 path builds a clock base without them and
+    reads the namelist static exactly as before, so single-lane behaviour --
+    including the bitwise-sensitive dt54 A/B pattern -- is untouched. Values are
+    byte-for-byte what the per-lane static carries; only their binding site
+    changes.
+
+    v0.25 S3: ``ghg_clock`` is the CLWRF gas anchor (``None`` for grid-less or
+    undated namelists).  RRTMG evaluates the gases at each call's valid time
+    from these operands instead of baking init-date constants into the HLO.
     """
 
     rad_julian: jax.Array
     rad_minute: jax.Array
     noahmp_julian: jax.Array
     noahmp_yearlen: jax.Array
+    noahmp_tbot: jax.Array | None = None
+    noahmp_shdfac: jax.Array | None = None
+    noahmp_shdmax: jax.Array | None = None
+    ghg_clock: CLWRFGasClock | None = None
+    lower_boundary: object = None
 
 
-def build_clock_base(namelist: "OperationalNamelist") -> _ClockBase:
+def build_clock_base(
+    namelist: "OperationalNamelist",
+    noahmp_static_arrays: tuple[jax.Array, jax.Array, jax.Array] | None = None,
+) -> _ClockBase:
     """Build the traced :class:`_ClockBase` for ``namelist`` ONCE on the host.
 
     Called OUTSIDE ``jax.jit`` (the host chunk loop / M9 snapshot) so the date
     scalars enter the compiled program as runtime inputs, not baked literals.
+    ``noahmp_static_arrays`` is the optional ``(tbot, shdfac, shdmax)`` per-lane
+    triple for the B>1 batch path (see :class:`_ClockBase`); ``None`` (the B=1
+    default) leaves the three fields unset and the step reads the namelist
+    static as before.
     """
 
     rad_julian, rad_minute = time_utc_clock_base(namelist.time_utc)
+    # The CLWRF gas anchor exists exactly when RRTMG would read the gas table:
+    # a real grid (metrics) and a dated run (``_rrtmg_column_inputs``).
+    ghg_clock = None
+    if (
+        getattr(getattr(namelist, "grid", None), "metrics", None) is not None
+        and getattr(namelist, "time_utc", None) is not None
+    ):
+        ghg_clock = CLWRFGasClock(
+            *(jnp.asarray(leaf) for leaf in clwrf_gas_clock(namelist.time_utc))
+        )
     return _ClockBase(
         rad_julian=rad_julian,
         rad_minute=rad_minute,
         noahmp_julian=jnp.asarray(float(namelist.noahmp_julian), dtype=jnp.float64),
         noahmp_yearlen=jnp.asarray(float(namelist.noahmp_yearlen), dtype=jnp.float64),
+        noahmp_tbot=None if noahmp_static_arrays is None else noahmp_static_arrays[0],
+        noahmp_shdfac=None if noahmp_static_arrays is None else noahmp_static_arrays[1],
+        noahmp_shdmax=None if noahmp_static_arrays is None else noahmp_static_arrays[2],
+        ghg_clock=ghg_clock,
+        lower_boundary=getattr(namelist, "lower_boundary", None),
     )
 
 
+def _lane_noahmp_static(namelist: "OperationalNamelist", clock_base) -> Any:
+    """Per-lane Noah-MP static view for the batched-ensemble vmap (Tenerife B=4).
+
+    In the B>1 batch path the closed-over batch namelist must keep a lane-
+    INVARIANT static aux (the jit treedef keys on it), so the genuinely per-lane
+    ``noahmp_static`` arrays (``tbot`` / ``shdfac`` / ``shdmax``) ride the TRACED
+    per-lane clock base instead (see :class:`_ClockBase`). When those arrays are
+    present this returns a shallow clone of the namelist static with them swapped
+    in; every other static slot is lane-invariant by construction (asserted in
+    ``nested_pipeline._load_batched_domains``). With a plain (B=1) clock base the
+    namelist static is returned UNCHANGED, so single-lane behaviour -- including
+    the bitwise-sensitive dt54 A/B pattern -- is byte-identical.
+    """
+
+    static = getattr(namelist, "noahmp_static", None)
+    if clock_base is None or static is None:
+        return static
+    tbot = getattr(clock_base, "noahmp_tbot", None)
+    if tbot is None:
+        return static
+    clone = object.__new__(type(static))
+    for slot in type(static).__slots__:
+        object.__setattr__(clone, slot, getattr(static, slot))
+    object.__setattr__(clone, "tbot", tbot)
+    shdfac = getattr(clock_base, "noahmp_shdfac", None)
+    if shdfac is not None:
+        object.__setattr__(clone, "shdfac", shdfac)
+    shdmax = getattr(clock_base, "noahmp_shdmax", None)
+    if shdmax is not None:
+        object.__setattr__(clone, "shdmax", shdmax)
+    return clone
+
+
 def _rad_clock_base(clock_base):
-    """Extract the (rad_julian, rad_minute) pair for the radiation solar helpers,
-    or ``None`` when no traced clock was threaded (legacy host-extraction path)."""
+    """Extract the traced :class:`RadiationClock` (solar ``julian``/``utc_minute``
+    plus the CLWRF gas anchor), or ``None`` when no traced clock was threaded
+    (legacy host-extraction path)."""
 
     if clock_base is None:
         return None
-    return (clock_base.rad_julian, clock_base.rad_minute)
+    return RadiationClock(
+        clock_base.rad_julian,
+        clock_base.rad_minute,
+        getattr(clock_base, "ghg_clock", None),
+    )
 
 
 def noahmp_initial_rad(
@@ -5256,6 +5984,8 @@ def noahmp_initial_rad(
     namelist: "OperationalNamelist | None" = None,
     *,
     land_state=None,
+    _with_diagnostics=False,
+    _kernel_call=None,
 ) -> tuple:
     """Seed the held Noah-MP surface-radiation forcing as a CONCRETE 3-tuple.
 
@@ -5272,6 +6002,8 @@ def noahmp_initial_rad(
     namelist (legacy callers) the seed is zeros (overwritten at the first radt step).
     """
     if namelist is None:
+        if _with_diagnostics:
+            raise ValueError("full radiation initialization requires a namelist")
         zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)
         return (zero, zero, zero)
     rad = rrtmg_radiation_diagnostics(
@@ -5284,6 +6016,8 @@ def noahmp_initial_rad(
         slope_rad=int(namelist.slope_rad),
         shadow_length_m=float(namelist.topo_shadow_length_m),
         land_state=land_state,
+        _kernel_call=_kernel_call,
+        with_clear_sky=True,
     )
     soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
     lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
@@ -5292,7 +6026,13 @@ def noahmp_initial_rad(
         soldn = jnp.zeros_like(soldn)
     if int(namelist.ra_lw_physics) == 0:
         lwdn = jnp.zeros_like(lwdn)
-    return (soldn, lwdn, cosz)
+    forcing = (soldn, lwdn, cosz)
+    if _with_diagnostics:
+        # WRF publishes t0 before radiation_driver runs: CLDFRA is zero then.
+        # The first forecast radiation call publishes its actual input fraction.
+        cloud_template = rad.cloud_fraction if rad.cloud_fraction is not None else state.qv
+        rad = rad._replace(cloud_fraction=jnp.zeros_like(cloud_template))
+    return (forcing, rad) if _with_diagnostics else forcing
 
 
 def _noahmp_params(namelist: OperationalNamelist):
@@ -5544,7 +6284,16 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     the pre-v0.6.0 carry.
     """
 
+    from gpuwrf.diagnostics.census import enabled as census_enabled, initial_census, count_work
+
     state = state.ensure_conditional_leaves(mp_physics=int(namelist.mp_physics))
+    native_real_carry = os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1"
+    if native_real_carry:
+        if (os.environ.get("GPUWRF_DYN_FP32", "0") != "1"
+                or os.environ.get("GPUWRF_DYN_RK_FP32", "0") != "1"):
+            raise ValueError("GPUWRF_DYN_CARRY_FP32 requires native acoustic and RK flags")
+        if is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode):
+            raise ValueError("native REAL carry requires fp64_default acoustic storage mode")
     mixed_precision = is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
     base_state = None
     if mixed_precision:
@@ -5553,6 +6302,25 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
         enforced = _apply_mixed_perturb_fp32_storage(fp64_state, base_state)
     else:
         enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+        if os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1":
+            from gpuwrf.kernels.dyn_rk_fp32 import real_base
+
+            # WRF PB/PHB/MUB are immutable REAL fields. Capture the resolved
+            # initial base before native RK rounds totals and perturbations
+            # separately; recovering their difference each stage causes drift.
+            base_state = real_base(_base_state_from_totals(enforced))
+    if native_real_carry:
+        from gpuwrf.kernels.dyn_carry_fp32 import real_state
+        # BC40 captured the resolved base from wide totals above.
+        enforced = real_state(enforced)
+    if int(namelist.gwd_opt) == 1 and namelist.gwdo_statics is not None:
+        # Seed the optional history leaves before the first scan so the GWDO
+        # call cannot change the carry pytree. WRF stores these diagnostics REAL.
+        enforced = enforced.replace(**{
+            name: jnp.zeros_like(enforced.theta[0] if name in GWDO_SURFACE_DIAGNOSTIC_LEAVES
+                                 else enforced.theta, dtype=jnp.float32)
+            for name in GWDO_DIAGNOSTIC_LEAVES if getattr(enforced, name) is None
+        })
     if int(namelist.mp_physics) == 28:
         # v0.16 aerosol-aware Thompson: cold-start nwfa/nifa from the WRF
         # thompson_init climatological profiles when the inputs carry no
@@ -5568,9 +6336,11 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
         cumulus_carry = initial_kf_carry(enforced)
     elif cu_opt == 2:
         cumulus_carry = initial_bmj_carry(enforced)
+    init_radiation_calls = 0
     noahclassic_land = None
     noahclassic_rad = None
     if _explicit_noahclassic(namelist):
+        init_radiation_calls += int(getattr(namelist, "noahclassic_rad", None) is None)
         noahclassic_land = namelist.noahclassic_land
         noahclassic_rad = (
             namelist.noahclassic_rad
@@ -5588,6 +6358,7 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
             if getattr(namelist, "slab_land", None) is not None
             else initial_slab_land(enforced, namelist.slab_static)
         )
+        init_radiation_calls += 1
         soldn, lwdn, _cosz = noahmp_initial_rad(enforced, namelist)
         slab_rad = (
             namelist.slab_rad
@@ -5604,6 +6375,7 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
             if getattr(namelist, "px_land", None) is not None
             else initial_pleim_xiu_land(enforced, namelist.px_static)
         )
+        init_radiation_calls += 1
         px_soldn, px_lwdn, _px_cosz = noahmp_initial_rad(enforced, namelist)
         px_rad = (
             namelist.px_rad
@@ -5620,10 +6392,14 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     # pipelines' post-replace still owns the seeding (append-only / non-breaking).
     noahmp_land = None
     noahmp_rad = None
+    initial_radiation_diagnostics = None
     if bool(namelist.use_noahmp) and getattr(namelist, "noahmp_land", None) is not None:
         noahmp_land = namelist.noahmp_land
-        noahmp_rad = noahmp_initial_rad(enforced, namelist, land_state=noahmp_land)
-    return initial_operational_carry(
+        init_radiation_calls += 1
+        noahmp_rad, initial_radiation_diagnostics = noahmp_initial_rad(
+            enforced, namelist, land_state=noahmp_land, _with_diagnostics=True
+        )
+    result = initial_operational_carry(
         enforced,
         cumulus_carry=cumulus_carry,
         noahclassic_land=noahclassic_land,
@@ -5636,6 +6412,54 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
         noahmp_rad=noahmp_rad,
         base_state=base_state,
     )
+    if cu_opt == 1:
+        from gpuwrf.physics.cumulus_kf import kf_real_enabled
+
+        # Held KF R*CUTEN/PRATEC: WRF REAL on the native KF path (BP55, the rates are
+        # produced REAL there); otherwise the historical seeds.
+        kf_real = kf_real_enabled()
+        result = result.replace(cumulus_tendencies=(
+            *(jnp.zeros_like(enforced.theta, dtype=jnp.float32) if kf_real
+              else jnp.zeros_like(enforced.theta, dtype=jnp.float64)
+              if native_real_carry else jnp.zeros_like(enforced.theta) for _ in range(6)),
+            jnp.zeros_like(enforced.t_skin, dtype=jnp.float32) if kf_real else jnp.zeros_like(enforced.t_skin),
+        ))
+    if int(namelist.ra_sw_physics) == 4 and int(namelist.ra_lw_physics) == 4:
+        # Flux diagnostics follow the retained surface/land interface (fp64),
+        # while RTHRATEN follows the prognostic theta dtype.
+        zero = jnp.zeros(enforced.t_skin.shape, dtype=jnp.float64)
+        # The loader replaces this placeholder with its existing init solve.
+        # The first 15 fields are all-sky; optional clear-sky fields stay None.
+        fields = [zero for _ in range(15)]
+        fields[10] = jnp.zeros(enforced.t_skin.shape, dtype=jnp.int32)
+        diagnostics = initial_radiation_diagnostics or RRTMGRadiationDiagnostics(
+            *fields, *(zero for _ in range(8)))
+        from gpuwrf.coupling.physics_couplers import _rrtmg_real_enabled
+        from gpuwrf.physics.mynn_sgs_cloud import sgs_cloud_enabled
+        cloud_dtype = (enforced.t_skin.dtype if _rrtmg_real_enabled() else
+                       jnp.result_type(*(getattr(enforced, name).dtype for name in
+                           (("qc", "qi", "qs", "qg", "cldfra_bl") if sgs_cloud_enabled()
+                            else ("qc", "qi", "qs", "qg")))))
+        result = result.replace(radiation_diagnostics=diagnostics._replace(
+            cloud_fraction=jnp.zeros(enforced.qv.shape, dtype=cloud_dtype)))
+    if native_real_carry:
+        from gpuwrf.kernels.dyn_carry_fp32 import real_carry, real_scratch
+        result = real_carry(real_scratch(result))
+    if census_enabled():
+        result = result.replace(census=count_work(
+            initial_census(), "radiation_init_calls", init_radiation_calls
+        ))
+    if _h_diabatic_pair_enabled(namelist):
+        # WRF starts h_diabatic at zero (no microphysics call yet).
+        result = result.replace(h_diabatic=jnp.zeros_like(enforced.theta))
+    from gpuwrf.runtime.history_accumulators import full_history_enabled, seed_history
+    if bool(namelist.use_noahmp) and full_history_enabled():
+        land_history, energy_accumulators = seed_history(enforced)
+        result = result.replace(land_history=land_history, energy_accumulators=energy_accumulators)
+    if bool(namelist.use_noahmp) and bool(namelist.run_physics) and int(namelist.mp_physics) == DEFAULT_MP_PHYSICS:
+        from gpuwrf.runtime.noahmp_precipitation import seed_precipitation
+        result = result.replace(noahmp_precipitation=seed_precipitation(enforced))
+    return result
 
 
 def _operational_device():
@@ -5755,8 +6579,43 @@ class _NoahMPRadiation(NamedTuple):
     cosz: jax.Array
 
 
-def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None):
-    """Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
+def _refresh_rrtmg_driver(carry, namelist, lead_seconds, run_radiation, clock_base):
+    """One WRF driver solve, holding heating and all surface/TOA flux slices."""
+    from gpuwrf.diagnostics.census import count_work
+    interval = float(namelist.radiation_interval_s)
+    if interval == 0.0:
+        interval = float(namelist.dt_s) * int(namelist.radiation_cadence_steps)
+
+    def refresh(_unused):
+        rate, diag = rrtmg_theta_tendency(
+            carry.state, namelist.grid, time_utc=namelist.time_utc,
+            lead_seconds=lead_seconds,
+            # WRF offsets COSZEN only; the GHG/ozone clocks use call time.
+            solar_lead_seconds=lead_seconds + 0.5 * interval,
+            clock_base=_rad_clock_base(clock_base),
+            radiation_static=namelist.radiation_static,
+            topo_shading=int(namelist.topo_shading), slope_rad=int(namelist.slope_rad),
+            shadow_length_m=float(namelist.topo_shadow_length_m),
+            land_state=carry.noahmp_land, _with_diagnostics=True, with_clear_sky=True,
+        )
+
+        from gpuwrf.kernels.dyn_carry_fp32 import like, real_all_enabled
+        if real_all_enabled():  # E65: the refreshed slices take the held REAL carry dtypes
+            rate, diag = like((rate, diag), (carry.rthraten, carry.radiation_diagnostics))
+        return rate, diag, count_work(carry.census, "radiation_tendency_calls")
+
+    held = (carry.rthraten, carry.radiation_diagnostics, carry.census)
+    if isinstance(run_radiation, bool):
+        rate, diag, census = refresh(None) if run_radiation else held
+    else:
+        rate, diag, census = jax.lax.cond(run_radiation, refresh, lambda _u: held, None)
+    return carry.replace(rthraten=rate, radiation_diagnostics=diag, census=census)
+
+
+def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None, census=None, held_diagnostics=None):
+    """Legacy surface-only refresh; native RRTMG4/4 uses _refresh_rrtmg_driver.
+
+    Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
     cadence; reuse the held value between calls (WRF holds the radiative forcing
     between radt intervals). Resident on device -- no host transfer.
 
@@ -5774,7 +6633,7 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
 
     SIGN DERIVATION (the sprint's load-bearing trap -- do NOT blindly copy WRF's
     ``xtime + radt*0.5`` PLUS): the radiation refresh fires here on cadence steps
-    (``step_index %% cadence == 0``), and history output lands on a refresh boundary
+    (``step_index %% cadence == 0`` in that legacy convention), and history output lands on a refresh boundary
     (history_interval is a multiple of radt), so at the output step the incoming
     ``lead_seconds = step_index*dt_s`` EQUALS the output time ``t``. WRF's own
     ``calc_coszen(..., xtime + radt*0.5, ...)`` is PLUS because WRF's ``xtime`` is
@@ -5792,6 +6651,8 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
     namelist radt). At a mismatched cadence the ``-radt/2`` offset is the wrong
     magnitude (proof: 10-min radt leaves ~5.7%).
     """
+
+    from gpuwrf.diagnostics.census import count_work
 
     radt_seconds = float(namelist.dt_s) * int(namelist.radiation_cadence_steps)
     rad_lead_seconds = jnp.maximum(
@@ -5818,14 +6679,30 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
             soldn = jnp.zeros_like(soldn)
         if int(namelist.ra_lw_physics) == 0:
             lwdn = jnp.zeros_like(lwdn)
-        return (soldn, lwdn, cosz)
+        forcing = (soldn, lwdn, cosz)
+        result = forcing if held_diagnostics is None else (forcing, rad)
+        from gpuwrf.kernels.dyn_carry_fp32 import like, real_all_enabled
+        if real_all_enabled() and held_rad is not None:  # held REAL radiation (E65)
+            result = like(result, held_rad if held_diagnostics is None else (held_rad, held_diagnostics))
+        return result
 
     # ``held_rad`` is always a concrete 3-tuple inside the scan (seeded at carry
     # construction by ``noahmp_initial_rad``), so the carry pytree structure is
     # stable across scan iterations -- never None here.
+    held_result = held_rad if held_diagnostics is None else (held_rad, held_diagnostics)
+    if census is not None:
+        def counted_recompute(_unused):
+            return _recompute(None), count_work(census, "radiation_surface_calls")
+
+        def held(_unused):
+            return held_result, census
+
+        if isinstance(run_radiation, bool):
+            return counted_recompute(None) if run_radiation else held(None)
+        return jax.lax.cond(run_radiation, counted_recompute, held, None)
     if isinstance(run_radiation, bool):
-        return _recompute(None) if run_radiation else held_rad
-    return jax.lax.cond(run_radiation, _recompute, lambda _u: held_rad, None)
+        return _recompute(None) if run_radiation else held_result
+    return jax.lax.cond(run_radiation, _recompute, lambda _u: held_result, None)
 
 
 def _dry_physics_tendencies_from_state_delta(
@@ -5904,6 +6781,236 @@ def _apply_physics_non_dry_updates(
     return dynamics_state.replace(**updates)
 
 
+def _strict_guards_enabled() -> bool:
+    """F2 strict guards, the default (Phase C): no restore-to-origin repairs or positivity floors.
+
+    WRF's default mp_zero_out=0 zeroes nothing; round-off negatives after RK are absorbed by
+    Thompson's own entry/final R1 tests (module_mp_thompson.F:1827-1925, 4007-4054), so the
+    guards only masked state (ADR-F2C-STRICT-GUARDS-DEFAULT). GPUWRF_STRICT_GUARDS=0 restores
+    the legacy guards for A/B runs.
+    """
+    return os.environ.get("GPUWRF_STRICT_GUARDS", "1") == "1"
+
+
+def _microphysics_wrf_order_enabled() -> bool:
+    """Opt in to solve_em's post-RK time-split microphysics call."""
+    return os.environ.get("GPUWRF_MICROPHYSICS_WRF_ORDER", "1") == "1"
+
+
+def _microphysics_spec_zone(namelist: OperationalNamelist) -> int:
+    """solve_em.F:3693-3707 ``sz``: spec_zone on specified/nested domains, else 0."""
+
+    _, specified, nested = _acoustic_lateral_bc_flags(namelist)
+    if not (specified or nested):
+        return 0
+    return int(namelist.boundary_config.spec_zone)
+
+
+def _microphysics_interior_only(
+    before: State, after: State, namelist: OperationalNamelist
+) -> State:
+    """Keep the outer ``sz`` mass ring untouched by time-split microphysics.
+
+    WRF bounds moist_physics_prep_em, microphysics_driver and
+    moist_physics_finish_em to ``ids+sz..ide-1-sz`` / ``jds+sz..jde-1-sz``
+    (solve_em.F:3693-3707, module_microphysics_driver.F:809-886): on a
+    specified or nested domain the spec zone receives no MP tendency, no
+    precipitation and no diabatic heating; its values come from the lateral
+    boundary forcing alone.  Column physics is independent per column, so the
+    interior is exactly the unrestricted adapter result.
+    """
+
+    sz = _microphysics_spec_zone(namelist)
+    if sz <= 0 or after is before:
+        return after
+    ny, nx = (int(n) for n in before.theta.shape[-2:])
+    rows = jnp.arange(ny)
+    cols = jnp.arange(nx)
+    interior = ((rows >= sz) & (rows < ny - sz))[:, None] & (
+        (cols >= sz) & (cols < nx - sz)
+    )[None, :]
+    updates = {}
+    for name in State.__slots__:
+        new = getattr(after, name)
+        old = getattr(before, name)
+        if new is old or new is None or old is None:
+            continue
+        if not hasattr(new, "shape") or tuple(new.shape[-2:]) != (ny, nx):
+            raise ValueError(
+                f"microphysics changed non-mass-grid State.{name}; spec-zone "
+                "restriction needs a mass-point (..., ny, nx) leaf"
+            )
+        updates[name] = jnp.where(interior, new, jnp.asarray(old, dtype=new.dtype))
+    return after.replace(**updates) if updates else after
+
+
+def _h_diabatic_pair_enabled(namelist: OperationalNamelist) -> bool:
+    """WRF h_diabatic pair (B38): only with the post-RK microphysics call.
+
+    ``GPUWRF_MP_H_DIABATIC=0`` is the explicit A/B opt-out.
+    """
+    return (
+        _microphysics_wrf_order_enabled()
+        and os.environ.get("GPUWRF_MP_H_DIABATIC", "1") != "0"
+        and bool(namelist.run_physics)
+        and int(namelist.mp_physics) != 0
+    )
+
+
+def _apply_post_rk_microphysics(state: State, namelist: OperationalNamelist, *, return_precipitation=False) -> State:
+    """Update transported prognostics directly, as solve_em.F:3809 does."""
+    if not bool(namelist.run_physics):
+        return state
+    mp_opt = int(namelist.mp_physics)
+    if mp_opt == DEFAULT_MP_PHYSICS:
+        if return_precipitation:
+            updated, precip = thompson_adapter(state, float(namelist.dt_s), return_precipitation=True)
+        else:
+            updated = thompson_adapter(state, float(namelist.dt_s))
+    elif mp_opt == 28:
+        updated = thompson_aero_adapter(state, float(namelist.dt_s))
+    elif mp_opt in MP_SCAN_ADAPTERS:
+        updated = MP_SCAN_ADAPTERS[mp_opt](state, float(namelist.dt_s), namelist.grid)
+    else:
+        return state
+    updated = _microphysics_interior_only(state, updated, namelist)
+    return (updated, precip) if return_precipitation else updated
+
+
+def _kf_cadence_step(state, carry, namelist, step_index):
+    """WRF KF-eta gate on the one-based production index, with held rates."""
+    from gpuwrf.diagnostics.census import count_work
+    from gpuwrf.coupling.physics_couplers import _theta_m_tendency_from_dry
+    dt = float(namelist.dt_s)
+    stepcu = max(1, int(namelist.cumulus_cadence_steps))
+    step = jnp.asarray(step_index, dtype=jnp.int32)
+    run_cu = (step == 1) | (jnp.mod(step, stepcu) == 0)
+    w0avg, nca = carry.cumulus_carry
+    held = carry.cumulus_tendencies
+
+    def refresh(_unused):
+        values = kf_adapter(
+            state, dt, w0avg, nca, grid=namelist.grid,
+            stepcu=stepcu, cudt=float(namelist.cudt_minutes),
+            held_tendencies=held, return_tendencies=True,
+        )
+        from gpuwrf.kernels.dyn_carry_fp32 import like, real_all_enabled
+        if real_all_enabled():  # E65: KF refreshed rates are WRF REAL like the held carry
+            values = like(tuple(values), (held, w0avg, nca))
+
+        return (*values, count_work(carry.census, "kf_calls"))
+
+    rates, w0avg, nca, census = jax.lax.cond(
+        run_cu, refresh, lambda _u: (held, w0avg, nca, carry.census), None
+    )
+    # KFETASCHEME clears R*CUTEN on the last active cloud step. PRATEC is
+    # accumulated each timestep, exactly as module_physics_addtendc.F:2289.
+    updates = {
+        name: (getattr(state, name) + dt * rate).astype(getattr(state, name).dtype)
+        for name, rate in zip(("theta", "qv", "qc", "qr", "qi", "qs"), rates[:6], strict=True)
+    }
+    # P0/WRF converts held dry-theta/vapour rates at this timestep's OLD state.
+    theta_rate = _theta_m_tendency_from_dry(
+        rates[0], rates[1], state.theta, state.qv, state.theta.dtype
+    )
+    updates["theta"] = (state.theta + dt * theta_rate).astype(state.theta.dtype)
+    updates["rainc_acc"] = (state.rainc_acc + dt * rates[6]).astype(state.rainc_acc.dtype)
+    # solve_em finishes RK consumption before advance_ppt clears the carry.
+    clear = (nca > 0) & (jnp.floor(nca / dt + 0.5) <= 1)
+    rates = tuple(jnp.where(clear[None], 0.0, rate) for rate in rates[:6]) + (rates[6],)
+    nca = jnp.where(nca > 0, nca - dt, nca)
+    return state.replace(**updates), carry.replace(
+        cumulus_carry=(w0avg, nca), cumulus_tendencies=rates, census=census,
+    )
+
+
+def _source_leaf_dry_tendencies(
+    mu_total, held_rthraten, rthblten, rqvblten, rublten, rvblten, qv, theta,
+    namelist_metrics, theta_dtype, *, real_glue=False,
+) -> DryPhysicsTendencies:
+    """WRF calculate_phy_tend + update_phy_ten (add_a2a/add_a2c) + conv_t_tendf_to_moist.
+
+    ``real_glue`` (GPUWRF_CARRY_REAL_ALL): REAL metrics, each source coupled separately and
+    summed in update_phy_ten order, WRF's REAL ``R_v/R_d``.
+    """
+    glue_dtype = jnp.float32 if real_glue else jnp.float64
+    metrics = namelist_metrics
+    if real_glue:
+        from gpuwrf.kernels.dyn_rk_fp32 import real_metrics
+        metrics = real_metrics(metrics)
+    mass_h = (
+        metrics.c1h[:, None, None] * mu_total[None, :, :]
+        + metrics.c2h[:, None, None]
+    )
+    # COUPLED dry theta source d(mut*theta)/dt = mut*(RTHRATEN+RTHBLTEN);
+    # rk_addtend_dry consumes t_tendf already mass-coupled (it only re-divides
+    # by msfty).  The MYNN theta state delta is removed from the later
+    # non-dry update state below so the source is not double-applied.
+    if real_glue:
+        # WRF calculate_phy_tend couples each source, update_phy_ten sums them.
+        t_tendf_source = mass_h * jnp.asarray(held_rthraten, glue_dtype)
+        if rthblten is not None:
+            t_tendf_source = t_tendf_source + mass_h * jnp.asarray(rthblten, glue_dtype)
+    else:
+        rth_source = held_rthraten if rthblten is None else held_rthraten + rthblten
+        t_tendf_source = mass_h * rth_source
+    qv_tendf_source = (
+        jnp.zeros_like(t_tendf_source)
+        if rqvblten is None
+        else mass_h * (jnp.asarray(rqvblten, glue_dtype) if real_glue else rqvblten)
+    )
+    # WRF use_theta_m=1 converts dry theta forcing to moist theta in
+    # conv_t_tendf_to_moist immediately after update_phy_ten.
+    rvrd = _RVRD_REAL if real_glue else _RVRD
+    theta_m_factor = 1.0 + rvrd * jnp.asarray(qv, glue_dtype)
+    t_tendf_source = (
+        theta_m_factor * t_tendf_source
+        + rvrd
+        * jnp.asarray(theta, glue_dtype)
+        / theta_m_factor
+        * qv_tendf_source
+    ).astype(theta_dtype)
+    # v0.14 venting-residual fix: WRF PBL momentum fold.  phy_tend couples the
+    # A-grid RUBLTEN/RVBLTEN with the dry column mass (module_em.F:2381,
+    # ``(c1(k)*mut+c2(k))*R?BLTEN``); update_phy_ten averages mass->face
+    # (add_a2c_u/add_a2c_v, phys/module_physics_addtendc.F) with the
+    # specified-domain edge exclusions; rk_addtend_dry later divides by
+    # msfuy/msfvx.  Without this fold the acoustic loop integrated with ZERO
+    # PBL drag (the WRF-native oracle measured the missing term at 57%/72%
+    # of ru/rv_tend, the u''/v'' -> ww/mu'' venting creator).
+    ru_tendf_source = None
+    rv_tendf_source = None
+    if rublten is not None and rvblten is not None:
+        rub_coupled = mass_h * jnp.asarray(rublten, glue_dtype)
+        rvb_coupled = mass_h * jnp.asarray(rvblten, glue_dtype)
+        nz_p, ny_p, nx_p = rub_coupled.shape
+        ru_tendf_source = jnp.zeros((nz_p, ny_p, nx_p + 1), dtype=rub_coupled.dtype)
+        # WRF add_a2c_u (specified): u faces i in [ids+1, ide-1], mass rows
+        # j in [jds+1, jde-2] -- 0-based faces 1..nx-1, rows 1..ny-2.
+        ru_tendf_source = ru_tendf_source.at[:, 1 : ny_p - 1, 1:nx_p].set(
+            0.5
+            * (
+                rub_coupled[:, 1 : ny_p - 1, : nx_p - 1]
+                + rub_coupled[:, 1 : ny_p - 1, 1:nx_p]
+            )
+        )
+        rv_tendf_source = jnp.zeros((nz_p, ny_p + 1, nx_p), dtype=rvb_coupled.dtype)
+        # WRF add_a2c_v (specified): v faces j in [jds+1, jde-1], mass cols
+        # i in [ids+1, ide-2] -- 0-based faces 1..ny-1, cols 1..nx-2.
+        rv_tendf_source = rv_tendf_source.at[:, 1:ny_p, 1 : nx_p - 1].set(
+            0.5
+            * (
+                rvb_coupled[:, : ny_p - 1, 1 : nx_p - 1]
+                + rvb_coupled[:, 1:ny_p, 1 : nx_p - 1]
+            )
+        )
+    return DryPhysicsTendencies(
+        t_tendf=t_tendf_source,
+        ru_tendf=ru_tendf_source,
+        rv_tendf=rv_tendf_source,
+    )
+
+
 def _physics_step_forcing(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -5913,8 +7020,11 @@ def _physics_step_forcing(
     first_timestep=False,
     clock_base=None,
     capture_first_interval: bool = False,
+    lower_fields=None,
 ) -> _PhysicsStepForcing | tuple[_PhysicsStepForcing, FirstIntervalMomentumRecord]:
     """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
+
+    from gpuwrf.diagnostics.census import count_work
 
     if not bool(namelist.run_physics):
         if capture_first_interval:
@@ -5941,20 +7051,38 @@ def _physics_step_forcing(
     pbl_theta_dry_delta = None
     pbl_u_face_delta = None
     pbl_v_face_delta = None
+    pbl_after_state = None
+    # GPUWRF_CARRY_REAL_ALL: PBL/GWDO folds and the source-leaf coupling in WRF REAL.
+    from gpuwrf.kernels.dyn_carry_fp32 import real_all_enabled
+    real_glue = real_all_enabled()
+    glue_dtype = jnp.float32 if real_glue else jnp.float64
 
     mp_opt = int(namelist.mp_physics)
     sf_opt = int(namelist.sf_sfclay_physics)
     cu_opt = int(namelist.cu_physics)
 
+    if carry.radiation_diagnostics is not None:
+        next_carry = _refresh_rrtmg_driver(
+            next_carry, namelist, lead_seconds, run_radiation, clock_base
+        )
+
     # --- microphysics slot ---
-    if mp_opt == DEFAULT_MP_PHYSICS:
-        next_state = thompson_adapter(next_state, float(namelist.dt_s))
-    elif mp_opt == 28:
+    if not _microphysics_wrf_order_enabled() and mp_opt == DEFAULT_MP_PHYSICS:
+        next_state = _microphysics_interior_only(
+            next_state, thompson_adapter(next_state, float(namelist.dt_s)), namelist
+        )
+    elif not _microphysics_wrf_order_enabled() and mp_opt == 28:
         # v0.16 aerosol-aware Thompson: same coupler shape as mp=8 plus the
         # prognostic Nc/nwfa/nifa threading + surface aerosol emission.
-        next_state = thompson_aero_adapter(next_state, float(namelist.dt_s))
-    elif mp_opt in MP_SCAN_ADAPTERS:
-        next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
+        next_state = _microphysics_interior_only(
+            next_state, thompson_aero_adapter(next_state, float(namelist.dt_s)), namelist
+        )
+    elif not _microphysics_wrf_order_enabled() and mp_opt in MP_SCAN_ADAPTERS:
+        next_state = _microphysics_interior_only(
+            next_state,
+            MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid),
+            namelist,
+        )
     # mp_opt == 0 -> passive (no microphysics).
     # NOTE (v0.14 venting-residual sprint, NAMED NEXT THETA TERM, NOT ROUTED):
     # WRF folds h_diabatic -- the previous-step microphysics theta_m heating
@@ -5970,6 +7098,23 @@ def _physics_step_forcing(
     # (e.g. the previous step's mp delta carried across steps), left for the
     # follow-up sprint.
 
+    lower_legacy_rad = None
+    if lower_fields is not None:
+        # WRF radiation_driver precedes surface_driver. Aux4 fields are already
+        # read, but radiation still sees the previous water TSK/top TSLB.
+        # The legacy surface-only radiation refresh also stays before SST.
+        if bool(namelist.use_noahmp) and next_carry.radiation_diagnostics is None:
+            lower_legacy_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad,
+                land_state=carry.noahmp_land, clock_base=clock_base, census=next_carry.census,
+            )
+            if next_carry.census is not None:
+                lower_legacy_rad, census = lower_legacy_rad
+                next_carry = next_carry.replace(census=census)
+        from gpuwrf.io.lower_boundary import apply_lower_boundary_fields
+        next_carry = apply_lower_boundary_fields(next_carry, lower_fields)
+        next_state = next_state.replace(t_skin=next_carry.state.t_skin)
+
     # --- surface-layer / land slot ---
     # sf=2 Janjic Eta is the v0.13 traceable MYJ-pair surface layer (defined in
     # physics.myj_adapters, NOT in coupling.scan_adapters); route it explicitly.
@@ -5978,15 +7123,19 @@ def _physics_step_forcing(
             next_state = janjic_sfclay_adapter(next_state, float(namelist.dt_s), namelist.grid)
         elif sf_opt in SFCLAY_SCAN_ADAPTERS:
             next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
-        next_carry_rad = _refresh_noahmp_rad(
-            next_state,
-            namelist,
-            lead_seconds,
-            run_radiation,
-            carry.noahmp_rad,
-            land_state=carry.noahmp_land,
-            clock_base=clock_base,
-        )
+        if next_carry.radiation_diagnostics is not None:
+            rad = next_carry.radiation_diagnostics
+            next_carry_rad = (jnp.maximum(rad.swnorm, 0.0), rad.glw, rad.coszen)
+        elif lower_legacy_rad is not None:
+            next_carry_rad = lower_legacy_rad
+        else:
+            next_carry_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad,
+                land_state=carry.noahmp_land, clock_base=clock_base, census=next_carry.census,
+            )
+            if next_carry.census is not None:
+                next_carry_rad, census = next_carry_rad
+                next_carry = next_carry.replace(census=census)
         clock = (
             _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
             if clock_base is not None
@@ -5997,12 +7146,32 @@ def _physics_step_forcing(
         )
         radiation = _NoahMPRadiation(*next_carry_rad)
         ep, rp = _noahmp_params(namelist)
-        next_state, next_land = noahmp_surface_step(
-            next_state, carry.noahmp_land, namelist.noahmp_static,
+        history = getattr(next_carry, "history_diagnostics", None)
+        land_history = getattr(next_carry, "land_history", None)
+        next_state, next_land, *history_fields = noahmp_surface_step(
+            next_state, (carry.noahmp_land if lower_fields is None else next_carry.noahmp_land),
+            _lane_noahmp_static(namelist, clock_base),
             float(namelist.dt_s), radiation=radiation, clock=clock,
             energy_params=ep, rad_params=rp, first_timestep=first_timestep,
-            grid=namelist.grid,
+            grid=namelist.grid, history=history is not None,
+            **({"land_history": True} if land_history is not None else {}),
+            **({"precipitation": next_carry.noahmp_precipitation}
+               if getattr(next_carry, "noahmp_precipitation", None) is not None else {}),
         )
+        if history is not None:
+            # WRF history fields = this step's surface_driver values (history precedes solve).
+            next_carry = next_carry.replace(history_diagnostics=history.write(history_fields[0]))
+        if land_history is not None:
+            from gpuwrf.runtime.history_accumulators import PackedFields, accumulate_energy
+            produced = history_fields[0]
+            next_carry = next_carry.replace(
+                land_history=PackedFields.pack(
+                    {name: jnp.asarray(produced["land_history"][name], land_history.data.dtype)
+                     for name in land_history}),
+                energy_accumulators=PackedFields.pack(accumulate_energy(
+                    next_carry.energy_accumulators, next_carry.radiation_diagnostics,
+                    produced, float(namelist.dt_s))),
+            )
         next_carry = next_carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
     else:
         if sf_opt == 2:
@@ -6018,8 +7187,12 @@ def _physics_step_forcing(
             )
         if _explicit_noahclassic(namelist):
             next_noahclassic_rad = _refresh_noahmp_rad(
-                next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad
+                next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad,
+                census=next_carry.census,
             )
+            if next_carry.census is not None:
+                next_noahclassic_rad, census = next_noahclassic_rad
+                next_carry = next_carry.replace(census=census)
             next_state, next_noahclassic_land = noahclassic_surface_step(
                 next_state,
                 carry.noahclassic_land,
@@ -6049,9 +7222,14 @@ def _physics_step_forcing(
                 carry.slab_rad.glw,
                 jnp.zeros_like(carry.slab_rad.gsw),
             )
-            slab_soldn, slab_lwdn, _slab_cosz = _refresh_noahmp_rad(
-                next_state, namelist, lead_seconds, run_radiation, held_slab_rad
+            refreshed_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, held_slab_rad,
+                census=next_carry.census,
             )
+            if next_carry.census is not None:
+                refreshed_rad, census = refreshed_rad
+                next_carry = next_carry.replace(census=census)
+            slab_soldn, slab_lwdn, _slab_cosz = refreshed_rad
             next_state, next_slab_land = slab_surface_step(
                 next_state,
                 carry.slab_land,
@@ -6076,9 +7254,14 @@ def _physics_step_forcing(
                 carry.px_rad.glw,
                 jnp.zeros_like(carry.px_rad.gsw),
             )
-            px_soldn, px_lwdn, _px_cosz = _refresh_noahmp_rad(
-                next_state, namelist, lead_seconds, run_radiation, held_px_rad
+            refreshed_rad = _refresh_noahmp_rad(
+                next_state, namelist, lead_seconds, run_radiation, held_px_rad,
+                census=next_carry.census,
             )
+            if next_carry.census is not None:
+                refreshed_rad, census = refreshed_rad
+                next_carry = next_carry.replace(census=census)
+            px_soldn, px_lwdn, _px_cosz = refreshed_rad
             next_state, next_px_land = pleim_xiu_surface_step(
                 next_state,
                 carry.px_land,
@@ -6118,22 +7301,27 @@ def _physics_step_forcing(
             # proofs/v014/switzerland_uv_lane_decomposition).
             rublten = mynn.rublten
             rvblten = mynn.rvblten
-            pbl_theta_dry_delta = (
-                jnp.asarray(next_state.theta, jnp.float64)
-                - jnp.asarray(pbl_entry_state.theta, jnp.float64)
-            )
-            # Face-space MYNN momentum increments actually applied to the state
-            # (A2C-coupled inside _state_from_mynn_output); removed again below so
-            # the dycore integrates the SAME drag via ru/rv_tendf instead of a
-            # step-entry Euler add (WRF cadence, no double-application).
-            pbl_u_face_delta = (
-                jnp.asarray(next_state.u, jnp.float64)
-                - jnp.asarray(pbl_entry_state.u, jnp.float64)
-            )
-            pbl_v_face_delta = (
-                jnp.asarray(next_state.v, jnp.float64)
-                - jnp.asarray(pbl_entry_state.v, jnp.float64)
-            )
+            if real_glue:
+                # Removed below as entry + (post-PBL changes): exact in REAL and equal to
+                # the wide delta form (the post-PBL theta change is Sterbenz-exact).
+                pbl_after_state = next_state
+            else:
+                pbl_theta_dry_delta = (
+                    jnp.asarray(next_state.theta, jnp.float64)
+                    - jnp.asarray(pbl_entry_state.theta, jnp.float64)
+                )
+                # Face-space MYNN momentum increments actually applied to the state
+                # (A2C-coupled inside _state_from_mynn_output); removed again below so
+                # the dycore integrates the SAME drag via ru/rv_tendf instead of a
+                # step-entry Euler add (WRF cadence, no double-application).
+                pbl_u_face_delta = (
+                    jnp.asarray(next_state.u, jnp.float64)
+                    - jnp.asarray(pbl_entry_state.u, jnp.float64)
+                )
+                pbl_v_face_delta = (
+                    jnp.asarray(next_state.v, jnp.float64)
+                    - jnp.asarray(pbl_entry_state.v, jnp.float64)
+                )
         else:
             next_state = mynn_adapter(
                 next_state,
@@ -6154,10 +7342,23 @@ def _physics_step_forcing(
     # WRF applies GWDO inside the PBL driver, right after the PBL momentum
     # tendency (phys/module_pbl_driver.F). gwd_opt=1 + a per-run GWDOStatics
     # bundle activates the faithful bl_gwdo_run port; otherwise it is a no-op.
+    # B46: WRF gwdo reads the pre-PBL phy_prep state and accumulates into
+    # RUBLTEN/RVBLTEN (bl_gwdo.F90:632), integrated via ru/rv_tendf at RK cadence.
     if int(namelist.gwd_opt) == 1 and namelist.gwdo_statics is not None:
-        next_state = gwdo_adapter(
-            next_state, float(namelist.dt_s), namelist.gwdo_statics, namelist.grid
-        )
+        if rublten is not None and rvblten is not None:  # source-leaf PBL fold
+            gwd_ru, gwd_rv, dtaux3d, dtauy3d, dusfcg, dvsfcg = gwdo_tendencies(
+                pbl_entry_state, float(namelist.dt_s), namelist.gwdo_statics, namelist.grid,
+                return_diagnostics=True,
+            )
+            next_state = next_state.replace(dtaux3d=dtaux3d, dtauy3d=dtauy3d,
+                                            dusfcg=dusfcg, dvsfcg=dvsfcg)
+            rublten = jnp.asarray(rublten, glue_dtype) + jnp.asarray(gwd_ru, glue_dtype)
+            rvblten = jnp.asarray(rvblten, glue_dtype) + jnp.asarray(gwd_rv, glue_dtype)
+        else:
+            next_state = gwdo_adapter(
+                next_state, float(namelist.dt_s), namelist.gwdo_statics, namelist.grid,
+                input_state=pbl_entry_state,
+            )
 
     # --- cumulus slot ---
     if cu_opt == 6:
@@ -6193,14 +7394,21 @@ def _physics_step_forcing(
             next_state, float(namelist.dt_s), namelist.grid
         )
     elif cu_opt == 1:
-        w0avg, nca = (
-            carry.cumulus_carry if carry.cumulus_carry is not None
-            else initial_kf_carry(next_state)
-        )
-        next_state, w0avg_next, nca_next = kf_adapter(
-            next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
-        )
-        next_carry = next_carry.replace(cumulus_carry=(w0avg_next, nca_next))
+        if carry.cumulus_tendencies is not None:
+            next_state, next_carry = _kf_cadence_step(
+                next_state, next_carry, namelist,
+                1 + jnp.rint(jnp.asarray(lead_seconds) / float(namelist.dt_s)).astype(jnp.int32),
+            )
+        else:
+            w0avg, nca = (
+                carry.cumulus_carry if carry.cumulus_carry is not None
+                else initial_kf_carry(next_state)
+            )
+            next_state, w0avg_next, nca_next = kf_adapter(
+                next_state, float(namelist.dt_s), w0avg, nca, grid=namelist.grid
+            )
+            next_carry = next_carry.replace(cumulus_carry=(w0avg_next, nca_next))
+            next_carry = next_carry.replace(census=count_work(next_carry.census, "kf_calls"))
     elif cu_opt == 2:
         cldefi = (
             carry.cumulus_carry if carry.cumulus_carry is not None
@@ -6223,8 +7431,9 @@ def _physics_step_forcing(
     ra_sw = int(namelist.ra_sw_physics)
     ra_lw = int(namelist.ra_lw_physics)
     land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
-    # #91: traced (julian, utc_minute) for the solar-geometry helpers (None on the
-    # legacy host-extraction path). Date-independent HLO -> cross-date cache hit.
+    # #91/S3: traced (julian, utc_minute) + CLWRF gas anchor for the radiation
+    # helpers (None on the legacy host-extraction path). Date-independent HLO ->
+    # cross-date cache hit that also uses each date's own valid-time gases.
     rad_clock_base = _rad_clock_base(clock_base)
 
     def _sw_tendency() -> jnp.ndarray:
@@ -6315,7 +7524,21 @@ def _physics_step_forcing(
             )
         return _sw_tendency() + _lw_tendency()
 
-    if isinstance(run_radiation, bool):
+    if next_carry.radiation_diagnostics is not None:
+        held_rthraten = next_carry.rthraten
+    elif next_carry.census is not None:
+        def counted_refresh(_unused):
+            return _refresh_rthraten(None), count_work(next_carry.census, "radiation_tendency_calls")
+
+        def held_refresh(_unused):
+            return carry.rthraten, next_carry.census
+
+        if isinstance(run_radiation, bool):
+            held_rthraten, census = counted_refresh(None) if run_radiation else held_refresh(None)
+        else:
+            held_rthraten, census = jax.lax.cond(run_radiation, counted_refresh, held_refresh, None)
+        next_carry = next_carry.replace(census=census)
+    elif isinstance(run_radiation, bool):
         held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten
     else:
         held_rthraten = jax.lax.cond(
@@ -6334,71 +7557,17 @@ def _physics_step_forcing(
     # condition (rad_rk_tendf is a compile-time constant) so rad_rk_tendf=0 emits the
     # identical XLA program and the operational forecast is bit-for-bit unchanged.
     if source_leaf_mode:
-        metrics = namelist.metrics
-        mass_h = (
-            metrics.c1h[:, None, None] * next_state.mu_total[None, :, :]
-            + metrics.c2h[:, None, None]
+        dry = _source_leaf_dry_tendencies(
+            next_state.mu_total, held_rthraten, rthblten, rqvblten, rublten, rvblten,
+            before.qv, before.theta, namelist.metrics, next_state.theta.dtype, real_glue=real_glue,
         )
-        # COUPLED dry theta source d(mut*theta)/dt = mut*(RTHRATEN+RTHBLTEN);
-        # rk_addtend_dry consumes t_tendf already mass-coupled (it only re-divides
-        # by msfty).  The MYNN theta state delta is removed from the later
-        # non-dry update state below so the source is not double-applied.
-        rth_source = held_rthraten if rthblten is None else held_rthraten + rthblten
-        t_tendf_source = mass_h * rth_source
-        qv_tendf_source = (
-            jnp.zeros_like(t_tendf_source)
-            if rqvblten is None
-            else mass_h * rqvblten
-        )
-        # WRF use_theta_m=1 converts dry theta forcing to moist theta in
-        # conv_t_tendf_to_moist immediately after update_phy_ten.
-        theta_m_factor = 1.0 + _RVRD * jnp.asarray(before.qv, jnp.float64)
-        t_tendf_source = (
-            theta_m_factor * t_tendf_source
-            + _RVRD
-            * jnp.asarray(before.theta, jnp.float64)
-            / theta_m_factor
-            * qv_tendf_source
-        ).astype(next_state.theta.dtype)
-        # v0.14 venting-residual fix: WRF PBL momentum fold.  phy_tend couples the
-        # A-grid RUBLTEN/RVBLTEN with the dry column mass (module_em.F:2381,
-        # ``(c1(k)*mut+c2(k))*R?BLTEN``); update_phy_ten averages mass->face
-        # (add_a2c_u/add_a2c_v, phys/module_physics_addtendc.F) with the
-        # specified-domain edge exclusions; rk_addtend_dry later divides by
-        # msfuy/msfvx.  Without this fold the acoustic loop integrated with ZERO
-        # PBL drag (the WRF-native oracle measured the missing term at 57%/72%
-        # of ru/rv_tend, the u''/v'' -> ww/mu'' venting creator).
-        ru_tendf_source = None
-        rv_tendf_source = None
-        if rublten is not None and rvblten is not None:
-            rub_coupled = mass_h * jnp.asarray(rublten, jnp.float64)
-            rvb_coupled = mass_h * jnp.asarray(rvblten, jnp.float64)
-            nz_p, ny_p, nx_p = rub_coupled.shape
-            ru_tendf_source = jnp.zeros((nz_p, ny_p, nx_p + 1), dtype=rub_coupled.dtype)
-            # WRF add_a2c_u (specified): u faces i in [ids+1, ide-1], mass rows
-            # j in [jds+1, jde-2] -- 0-based faces 1..nx-1, rows 1..ny-2.
-            ru_tendf_source = ru_tendf_source.at[:, 1 : ny_p - 1, 1:nx_p].set(
-                0.5
-                * (
-                    rub_coupled[:, 1 : ny_p - 1, : nx_p - 1]
-                    + rub_coupled[:, 1 : ny_p - 1, 1:nx_p]
-                )
+        if pbl_after_state is not None:
+            # REAL: entry + (changes after the PBL call, e.g. KF theta); u/v return to entry.
+            next_state = next_state.replace(
+                theta=pbl_entry_state.theta + (next_state.theta - pbl_after_state.theta),
+                u=pbl_entry_state.u + (next_state.u - pbl_after_state.u),
+                v=pbl_entry_state.v + (next_state.v - pbl_after_state.v),
             )
-            rv_tendf_source = jnp.zeros((nz_p, ny_p + 1, nx_p), dtype=rvb_coupled.dtype)
-            # WRF add_a2c_v (specified): v faces j in [jds+1, jde-1], mass cols
-            # i in [ids+1, ide-2] -- 0-based faces 1..ny-1, cols 1..nx-2.
-            rv_tendf_source = rv_tendf_source.at[:, 1:ny_p, 1 : nx_p - 1].set(
-                0.5
-                * (
-                    rvb_coupled[:, : ny_p - 1, 1 : nx_p - 1]
-                    + rvb_coupled[:, 1:ny_p, 1 : nx_p - 1]
-                )
-            )
-        dry = DryPhysicsTendencies(
-            t_tendf=t_tendf_source,
-            ru_tendf=ru_tendf_source,
-            rv_tendf=rv_tendf_source,
-        )
         if pbl_theta_dry_delta is not None:
             next_state = next_state.replace(
                 theta=(
@@ -6476,6 +7645,34 @@ def _physics_boundary_step_with_limiter_diagnostics(
     | FirstIntervalStepResult
     | FirstIntervalLadderStepResult
 ):
+    from gpuwrf.diagnostics.census import (
+        count_boundary_guards, count_dynamics_guards, count_work,
+        observe_f2_state, count_water_repair, guard_dry_mass_kg,
+    )
+
+    lower_fields = None
+    if namelist.lower_boundary is not None:
+        from gpuwrf.io.lower_boundary import lower_boundary_fields
+        lower_boundary = getattr(clock_base, "lower_boundary", None)
+        if lower_boundary is None:
+            lower_boundary = namelist.lower_boundary
+        lower_fields = lower_boundary_fields(lower_boundary, step_index - 1)
+        if getattr(clock_base, "noahmp_tbot", None) is not None:
+            # The batched lane's dynamic static-view takes precedence over the
+            # namelist holder; refresh that view's VEGFRA operand too.
+            clock_base = clock_base._replace(
+                noahmp_shdfac=lower_fields["VEGFRA"].astype(clock_base.noahmp_shdfac.dtype) / 100.0
+            )
+        if namelist.noahmp_static is not None:
+            # A local dynamic view, before physics: VEGFRA is a prescribed
+            # auxinput4 field (percent); Noah-MP receives SHDFAC in [0,1].
+            namelist = dataclass_replace(
+                namelist,
+                noahmp_static=namelist.noahmp_static.replace(
+                    shdfac=lower_fields["VEGFRA"].astype(namelist.noahmp_static.shdfac.dtype) / 100.0
+                ),
+            )
+
     if bool(capture_rca) and bool(capture_phase_tap):
         raise ValueError("RCA and phase-tap captures are mutually exclusive")
     if bool(capture_first_interval) and (bool(capture_rca) or bool(capture_phase_tap)):
@@ -6483,15 +7680,18 @@ def _physics_boundary_step_with_limiter_diagnostics(
     if bool(capture_ladder) and (bool(capture_rca) or bool(capture_phase_tap)):
         raise ValueError("ladder capture is mutually exclusive with RCA/phase-tap")
     physical_origin = carry.state
+    carry = carry.replace(census=observe_f2_state(
+        carry.census, "step_entry", physical_origin, step_index))
     state_health = [_rca_state_health(physical_origin)] if capture_rca else None
     state_target = [_rca_state_target(physical_origin)] if capture_rca else None
     boundary_health = _rca_boundary_health(physical_origin) if capture_rca else None
-    # Forecast clock for this step (traced scalar). Hoisted above the dycore so the
-    # in-acoustic-loop NORMAL-momentum boundary targets are interpolated at the
-    # step-start lead (matching WRF, which fixes ru_tend/rv_tend at the step start);
-    # also reused below by rrtmg + the end-of-step lateral boundary nudge.
+    # Preserve the existing endpoint clock for boundary/dycore interpolation.
+    # Physics has its own step-entry clock below; frozen nests separately select
+    # the boundary-package endpoint.
     lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
     boundary_lead_seconds = lead_seconds
+    # domain_tree dispatches steps1..N; physics sees the start of this step.
+    physics_lead_seconds = (step_index.astype(jnp.float64) - 1.0) * float(namelist.dt_s)
     if _nested_frozen_wrf_boundary_active(namelist):
         boundary_lead_seconds = nested_boundary_package_endpoint_seconds(
             step_index,
@@ -6502,20 +7702,22 @@ def _physics_boundary_step_with_limiter_diagnostics(
         physics_forcing, first_interval_record = _physics_step_forcing(
             carry,
             namelist,
-            lead_seconds,
+            physics_lead_seconds,
             run_radiation=run_radiation,
             first_timestep=jnp.equal(step_index, 1),
             clock_base=clock_base,
             capture_first_interval=True,
+            lower_fields=lower_fields,
         )
     else:
         physics_forcing = _physics_step_forcing(
             carry,
             namelist,
-            lead_seconds,
+            physics_lead_seconds,
             run_radiation=run_radiation,
             first_timestep=jnp.equal(step_index, 1),
             clock_base=clock_base,
+            lower_fields=lower_fields,
         )
         first_interval_record = None
     if capture_rca:
@@ -6549,17 +7751,46 @@ def _physics_boundary_step_with_limiter_diagnostics(
     else:
         carry = rk_result
     next_state = carry.state
+    carry = carry.replace(census=observe_f2_state(
+        carry.census, "post_rk", next_state, step_index))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
     if bool(physics_forcing.enabled):
         next_state = _apply_physics_non_dry_updates(next_state, physical_origin, physics_forcing.state)
         carry = carry.replace(state=next_state)
+    if _microphysics_wrf_order_enabled():
+        pre_microphysics_theta = next_state.theta
+        if carry.noahmp_precipitation is not None:
+            next_state, precip = _apply_post_rk_microphysics(next_state, namelist, return_precipitation=True)
+            from gpuwrf.runtime.noahmp_precipitation import precipitation_from_step
+            rates = carry.cumulus_tendencies
+            convective_rate = jnp.zeros_like(next_state.t_skin) if rates is None else rates[6]
+            carry = carry.replace(noahmp_precipitation=precipitation_from_step(
+                precip, convective_rate, float(namelist.dt_s),
+                spec_zone=_microphysics_spec_zone(namelist)))
+        else:
+            next_state = _apply_post_rk_microphysics(next_state, namelist)
+        carry = carry.replace(state=next_state)
+        if carry.h_diabatic is not None:
+            # moist_physics_finish_em (use_theta_m=1): h_diabatic*dt is exactly the
+            # theta_m increment of the microphysics call (:5735-5741).
+            carry = carry.replace(h_diabatic=(
+                (next_state.theta - pre_microphysics_theta) / float(namelist.dt_s)
+            ).astype(carry.h_diabatic.dtype))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
     limiter_diagnostics = _empty_theta_limiter_diagnostics(next_state.theta)
+    # Census observes the guard candidates whether or not the guards repair them.
+    carry = carry.replace(census=observe_f2_state(
+        carry.census, "pre_dynamics_guard", next_state, step_index))
+    carry = carry.replace(census=count_dynamics_guards(
+        carry.census, next_state, theta_min=_THETA_LIMITER_MIN_K,
+        theta_max=_THETA_LIMITER_MAX_K,
+    ))
     if not bool(namelist.disable_guards):
+        guard_before = next_state
         next_state, limiter_diagnostics = _limit_guarded_dynamics_state_with_diagnostics(next_state, physical_origin)
         next_state = next_state.replace(
             qv=_valid_mixing_ratio(next_state.qv, physical_origin.qv),
@@ -6569,6 +7800,10 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
+        if carry.census is not None and carry.census.water_changes is not None:
+            carry = carry.replace(census=count_water_repair(
+                carry.census, "dynamics", guard_before, next_state,
+                guard_dry_mass_kg(next_state, namelist)))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
@@ -6588,7 +7823,13 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 _specified_bdy_cadence_active(namelist)
                 or _nested_frozen_wrf_boundary_active(namelist)
             ),
+            # Guards-disabled (strict) runs keep WRF's unclamped moist/scalar
+            # boundary result; census then observes the true values.
+            positivity_floor=not bool(namelist.disable_guards),
         )
+        carry = carry.replace(census=observe_f2_state(
+            carry.census, "pre_boundary_guard", bounded, step_index))
+        carry = carry.replace(census=count_boundary_guards(carry.census, bounded))
         if bool(namelist.disable_guards):
             next_state = bounded
         else:
@@ -6606,6 +7847,10 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
             )
             next_state = _limit_guarded_mass_state(next_state, physical_origin)
+            if carry.census is not None and carry.census.water_changes is not None:
+                carry = carry.replace(census=count_water_repair(
+                    carry.census, "boundary", bounded, next_state,
+                    guard_dry_mass_kg(next_state, namelist)))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
@@ -6616,6 +7861,7 @@ def _physics_boundary_step_with_limiter_diagnostics(
         base_state=carry.base_state,
     )
     final_carry = _maybe_exchange_sharded_carry_halos(carry.replace(state=next_state))
+    final_carry = final_carry.replace(census=count_work(final_carry.census, "steps"))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
@@ -6679,6 +7925,28 @@ def _physics_boundary_step(
         debug=debug,
         clock_base=clock_base,
     )
+    if os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1":
+        # Native RK scratch is REAL32; the retained scan carries its input ABI.
+        # Widen after all native arithmetic so each computed value stays exact.
+        scratch = ("t_2ave", "ww", "u_save", "v_save", "w_save", "t_save", "ww_save")
+        next_carry = next_carry.replace(**{
+            name: getattr(next_carry, name).astype(getattr(carry, name).dtype)
+            for name in scratch
+        })
+    if os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1":
+        from gpuwrf.kernels.dyn_carry_fp32 import (
+            REAL_ALL_CARRY_FIELDS, SCRATCH_REAL_FIELDS, like, real_all_enabled,
+        )
+        next_carry = next_carry.replace(**{
+            name: jnp.asarray(getattr(next_carry, name), dtype=getattr(carry, name).dtype)
+            for name in SCRATCH_REAL_FIELDS
+        })
+        if real_all_enabled():
+            # Held radiation / KF leaves keep their seeded REAL dtype across the step.
+            next_carry = next_carry.replace(**{
+                name: like(getattr(next_carry, name), getattr(carry, name))
+                for name in REAL_ALL_CARRY_FIELDS
+            })
     return next_carry
 
 
@@ -6843,6 +8111,23 @@ class M9Diagnostics(NamedTuple):
 _M9_RRTMG_COLUMN_TILE_COLS = 512
 
 
+def _history_pblh(state: State, grid) -> jax.Array:
+    """PBLH for in-step history output: the in-step MYNN value once State carries it.
+
+    Until then this is the existing post-step MYNN diagnosis (same calls as
+    ``surface_layer_diagnostics``) without the surface-layer re-solve.
+    """
+    if "pblh" in State.__slots__:
+        return state.pblh
+    from gpuwrf.coupling.physics_couplers import (  # noqa: PLC0415
+        _mynn_column_from_state,
+        _mynn_pblh_for_output,
+        _surface_fluxes_from_state,
+    )
+
+    return _mynn_pblh_for_output(_mynn_column_from_state(state, grid), _surface_fluxes_from_state(state))
+
+
 def _psfc_from_state(state: State, metrics: DycoreMetrics) -> jax.Array:
     """Surface pressure (Pa) = WRF runtime PSFC = moist hydrostatic p_hyd_w(kts).
 
@@ -6899,8 +8184,16 @@ def compute_m9_diagnostics(
     noahmp_rad=None,
     noahclassic_land=None,
     clock_base=None,
+    radiation_diagnostics=None,
+    surface_diagnostics=None,
+    history_diagnostics=None,
+    _with_radiation_count: bool = False,
 ) -> M9Diagnostics:
     """Recompute the M9 surface map from a post-step State (side-channel only).
+
+    ``history_diagnostics`` (carry.history_diagnostics, GPUWRF_HISTORY_INSTEP_DIAG)
+    replaces the post-step surface re-solve: HFX/LH/T2/U10/V10/PSFC are the last
+    step's in-step values and TSK is ``state.t_skin``, as WRF writes them.
 
     When Noah-MP is activated (``namelist.use_noahmp`` and ``noahmp_land`` given),
     the LAND HFX/LH/TSK and the 2-m T2 are read back from the prognostic Noah-MP
@@ -6911,24 +8204,42 @@ def compute_m9_diagnostics(
     U10/V10 come from the bulk surface layer, which already uses the Noah-MP skin
     temperature (in ``state.t_skin``) as its BC.
     """
-    surf = surface_layer_diagnostics(state, namelist.grid)
-    radiation_land = noahmp_land if bool(namelist.use_noahmp) else None
-    rad = rrtmg_radiation_diagnostics(
-        state,
-        namelist.grid,
-        time_utc=namelist.time_utc,
-        lead_seconds=lead_seconds,
-        clock_base=_rad_clock_base(clock_base),
-        radiation_static=namelist.radiation_static,
-        topo_shading=int(namelist.topo_shading),
-        slope_rad=int(namelist.slope_rad),
-        shadow_length_m=float(namelist.topo_shadow_length_m),
-        land_state=radiation_land,
-        column_tile_cols=_M9_RRTMG_COLUMN_TILE_COLS,
-        _m9_flux_slices_only=True,
+    # Full-output callers also need the Q2 lookup on this same surface result.
+    # Reuse it without changing the eager arithmetic or its fusion boundaries.
+    history = history_diagnostics
+    surf = (
+        None
+        if history is not None
+        else surface_diagnostics
+        if surface_diagnostics is not None
+        else surface_layer_diagnostics(state, namelist.grid)
     )
-    hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
-    if bool(namelist.use_noahmp) and noahmp_land is not None:
+    radiation_land = noahmp_land if bool(namelist.use_noahmp) else None
+    rad = radiation_diagnostics
+    radiation_calls = 0
+    if rad is None:
+        rad = rrtmg_radiation_diagnostics(
+            state,
+            namelist.grid,
+            time_utc=namelist.time_utc,
+            lead_seconds=lead_seconds,
+            clock_base=_rad_clock_base(clock_base),
+            radiation_static=namelist.radiation_static,
+            topo_shading=int(namelist.topo_shading),
+            slope_rad=int(namelist.slope_rad),
+            shadow_length_m=float(namelist.topo_shadow_length_m),
+            land_state=radiation_land,
+            column_tile_cols=_M9_RRTMG_COLUMN_TILE_COLS,
+            _m9_flux_slices_only=True,
+        )
+        # This output solve executed; return its count with the live diagnostics.
+        radiation_calls += 1
+    if history is not None:
+        hfx = state.hfx if history.hfx is None else history.hfx
+        lh, tsk, t2 = history.lh, state.t_skin, history.t2
+    else:
+        hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
+    if history is None and bool(namelist.use_noahmp) and noahmp_land is not None:
         clock = (
             _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
             if clock_base is not None
@@ -6945,11 +8256,11 @@ def compute_m9_diagnostics(
         # overwrite WRF performs — module_surface_driver.F:3469-3473), replacing
         # the surface-layer MYNN 2-m value over land. Water keeps surf.t2.
         hfx, lh, tsk, t2 = overlay_noahmp_land_diagnostics(
-            state, noahmp_land, namelist.noahmp_static, surf.hfx, surf.lh, state.t_skin,
+            state, noahmp_land, _lane_noahmp_static(namelist, clock_base), surf.hfx, surf.lh, state.t_skin,
             float(namelist.dt_s), bulk_t2=surf.t2, radiation=radiation, clock=clock,
             energy_params=ep, rad_params=rp,
         )
-    elif _explicit_noahclassic(namelist) and noahclassic_land is not None:
+    elif history is None and _explicit_noahclassic(namelist) and noahclassic_land is not None:
         hfx, lh, tsk = overlay_noahclassic_land_diagnostics(
             state, noahclassic_land, surf.hfx, surf.lh, state.t_skin
         )
@@ -6986,17 +8297,17 @@ def compute_m9_diagnostics(
     lwupb = rad.glw_up if lw_enabled else jnp.zeros_like(rad.glw_up)
     lwdnt = rad.lw_toa_down if lw_enabled else jnp.zeros_like(rad.lw_toa_down)
     lwupt = rad.lw_toa_up if lw_enabled else jnp.zeros_like(rad.lw_toa_up)
-    return M9Diagnostics(
+    diag = M9Diagnostics(
         swdown=swdown_out,
         glw=glw_out,
         hfx=hfx,
         lh=lh,
-        pblh=surf.pblh,
+        pblh=surf.pblh if history is None else _history_pblh(state, namelist.grid),
         tsk=tsk,
         t2=t2,
-        u10=surf.u10,
-        v10=surf.v10,
-        psfc=_psfc_from_state(state, namelist.metrics),
+        u10=surf.u10 if history is None else history.u10,
+        v10=surf.v10 if history is None else history.v10,
+        psfc=_psfc_from_state(state, namelist.metrics) if history is None else history.psfc,
         # B1: RRTMG all-sky up/down flux slices, straight from the radiation
         # diagnostics (no held-radiation override -- these are the instantaneous
         # output-cadence fluxes, consistent with the SWDOWN/GLW recompute path).
@@ -7014,8 +8325,10 @@ def compute_m9_diagnostics(
         coszen=rad.coszen,
     )
 
+    return (diag, radiation_calls) if _with_radiation_count else diag
 
-@partial(jax.jit, static_argnames=("attrs",))
+
+@partial(jax.jit, static_argnames=("attrs", "_with_radiation_count"))
 def compute_m9_selected_diagnostics(
     state: State,
     namelist: OperationalNamelist,
@@ -7026,6 +8339,8 @@ def compute_m9_selected_diagnostics(
     noahmp_land=None,
     noahmp_rad=None,
     noahclassic_land=None,
+    radiation_diagnostics=None,
+    _with_radiation_count: bool = False,
 ) -> tuple[jax.Array, ...]:
     """Compute only selected M9 leaves so output-subset HLO can DCE the rest."""
 
@@ -7037,7 +8352,12 @@ def compute_m9_selected_diagnostics(
         noahmp_rad=noahmp_rad,
         noahclassic_land=noahclassic_land,
         clock_base=clock_base,
+        radiation_diagnostics=radiation_diagnostics,
+        _with_radiation_count=_with_radiation_count,
     )
+    if _with_radiation_count:
+        diag, radiation_calls = diag
+        return tuple(getattr(diag, attr) for attr in attrs), radiation_calls
     return tuple(getattr(diag, attr) for attr in attrs)
 
 
@@ -7064,7 +8384,7 @@ def _advance_chunk_fori(
 ) -> OperationalCarry:
     """Advance one output interval as a SINGLE compiled loop (no diagnostics).
 
-    Radiation is gated by the traced ``step_index %% cadence == 0`` predicate via
+    Radiation is gated by the traced ``(step_index - 1) %% cadence == 0`` predicate via
     ``_physics_boundary_step``'s cond path, so this is byte-identical to the
     production per-step cadence.  ``start_step``, ``n_steps``, and the explicit
     ``cadence`` argument are TRACED scalars, so interval-length/cadence variation at
@@ -7076,11 +8396,17 @@ def _advance_chunk_fori(
     start_step = jnp.asarray(start_step, dtype=jnp.int32)
     n_steps = jnp.asarray(n_steps, dtype=jnp.int32)
     cadence = jnp.asarray(cadence, dtype=jnp.int32)
+    if (os.environ.get("GPUWRF_DYN_METRICS_FP32", "0") == "1"
+            and os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1"):
+        # WRF stores grid metrics as REAL; cast once per call (outside the loop)
+        # so mixed REAL-carry glue no longer promotes to fp64.
+        from gpuwrf.kernels.dyn_rk_fp32 import real_metrics
+        namelist = dataclass_replace(namelist, metrics=real_metrics(namelist.metrics))
 
     def body(offset, scan_carry: OperationalCarry):
         step_index = start_step + offset
         if run_physics:
-            run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+            run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
         else:
             run_radiation = False
         return _physics_boundary_step(
@@ -7088,12 +8414,59 @@ def _advance_chunk_fori(
             debug=False, clock_base=clock_base,
         )
 
-    return jax.lax.fori_loop(
-        jnp.asarray(0, dtype=jnp.int32),
-        n_steps,
-        body,
-        carry,
-    )
+    from gpuwrf.kernels.ring_select import nested_step
+
+    with nested_step(_acoustic_lateral_bc_flags(namelist)[2]):  # ring-scatter layout pin (nested only)
+        return jax.lax.fori_loop(
+            jnp.asarray(0, dtype=jnp.int32),
+            n_steps,
+            body,
+            carry,
+        )
+
+
+# Resolved at import (registered in aot_cheap_key.IMPORT_TIME_ENV_CONSTANTS).
+_CARRY_DONATE = os.environ.get("GPUWRF_CARRY_DONATE", "0") == "1"
+if _CARRY_DONATE:
+    # Default-off: donate the carry so the step loop reuses the input buffers
+    # instead of copying every non-donated parameter per call. Callers must not
+    # read a pre-advance carry afterwards (misuse raises "Array has been deleted").
+    _advance_chunk_fori = jax.jit(_advance_chunk_fori.__wrapped__, donate_argnums=(0,))
+
+
+def _donation_buffer_key(leaf: Any) -> Any:
+    try:
+        return leaf.unsafe_buffer_pointer()
+    except Exception:  # noqa: BLE001 - deleted or multi-device: fall back to identity
+        return ("id", id(leaf))
+
+
+def unalias_donated_carry(carry: Any, *, seen: set | None = None, by_buffer: bool = False) -> Any:
+    """Give every carry buffer one owner before a donating advance.
+
+    The initial carry holds some State arrays at two positions, and PjRt refuses
+    "Attempt to donate the same buffer twice" (dispatch D13). Repeats are copied
+    once. ``by_buffer`` also catches distinct arrays that share one buffer (a
+    device_put of an uncommitted array is a committed alias); it costs a pointer
+    query per leaf, so callers use it only where carries enter a run (``seen``
+    shared across domains). Executable outputs are distinct buffers.
+    """
+    if not _CARRY_DONATE:
+        return carry
+    leaves, treedef = jax.tree_util.tree_flatten(carry)
+    if any(isinstance(leaf, jax.core.Tracer) for leaf in leaves):
+        return carry  # inside a trace (vmapped lanes): donation applies only at top-level dispatch
+    seen = set() if seen is None else seen
+    repeated = False
+    for index, leaf in enumerate(leaves):
+        if isinstance(leaf, jax.Array):
+            key = _donation_buffer_key(leaf) if by_buffer else id(leaf)
+            if key in seen:
+                leaves[index] = jnp.copy(leaf)
+                repeated = True
+            else:
+                seen.add(key)
+    return jax.tree_util.tree_unflatten(treedef, leaves) if repeated else carry
 
 
 @partial(jax.jit, static_argnames=("n_steps", "cadence"))
@@ -7114,7 +8487,7 @@ def _advance_chunk_static_scan(
 
     def body(scan_carry: OperationalCarry, step_index):
         if run_physics:
-            run_radiation = jnp.equal(jnp.mod(step_index, int(cadence)), 0)
+            run_radiation = jnp.equal(jnp.mod(step_index - 1, int(cadence)), 0)
         else:
             run_radiation = False
         next_carry = _physics_boundary_step(
@@ -7144,6 +8517,8 @@ def _advance_chunk(
     keeps the legacy host-extraction-from-``namelist.time_utc`` behaviour.
     """
 
+    # Every runner reaches the donating jit through here (single-domain loops, tree fallbacks).
+    carry = unalias_donated_carry(carry, by_buffer=True)
     mode = _advance_chunk_loop_mode()
     if mode in {"scan", "static_scan", "static-scan"}:
         return _advance_chunk_static_scan(
@@ -7173,7 +8548,7 @@ def advance_one_step_with_corrected_ni_phase_tap(
     step_index = jnp.asarray(step_index, dtype=jnp.int32)
     cadence = jnp.asarray(cadence, dtype=jnp.int32)
     if bool(namelist.run_physics):
-        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+        run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
     else:
         run_radiation = False
     return _physics_boundary_step_with_phase_tap(
@@ -7206,7 +8581,7 @@ def advance_one_step_with_first_interval_capture(
     step_index = jnp.asarray(step_index, dtype=jnp.int32)
     cadence = jnp.asarray(cadence, dtype=jnp.int32)
     if bool(namelist.run_physics):
-        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+        run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
     else:
         run_radiation = False
     return _physics_boundary_step_with_first_interval(
@@ -7262,7 +8637,7 @@ def advance_one_step_with_first_interval_ladder(
     step_index = jnp.asarray(step_index, dtype=jnp.int32)
     cadence = jnp.asarray(cadence, dtype=jnp.int32)
     if bool(namelist.run_physics):
-        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+        run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
     else:
         run_radiation = False
     return _physics_boundary_step_with_first_interval_ladder(
@@ -7292,7 +8667,7 @@ def advance_chunk_with_corrected_ni_rca(
 
     def body(scan_carry: OperationalCarry, step_index):
         if run_physics:
-            run_radiation = jnp.equal(jnp.mod(step_index, int(cadence)), 0)
+            run_radiation = jnp.equal(jnp.mod(step_index - 1, int(cadence)), 0)
         else:
             run_radiation = False
         result = _physics_boundary_step_with_rca(
@@ -7415,22 +8790,244 @@ def run_forecast_operational_with_m9_diagnostics(
     return carry.state, all_diags
 
 
-def run_forecast_operational(state: State, namelist: OperationalNamelist, hours: float) -> State:
-    """Run an operational forecast as one compiled, device-resident scan.
+def _m0_evidence_config_from_env() -> dict[str, object]:
+    """Validate the private M0 evidence envelope before integration starts."""
 
-    Thin donate-safety wrapper over the jitted body. The jitted body donates
-    ``state`` (``donate_argnums=(0,)``) for peak-memory reuse, which requires every
-    State leaf to back a UNIQUE device buffer. Real cases built with the
-    transitional legacy aliases (``State.replace(p=p_total, ...)``) carry
-    buffer-aliased leaves; ``_dealias_pytree_buffers`` rebinds any duplicate to a
-    distinct buffer here -- BEFORE the donate boundary -- so the donate path can
-    never raise "Attempt to donate the same buffer twice". Numerically identical:
-    de-aliasing only copies a shared buffer, it changes no value or dtype.
+    import re
+    from pathlib import Path
+
+    required = {
+        "sidecar_path": _M0_EVIDENCE_PATH,
+        "run_id": _M0_EVIDENCE_RUN_ID,
+        "source_sha256": _M0_EVIDENCE_SOURCE_SHA256,
+        "config_sha256": _M0_EVIDENCE_CONFIG_SHA256,
+        "input_manifest_sha256": _M0_EVIDENCE_INPUT_SHA256,
+        "device_uuid": _M0_EVIDENCE_DEVICE_UUID,
+    }
+    values: dict[str, str] = {}
+    for field, variable in required.items():
+        value = os.environ.get(variable)
+        if value is None or not value.strip():
+            raise RuntimeError(
+                f"{_M0_EVIDENCE_FLAG}=1 requires non-empty {variable}"
+            )
+        values[field] = value.strip()
+
+    if not re.fullmatch(_M0_EVIDENCE_RUN_ID_PATTERN, values["run_id"]):
+        raise RuntimeError(
+            f"{_M0_EVIDENCE_RUN_ID} must be 8-128 filename-safe characters"
+        )
+    for field in ("source_sha256", "config_sha256", "input_manifest_sha256"):
+        if not re.fullmatch(_M0_EVIDENCE_SHA256_PATTERN, values[field]):
+            raise RuntimeError(
+                f"{required[field]} must be a lowercase full SHA-256 digest"
+            )
+    if not re.fullmatch(_M0_EVIDENCE_DEVICE_UUID_PATTERN, values["device_uuid"]):
+        raise RuntimeError(
+            f"{_M0_EVIDENCE_DEVICE_UUID} must be a full GPU- UUID"
+        )
+
+    sidecar_path = Path(values.pop("sidecar_path"))
+    if not sidecar_path.is_absolute():
+        raise RuntimeError(f"{_M0_EVIDENCE_PATH} must be an absolute path")
+    if not sidecar_path.parent.is_dir():
+        raise RuntimeError(
+            f"{_M0_EVIDENCE_PATH} parent must already exist: {sidecar_path.parent}"
+        )
+    if os.path.lexists(sidecar_path):
+        raise RuntimeError(
+            f"refusing to overwrite existing M0 evidence sidecar: {sidecar_path}"
+        )
+    return {"sidecar_path": sidecar_path, **values}
+
+
+def _m0_evidence_allocator_stats(result: State) -> dict[str, object]:
+    """Read allocator peaks through a result leaf's already-active device."""
+
+    device = None
+    for leaf in jax.tree_util.tree_leaves(result):
+        candidate = getattr(leaf, "device", None)
+        if candidate is None:
+            continue
+        device = candidate() if callable(candidate) else candidate
+        break
+    if device is None:
+        raise RuntimeError(
+            "M0 evidence could not identify the forecast result's existing device"
+        )
+
+    memory_stats = getattr(device, "memory_stats", None)
+    if not callable(memory_stats):
+        raise RuntimeError(
+            "the forecast result's existing device does not expose memory_stats()"
+        )
+    stats = memory_stats()
+    if not isinstance(stats, dict):
+        raise RuntimeError("forecast allocator memory_stats() returned no mapping")
+
+    peaks: dict[str, int] = {}
+    for key in ("peak_bytes_in_use", "peak_bytes_reserved"):
+        value = stats.get(key)
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise RuntimeError(f"forecast allocator statistic {key} is missing")
+        integer = int(value)
+        if integer < 0:
+            raise RuntimeError(f"forecast allocator statistic {key} is invalid")
+        peaks[key] = integer
+    if peaks["peak_bytes_reserved"] < peaks["peak_bytes_in_use"]:
+        raise RuntimeError(
+            "forecast allocator peak_bytes_reserved is below peak_bytes_in_use"
+        )
+
+    local_ordinal = getattr(device, "id", None)
+    if callable(local_ordinal):
+        local_ordinal = local_ordinal()
+    platform = getattr(device, "platform", None)
+    if not isinstance(platform, str) or not platform:
+        raise RuntimeError("forecast result device platform is missing")
+    if (
+        isinstance(local_ordinal, bool)
+        or not isinstance(local_ordinal, (int, str, type(None)))
+    ):
+        raise RuntimeError("forecast result device local ordinal is invalid")
+    return {
+        **peaks,
+        "device_platform": platform,
+        "device_local_ordinal": local_ordinal,
+    }
+
+
+def _m0_evidence_atomic_json(path, payload: dict[str, object]) -> None:
+    """Publish a complete sidecar atomically and without replacing prior evidence."""
+
+    import json
+    import tempfile
+    from pathlib import Path
+
+    fd, temporary = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary_path = Path(temporary)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary_path, path)
+        directory_fd = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def _m0_evidence_run(
+    state: State,
+    namelist: OperationalNamelist,
+    hours: float,
+) -> State:
+    """Run one whole integration range and emit same-process allocator evidence."""
+
+    import time
+    from datetime import datetime, timezone
+
+    evidence = _m0_evidence_config_from_env()
+    prepared_state = _dealias_pytree_buffers(state)
+    started_ns = time.monotonic_ns()
+    started_utc = datetime.now(timezone.utc).isoformat()
+    # ADR-038: the evidence range must wrap the entry the product actually runs
+    # -- run_forecast_operational_segmented with the SAME segment-length
+    # resolution and positivity guard as the default-off dispatch in
+    # run_forecast_operational -- not the retired monolithic escape hatch
+    # (GPUWRF_FORECAST_ENTRY=monolithic), which misses the frozen cold-compile
+    # gate. Enabled-vs-default numerical identity therefore holds by
+    # construction: both paths run the identical default entry.
+    seg = int(os.environ.get("GPUWRF_FORECAST_SEGMENT_STEPS", "34"))
+    if seg <= 0:
+        raise RuntimeError("GPUWRF_FORECAST_SEGMENT_STEPS must be positive")
+    with jax.profiler.TraceAnnotation(_M0_EVIDENCE_RANGE):
+        result = run_forecast_operational_segmented(
+            prepared_state, namelist, hours, segment_steps=seg
+        )
+        jax.block_until_ready(result)
+    finished_ns = time.monotonic_ns()
+    finished_utc = datetime.now(timezone.utc).isoformat()
+
+    allocator = _m0_evidence_allocator_stats(result)
+    payload = {
+        "schema": _M0_EVIDENCE_SCHEMA,
+        "emitter_process_role": "forecast_process",
+        "instrumentation": {
+            "enabled": True,
+            "opt_in_environment": f"{_M0_EVIDENCE_FLAG}=1",
+            "default_when_unset": "original-direct-call-no-range-no-sidecar",
+            "range_name": _M0_EVIDENCE_RANGE,
+            "range_scope": "full-forecast-integration",
+            "final_synchronization": "jax.block_until_ready(result)",
+            "allocator_read": "after-range-on-result-device",
+        },
+        "run_id": evidence["run_id"],
+        "forecast_pid": os.getpid(),
+        "source_sha256": evidence["source_sha256"],
+        "config_sha256": evidence["config_sha256"],
+        "input_manifest_sha256": evidence["input_manifest_sha256"],
+        "device_uuid": evidence["device_uuid"],
+        "measurement_start_ns": started_ns,
+        "measurement_end_ns": finished_ns,
+        "measurement_start_utc": started_utc,
+        "measurement_end_utc": finished_utc,
+        **allocator,
+    }
+    _m0_evidence_atomic_json(evidence["sidecar_path"], payload)
+    return result
+
+
+def run_forecast_operational(state: State, namelist: OperationalNamelist, hours: float) -> State:
+    """Run an operational forecast on the compile-bounded default entry (ADR-038).
+
+    Default entry is ``run_forecast_operational_segmented`` with ``segment_steps=34``:
+    compile O(one segment body) instead of O(whole forecast), bitwise-identical
+    seg-vs-seg, round-off-class vs the monolithic entry (cond-vs-direct RRTMG fusion,
+    ADR-038/R6), warm cost ~2%, peak RSS 20.6 -> 8.3 GiB on the FAST arm. The
+    monolithic whole-forecast jit remains available as an explicit escape hatch
+    (``GPUWRF_FORECAST_ENTRY=monolithic``); it violates the frozen FAST cold `<=600 s`
+    (872.8 s uncapped) and cached `<=60 s` (101.7 s) product gates.
+
+    Donate-safety is preserved on both entries: the jitted monolithic body donates
+    ``state`` (``donate_argnums=(0,)``), which requires every State leaf to back a
+    UNIQUE device buffer; ``_dealias_pytree_buffers`` rebinds duplicate buffers BEFORE
+    the boundary (numerically identical: de-aliasing only copies a shared buffer).
+
+    ``GPUWRF_FORECAST_SEGMENT_STEPS`` overrides the default segment length (positive
+    integer; every equal-length segment reuses ONE compiled executable).
     """
 
     _assert_nonzero_initial_mu_total(state)
     state = _operational_scan_state(state, namelist)
-    return _run_forecast_operational_jit(_dealias_pytree_buffers(state), namelist, hours)
+    entry = os.environ.get("GPUWRF_FORECAST_ENTRY", "segmented").strip().lower()
+    if entry not in ("segmented", "monolithic"):
+        raise RuntimeError(
+            "GPUWRF_FORECAST_ENTRY must be 'segmented' (default, ADR-038) or "
+            f"'monolithic', got {entry!r}"
+        )
+    evidence_flag = os.environ.get(_M0_EVIDENCE_FLAG)
+    if evidence_flag is None:
+        if entry == "segmented":
+            seg = int(os.environ.get("GPUWRF_FORECAST_SEGMENT_STEPS", "34"))
+            if seg <= 0:
+                raise RuntimeError("GPUWRF_FORECAST_SEGMENT_STEPS must be positive")
+            return run_forecast_operational_segmented(
+                _dealias_pytree_buffers(state), namelist, hours, segment_steps=seg
+            )
+        return _run_forecast_operational_jit(_dealias_pytree_buffers(state), namelist, hours)
+    if evidence_flag != "1":
+        raise RuntimeError(
+            f"{_M0_EVIDENCE_FLAG} must be unset (default-off) or exactly '1'"
+        )
+    return _m0_evidence_run(state, namelist, hours)
 
 
 def dfi_initialize_operational_state(
@@ -7518,7 +9115,7 @@ def _run_forecast_operational_jit(state: State, namelist: OperationalNamelist, h
     carry = initial
     step = 1
     while step <= steps:
-        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        next_radiation = 1 + ((step + cadence - 2) // cadence) * cadence
         if bool(namelist.run_physics) and next_radiation <= steps:
             non_radiation_steps = next_radiation - step
             if non_radiation_steps:
@@ -7577,7 +9174,7 @@ def run_forecast_operational_segmented(
 
     Equivalence.  Global step indices run ``1..steps`` exactly as in
     ``run_forecast_operational_single_scan`` and ``run_forecast_operational``; the
-    in-segment radiation gate is the SAME traced ``step_index %% cadence == 0``
+    in-segment radiation gate is the SAME traced ``(step_index - 1) %% cadence == 0``
     predicate.  Because the segments are contiguous in the global step index, RRTMG
     fires on exactly the same global steps as the single scan, so the result is
     BITWISE identical to the single scan and round-off identical to the validated
@@ -7603,22 +9200,38 @@ def run_forecast_operational_segmented(
     carry = _committed_initial_carry_for_run(state, namelist)
     steps = _steps_for_hours(hours, float(namelist.dt_s))
 
+    # Sync cadence: ``GPUWRF_SEGMENT_SYNC_EVERY`` (default 1 = sync after every
+    # segment, the historical behaviour) blocks only every K-th segment instead.
+    # Pure scheduling: device work and op ordering are unchanged, so outputs are
+    # bitwise identical for any K; a larger K lets the host enqueue segment N+1
+    # while segment N still executes, hiding launch gaps, at the cost of more
+    # in-flight segment working sets (K in flight instead of one).  The final
+    # segment always syncs so the returned state is materialized.
+    sync_every = int(os.environ.get("GPUWRF_SEGMENT_SYNC_EVERY", "1") or "1")
+    if sync_every <= 0:
+        raise ValueError("GPUWRF_SEGMENT_SYNC_EVERY must be a positive integer")
+
     # Host loop over contiguous fixed-length segments covering global steps 1..steps.
     # Every full segment has identical static ``n_steps`` so it reuses ONE compiled
     # executable (``start_step`` is traced); a final partial segment compiles once.
     # #91: traced per-run date scalars so each segment's HLO is date-independent.
     clock_base = build_clock_base(namelist)
     start = 1
+    segment_index = 0
     while start <= steps:
         n = min(seg, steps - start + 1)
         carry = _advance_chunk(
             carry, namelist, jnp.asarray(start, dtype=jnp.int32), clock_base,
             n_steps=int(n), cadence=cadence,
         )
+        segment_index += 1
         # Block so this segment's device scratch is freed before the next segment's
         # buffers are allocated -- this is what bounds peak memory to one segment's
-        # working set regardless of forecast length.
-        jax.block_until_ready(carry.state.theta)
+        # working set regardless of forecast length.  With ``sync_every > 1`` this
+        # happens only every K-th segment (and on the final segment), trading
+        # bounded memory for host run-ahead overlap.
+        if segment_index % sync_every == 0 or start + n > steps:
+            jax.block_until_ready(carry.state.theta)
         start += n
     return carry.state
 
@@ -7638,7 +9251,7 @@ def run_forecast_operational_single_scan(state: State, namelist: OperationalName
 
     This entry collapses the whole forecast into a SINGLE scan whose trip count is
     the static step total, and gates RRTMG with ``jax.lax.cond`` on the traced
-    predicate ``(step_index %% cadence == 0)``.  Compile cost is then independent of
+    predicate ``((step_index - 1) %% cadence == 0)``.  Compile cost is then independent of
     forecast length (one scan body), while the per-step cadence and the RRTMG firing
     schedule are numerically IDENTICAL to the segmented path (cond fires RRTMG on
     exactly the same steps).  Warmed throughput is unchanged.  This is the
@@ -7661,7 +9274,7 @@ def run_forecast_operational_single_scan(state: State, namelist: OperationalName
 
     def body(scan_carry: OperationalCarry, step_index):
         if run_physics:
-            run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+            run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
         else:
             run_radiation = False  # static: no radiation branch traced at all
         next_carry = _physics_boundary_step(
@@ -7699,7 +9312,7 @@ def run_forecast_operational_with_limiter_diagnostics(
     step = 1
     diagnostic_chunks: list[dict[str, jax.Array]] = []
     while step <= steps:
-        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        next_radiation = 1 + ((step + cadence - 2) // cadence) * cadence
         if bool(namelist.run_physics) and next_radiation <= steps:
             non_radiation_steps = next_radiation - step
             if non_radiation_steps:
@@ -7757,7 +9370,7 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
     carry = initial
     step = 1
     while step <= steps:
-        next_radiation = ((step + cadence - 1) // cadence) * cadence
+        next_radiation = 1 + ((step + cadence - 2) // cadence) * cadence
         if bool(namelist.run_physics) and next_radiation <= steps:
             non_radiation_steps = next_radiation - step
             if non_radiation_steps:

@@ -38,10 +38,7 @@ from gpuwrf.physics.microphysics_wsm5 import wsm5_run  # noqa: E402
 SAVE_FP32 = HERE / "savepoints"
 SAVE_FP64 = HERE / "savepoints_fp64"
 # Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
-# expanduser() so a `~`-prefixed WRF_PRISTINE_ROOT is canonicalized to an absolute
-# path in the emitted proof (matching the noahmp path-hygiene fix), rather than
-# storing a literal `~/...` that path-form assertions would have to special-case.
-WRF_SOURCE = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF"))).expanduser()
+WRF_SOURCE = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
 CASES = (1, 2, 3, 4, 5, 6)
 
 # PREDECLARED TOLERANCES (frozen before report generation; do not loosen).

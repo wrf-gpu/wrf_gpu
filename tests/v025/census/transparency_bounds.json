@@ -1,0 +1,446 @@
+{
+  "carry_aliases": {
+    "mu_save": "MU",
+    "muave": "MU",
+    "mudf": "MU",
+    "muts": "MU",
+    "ph_save": "PH",
+    "ph_tend": "PH",
+    "state.mu_perturbation": "MU",
+    "state.mu_total": "MU",
+    "state.p_perturbation": "P",
+    "state.p_total": "P",
+    "state.ph_perturbation": "PH",
+    "state.ph_total": "PH",
+    "state.qc": "QCLOUD",
+    "state.qg": "QGRAUP",
+    "state.qi": "QICE",
+    "state.qr": "QRAIN",
+    "state.qs": "QSNOW",
+    "state.qv": "QVAPOR",
+    "state.theta": "T",
+    "state.u": "U",
+    "state.v": "V",
+    "state.w": "W",
+    "t_2ave": "T",
+    "t_save": "T",
+    "u_save": "U",
+    "v_save": "V",
+    "w_save": "W"
+  },
+  "d6_fraction": 0.001,
+  "d6_path": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+  "d6_sha256": "9df4fab8514523286f07b127eb8bf57a7545459c4448fef721ac44c0ecc351dc",
+  "fields": {
+    "C1F": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C1H": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C2F": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C2H": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C3F": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C3H": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C4F": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "C4H": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CF1": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CF2": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CF3": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CFN": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CFN1": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "CLAT": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "COSALPHA": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "DN": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "DNW": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "DZS": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "E": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "F": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "FNM": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "FNP": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "HGT": {
+      "d6_max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0002,
+      "rmse": 0.0002
+    },
+    "LANDMASK": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "LU_INDEX": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_M": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_MX": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_MY": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_U": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_UX": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_UY": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_V": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_VX": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MAPFAC_VY": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "MU": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.12,
+      "note": "census-only Pa bound; D6 has no P/MU frozen RMSE",
+      "rmse": 0.12
+    },
+    "MUB": {
+      "d6_max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0002,
+      "rmse": 0.0002
+    },
+    "P": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.12,
+      "note": "census-only Pa bound; D6 has no P/MU frozen RMSE",
+      "rmse": 0.12
+    },
+    "PB": {
+      "d6_max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0002,
+      "rmse": 0.0002
+    },
+    "PH": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.001,
+      "note": "census-only m2/s2 bound; D6 has no PH frozen RMSE",
+      "rmse": 0.001
+    },
+    "PHB": {
+      "d6_max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0002,
+      "rmse": 0.0002
+    },
+    "PSFC": {
+      "d6_rmse": 120.0,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.12,
+      "rmse": 0.12,
+      "units": "Pa"
+    },
+    "P_TOP": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "QCLOUD": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "note": "census-only moisture bound using QVAPOR units",
+      "rmse": 1e-06
+    },
+    "QGRAUP": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "note": "census-only moisture bound using QVAPOR units",
+      "rmse": 1e-06
+    },
+    "QICE": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "note": "census-only moisture bound using QVAPOR units",
+      "rmse": 1e-06
+    },
+    "QRAIN": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "note": "census-only moisture bound using QVAPOR units",
+      "rmse": 1e-06
+    },
+    "QSNOW": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "note": "census-only moisture bound using QVAPOR units",
+      "rmse": 1e-06
+    },
+    "QVAPOR": {
+      "d6_rmse": 0.001,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 1e-06,
+      "rmse": 1e-06,
+      "units": "kg kg-1"
+    },
+    "RAINNC": {
+      "d6_rmse": 1.0,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.001,
+      "rmse": 0.001,
+      "units": "mm"
+    },
+    "RDN": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "RDNW": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "RDX": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "RDY": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "SINALPHA": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "T": {
+      "d6_rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0015,
+      "rmse": 0.0015,
+      "units": "K"
+    },
+    "T2": {
+      "d6_rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0015,
+      "rmse": 0.0015,
+      "units": "K"
+    },
+    "U": {
+      "d6_rmse": 1.8,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0018000000000000002,
+      "rmse": 0.0018000000000000002,
+      "units": "m s-1"
+    },
+    "U10": {
+      "d6_rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0015,
+      "rmse": 0.0015,
+      "units": "m s-1"
+    },
+    "V": {
+      "d6_rmse": 1.8,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0018000000000000002,
+      "rmse": 0.0018000000000000002,
+      "units": "m s-1"
+    },
+    "V10": {
+      "d6_rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0015,
+      "rmse": 0.0015,
+      "units": "m s-1"
+    },
+    "W": {
+      "d6_rmse": 0.3,
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0003,
+      "rmse": 0.0003,
+      "units": "m s-1"
+    },
+    "XLAT": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "XLAT_U": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "XLAT_V": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "XLONG": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "XLONG_U": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "XLONG_V": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "ZNU": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "ZNW": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "ZS": {
+      "finite_pair_fraction_min": 1.0,
+      "max_abs": 0.0,
+      "rmse": 0.0
+    }
+  },
+  "finite_policy": "both off/on must be finite; no finite-cell masking; shape/dtype mismatch fails",
+  "integer_string_and_base_state": "exact; census telemetry itself excluded",
+  "lw2_checkpoints": "every matching hourly output through the entire census arm; both d01 and d02; same source/work; no missing hour/domain",
+  "manager_decision": "2026-10-02: one final candidate barrier; if it fails Tier-P transparency replaces bit gate; timing census OFF",
+  "other_floating_fields": {
+    "absolute_floor": 1e-08,
+    "max_abs_bound": "absolute_floor + relative_to_off * max(abs(off))",
+    "relative_to_off": 1e-09,
+    "rmse_bound": "absolute_floor + relative_to_off * rms(off)"
+  },
+  "required_output_fields": [
+    "T2",
+    "U10",
+    "V10",
+    "PSFC",
+    "RAINNC",
+    "T",
+    "U",
+    "V",
+    "W",
+    "QVAPOR"
+  ],
+  "root_checkpoints_own_steps": [
+    1,
+    10
+  ],
+  "schema_version": 1,
+  "scope": "census-on vs census-off transparency regression; never a WRF oracle/fidelity result"
+}

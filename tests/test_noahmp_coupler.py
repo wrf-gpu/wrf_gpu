@@ -183,8 +183,12 @@ def test_ocean_path_unchanged_and_land_blend():
     # prove that the conversion still uses RHO3D; this checks the distinct PBL
     # handoff value.
     forcing = assemble_noahmp_forcing(state, static, rad, clock, 90.0)
+    # WRF reconstructs QVAPOR from SQV at F:829, passes QV1 to the
+    # tendency solver at F:1060, and uses it in the density at F:3960.
+    # Noah-MP forcing.qair is specific humidity, a different quantity.
+    qv_mixing_ratio = state.qv[..., 0]
     expected_pbl_density = np.asarray(
-        forcing.psfc / (R_D * (forcing.sfctmp + P608 * forcing.qair))
+        forcing.psfc / (R_D * (forcing.sfctmp + P608 * qv_mixing_ratio))
     )
     np.testing.assert_array_equal(np.asarray(blended.rhosfc), expected_pbl_density)
     assert not np.array_equal(np.asarray(blended.rhosfc), np.asarray(sf_ref.rhosfc))

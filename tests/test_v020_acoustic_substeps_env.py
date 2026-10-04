@@ -61,9 +61,10 @@ def _nested_namelist_acoustic_substeps() -> int:
     return int(namelist.acoustic_substeps)
 
 
-def test_nested_pipeline_defaults_to_ten_acoustic_substeps(monkeypatch):
+def test_nested_pipeline_defaults_to_wrf_auto_acoustic_substeps(monkeypatch):
     monkeypatch.delenv("GPUWRF_ACOUSTIC_SUBSTEPS", raising=False)
-    assert _nested_namelist_acoustic_substeps() == 10
+    # WRF's auto sound-step count is four for this 3 km / 18 s configuration.
+    assert _nested_namelist_acoustic_substeps() == 4
 
 
 def test_nested_pipeline_accepts_acoustic_substeps_env_override(monkeypatch):

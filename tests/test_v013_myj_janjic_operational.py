@@ -209,7 +209,8 @@ def test_operational_step_routes_myj_pair_and_changes_state() -> None:
 
     grid = _grid()
     state = _state(grid)
-    nml = _namelist(grid, bl_pbl_physics=2, sf_sfclay_physics=2, use_noahmp=False)
+    # mp=0: the theta change must be attributable to the MYJ pair, not to (entry) microphysics.
+    nml = _namelist(grid, bl_pbl_physics=2, sf_sfclay_physics=2, use_noahmp=False, mp_physics=0)
     carry = initial_operational_carry(state)
     forcing = _physics_step_forcing(carry, nml, 0.0, run_radiation=False)
     after = forcing.state
@@ -217,7 +218,7 @@ def test_operational_step_routes_myj_pair_and_changes_state() -> None:
     assert np.all(np.isfinite(np.asarray(after.qke)))
     assert np.all(np.isfinite(np.asarray(after.u)))
     # MYJ surface layer wrote a real ustar; PBL changed theta + the TKE carry.
-    assert not np.allclose(np.asarray(after.theta), np.asarray(state.theta))
+    assert not np.allclose(np.asarray(after.theta), np.asarray(state.theta), rtol=0.0, atol=1e-6)
     assert not np.allclose(np.asarray(after.qke), np.asarray(state.qke))
     assert float(np.asarray(after.ustar)[0, 0]) > 0.0
 

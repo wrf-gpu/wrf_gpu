@@ -200,10 +200,14 @@ class MynnPBLColumnState:
         "qc_bl",
         "qi_bl",
         "cldfra_bl",
+        "maxmf",
+        "maxwidth",
+        "ztop_plume",
     )
 
     def __init__(self, u, v, w, theta, qv, tke, p, rho, dz, km, kh, el, qc=None, qi=None,
-                 qs=None, qsq=None, qc_bl=None, qi_bl=None, cldfra_bl=None) -> None:
+                 qs=None, qsq=None, qc_bl=None, qi_bl=None, cldfra_bl=None,
+                 maxmf=None, maxwidth=None, ztop_plume=None) -> None:
         self.u = u
         self.v = v
         self.w = w
@@ -223,6 +227,8 @@ class MynnPBLColumnState:
         self.qc_bl = jnp.zeros_like(qv) if qc_bl is None else qc_bl
         self.qi_bl = jnp.zeros_like(qv) if qi_bl is None else qi_bl
         self.cldfra_bl = jnp.zeros_like(qv) if cldfra_bl is None else cldfra_bl
+        for name, value in (("maxmf", maxmf), ("maxwidth", maxwidth), ("ztop_plume", ztop_plume)):
+            setattr(self, name, jnp.zeros_like(qv[..., 0]) if value is None else value)
 
     def replace(self, **updates) -> "MynnPBLColumnState":
         """Returns a same-layout pytree with named fields replaced."""
@@ -485,7 +491,7 @@ def _first_or_fallback(candidates, fallback):
     return jnp.where(jnp.isfinite(value), value, fallback)
 
 
-def _get_pblh(state: MynnPBLColumnState, qke):
+def _get_pblh(state: MynnPBLColumnState, qke, xland=1.0):
     """Dry JAX transcription of WRF `GET_PBLH` for MYNN length-scale input."""
 
     thv, _thlv = _moist_virtual_potential(state)
@@ -496,6 +502,10 @@ def _get_pblh(state: MynnPBLColumnState, qke):
     minthv = jnp.min(jnp.where(lowest_200, thv, jnp.inf), axis=-1)
     minthv = jnp.where(jnp.isfinite(minthv), minthv, thv[..., 0])
     delt_thv = 1.0
+    from gpuwrf.kernels.phys_mynn_cloudmix import cloudmix_enabled
+    if cloudmix_enabled():
+        landsea = jnp.broadcast_to(jnp.asarray(xland, state.theta.dtype), thv.shape[:-1])
+        delt_thv = jnp.where(landsea >= 1.5, 1.0, 1.25)[..., None]
     theta_hit = (idx >= 1) & (idx <= nz - 2) & (thv >= (minthv[..., None] + delt_thv))
     prev_thv = jnp.concatenate((thv[..., :1], thv[..., :-1]), axis=-1)
     prev_dz = jnp.concatenate((state.dz[..., :1], state.dz[..., :-1]), axis=-1)
@@ -777,7 +787,13 @@ def _boulac_length_dense(zw, dz, qtke, theta):
     dlu_cand = zzz_up - dz_j + tl_up
     # WRF crossing: qtke(iz) < zup .and. qtke(iz) >= zup_inf, scanning izz upward.
     up_cross = up_valid & (qtke_i < zup) & (qtke_i >= zup_inf)
-    up_first = up_cross & (jnp.cumsum(up_cross.astype(jnp.int32), axis=-1) == 1)
+    # First crossing scanning upward = FIRST True.  argmax on the bool mask
+    # returns the first maximal (True) index; all-False rows return 0, where
+    # up_cross is False, so the selected mask is value-identical to the
+    # cumsum(astype(int32)) == 1 rank without materialising the (B, nz, nz)
+    # int32 counter grid (bool->int32 convert + cumsum buffer).  Integer/bool
+    # machinery only: no fp operand changes (physconv C1).
+    up_first = up_cross & (j_idx[None, None, :] == jnp.argmax(up_cross, axis=-1, keepdims=True))
     dlu_default = zw_top[..., None] - zw[..., :, None] - dz[..., :, None] * 0.5
     dlu = jnp.where(jnp.any(up_first, axis=-1, keepdims=True),
                     jnp.sum(jnp.where(up_first, dlu_cand, 0.0), axis=-1, keepdims=True),
@@ -811,8 +827,15 @@ def _boulac_length_dense(zw, dz, qtke, theta):
     tl_do = jnp.where(bbb_do != 0.0, tl_do_b, tl_do_lin)
     dld_cand = zzz_do - dz_jm1 + tl_do
     do_cross = do_valid & (qtke_i < zdo) & (qtke_i >= zdo_sup)
-    # first crossing scanning DOWNWARD: rank by reversed cumulative count.
-    do_first = do_cross & (jnp.cumsum(do_cross[..., ::-1].astype(jnp.int32), axis=-1)[..., ::-1] == 1)
+    # First crossing scanning DOWNWARD = LAST True in natural order; via the
+    # reversed mask argmax (first True scanning downward), natural index
+    # nz-1-argmax_rev.  All-False rows: argmax_rev 0 -> index nz-1, but
+    # do_cross there is False, so the selected mask is value-identical to the
+    # reversed cumsum(astype(int32)) == 1 rank, again without the (B, nz, nz)
+    # int32 counter grid (physconv C1).
+    do_first = do_cross & (
+        j_idx[None, None, :] == (nz - 1 - jnp.argmax(do_cross[..., ::-1], axis=-1, keepdims=True))
+    )
     dld_default = zw[..., :, None]
     dld = jnp.where(jnp.any(do_first, axis=-1, keepdims=True),
                     jnp.sum(jnp.where(do_first, dld_cand, 0.0), axis=-1, keepdims=True),
@@ -846,6 +869,11 @@ def _boulac_length(zw, dz, qtke, theta):
     ``_MYNN_BOULAC_ONZ``.
     """
 
+    if (_env_bool("GPUWRF_MYNN_FP32_BOULAC", False)
+            or _env_bool("GPUWRF_MYNN_FP32_COLUMNS", False)):
+        from gpuwrf.kernels.phys_mynn_boulac import boulac_length_native
+        a, b = boulac_length_native(zw, dz, qtke, theta)
+        return a.astype(dz.dtype), b.astype(dz.dtype)
     if _MYNN_BOULAC_ONZ:
         return _boulac_length_onz(zw, dz, qtke, theta)
     return _boulac_length_dense(zw, dz, qtke, theta)
@@ -875,7 +903,7 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xl
     from ``fltv``/``ust``. ``dx`` feeds the scale-aware ``Psig_bl`` taper.
     """
 
-    pblh = _get_pblh(state, qke)
+    pblh = _get_pblh(state, qke, xland)
     rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
     psig_bl = _scale_aware_psig_bl(dx, pblh)
     return _mym_length_option1_with(
@@ -1036,7 +1064,7 @@ def mynn_coldstart_init_columns(
         (ust[..., None] * 700.0 - zw) / (jnp.maximum(ust[..., None], 0.01) * 700.0), 0.01
     )
     qke = 5.0 * ust[..., None] * taper
-    pblh = _get_pblh(state, qke)
+    pblh = _get_pblh(state, qke, xland)
     psig_bl = _scale_aware_psig_bl(dx, pblh)
     _dtl, _dqw, dtv, gm, gh, sm, sh = _mym_level2(state)
 
@@ -1066,7 +1094,7 @@ def mynn_coldstart_init_columns(
     return qke, pblh
 
 
-def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
+def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xland=1.0):
     """WRF option-2 MYNN master length scale (``bl_mynn_mixlength==2``).
 
     Faithful transcription of the ``CASE (2)`` branch of WRF
@@ -1102,7 +1130,7 @@ def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):
     qkw = jnp.concatenate((jnp.sqrt(jnp.maximum(qke[..., :1], QKEMIN)), qkw_i), axis=-1)
     qtke = jnp.concatenate((jnp.maximum(0.5 * qke[..., :1], 0.5 * QKEMIN), 0.5 * qkw_i * qkw_i), axis=-1)
 
-    pblh = _get_pblh(state, qke)
+    pblh = _get_pblh(state, qke, xland)
     pblh2 = jnp.maximum(pblh, MIN_PBLH)
     h1 = jnp.minimum(jnp.maximum(0.3 * pblh2, 300.0), MAX_PBLH_TRANSITION)
     h2 = 0.5 * h1
@@ -1261,8 +1289,16 @@ def _rho_interfaces(state: MynnPBLColumnState, diffusivity):
 
 
 def _solve_tridiagonal(a, b, c, d):
-    """Uses XLA's tridiagonal primitive for the production vertical solves."""
+    """Uses XLA's tridiagonal primitive for the production vertical solves.
 
+    BP56: REAL solves take the literal WRF ``tridiag2`` Pallas sweep under
+    GPUWRF_MYNN_TRIDIAG_REAL=1 (default off)."""
+
+    from gpuwrf.kernels import phys_mynn_tridiag
+
+    if (phys_mynn_tridiag.enabled() and jnp.asarray(d).dtype == jnp.float32
+            and jnp.ndim(d) == jnp.ndim(b)):
+        return phys_mynn_tridiag.solve_tridiagonal_real(a, b, c, d)
     return solve_tridiagonal(a, b, c, d)
 
 
@@ -1520,7 +1556,7 @@ def _diffusion_solve_with_mf(x, diffusivity, state, dt, bottom_rhs, s_aw, s_awx,
     return _solve_tridiagonal(a, b, c, d)
 
 
-def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhosfc,
+def _apply_mean_tendencies_legacy(state: MynnPBLColumnState, turb, dt, flux, wind, rhosfc,
                            mf=None):
     """Applies WRF-style U/V/theta/qv implicit tendency solves.
 
@@ -1566,6 +1602,20 @@ def _apply_mean_tendencies(state: MynnPBLColumnState, turb, dt, flux, wind, rhos
             mf["s_aw"], mf["s_awqv"])
     theta = thl + XLVCP_MYNN / exner * sqc + XLSCP_MYNN / exner * sqi
     return u, v, theta, jnp.maximum(qv, 0.0)
+
+
+
+def _apply_mean_tendencies_with_clouds(state, turb, dt, flux, wind, rhosfc, mf=None):
+    from gpuwrf.kernels.phys_mynn_cloudmix import cloudmix_enabled
+    if cloudmix_enabled():
+        from gpuwrf.kernels.phys_mynn_cloudmix import apply_mean_cloudmix
+        return apply_mean_cloudmix(state, turb, dt, flux, wind, rhosfc, mf)
+    u, v, theta, qv = _apply_mean_tendencies_legacy(state, turb, dt, flux, wind, rhosfc, mf)
+    return u, v, theta, qv, state.qc, state.qi
+
+
+def _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=None):
+    return _apply_mean_tendencies_with_clouds(state, turb, dt, flux, wind, rhosfc, mf)[:4]
 
 
 def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
@@ -1649,7 +1699,7 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     if sgs_cloud:
         # WRF GET_PBLH runs before mym_condensation; the same value feeds
         # DMP_mf (bitwise-identical to the previous turb["pblh"] EDMF input).
-        pblh0 = _get_pblh(state, qke)
+        pblh0 = _get_pblh(state, qke, flux.xland)
         sqv, sqc, sqi, sqw = _specific_moisture_components(state)
         exner = _exner_from_pressure(state.p)
         qc_bl, qi_bl, cldfra_bl = mym_condensation_cloudpdf2(
@@ -1695,7 +1745,7 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
         qsq_new = state.qsq
     if edmf and mf is None:
         mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx)
-    u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=mf)
+    u, v, theta, qv, qc, qi = _apply_mean_tendencies_with_clouds(state, turb, dt, flux, wind, rhosfc, mf=mf)
     km, kh = _retrieve_exchange_coeffs(state, turb)
     tke = 0.5 * qke_new
 
@@ -1709,9 +1759,17 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     el = assert_finite(turb["el"], "mynn_el", enabled=debug)
     del qdiss
     return (
-        state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el, qsq=qsq_new),
+        state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el, qsq=qsq_new, qc=qc, qi=qi,
+                      **_mynn_plume_diagnostics(state, mf)),
         turb["pblh"],
     )
+
+
+def _mynn_plume_diagnostics(state, mf):
+    """Hold outputs of the existing DMP_mf call; zero when EDMF is off."""
+    zero = jnp.zeros_like(state.qv[..., 0])
+    return {name: zero if mf is None else mf[name]
+            for name in ("maxmf", "maxwidth", "ztop_plume")}
 
 
 def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surface=None,
@@ -1860,6 +1918,10 @@ def step_mynn_pbl_column(
     MYNN-EDMF mass-flux nonlocal scalar transport (``s_awqv``/``s_awthl``); ``dx``
     is the horizontal grid spacing (m) used by the plume sizing."""
 
+    if _env_bool("GPUWRF_MYNN_FP32_COLUMNS", False):
+        from gpuwrf.kernels.phys_mynn_columns import step_mynn_columns_native
+        return step_mynn_columns_native(state, dt, debug=debug, surface=surface,
+                                        edmf=edmf, dx=dx)[0]
     next_state, _pblh = _tiled_mynn_step(state, dt, debug, surface, edmf, dx)
     return next_state
 
@@ -1876,6 +1938,10 @@ def step_mynn_pbl_column_with_pblh(
     ``edmf``/``dx`` enable + size the EDMF mass-flux transport (see
     :func:`step_mynn_pbl_column`)."""
 
+    if _env_bool("GPUWRF_MYNN_FP32_COLUMNS", False):
+        from gpuwrf.kernels.phys_mynn_columns import step_mynn_columns_native
+        return step_mynn_columns_native(state, dt, debug=debug, surface=surface,
+                                        edmf=edmf, dx=dx)
     return _tiled_mynn_step(state, dt, debug, surface, edmf, dx)
 
 

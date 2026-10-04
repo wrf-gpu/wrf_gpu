@@ -25,6 +25,17 @@ def _as_fp64(value):
     return jnp.asarray(value, dtype=jnp.float64)
 
 
+def _metric_dtype(precision: str | None):
+    """Resolve storage before tracing; fp64 remains the x64-enabled default."""
+
+    precision = precision or ("fp64" if jax.config.x64_enabled else "fp32")
+    if precision not in ("fp32", "fp64"):
+        raise ValueError(f"unsupported grid precision {precision!r}")
+    if precision == "fp64" and not jax.config.x64_enabled:
+        raise TypeError("fp64 grid precision requires JAX_ENABLE_X64=true")
+    return precision, jnp.float32 if precision == "fp32" else jnp.float64
+
+
 @dataclass(frozen=True)
 class Projection:
     """Groups projection scalars so GridSpec metadata stays hashable and readable."""
@@ -112,15 +123,22 @@ class DycoreMetrics:
     cosa: jax.Array
     p_top: jax.Array
     provenance: str = "analytic-flat"
+    precision: Literal["fp32", "fp64"] | None = None
 
     def __post_init__(self) -> None:
-        """Normalizes scalar metadata and enforces fp64 metric storage."""
+        """Normalize all metric leaves to the requested WRF storage precision."""
 
+        precision, dtype = _metric_dtype(self.precision)
+        object.__setattr__(self, "precision", precision)
         for name in self._array_names():
-            array = _as_fp64(getattr(self, name))
+            value = getattr(self, name)
+            array = (_as_fp64(value) if dtype == jnp.float64 else
+                     value if getattr(value, "dtype", None) == dtype else
+                     value.astype(dtype) if hasattr(value, "astype") else
+                     jnp.asarray(value, dtype=dtype))
             object.__setattr__(self, name, array)
-            if getattr(array, "dtype", None) != jnp.float64:
-                raise TypeError(f"DycoreMetrics.{name} must be fp64")
+            if getattr(array, "dtype", None) != dtype:
+                raise TypeError(f"DycoreMetrics.{name} must be {precision}")
         if tuple(self.p_top.shape) not in ((), (1,)):
             raise ValueError("DycoreMetrics.p_top must be scalar or shape (1,)")
 
@@ -173,12 +191,14 @@ class DycoreMetrics:
         eta_levels: jax.Array,
         top_pressure_pa: float,
         provenance: str = "analytic-flat",
+        precision: Literal["fp32", "fp64"] | None = None,
     ) -> "DycoreMetrics":
         """Builds a flat, unit-map-factor fixture for idealized tests."""
 
         if nz < 3:
             raise ValueError("DycoreMetrics.flat requires nz >= 3 for WRF cf coefficients")
-        eta = jnp.asarray(eta_levels, dtype=jnp.float64)
+        precision, dtype = _metric_dtype(precision)
+        eta = jnp.asarray(eta_levels, dtype=dtype)
         if tuple(eta.shape) != (nz + 1,):
             raise ValueError("eta_levels shape must be (nz + 1,)")
         eta_mass = 0.5 * (eta[:-1] + eta[1:])
@@ -196,31 +216,31 @@ class DycoreMetrics:
         # therefore SIGN-INVARIANT (both numerator and denominator flip together).
         dnw = eta[1:] - eta[:-1]  # (nz,) WRF-signed face spacing (negative for normal eta)
         rdnw = 1.0 / dnw
-        dn = jnp.ones((nz,), dtype=jnp.float64)
+        dn = jnp.ones((nz,), dtype=dtype)
         dn = dn.at[1:].set(0.5 * (dnw[1:] + dnw[:-1]))  # dn[k]=0.5*(dnw[k]+dnw[k-1]), k=1..nz-1
         dn = dn.at[0].set(dnw[0])  # dn[0] is unused by WRF; set finite (same sign).
         rdn = 1.0 / dn
-        fnm = jnp.zeros((nz,), dtype=jnp.float64)
-        fnp = jnp.zeros((nz,), dtype=jnp.float64)
+        fnm = jnp.zeros((nz,), dtype=dtype)
+        fnp = jnp.zeros((nz,), dtype=dtype)
         fnp = fnp.at[1:].set(0.5 * dnw[1:] / dn[1:])
         fnm = fnm.at[1:].set(0.5 * dnw[:-1] / dn[1:])
         cof1 = (2.0 * dn[1] + dn[2]) / (dn[1] + dn[2]) * dnw[0] / dn[1]
         cof2 = dn[1] / (dn[1] + dn[2]) * dnw[0] / dn[2]
         return cls(
-            msftx=jnp.ones((ny, nx), dtype=jnp.float64),
-            msfty=jnp.ones((ny, nx), dtype=jnp.float64),
-            msfux=jnp.ones((ny, nx + 1), dtype=jnp.float64),
-            msfuy=jnp.ones((ny, nx + 1), dtype=jnp.float64),
-            msfvx=jnp.ones((ny + 1, nx), dtype=jnp.float64),
-            msfvy=jnp.ones((ny + 1, nx), dtype=jnp.float64),
+            msftx=jnp.ones((ny, nx), dtype=dtype),
+            msfty=jnp.ones((ny, nx), dtype=dtype),
+            msfux=jnp.ones((ny, nx + 1), dtype=dtype),
+            msfuy=jnp.ones((ny, nx + 1), dtype=dtype),
+            msfvx=jnp.ones((ny + 1, nx), dtype=dtype),
+            msfvy=jnp.ones((ny + 1, nx), dtype=dtype),
             c1h=eta_mass,
-            c2h=jnp.zeros((nz,), dtype=jnp.float64),
+            c2h=jnp.zeros((nz,), dtype=dtype),
             c3h=eta_mass,
-            c4h=jnp.zeros((nz,), dtype=jnp.float64),
+            c4h=jnp.zeros((nz,), dtype=dtype),
             c1f=eta,
-            c2f=jnp.zeros((nz + 1,), dtype=jnp.float64),
+            c2f=jnp.zeros((nz + 1,), dtype=dtype),
             c3f=eta,
-            c4f=jnp.zeros((nz + 1,), dtype=jnp.float64),
+            c4f=jnp.zeros((nz + 1,), dtype=dtype),
             dn=dn,
             dnw=dnw,
             rdn=rdn,
@@ -230,18 +250,19 @@ class DycoreMetrics:
             cf3=cof2,
             fnm=fnm,
             fnp=fnp,
-            dzdx=jnp.zeros((ny, nx), dtype=jnp.float64),
-            dzdy=jnp.zeros((ny, nx), dtype=jnp.float64),
-            dzdx_u=jnp.zeros((ny, nx + 1), dtype=jnp.float64),
-            dzdy_v=jnp.zeros((ny + 1, nx), dtype=jnp.float64),
+            dzdx=jnp.zeros((ny, nx), dtype=dtype),
+            dzdy=jnp.zeros((ny, nx), dtype=dtype),
+            dzdx_u=jnp.zeros((ny, nx + 1), dtype=dtype),
+            dzdy_v=jnp.zeros((ny + 1, nx), dtype=dtype),
             # Idealized/non-rotating default: no Coriolis (f=e=sina=0, cosa=1) so the
             # warm-bubble / Straka / oracle gates stay bit-identical to the f-free core.
-            f=jnp.zeros((ny, nx), dtype=jnp.float64),
-            e=jnp.zeros((ny, nx), dtype=jnp.float64),
-            sina=jnp.zeros((ny, nx), dtype=jnp.float64),
-            cosa=jnp.ones((ny, nx), dtype=jnp.float64),
-            p_top=jnp.asarray(top_pressure_pa, dtype=jnp.float64),
+            f=jnp.zeros((ny, nx), dtype=dtype),
+            e=jnp.zeros((ny, nx), dtype=dtype),
+            sina=jnp.zeros((ny, nx), dtype=dtype),
+            cosa=jnp.ones((ny, nx), dtype=dtype),
+            p_top=jnp.asarray(top_pressure_pa, dtype=dtype),
             provenance=provenance,
+            precision=precision,
         )
 
     def validate_shapes(self, *, ny: int, nx: int, nz: int) -> None:
@@ -287,7 +308,7 @@ class DycoreMetrics:
     def tree_flatten(self):
         """Splits metric arrays from static provenance metadata."""
 
-        return tuple(getattr(self, name) for name in self._array_names()), self.provenance
+        return tuple(getattr(self, name) for name in self._array_names()), (self.provenance, self.precision)
 
     @classmethod
     def tree_unflatten(cls, aux, children):
@@ -307,7 +328,8 @@ class DycoreMetrics:
         obj = object.__new__(cls)
         for name, value in zip(cls._array_names(), children, strict=True):
             object.__setattr__(obj, name, value)
-        object.__setattr__(obj, "provenance", aux)
+        object.__setattr__(obj, "provenance", aux[0])
+        object.__setattr__(obj, "precision", aux[1])
         return obj
 
     @staticmethod
@@ -518,6 +540,7 @@ class GridSpec:
                     nz=self.vertical.nz,
                     eta_levels=self.eta_levels,
                     top_pressure_pa=self.vertical.top_pressure_pa,
+                    precision="fp32" if self.eta_levels.dtype == jnp.float32 else "fp64",
                 ),
             )
         if self.projection.kind not in ("lambert", "mercator", "polar"):
@@ -534,9 +557,13 @@ class GridSpec:
             raise ValueError("terrain_height shape must match terrain provenance")
         if tuple(self.eta_levels.shape) != (self.vertical.nz + 1,):
             raise ValueError("eta_levels shape must be (nz + 1,)")
-        if self.terrain_height.dtype != jnp.float64 or self.eta_levels.dtype != jnp.float64:
-            raise TypeError("GridSpec arrays must be fp64")
+        if self.eta_levels.dtype not in (jnp.float32, jnp.float64):
+            raise TypeError("GridSpec arrays must be fp32 or fp64")
+        if self.terrain_height.dtype != self.eta_levels.dtype:
+            raise TypeError("GridSpec terrain and eta must have the same precision")
         assert self.metrics is not None
+        if self.metrics.msftx.dtype != self.eta_levels.dtype:
+            raise TypeError("GridSpec metrics must match terrain and eta precision")
         self.metrics.validate_shapes(ny=self.projection.ny, nx=self.projection.nx, nz=self.vertical.nz)
 
     @property

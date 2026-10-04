@@ -1,0 +1,238 @@
+{
+ "keys": {
+  "PROD_S1_WHOLE": "4.12",
+  "PROD_HOURS": "24",
+  "PROD_SPEEDUP": "22.4",
+  "SPEEDUP_VS_V023": "32",
+  "WN3_SOLO": "7.4",
+  "WN3_SOLO_SPEEDUP": "49.7",
+  "WN3_BENCH_HOURS": "6",
+  "WN3_NMAX": "4",
+  "WN3_NMAX_WHOLE": "9.68",
+  "WN3_NMAX_SPEEDUP": "12.75",
+  "WN3_PRODUCTION_WHOLE": "6.28",
+  "WN3_PRODUCTION_SPEEDUP": "19.6",
+  "WN3_VRAM_GIB": "4.4",
+  "WN3_FIT": "4",
+  "CPU_KJ": "25",
+  "CPU_ENERGY_LABEL": "measured package",
+  "GPU_KJ": "2.9",
+  "ENERGY_RATIO": "8.6",
+  "GATE_N_CASES": "6",
+  "GATE_N_FIELDS": "375",
+  "GATE_N_BOUNDED": "62",
+  "GATE_FAILURES": "0",
+  "GATE_FINITE": "all compared numeric values finite",
+  "OUTPUT_INTEGRITY_STATUS": "[disclosed exceptions](docs/release/VALIDATION.md#wn3-output-integrity) (raw FAIL retained)",
+  "WN3_72H_CASES": "6",
+  "WN3_72H_WORST_PCT": "61",
+  "WN3_72H_WORST_FIELD": "V10 d03",
+  "WN3_LAST_LEAD": "24",
+  "FIDELITY_HEADLINE": "core fields stay within frozen RMSE limits through 24 hours",
+  "PROD_LAST_LEAD": "162",
+  "PROD_WORST_PCT": "78",
+  "PROD_WORST_FIELD": "V10 d02",
+  "B200_CASE_H": "2,380",
+  "B200_LO": "1,815",
+  "B200_HI": "3,012",
+  "B200_KJ": "1.0",
+  "B200_FIT": "30",
+  "TREE": "dead7d004",
+  "CPU_ENERGY_METHOD": "uses approximately200W on twelve cores (maintainer measurement); GPU host CPU energy is outside the board-power comparison",
+  "LICENSE_LINE": "See [LICENSE_NOTES.md](LICENSE_NOTES.md) for attribution and licensing information.",
+  "V030_WN3_GAIN": "1.4",
+  "EXTENDED_LEAD_DISCLOSURE": "Beyond 24 h, the complete six-case predecessor (`1fece48da`) exceeds limits on the 1 km domain: 0227 U10/V10 from +41 h, V at +67 h, W at +69\u201370 h and RAINNC at +67\u201372 h; 0120 U10 at +58 h. The scored v0.3.0 0227 case agrees with that displaced wake/convection pattern. [Exact hours and signed biases](docs/release/VALIDATION.md) preserve every failure.",
+  "DATE": "2026-10-04",
+  "DRAFT_NOTICE": "",
+  "PROVENANCE_ROWS": "| Canary (PROD) GPU s per forecast hour, 24 h whole run | 4.12 | [M] [prod_publication_times.json](docs/release/evidence/prod_publication_times.json) last file written \u2212 process start, \u00f7 24 |\n| Canary speedup vs CPU-WRF, 12 cores | 22.4 | [M] CPU-WRF 12 ranks 92.3 s/fc-h \u00f7 GPU |\n| speedup vs the 2026-10-01 starting tree (3 h warm proxy) | 32 | [M] 107.6 s/fc-h on the starting tree \u00f7 S1 proxy 3.369 ([prod_bench.json](docs/release/evidence/prod_bench.json) s1_warm_s_per_fc_h) |\n| Tenerife one case, GPU s per simulated hour (steady) | 7.4 | [M] [wn3_solo_analysis.json](docs/release/evidence/wn3_solo_analysis.json) throughput_stepping_s_per_case_h |\n| Tenerife one-case speedup vs CPU-WRF, 4 cores | 49.7 | [M] CPU-WRF 4 ranks 370.15 s \u00f7 GPU |\n| Tenerife cases run in parallel (max admitted) | 4 | [M] [wn3_parallel_analysis.json](docs/release/evidence/wn3_parallel_analysis.json) |\n| Tenerife GPU s per case-hour at N_max, 6 h benchmark | 9.68 | [M] arm start ([wn3_parallel_start.json](docs/release/evidence/wn3_parallel_start.json)) \u2192 whole launcher completion, including output compression and cleanup ([wn3_receipt_20260614_18z_a1.json](docs/release/evidence/wn3_receipt_20260614_18z_a1.json), [wn3_receipt_20260227_18z_a1.json](docs/release/evidence/wn3_receipt_20260227_18z_a1.json), [wn3_receipt_20260502_18z_a1.json](docs/release/evidence/wn3_receipt_20260502_18z_a1.json), [wn3_receipt_20260220_18z_a1.json](docs/release/evidence/wn3_receipt_20260220_18z_a1.json)) \u00f7 (N \u00d7 6) |\n| Tenerife throughput speedup vs CPU-WRF, 12 cores | 12.75 | [M] CPU-WRF 3 cases \u00d7 4 cores 123.38 s per case-hour \u00f7 GPU |\n| Tenerife 72 h production batch, six cases in FIFO waves, s per case-hour | 6.28 | [M] [wn3_production_batch.json](docs/release/evidence/wn3_production_batch.json) |\n| 72 h production throughput vs CPU-WRF, 12 cores | 19.6 | [M] [wn3_production_batch.json](docs/release/evidence/wn3_production_batch.json) |\n| GPU memory per Tenerife case (process peak, GiB) | 4.4 | [M] [wn3_parallel_analysis.json](docs/release/evidence/wn3_parallel_analysis.json) cases/per_case.vram_peak_mib (max) |\n| Tenerife cases that fit one 32 GB card | 4 | [M] admission limit of the N sweep |\n| CPU-WRF energy per case-hour (kJ) | 25 | [M] maintainer measurement: CPU-WRF on 12 cores \u2248200 W |\n| GPU board energy per case-hour at N_max (kJ) | 2.9 | [M] [wn3_parallel_dmon.json](docs/release/evidence/wn3_parallel_dmon.json) energy_j \u00f7 (N \u00d7 hours) |\n| component energy ratio CPU package/GPU board | 8.6 | [M] CPU [M] \u00f7 GPU [M] |\n| release-gate cases (24 h, all variables) | 6 | [M] [gate_d6_20260227_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260227_18z_a1_d6_24h.json), [gate_d6_20260502_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260502_18z_a1_d6_24h.json), [gate_d6_20260614_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260614_18z_a1_d6_24h.json), [gate_d6_20260220_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260220_18z_a1_d6_24h.json), [gate_d6_20260608_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260608_18z_a1_d6_24h.json), [gate_d6_20260120_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260120_18z_a1_d6_24h.json) |\n| variables compared per domain | 375 | [M] inventory.common_variable_count (minimum over domains) |\n| variables with numerical tolerances per domain | 62 | [M] fields with supplied frozen D6 bounds (minimum over domains) |\n| release-gate tolerance failures | 0 | [M] sum of summaries.tolerance_failure_count |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_1.json](docs/release/evidence/output_integrity_1.json); disclosed exception [output_integrity_exception_1.json](docs/release/evidence/output_integrity_exception_1.json); approval [output_integrity_approval_1.json](docs/release/evidence/output_integrity_approval_1.json) |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_2.json](docs/release/evidence/output_integrity_2.json); disclosed exception [output_integrity_exception_2.json](docs/release/evidence/output_integrity_exception_2.json); approval [output_integrity_approval_2.json](docs/release/evidence/output_integrity_approval_2.json) |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_3.json](docs/release/evidence/output_integrity_3.json); disclosed exception [output_integrity_exception_3.json](docs/release/evidence/output_integrity_exception_3.json); approval [output_integrity_approval_3.json](docs/release/evidence/output_integrity_approval_3.json) |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_4.json](docs/release/evidence/output_integrity_4.json); disclosed exception [output_integrity_exception_4.json](docs/release/evidence/output_integrity_exception_4.json); approval [output_integrity_approval_4.json](docs/release/evidence/output_integrity_approval_4.json) |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_5.json](docs/release/evidence/output_integrity_5.json); disclosed exception [output_integrity_exception_5.json](docs/release/evidence/output_integrity_exception_5.json); approval [output_integrity_approval_5.json](docs/release/evidence/output_integrity_approval_5.json) |\n| WRF output integrity | raw FAIL; approved exception | [M] [output_integrity_6.json](docs/release/evidence/output_integrity_6.json); disclosed exception [output_integrity_exception_6.json](docs/release/evidence/output_integrity_exception_6.json); approval [output_integrity_approval_6.json](docs/release/evidence/output_integrity_approval_6.json) |\n| cases in the long-lead identity curves | 6 | [M] [identity_curves_wn3.json](docs/release/evidence/identity_curves_wn3.json) |\n| worst gate variable, % of its D6 limit, 0\u201324 h | 61 | [M] [identity_curves_wn3.json](docs/release/evidence/identity_curves_wn3.json) |\n| PROD worst core-field RMSE, % of reference limit | 78 | [M] [identity_curves_prod162.json](docs/release/evidence/identity_curves_prod162.json) |\n| B200 Tenerife case-hours per hour | 2,380 | [I] extrapolated from B200 runs on old version ([b200_extrapolation.json](docs/release/evidence/b200_extrapolation.json); method docs/release/B200_EXTRAPOLATION.md) |\n| B200 energy per case-hour (kJ) | 1.0 | [I] extrapolated from B200 runs on old version ([b200_extrapolation.json](docs/release/evidence/b200_extrapolation.json); method docs/release/B200_EXTRAPOLATION.md) |\n| Tenerife cases fitting a B200 | 30 | [I] 180 GB \u00f7 (case peak + 1 GiB) |"
+ },
+ "provenance": [
+  [
+   "Canary (PROD) GPU s per forecast hour, 24 h whole run",
+   "4.12",
+   "M",
+   "[prod_publication_times.json](docs/release/evidence/prod_publication_times.json) last file written \u2212 process start, \u00f7 24"
+  ],
+  [
+   "Canary speedup vs CPU-WRF, 12 cores",
+   "22.4",
+   "M",
+   "CPU-WRF 12 ranks 92.3 s/fc-h \u00f7 GPU"
+  ],
+  [
+   "speedup vs the 2026-10-01 starting tree (3 h warm proxy)",
+   "32",
+   "M",
+   "107.6 s/fc-h on the starting tree \u00f7 S1 proxy 3.369 ([prod_bench.json](docs/release/evidence/prod_bench.json) s1_warm_s_per_fc_h)"
+  ],
+  [
+   "Tenerife one case, GPU s per simulated hour (steady)",
+   "7.4",
+   "M",
+   "[wn3_solo_analysis.json](docs/release/evidence/wn3_solo_analysis.json) throughput_stepping_s_per_case_h"
+  ],
+  [
+   "Tenerife one-case speedup vs CPU-WRF, 4 cores",
+   "49.7",
+   "M",
+   "CPU-WRF 4 ranks 370.15 s \u00f7 GPU"
+  ],
+  [
+   "Tenerife cases run in parallel (max admitted)",
+   "4",
+   "M",
+   "[wn3_parallel_analysis.json](docs/release/evidence/wn3_parallel_analysis.json)"
+  ],
+  [
+   "Tenerife GPU s per case-hour at N_max, 6 h benchmark",
+   "9.68",
+   "M",
+   "arm start ([wn3_parallel_start.json](docs/release/evidence/wn3_parallel_start.json)) \u2192 whole launcher completion, including output compression and cleanup ([wn3_receipt_20260614_18z_a1.json](docs/release/evidence/wn3_receipt_20260614_18z_a1.json), [wn3_receipt_20260227_18z_a1.json](docs/release/evidence/wn3_receipt_20260227_18z_a1.json), [wn3_receipt_20260502_18z_a1.json](docs/release/evidence/wn3_receipt_20260502_18z_a1.json), [wn3_receipt_20260220_18z_a1.json](docs/release/evidence/wn3_receipt_20260220_18z_a1.json)) \u00f7 (N \u00d7 6)"
+  ],
+  [
+   "Tenerife throughput speedup vs CPU-WRF, 12 cores",
+   "12.75",
+   "M",
+   "CPU-WRF 3 cases \u00d7 4 cores 123.38 s per case-hour \u00f7 GPU"
+  ],
+  [
+   "Tenerife 72 h production batch, six cases in FIFO waves, s per case-hour",
+   "6.28",
+   "M",
+   "[wn3_production_batch.json](docs/release/evidence/wn3_production_batch.json)"
+  ],
+  [
+   "72 h production throughput vs CPU-WRF, 12 cores",
+   "19.6",
+   "M",
+   "[wn3_production_batch.json](docs/release/evidence/wn3_production_batch.json)"
+  ],
+  [
+   "GPU memory per Tenerife case (process peak, GiB)",
+   "4.4",
+   "M",
+   "[wn3_parallel_analysis.json](docs/release/evidence/wn3_parallel_analysis.json) cases/per_case.vram_peak_mib (max)"
+  ],
+  [
+   "Tenerife cases that fit one 32 GB card",
+   "4",
+   "M",
+   "admission limit of the N sweep"
+  ],
+  [
+   "CPU-WRF energy per case-hour (kJ)",
+   "25",
+   "M",
+   "maintainer measurement: CPU-WRF on 12 cores \u2248200 W"
+  ],
+  [
+   "GPU board energy per case-hour at N_max (kJ)",
+   "2.9",
+   "M",
+   "[wn3_parallel_dmon.json](docs/release/evidence/wn3_parallel_dmon.json) energy_j \u00f7 (N \u00d7 hours)"
+  ],
+  [
+   "component energy ratio CPU package/GPU board",
+   "8.6",
+   "M",
+   "CPU [M] \u00f7 GPU [M]"
+  ],
+  [
+   "release-gate cases (24 h, all variables)",
+   "6",
+   "M",
+   "[gate_d6_20260227_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260227_18z_a1_d6_24h.json), [gate_d6_20260502_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260502_18z_a1_d6_24h.json), [gate_d6_20260614_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260614_18z_a1_d6_24h.json), [gate_d6_20260220_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260220_18z_a1_d6_24h.json), [gate_d6_20260608_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260608_18z_a1_d6_24h.json), [gate_d6_20260120_18z_a1_d6_24h.json](docs/release/evidence/gate_d6_20260120_18z_a1_d6_24h.json)"
+  ],
+  [
+   "variables compared per domain",
+   "375",
+   "M",
+   "inventory.common_variable_count (minimum over domains)"
+  ],
+  [
+   "variables with numerical tolerances per domain",
+   "62",
+   "M",
+   "fields with supplied frozen D6 bounds (minimum over domains)"
+  ],
+  [
+   "release-gate tolerance failures",
+   "0",
+   "M",
+   "sum of summaries.tolerance_failure_count"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_1.json](docs/release/evidence/output_integrity_1.json); disclosed exception [output_integrity_exception_1.json](docs/release/evidence/output_integrity_exception_1.json); approval [output_integrity_approval_1.json](docs/release/evidence/output_integrity_approval_1.json)"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_2.json](docs/release/evidence/output_integrity_2.json); disclosed exception [output_integrity_exception_2.json](docs/release/evidence/output_integrity_exception_2.json); approval [output_integrity_approval_2.json](docs/release/evidence/output_integrity_approval_2.json)"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_3.json](docs/release/evidence/output_integrity_3.json); disclosed exception [output_integrity_exception_3.json](docs/release/evidence/output_integrity_exception_3.json); approval [output_integrity_approval_3.json](docs/release/evidence/output_integrity_approval_3.json)"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_4.json](docs/release/evidence/output_integrity_4.json); disclosed exception [output_integrity_exception_4.json](docs/release/evidence/output_integrity_exception_4.json); approval [output_integrity_approval_4.json](docs/release/evidence/output_integrity_approval_4.json)"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_5.json](docs/release/evidence/output_integrity_5.json); disclosed exception [output_integrity_exception_5.json](docs/release/evidence/output_integrity_exception_5.json); approval [output_integrity_approval_5.json](docs/release/evidence/output_integrity_approval_5.json)"
+  ],
+  [
+   "WRF output integrity",
+   "raw FAIL; approved exception",
+   "M",
+   "[output_integrity_6.json](docs/release/evidence/output_integrity_6.json); disclosed exception [output_integrity_exception_6.json](docs/release/evidence/output_integrity_exception_6.json); approval [output_integrity_approval_6.json](docs/release/evidence/output_integrity_approval_6.json)"
+  ],
+  [
+   "cases in the long-lead identity curves",
+   "6",
+   "M",
+   "[identity_curves_wn3.json](docs/release/evidence/identity_curves_wn3.json)"
+  ],
+  [
+   "worst gate variable, % of its D6 limit, 0\u201324 h",
+   "61",
+   "M",
+   "[identity_curves_wn3.json](docs/release/evidence/identity_curves_wn3.json)"
+  ],
+  [
+   "PROD worst core-field RMSE, % of reference limit",
+   "78",
+   "M",
+   "[identity_curves_prod162.json](docs/release/evidence/identity_curves_prod162.json)"
+  ],
+  [
+   "B200 Tenerife case-hours per hour",
+   "2,380",
+   "I",
+   "extrapolated from B200 runs on old version ([b200_extrapolation.json](docs/release/evidence/b200_extrapolation.json); method docs/release/B200_EXTRAPOLATION.md)"
+  ],
+  [
+   "B200 energy per case-hour (kJ)",
+   "1.0",
+   "I",
+   "extrapolated from B200 runs on old version ([b200_extrapolation.json](docs/release/evidence/b200_extrapolation.json); method docs/release/B200_EXTRAPOLATION.md)"
+  ],
+  [
+   "Tenerife cases fitting a B200",
+   "30",
+   "I",
+   "180 GB \u00f7 (case peak + 1 GiB)"
+  ]
+ ],
+ "missing": []
+}

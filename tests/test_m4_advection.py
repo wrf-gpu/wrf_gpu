@@ -51,7 +51,11 @@ def test_mass_scalar_advection_is_conservative_for_constant_velocity():
     grid = make_ideal_grid(6, 8, 8)
     state, _ = density_current_state(grid)
     u_mass, v_mass, w_mass = mass_face_velocities(state)
-    tendency = advect_mass_scalar(state.theta, u_mass, v_mass, w_mass, grid)
+    # This analytic 1e-10 invariant targets fp64 stencil arithmetic. State.theta
+    # defaults to REAL32 even when JAX x64 is enabled.
+    phi = state.theta.astype(jnp.float64)
+    tendency = advect_mass_scalar(phi, u_mass, v_mass, w_mass, grid)
+    assert tendency.dtype == jnp.float64
     assert abs(float(jnp.sum(tendency))) < 1.0e-10
 
 

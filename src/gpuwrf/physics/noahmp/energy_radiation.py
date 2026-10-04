@@ -33,6 +33,7 @@ from __future__ import annotations
 from typing import NamedTuple
 
 import jax.numpy as jnp
+from gpuwrf.physics.noahmp.precision import real_tree, real_scalar
 
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology, NoahMPRadInputs
@@ -137,7 +138,7 @@ def snow_age(dt, tg, sneqvo, sneqv, tauss, p: "TwoStreamParams"):
 def snowalb_class(qsnow, dt, albold, p: "TwoStreamParams"):
     """SNOWALB_CLASS (:3226-3275, opt_alb=2). Returns (alb, albsnd, albsni)."""
     swemx = _scalar(p.swemx, _SWEMX_DEF)
-    alb = 0.55 + (albold - 0.55) * jnp.exp(-0.01 * dt / 3600.0)
+    alb = 0.55 + (albold - 0.55) * jnp.exp(real_scalar(-0.01 * dt / 3600.0))  # WRF REAL EXP
     alb = jnp.where(
         qsnow > 0.0,
         alb + jnp.minimum(qsnow, swemx / dt) * (0.84 - alb) / (swemx / dt),
@@ -200,7 +201,7 @@ def twostream(ib, ic, cosz, vai, fwet, tveg, albgr_d, albgr_i, rho, tau, fveg, p
     tmp1 = b * b - c * c
     h = jnp.sqrt(tmp1) / avmu
     sigma = tmp0 * tmp0 - tmp1
-    sigma = jnp.where(jnp.abs(sigma) < 1.0e-6, jnp.where(sigma < 0.0, -1.0e-6, 1.0e-6), sigma)
+    sigma = jnp.where(jnp.abs(sigma) < 1.0e-6, jnp.where(sigma < 0.0, real_scalar(-1.0e-6), real_scalar(1.0e-6)), sigma)
     p1 = b + avmu * h
     p2 = b - avmu * h
     p3 = b + tmp0
@@ -268,6 +269,7 @@ def radiation_twostream(
     extras carries ``fsun``/``laisun``/``laisha``/``vai`` for the flux solve and
     the advanced ``tauss``/``albold`` snow-albedo carry.
     """
+    land_state, forcing, static, phen, params = real_tree((land_state, forcing, static, phen, params))
     cosz = forcing.cosz
     elai = phen.elai
     esai = phen.esai

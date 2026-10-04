@@ -261,6 +261,8 @@ class NoahMPFluxes(NamedTuple):
     t2: "jax.Array | None" = None     # land 2-m air temperature [K] -> T2
     t2mv: "jax.Array | None" = None   # 2-m air temp over vegetated tile [K]
     t2mb: "jax.Array | None" = None   # 2-m air temp over bare tile [K]
+    q2: "jax.Array | None" = None     # land 2-m mixing ratio (FVEG-blended Q2MV/Q2MB) [kg/kg] -> Q2
+    history: Any = None  # optional last-step WRF land diagnostics; never re-solved at output
 
 
 __all__ = [

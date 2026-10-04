@@ -48,8 +48,11 @@ the HLO content -- they MUST be excluded from the static key (including them
 would silently fragment the cache and re-introduce the 30-min cost as "warm but
 slow"). The date scalars (``time_utc`` / ``noahmp_julian`` / ``noahmp_yearlen``)
 ride in a date-BLIND ``_DateClockAux`` holder (#114) and flow via the traced
-``clock_base`` (#91), so they are dead inside the compiled fn and MUST hash to a
-fixed sentinel (hashing them would re-fork the cache per date).
+``clock_base`` (#91; since v0.25 S3 also the CLWRF gas clock), so they are dead
+inside the compiled fn and MUST hash to a fixed sentinel (hashing them would
+re-fork the cache per date).  That premise is proven per date in FRESH processes
+(``tests/test_aot_cheap_key.py::test_date_axis_*``): a date-blind key over a
+program with a baked date constant is exactly the S3/F1 silent-wrong-load bug.
 
 Completeness is PROVEN, not asserted: ``tests/test_aot_cheap_key.py`` lowers the
 REAL ``_advance_chunk_fori`` on CPU across a determinant matrix and asserts the
@@ -81,6 +84,7 @@ import functools
 import hashlib
 import importlib
 import os
+import re
 import struct
 from pathlib import Path
 from typing import Any
@@ -103,7 +107,9 @@ __all__ = [
     "HLO_AFFECTING_ENV_DENYLIST",
     "HLO_INERT_ENV_PREFIXES",
     "IMPORT_TIME_ENV_CONSTANTS",
-    "TRACE_REACHABLE_ENV_SCAN_ROOTS",
+    "PROCESS_INFRA_ENV",
+    "is_process_infra_env",
+    "trace_env_is_inert",
 ]
 
 # Bump this tag whenever the key COMPOSITION changes (so an old blob keyed under
@@ -125,7 +131,9 @@ __all__ = [
 #   * canonicalizes only ``TerrainProvenance.source_path`` because the release
 #     probes proved namespace-only path changes produce the same optimized HLO;
 #     content identity and geometry remain load-bearing key inputs.
-KEY_SCHEMA = "GPUWRF-AOTKEY-v3"
+# v4 (2026-10-03, WN3 per-case recompiles): also canonicalizes the input path
+#   inside real-case ``DycoreMetrics.provenance`` (prefix and nz/eta kept).
+KEY_SCHEMA = "GPUWRF-AOTKEY-v4"
 
 
 # --------------------------------------------------------------------------- #
@@ -245,10 +253,16 @@ def _walk(h: "hashlib._Hash", obj: Any, depth: int) -> None:
             type(obj).__module__ == "gpuwrf.contracts.grid"
             and type(obj).__qualname__ == "TerrainProvenance"
         )
+        metrics = (
+            type(obj).__module__ == "gpuwrf.contracts.grid"
+            and type(obj).__qualname__ == "DycoreMetrics"
+        )
         for field in dataclasses.fields(obj):
             _upd(h, b"k", field.name.encode())
             if terrain_provenance and field.name == "source_path":
                 _walk(h, "<terrain-source-path>", depth + 1)
+            elif metrics and field.name == "provenance":
+                _walk(h, _canonical_metrics_provenance(obj.provenance), depth + 1)
             else:
                 _walk(h, getattr(obj, field.name), depth + 1)
         return
@@ -271,6 +285,21 @@ def _walk(h: "hashlib._Hash", obj: Any, depth: int) -> None:
 
     # Last resort: stable repr (enums, frozen scalar configs without dataclass).
     _upd(h, b"r", (cls_name + ":" + repr(obj)).encode())
+
+
+_WRFINPUT_PROVENANCE = re.compile(r"^wrfinput:(?P<path>.+):(?P<geometry>nz=\d+:eta=\(\d+,\))$")
+
+
+def _canonical_metrics_provenance(value: Any) -> Any:
+    """Drop only the input path from real-case ``DycoreMetrics.provenance``.
+
+    ``wrfinput:<path>:nz=N:eta=(M,)`` names WHERE a case was read. The traced
+    program only branches on the ``analytic`` prefix (acoustic_wrf), and the
+    metric arrays are traced leaves. KEY_SCHEMA v4 keeps the prefix and
+    geometry; any other provenance form is hashed unchanged.
+    """
+    match = _WRFINPUT_PROVENANCE.match(value) if isinstance(value, str) else None
+    return "wrfinput:<input-path>:" + match.group("geometry") if match else value
 
 
 def canonical_digest(obj: Any) -> str:
@@ -331,6 +360,14 @@ def _gpuwrf_package_root() -> Path | None:
 # cold->warm blocker -- a concurrent ``domain_tree.py`` edit shifted all 9 keys
 # while the HLO was invariant).
 _TRACE_ROOT_MODULE = "gpuwrf.runtime.operational_mode"
+# The fused nest cascade also traces the force-down (nesting/boundary_construction
+# -> interp) and feedback modules, which operational_mode never imports. They join
+# the keyed closure; orchestration (domain_tree, nested_pipeline) stays outside.
+_TRACE_ROOT_MODULES = (
+    _TRACE_ROOT_MODULE,
+    "gpuwrf.nesting.boundary_construction",
+    "gpuwrf.coupling.boundary_feedback",
+)
 
 
 def _module_to_source_path(module: str, src_root: Path) -> Path | None:
@@ -395,9 +432,9 @@ def _gpuwrf_imports_in_file(path: Path, this_module: str) -> set[str]:
 
 
 def _trace_reachable_source_files(pkg_root: Path) -> list[Path] | None:
-    """The static import closure of :data:`_TRACE_ROOT_MODULE` as ``.py`` paths.
+    """The static import closure of :data:`_TRACE_ROOT_MODULES` as ``.py`` paths.
 
-    BFS over ``gpuwrf*`` imports starting from the traced-body module. The result
+    BFS over ``gpuwrf*`` imports starting from the traced-body modules. The result
     is the SUPERSET of modules whose code can reach the lowered HLO, computed by
     AST only (process-stable). Returns ``None`` if the root module cannot be
     resolved (caller fails open to the whole-tree digest -- NEVER under-scopes)."""
@@ -407,7 +444,7 @@ def _trace_reachable_source_files(pkg_root: Path) -> list[Path] | None:
         return None
     seen: set[str] = set()
     files: set[Path] = set()
-    frontier: list[str] = [_TRACE_ROOT_MODULE]
+    frontier: list[str] = list(_TRACE_ROOT_MODULES)
     while frontier:
         module = frontier.pop()
         if module in seen:
@@ -516,18 +553,34 @@ def source_fingerprint_hash() -> str:
 # not listed here, so this registry cannot silently drift out of date.
 IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
     ("gpuwrf.coupling.boundary_apply", "NORMAL_BDY_RELAX_STRENGTH"),
+    ("gpuwrf.coupling.boundary_apply", "_NATIVE_BOUNDARY_FP32"),
+    ("gpuwrf.dynamics.core.rk_addtend_dry", "_NATIVE_RK_FP32"),
+    ("gpuwrf.dynamics.core.small_step_finish", "_NATIVE_RK_FP32"),
+    ("gpuwrf.dynamics.core.small_step_prep", "_NATIVE_RK_FP32"),
+    ("gpuwrf.dynamics.explicit_diffusion", "_NATIVE_DIFFUSION_FP32"),
+    ("gpuwrf.kernels.rad_mcica", "_LEGACY_FP64"),
+    ("gpuwrf.physics.fp32.surface_layer_real", "_NATIVE_REAL"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_COLUMN_TILING"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_COLUMN_TILE_COLS"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_BOULAC_FP32"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_BOULAC_ONZ"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_SGS_CLOUD"),
+    ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILING"),
+    ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILE_COLS"),
+    ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILE_COLS_EXPLICIT"),
+    ("gpuwrf.physics.rrtmg_lw", "_LW_CLOUD_OPTICS_FP32"),
+    ("gpuwrf.physics.rrtmg_lw", "_MCICA_JUMPAHEAD"),
+    ("gpuwrf.physics.rrtmg_lw", "_FUSED_TRANSFER"),
+    ("gpuwrf.physics.rrtmg_sw", "_SW_COLUMN_TILING"),
+    ("gpuwrf.physics.rrtmg_sw", "_MCICA_JUMPAHEAD"),
+    ("gpuwrf.physics.rrtmg_sw", "_FUSED_QUADRATURE"),
+    ("gpuwrf.physics.rrtmg_sw", "_SW_COLUMN_TILE_COLS"),
+    ("gpuwrf.physics.rrtmg_sw", "_SW_COLUMN_TILE_COLS_EXPLICIT"),
+    ("gpuwrf.physics.thompson_column", "NSED_MAX"),
+    ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILING"),
+    ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILE_COLS"),
+    ("gpuwrf.runtime.operational_mode", "_CARRY_DONATE"),
 )
-
-# Package subtrees whose ``.py`` modules are scanned by the CI env-coverage test
-# for import-time env-derived module constants. Trace-reachable physics/dynamics/
-# coupling/dycore live here.
-TRACE_REACHABLE_ENV_SCAN_ROOTS: tuple[str, ...] = (
-    "gpuwrf/coupling",
-    "gpuwrf/dynamics",
-    "gpuwrf/physics",
-    "gpuwrf/nesting",
-)
-
 
 def module_const_env_hash() -> str:
     """Hash the RESOLVED values of import-time env-derived module constants (P1-5).
@@ -878,6 +931,27 @@ def carry_aval_hash(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
 # to "did we enumerate every trace-time env read?": we do not enumerate the
 # INCLUDE set (which drifts as physics is edited); we enumerate only the small,
 # stable EXCLUDE set of infra knobs.
+# Process placement / run bookkeeping: changes neither the traced programs nor
+# what they allocate, so EVERY key over the environment drops it (the AOT cheap
+# key here, the C-auto memory-plan case key in gpu_allocator). Keep it narrow:
+# the rest of the denylist below is "HLO keyed elsewhere", not "same memory".
+PROCESS_INFRA_ENV: frozenset[str] = frozenset(
+    {
+        # CPU pinning of the GPU-lock holder (with_gpu_lock.sh re-pins the arm to
+        # these cores). A cold and a warm arm with different core plans (wn3 W6:
+        # cold 2 cores, bench 4) otherwise compute different cheap keys -> warm
+        # miss, full re-lower of every domain inside the first segment (SI38).
+        "GPUWRF_GPU_ARM_CPUS",
+        # No reader in traced code: the bench flag-FILE path (its flags are set in
+        # the env and keyed one by one) and the GPU preflight free-VRAM threshold
+        # (runtime/gpu_preflight.py).
+        "GPUWRF_BENCH_FLAGS_ENV",
+        "GPUWRF_MIN_FREE_VRAM_GIB",
+        "GPUWRF_MIN_FREE_VRAM_FRACTION",
+        "GPUWRF_REQUIRE_GPU_LOCK",
+    }
+)
+
 HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
     {
         # Compile-cache / AOT location + behaviour (location, not HLO content).
@@ -887,8 +961,15 @@ HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
         "GPUWRF_NESTED_AOT",
         "GPUWRF_NESTED_AOT_PREWARM",
         "GPUWRF_AOT_VERIFY",
+        # Export format only (attested in AotMeta); both formats load.
+        "GPUWRF_AOT_COMPILED_THUNKS",
+        # JAX persistent-cache entry format only; written after the key.
+        "GPUWRF_JAX_CACHE_COMPILED_THUNKS",
+        "GPUWRF_AOT_SLIM_MODULE",
+        "GPUWRF_AOT_DIRECT_THUNKS",
         "GPUWRF_NESTED_DEFUSE_COMPILE",
         "GPUWRF_NESTED_PARALLEL_COMPILE",
+        "GPUWRF_NESTED_THREADED_COMPILE",
         "GPUWRF_NESTED_PARALLEL_VERIFY",
         "GPUWRF_NESTED_FUSE",
         # Scratch / IO / runtime-process knobs.
@@ -901,7 +982,14 @@ HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
         "GPUWRF_PROOF_WRITE",
         "GPUWRF_OUTPUT_DIR",
         "GPUWRF_TRAINING_OUTPUT_SUBSET",
+        # Host NetCDF persistence thread only. SI52 sync->async reused identical
+        # root/fused HLO but missed both aliases and spent 69.77 s retracing/lowering.
+        "GPUWRF_NESTED_ASYNC_OUTPUT",
         "GPUWRF_WRF_ROOT",
+        # Release-defaults master switch: it only decides which switch VALUES land
+        # in os.environ (gpuwrf._fast_defaults); those values are captured
+        # individually, so the master switch itself carries no HLO information.
+        "GPUWRF_FAST_DEFAULTS",
         # GPU-lock bookkeeping injected by scripts/with_gpu_lock.sh. These are
         # PROCESS-LOCAL infra (the held flag, the lock fd/file, and a per-invocation
         # UNIQUE token + label) with ZERO effect on the traced HLO. They MUST be
@@ -921,7 +1009,7 @@ HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
         # AOT-eligible) so it is in the denylist here to avoid double-count.
         "GPUWRF_ADVANCE_CHUNK_LOOP",
     }
-)
+) | PROCESS_INFRA_ENV
 
 # Infra/bookkeeping ``GPUWRF_*`` PREFIXES that are NEVER HLO determinants. The
 # fail-SAFE auto-discovery in :func:`global_trace_env_hash` captures every unknown
@@ -935,6 +1023,20 @@ HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
 HLO_INERT_ENV_PREFIXES: tuple[str, ...] = (
     "GPUWRF_GPU_LOCK_",
 )
+
+
+def trace_env_is_inert(name: str) -> bool:
+    """True for a ``GPUWRF_*`` infra var that never changes a traced program.
+
+    The single rule behind :func:`global_trace_env_hash`; other keys over the
+    environment (e.g. the C-auto memory-plan case key) reuse it so they cannot
+    drift apart."""
+    return name in HLO_AFFECTING_ENV_DENYLIST or name.startswith(HLO_INERT_ENV_PREFIXES)
+
+
+def is_process_infra_env(name: str) -> bool:
+    """True for process placement / run bookkeeping (:data:`PROCESS_INFRA_ENV`, GPU-lock vars)."""
+    return name in PROCESS_INFRA_ENV or name.startswith(HLO_INERT_ENV_PREFIXES)
 
 
 def global_trace_env_hash() -> str:
@@ -954,12 +1056,10 @@ def global_trace_env_hash() -> str:
     for name, value in os.environ.items():
         if not name.startswith("GPUWRF_"):
             continue
-        if name in HLO_AFFECTING_ENV_DENYLIST:
-            continue
-        # Inert infra namespaces (e.g. per-invocation GPU-lock bookkeeping) are
+        # Infra vars and namespaces (e.g. per-invocation GPU-lock bookkeeping) are
         # process-LOCAL and never branch the HLO; folding them in would fragment
         # the cheap_key per process and break the cross-process warm load.
-        if any(name.startswith(prefix) for prefix in HLO_INERT_ENV_PREFIXES):
+        if trace_env_is_inert(name):
             continue
         captured[name] = value
     payload = {

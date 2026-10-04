@@ -7,8 +7,9 @@ that production carry separate from validation savepoint modules.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -112,6 +113,26 @@ class OperationalCarry:
     # Explicit fp64 WRF base fields for opt-in perturbation-authoritative mixed
     # precision. Appended last so fp64_default carry prefixes stay unchanged.
     base_state: BaseState | None = field(default=None)
+    # WRF radiation driver holds its flux diagnostics between calls. Seeded
+    # to concrete arrays before scanning, read only by the output boundary.
+    radiation_diagnostics: Any = field(default=None)
+    cumulus_tendencies: Any = field(default=None)
+    # Optional resident pre-repair/work telemetry; None has no device leaves.
+    census: Any = field(default=None)
+    # WRF ``h_diabatic`` (K/s): the previous post-RK microphysics theta_m heating
+    # (moist_physics_finish_em) that rk_addtend_dry adds at every RK stage and the
+    # final small_step_finish removes.  Seeded only under WRF-order microphysics;
+    # None keeps the released carry structure.
+    h_diabatic: Any = field(default=None)
+    # WRF history surface fields from the last step's in-step physics
+    # (:class:`HistoryDiagnostics`); None unless GPUWRF_HISTORY_INSTEP_DIAG=1.
+    history_diagnostics: Any = field(default=None)
+    # Full WRF history only: last Noah-MP outputs and per-DT J/m2 sums.
+    # Optional leaves are seeded before scanning, kept on device and restarted.
+    land_history: Any = field(default=None)
+    energy_accumulators: Any = field(default=None)
+    noahmp_precipitation: Any = field(default=None)  # previous-step WRF MP/KF rates, mm/s
+
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -125,6 +146,50 @@ class OperationalCarry:
     def tree_unflatten(cls, aux, children):
         del aux
         return cls(*children)
+
+
+class HistoryDiagnostics(NamedTuple):
+    """WRF history surface fields produced by the last step's in-step physics.
+
+    WRF writes history BEFORE ``solve`` (module_integrate.F:375 vs :393), so the
+    surface fields of a frame at time t are the previous step's ``surface_driver``
+    values on its step-start state (``PSFC = p8w(kts)``, module_surface_driver.F:1988;
+    Noah-MP land T2 overwrite :3469-3473), not a re-solve on the post-step state.
+    Leaves are 2-D WRF REAL, seeded once and cast explicitly on every write.
+    ``hfx`` is ``None`` when ``State`` itself carries HFX.
+    """
+
+    t2: Any
+    q2: Any
+    u10: Any
+    v10: Any
+    lh: Any
+    psfc: Any
+    hfx: Any = None
+
+    def write(self, values: dict[str, Any]) -> "HistoryDiagnostics":
+        """Return the container with ``values`` cast to the seeded leaf dtype/shape."""
+
+        def put(old, new):
+            if old is None:
+                return None
+            return jnp.asarray(new, dtype=old.dtype).reshape(old.shape)
+
+        return HistoryDiagnostics(*(put(getattr(self, name), values[name]) for name in self._fields))
+
+
+def history_instep_diag_enabled() -> bool:
+    """``GPUWRF_HISTORY_INSTEP_DIAG=1`` writes history surface fields from in-step physics."""
+
+    return os.environ.get("GPUWRF_HISTORY_INSTEP_DIAG", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def seed_history_diagnostics(state: State) -> HistoryDiagnostics:
+    """Zero WRF REAL container shaped like ``state.t_skin`` (filled by the first step)."""
+
+    zero = jnp.zeros(jnp.shape(state.t_skin), dtype=jnp.float32)
+    hfx = None if "hfx" in getattr(type(state), "__slots__", ()) else zero
+    return HistoryDiagnostics(t2=zero, q2=zero, u10=zero, v10=zero, lh=zero, psfc=zero, hfx=hfx)
 
 
 def _base_mu(state: State, base_state: BaseState | None = None) -> jax.Array:
@@ -208,4 +273,11 @@ def initial_operational_carry(
     )
 
 
-__all__ = ["OperationalCarry", "PROMOTED_CARRY_EVIDENCE", "initial_operational_carry"]
+__all__ = [
+    "HistoryDiagnostics",
+    "OperationalCarry",
+    "PROMOTED_CARRY_EVIDENCE",
+    "history_instep_diag_enabled",
+    "initial_operational_carry",
+    "seed_history_diagnostics",
+]

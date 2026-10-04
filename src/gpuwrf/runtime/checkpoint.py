@@ -14,6 +14,7 @@ from jax import config
 import numpy as np
 
 from gpuwrf.contracts.state import SCALAR_BOUNDARY_OPTIONAL_LEAVES, State
+from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES
 
 try:  # NoahMPLandState lives in the v0.2.0 land package; import is optional so a
     # pure-dycore checkout without the noahmp package can still read/write v1.
@@ -35,6 +36,9 @@ configure_jax_x64()
 # on any non-prefix divergence). A v3 writer always records the full order.
 FORMAT_VERSION = 3
 SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
+# This State-only checkpoint format has its own held-GWDO schema marker.
+# Inactive legacy checkpoints remain readable; active ones need all four leaves.
+GWDO_CHECKPOINT_SCHEMA_VERSION = 1
 
 # State leaves added after the original (v1/v2) checkpoint schema. The reader
 # backfills any of these absent from an older checkpoint with zeros, so old
@@ -108,11 +112,27 @@ def _validate_state_field_order(recorded: tuple[str, ...]) -> None:
     if recorded != tuple(field for field in expected if field in recorded):
         raise ValueError("checkpoint State field order does not match current State schema")
     missing = tuple(field for field in expected if field not in recorded)
-    if any(leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2 for leaf in missing):
+    optional = (*ADDITIVE_STATE_LEAVES_SINCE_V2, *GWDO_DIAGNOSTIC_LEAVES)
+    if any(leaf not in optional for leaf in missing):
         raise ValueError(
             "checkpoint State field order is missing non-additive leaves: "
-            f"{[leaf for leaf in missing if leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2]}"
+            f"{[leaf for leaf in missing if leaf not in optional]}"
         )
+
+
+def _validate_gwdo_checkpoint_schema(payload: dict[str, Any]) -> None:
+    namelist = payload.get("namelist")
+    gwd_opt = namelist.get("gwd_opt", 0) if isinstance(namelist, dict) else getattr(namelist, "gwd_opt", 0)
+    fields = payload["state_fields"]
+    active = int(gwd_opt) == 1 or any(fields.get(name) is not None for name in GWDO_DIAGNOSTIC_LEAVES)
+    if not active:
+        return
+    # Held stresses came from the preceding pre-PBL inputs, so silently
+    # cold-starting them from the post-RK checkpoint cannot preserve them (E78).
+    if payload.get("gwdo_checkpoint_schema_version") != GWDO_CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("checkpoint GWDO diagnostics schema predates held stresses (E78)")
+    if any(fields.get(name) is None for name in GWDO_DIAGNOSTIC_LEAVES):
+        raise ValueError("checkpoint active GWDO is missing held stress diagnostics (E78)")
 
 
 def _land_field_order() -> tuple[str, ...]:
@@ -156,6 +176,7 @@ def write_checkpoint(
         "state_field_order": list(state.active_field_names()),
         "state_field_count": len(state.active_field_names()),
         "state_fields": _state_to_host_fields(state),
+        "gwdo_checkpoint_schema_version": GWDO_CHECKPOINT_SCHEMA_VERSION,
         "namelist": _hostify_namelist(namelist, host_grid),
         "grid": host_grid,
         "step_index": int(step_index),
@@ -165,6 +186,7 @@ def write_checkpoint(
         "noahmp_land_field_order": None,
         "noahmp_format": None,
     }
+    _validate_gwdo_checkpoint_schema(payload)
     if land_state is not None:
         order = _land_field_order()
         payload["noahmp_land_state"] = _land_to_host_fields(land_state)
@@ -199,6 +221,7 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
     fields = payload.get("state_fields")
     if not isinstance(fields, dict) or set(fields) != set(recorded):
         raise ValueError("checkpoint State fields do not match the recorded field order")
+    _validate_gwdo_checkpoint_schema(payload)
 
     # v2 land carry: exact-match the field order (fail-closed, like State). A v1
     # checkpoint or a v2 with no land carry simply has noahmp_land_state == None.
@@ -225,7 +248,8 @@ def _restore_checkpoint_payload(payload: dict[str, Any]) -> tuple[State, Any, An
     # Construct from the RECORDED leaves only. Append-only additive leaves absent
     # from an older (v1/v2) checkpoint default to None in ``State.__init__``, which
     # backfills them with zeros at the matrix dtype (cold-start the new physics
-    # fields). A v3 checkpoint records all leaves, so nothing is defaulted.
+    # fields). Inactive GWDO leaves stay None; active payloads were schema-checked
+    # above rather than silently cold-starting held diagnostics.
     fields = payload["state_fields"]
     state = State(**{field: jax.device_put(value) for field, value in fields.items()})
     grid = _device_tree(payload["grid"])

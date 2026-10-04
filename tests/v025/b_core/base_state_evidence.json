@@ -1,0 +1,67 @@
+{
+  "experiment": "BC40",
+  "status": "CPU enabler after critic theta-consumer fix; manager LW7 6h D6/S1 pending",
+  "backend": "cpu",
+  "candidate_sources": {
+    "src/gpuwrf/runtime/operational_mode.py": "aa51c8bfdba70720fe3f575cab35718dbd44aca7a82164d17936c643109f66d0",
+    "src/gpuwrf/integration/nested_pipeline.py": "37d39d974601b88faa0175ea05e74fe5e3b8fa7946ef64782321c2e4878373fa",
+    "src/gpuwrf/io/wrfout_writer.py": "073dca7384d16b8b062e671613a3b78756e654fcbcfe3a39f1b6abd6947bf2c4"
+  },
+  "cpu_checks": {
+    "passed": 8,
+    "initial_base": "WRF wrfinput_d01 REAL PB/PHB/MUB,44x3x3 crop; native only",
+    "writer": "full/subset explicit base exact; two nested output boundaries exact",
+    "off": {
+      "backend": "cpu",
+      "baseline_ref": "00b125a1c",
+      "baseline_writer_source_sha256": "f778c345fa592bbb0fa1f4315316e98e7559e8bf9cbdca6edbaf17559b5a16e5",
+      "candidate_writer_source_sha256": "073dca7384d16b8b062e671613a3b78756e654fcbcfe3a39f1b6abd6947bf2c4",
+      "off_files_byte_exact": true,
+      "off_sha256": "171d656a7ac1eee9e3c46c73dc2d3f53483bdceb77516dea7e330dfa1e0c06a9",
+      "existing_pipeline_fixture_adapter": "census_io_ledger=None only; production unchanged",
+      "pytest_rc": 0
+    },
+    "deletion": {
+      "backend": "cpu",
+      "runtime_source_sha256": "c2393b09c4fc1be3af0435da61feaa9d9ff090c819f540cc74ec4b26f2f6f031",
+      "mutation": "remove only native-RK initial BaseState capture if block; production file untouched",
+      "deleted_blocks": 1,
+      "pytest_rc": 1,
+      "expected_failure": "native RK lost its resolved initial WRF base",
+      "deletion_sensitive": true
+    }
+  },
+  "pre_registered_gpu_gate": {
+    "candidate": "LW6t-class + BC40, manager combined LW7 wave",
+    "hours": 6,
+    "hard_dynamic_fields": "all D6 unchanged",
+    "static": [
+      "PHB",
+      "PB",
+      "MUB"
+    ],
+    "PHB_PB_max_abs_limit": 0.2,
+    "d02_hour1_static_drift": "0, or WRF REAL rounding against resolved CPU initial child base"
+  },
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC40_base_state",
+  "cache_dirs": "none; CPU compilation cache disabled; pytest basetemp exact own path; cleanup deferred while QUIET",
+  "theta_consumer_fix": {
+    "gate": "all four dry diffusion tendencies byte-exact to pre-capture consumer on PROD44x5x5 terrain at y29/x48, hypsometric2/specified",
+    "pass": "theta_reference.xml,1/1PASS6.98s",
+    "mutant": {
+      "backend": "cpu",
+      "runtime_source_sha256": "aa51c8bfdba70720fe3f575cab35718dbd44aca7a82164d17936c643109f66d0",
+      "mutation": "restore prior base_state.theta_base consumer for native RK by removing only native-base guard",
+      "production_file_mutated": false,
+      "pytest_rc": 1,
+      "deletion_sensitive": true,
+      "gate": "all four actual diffopt1 dry tendencies exact to pre-capture reference on real PROD44x5x5 terrain crop, hypsometric2/specified",
+      "fixture": "wrfinput_d01",
+      "crop_origin_yx": [
+        29,
+        48
+      ]
+    },
+    "mutant_effect": "243/1100 theta cells differ, max_abs29.34453445 coupled-tendency units; gate rejects"
+  }
+}

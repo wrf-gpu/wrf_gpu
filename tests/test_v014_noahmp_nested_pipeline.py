@@ -361,6 +361,8 @@ def _make_nested_writer(*, async_writer):
     writer._variable_subset = None  # full byte-identical default output
     writer._full_variable_set = False
     writer.written = {"d01": []}
+    writer.census_io_ledger = None  # census OFF, as __init__ sets it by default
+    writer._census_persist_info = {}
     return writer
 
 
@@ -369,10 +371,11 @@ def _drive_nested_writer(writer, *, output_dir, dt_s, run_start):
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from test_m7_netcdf_writer import synthetic_case  # type: ignore
+    from test_m7_netcdf_writer import synthetic_case, writer_authority  # type: ignore
 
     state, grid, namelist = synthetic_case()
     bundle = SimpleNamespace(namelist=namelist, grid=grid)
+    writer.domain_authorities = {"d01": writer_authority(grid, "d01")}
     writer.output_dir = output_dir
     writer.run_start = run_start
     writer.bundles = {"d01": bundle}

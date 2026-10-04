@@ -1,4 +1,4 @@
-"""Noah-MP snow water / compaction / albedo aging (Sprint S3).
+"""Noah-MP snow water / compaction (Sprint S3).
 
 Faithful JAX port of the pristine-WRF Noah-MP snow column
 (``/home/user/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F``):
@@ -11,8 +11,8 @@ Faithful JAX port of the pristine-WRF Noah-MP snow column
   DIVIDE     (:6792-6916)  layer subdivision into <=3 layers
   COMBO      (:6920-6970)  enthalpy-conserving two-node merge
   SNOWH2O    (:7085-7230)  sublimation/frost + liquid percolation -> QSNBOT
-  SNOW_AGE   (:3119-3167)  BATS/Yang97 non-dimensional snow age (TAUSS)
-  SNOWALB_CLASS (:3226-3275, opt_alb=2)  CLASS broadband snow albedo -> ALBOLD
+SNOW_AGE (TAUSS) and SNOWALB_CLASS (ALBOLD) run once per step in ENERGY's ALBEDO (:2925-2945,
+energy_radiation.py), not here.
 
 Active options: opt_snf=1 (Jordan rain/snow handled upstream; SNOWHIN/QSNOW are
 inputs), opt_alb=2 (CLASS albedo). NSNOW=3, ISNOW in {0,-1,-2,-3}.
@@ -52,6 +52,9 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing
+from gpuwrf.kernels.phys_noahmp_columns import column_call, columns_enabled
+from gpuwrf.kernels.phys_noahmp_layers import (  # GPUWRF_NOAHMP_LAYER_SELECT / _LISTS
+    add_layer, lists_enabled, put, set_layer, to_list)
 
 configure_jax_x64()
 
@@ -86,11 +89,6 @@ MAX_LIQ_MASS_FRACTION = 0.4
 # defaults (opt_snf=1 / opt_alb=2 corpus namelist).
 SSI = 0.03                # liquid water holding capacity [m3/m3]
 SNOW_RET_FAC = 5.0e-5     # snowpack water-release timescale factor [1/s]
-SWEMX = 1.00              # new-snow mass to fully cover old snow [mm]
-TAU0 = 1.0e6              # Yang97 eqn.10a
-GRAIN_GROWTH = 5000.0     # Yang97 eqn.10b
-EXTRA_GROWTH = 10.0       # Yang97 eqn.10c
-DIRT_SOOT = 0.3           # Yang97 eqn.10d
 
 
 def _combo(dz1, wliq1, wice1, t1, dz2, wliq2, wice2, t2):
@@ -135,10 +133,10 @@ def _snowfall(isnow, snowh, sneqv, dzsnso, stc, snice, snliq,
     # create a new layer when bulk depth >= 0.025 m (:6588-6596)
     newnode = no_layer & (snowh >= 0.025)
     isnow = jnp.where(newnode, jnp.int32(-1), isnow)
-    dzsnso = dzsnso.at[surf].set(jnp.where(newnode, snowh, dzsnso[surf]))
-    stc = stc.at[surf].set(jnp.where(newnode, jnp.minimum(TFRZ, sfctmp), stc[surf]))
-    snice = snice.at[surf].set(jnp.where(newnode, sneqv, snice[surf]))
-    snliq = snliq.at[surf].set(jnp.where(newnode, jnp.asarray(0.0, dtype), snliq[surf]))
+    dzsnso = set_layer(dzsnso, surf, jnp.where(newnode, snowh, dzsnso[surf]))
+    stc = set_layer(stc, surf, jnp.where(newnode, jnp.minimum(TFRZ, sfctmp), stc[surf]))
+    snice = set_layer(snice, surf, jnp.where(newnode, sneqv, snice[surf]))
+    snliq = set_layer(snliq, surf, jnp.where(newnode, jnp.asarray(0.0, dtype), snliq[surf]))
     snowh = jnp.where(newnode, jnp.asarray(0.0, dtype), snowh)
 
     # snow onto an existing top layer (WRF ISNOW+1 = local NSNOW+isnow) (:6600-6603)
@@ -146,8 +144,8 @@ def _snowfall(isnow, snowh, sneqv, dzsnso, stc, snice, snliq,
     top = NSNOW + isnow                    # local index of WRF layer ISNOW+1
     for k in range(NSNOW):
         hit = add_to_top & (top == k)
-        snice = snice.at[k].set(jnp.where(hit, snice[k] + qsnow * dt, snice[k]))
-        dzsnso = dzsnso.at[k].set(jnp.where(hit, dzsnso[k] + snowhin * dt, dzsnso[k]))
+        snice = set_layer(snice, k, jnp.where(hit, snice[k] + qsnow * dt, snice[k]))
+        dzsnso = set_layer(dzsnso, k, jnp.where(hit, dzsnso[k] + snowhin * dt, dzsnso[k]))
     return isnow, snowh, sneqv, dzsnso, stc, snice, snliq
 
 
@@ -190,7 +188,7 @@ def _compact(isnow, dt, stc, snice, snliq, imelt, ficeold, dzsnso):
             jnp.maximum(dz_compacted, (snice[k] + snliq[k]) / 500.0),
             (snice[k] + snliq[k]) / 50.0,
         )
-        dz_new = dz_new.at[k].set(jnp.where(do_compact, dz_compacted, dz_k))
+        dz_new = set_layer(dz_new, k, jnp.where(do_compact, dz_compacted, dz_k))
         burden = burden + wx
     return dz_new
 
@@ -203,6 +201,8 @@ def _combine(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_s
     collapse to ISNOW=0 (ponding). Phase 3: COMBO-based DZMIN re-merge (ISNOW<-1).
     Only the top soil layer (``sh2o0``/``sice0``) is mutated (over-sublimation).
     """
+    if lists_enabled():
+        return _combine_lists(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_soil)
     surf = NSNOW - 1
     dtype = stc.dtype
     ponding1 = jnp.zeros_like(snowh)
@@ -227,14 +227,14 @@ def _combine(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_s
             into_up = merge_up & (first_k == k)
             if k + 1 < NSNOW:
                 nb = k + 1
-                snliq = snliq.at[nb].set(jnp.where(into_down, snliq[nb] + snliq[k], snliq[nb]))
-                snice = snice.at[nb].set(jnp.where(into_down, snice[nb] + snice[k], snice[nb]))
-                dzsnso = dzsnso.at[nb].set(jnp.where(into_down, dzsnso[nb] + dzsnso[k], dzsnso[nb]))
+                snliq = set_layer(snliq, nb, jnp.where(into_down, snliq[nb] + snliq[k], snliq[nb]))
+                snice = set_layer(snice, nb, jnp.where(into_down, snice[nb] + snice[k], snice[nb]))
+                dzsnso = set_layer(dzsnso, nb, jnp.where(into_down, dzsnso[nb] + dzsnso[k], dzsnso[nb]))
             if k - 1 >= 0:
                 nb = k - 1
-                snliq = snliq.at[nb].set(jnp.where(into_up, snliq[nb] + snliq[k], snliq[nb]))
-                snice = snice.at[nb].set(jnp.where(into_up, snice[nb] + snice[k], snice[nb]))
-                dzsnso = dzsnso.at[nb].set(jnp.where(into_up, dzsnso[nb] + dzsnso[k], dzsnso[nb]))
+                snliq = set_layer(snliq, nb, jnp.where(into_up, snliq[nb] + snliq[k], snliq[nb]))
+                snice = set_layer(snice, nb, jnp.where(into_up, snice[nb] + snice[k], snice[nb]))
+                dzsnso = set_layer(dzsnso, nb, jnp.where(into_up, dzsnso[nb] + dzsnso[k], dzsnso[nb]))
 
         # case C: single surface layer -> ponding (:6667-6682)
         snice_pos = clear_single & (snice[surf] >= 0.0)
@@ -251,19 +251,19 @@ def _combine(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_s
 
         for k in range(NSNOW):
             hit = has_removable & (first_k == k)
-            snliq = snliq.at[k].set(jnp.where(hit, jnp.asarray(0.0, dtype), snliq[k]))
-            snice = snice.at[k].set(jnp.where(hit, jnp.asarray(0.0, dtype), snice[k]))
-            dzsnso = dzsnso.at[k].set(jnp.where(hit, jnp.asarray(0.0, dtype), dzsnso[k]))
+            snliq = set_layer(snliq, k, jnp.where(hit, jnp.asarray(0.0, dtype), snliq[k]))
+            snice = set_layer(snice, k, jnp.where(hit, jnp.asarray(0.0, dtype), snice[k]))
+            dzsnso = set_layer(dzsnso, k, jnp.where(hit, jnp.asarray(0.0, dtype), dzsnso[k]))
 
         # shift slots above removed toward surface (:6688-6696)
         do_shift = has_removable & (first_k > (NSNOW + isnow)) & (isnow < -1)
         firstactive = NSNOW + isnow
         for k in range(NSNOW - 1, 0, -1):
             in_range = do_shift & (k <= first_k) & (k >= firstactive + 1)
-            stc = stc.at[k].set(jnp.where(in_range, stc[k - 1], stc[k]))
-            snliq = snliq.at[k].set(jnp.where(in_range, snliq[k - 1], snliq[k]))
-            snice = snice.at[k].set(jnp.where(in_range, snice[k - 1], snice[k]))
-            dzsnso = dzsnso.at[k].set(jnp.where(in_range, dzsnso[k - 1], dzsnso[k]))
+            stc = set_layer(stc, k, jnp.where(in_range, stc[k - 1], stc[k]))
+            snliq = set_layer(snliq, k, jnp.where(in_range, snliq[k - 1], snliq[k]))
+            snice = set_layer(snice, k, jnp.where(in_range, snice[k - 1], snice[k]))
+            dzsnso = set_layer(dzsnso, k, jnp.where(in_range, dzsnso[k - 1], dzsnso[k]))
 
         isnow = jnp.where(has_removable, isnow + 1, isnow)
 
@@ -323,32 +323,204 @@ def _combine(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_s
                 dzc, wlc, wic, tc = _combo(
                     dzsnso[k], snliq[k], snice[k], stc[k],
                     dzsnso[k - 1], snliq[k - 1], snice[k - 1], stc[k - 1])
-                dzsnso = dzsnso.at[k].set(jnp.where(up, dzc, dzsnso[k]))
-                snliq = snliq.at[k].set(jnp.where(up, wlc, snliq[k]))
-                snice = snice.at[k].set(jnp.where(up, wic, snice[k]))
-                stc = stc.at[k].set(jnp.where(up, tc, stc[k]))
+                dzsnso = set_layer(dzsnso, k, jnp.where(up, dzc, dzsnso[k]))
+                snliq = set_layer(snliq, k, jnp.where(up, wlc, snliq[k]))
+                snice = set_layer(snice, k, jnp.where(up, wic, snice[k]))
+                stc = set_layer(stc, k, jnp.where(up, tc, stc[k]))
             down = sel & (~neibor_up)
             if k + 1 < NSNOW:
                 dzc, wlc, wic, tc = _combo(
                     dzsnso[k + 1], snliq[k + 1], snice[k + 1], stc[k + 1],
                     dzsnso[k], snliq[k], snice[k], stc[k])
-                dzsnso = dzsnso.at[k + 1].set(jnp.where(down, dzc, dzsnso[k + 1]))
-                snliq = snliq.at[k + 1].set(jnp.where(down, wlc, snliq[k + 1]))
-                snice = snice.at[k + 1].set(jnp.where(down, wic, snice[k + 1]))
-                stc = stc.at[k + 1].set(jnp.where(down, tc, stc[k + 1]))
+                dzsnso = set_layer(dzsnso, k + 1, jnp.where(down, dzc, dzsnso[k + 1]))
+                snliq = set_layer(snliq, k + 1, jnp.where(down, wlc, snliq[k + 1]))
+                snice = set_layer(snice, k + 1, jnp.where(down, wic, snice[k + 1]))
+                stc = set_layer(stc, k + 1, jnp.where(down, tc, stc[k + 1]))
 
         l_local = jnp.where(neibor_up, first_k - 1, first_k)
         do_shift = has_thin
         for k in range(NSNOW - 1, 0, -1):
             in_range = do_shift & (k <= l_local) & (k >= firstactive + 1)
-            stc = stc.at[k].set(jnp.where(in_range, stc[k - 1], stc[k]))
-            snliq = snliq.at[k].set(jnp.where(in_range, snliq[k - 1], snliq[k]))
-            snice = snice.at[k].set(jnp.where(in_range, snice[k - 1], snice[k]))
-            dzsnso = dzsnso.at[k].set(jnp.where(in_range, dzsnso[k - 1], dzsnso[k]))
+            stc = set_layer(stc, k, jnp.where(in_range, stc[k - 1], stc[k]))
+            snliq = set_layer(snliq, k, jnp.where(in_range, snliq[k - 1], snliq[k]))
+            snice = set_layer(snice, k, jnp.where(in_range, snice[k - 1], snice[k]))
+            dzsnso = set_layer(dzsnso, k, jnp.where(in_range, dzsnso[k - 1], dzsnso[k]))
 
         isnow = jnp.where(has_thin, isnow + 1, isnow)
 
     return isnow, snowh, sneqv, sh2o0, sice0, ponding1, ponding2, stc, snice, snliq, dzsnso
+
+
+def _first_layer(flags, big):
+    """``min(where(flags, ks, big), axis=0)`` over the layer list (integer: order-free)."""
+    first = jnp.where(flags[0], 0, big)
+    for k in range(1, len(flags)):
+        first = jnp.minimum(first, jnp.where(flags[k], k, big))
+    return first
+
+
+def _combine_lists(isnow, sh2o0, sice0, stc, snice, snliq, dzsnso, snowh, sneqv, dz1_soil, as_lists=False):
+    """:func:`_combine` on per-layer lists (GPUWRF_NOAHMP_LAYER_LISTS): every slot update is the
+    same expression as the array form's ``set_layer``, in the same order; stacked once."""
+    surf = NSNOW - 1
+    dtype = to_list(stc)[0].dtype
+    ponding1 = jnp.zeros_like(snowh)
+    ponding2 = jnp.zeros_like(snowh)
+    big = NSNOW + 5
+    T, I, L, Z = to_list(stc), to_list(snice), to_list(snliq), to_list(dzsnso)
+    tT, tI, tL, tZ = T[0].dtype, I[0].dtype, L[0].dtype, Z[0].dtype
+    zero = jnp.asarray(0.0, dtype)
+
+    def active_of(isnow):
+        return [k >= (NSNOW + isnow) for k in range(NSNOW)]
+
+    # ---- Phase 1: thin-layer (SNICE<=0.1) collapse & shift -------------------
+    for _ in range(NSNOW):
+        active = active_of(isnow)
+        first_k = _first_layer([active[k] & (I[k] <= 0.1) for k in range(NSNOW)], big)
+        has_removable = first_k < big
+
+        j_is_surface = first_k == surf
+        merge_down = has_removable & (~j_is_surface)
+        merge_up = has_removable & j_is_surface & (isnow < -1)
+        clear_single = has_removable & j_is_surface & (isnow == -1)
+
+        for k in range(NSNOW):
+            into_down = merge_down & (first_k == k)
+            into_up = merge_up & (first_k == k)
+            if k + 1 < NSNOW:
+                nb = k + 1
+                put(L, nb, jnp.where(into_down, L[nb] + L[k], L[nb]), tL)
+                put(I, nb, jnp.where(into_down, I[nb] + I[k], I[nb]), tI)
+                put(Z, nb, jnp.where(into_down, Z[nb] + Z[k], Z[nb]), tZ)
+            if k - 1 >= 0:
+                nb = k - 1
+                put(L, nb, jnp.where(into_up, L[nb] + L[k], L[nb]), tL)
+                put(I, nb, jnp.where(into_up, I[nb] + I[k], I[nb]), tI)
+                put(Z, nb, jnp.where(into_up, Z[nb] + Z[k], Z[nb]), tZ)
+
+        # case C: single surface layer -> ponding (:6667-6682)
+        snice_pos = clear_single & (I[surf] >= 0.0)
+        snice_neg = clear_single & (I[surf] < 0.0)
+        ponding1 = jnp.where(snice_pos, L[surf], ponding1)
+        sneqv = jnp.where(snice_pos, I[surf], sneqv)
+        snowh = jnp.where(snice_pos, Z[surf], snowh)
+        pond_neg = L[surf] + I[surf]
+        sub_to_soil = snice_neg & (pond_neg < 0.0)
+        sice0 = jnp.where(sub_to_soil, sice0 + pond_neg / (dz1_soil * 1000.0), sice0)
+        ponding1 = jnp.where(snice_neg, jnp.where(pond_neg < 0.0, zero, pond_neg), ponding1)
+        sneqv = jnp.where(snice_neg, zero, sneqv)
+        snowh = jnp.where(snice_neg, zero, snowh)
+
+        for k in range(NSNOW):
+            hit = has_removable & (first_k == k)
+            put(L, k, jnp.where(hit, zero, L[k]), tL)
+            put(I, k, jnp.where(hit, zero, I[k]), tI)
+            put(Z, k, jnp.where(hit, zero, Z[k]), tZ)
+
+        # shift slots above removed toward surface (:6688-6696)
+        do_shift = has_removable & (first_k > (NSNOW + isnow)) & (isnow < -1)
+        firstactive = NSNOW + isnow
+        for k in range(NSNOW - 1, 0, -1):
+            in_range = do_shift & (k <= first_k) & (k >= firstactive + 1)
+            put(T, k, jnp.where(in_range, T[k - 1], T[k]), tT)
+            put(L, k, jnp.where(in_range, L[k - 1], L[k]), tL)
+            put(I, k, jnp.where(in_range, I[k - 1], I[k]), tI)
+            put(Z, k, jnp.where(in_range, Z[k - 1], Z[k]), tZ)
+
+        isnow = jnp.where(has_removable, isnow + 1, isnow)
+
+    # over-sublimation soil correction (:6703-6706)
+    neg_sice = sice0 < 0.0
+    sh2o0 = jnp.where(neg_sice, sh2o0 + sice0, sh2o0)
+    sice0 = jnp.where(neg_sice, zero, sice0)
+
+    still_multi = isnow < 0
+
+    # ---- re-sum SWE/SNOWH & total-collapse check (:6710-6731) ----------------
+    active = active_of(isnow)
+
+    def layer_sum(values):
+        total = values[0]
+        for value in values[1:]:
+            total = total + value
+        return total
+
+    sneqv_sum = layer_sum([jnp.where(active[k], I[k] + L[k], 0.0) for k in range(NSNOW)])
+    snowh_sum = layer_sum([jnp.where(active[k], Z[k], 0.0) for k in range(NSNOW)])
+    zwice = layer_sum([jnp.where(active[k], I[k], 0.0) for k in range(NSNOW)])
+    zwliq = layer_sum([jnp.where(active[k], L[k], 0.0) for k in range(NSNOW)])
+    sneqv = jnp.where(still_multi, sneqv_sum, sneqv)
+    snowh = jnp.where(still_multi, snowh_sum, snowh)
+
+    collapse = still_multi & (snowh < 0.025)
+    isnow = jnp.where(collapse, jnp.int32(0), isnow)
+    sneqv = jnp.where(collapse, zwice, sneqv)
+    ponding2 = jnp.where(collapse, zwliq, ponding2)
+    snowh = jnp.where(collapse & (zwice <= 0.0), zero, snowh)
+
+    # ---- phase 3: DZMIN COMBO re-merge when ISNOW < -1 (:6736-6786) ----------
+    dzmin = [jnp.asarray(value, dtype) for value in DZMIN]
+    for _ in range(NSNOW):
+        active = active_of(isnow)
+        firstactive = NSNOW + isnow
+        thin = []
+        for k in range(NSNOW):
+            pos_clamped = jnp.clip(k - firstactive, 0, NSNOW - 1)
+            thr = dzmin[NSNOW - 1]
+            for j in range(NSNOW - 2, -1, -1):
+                thr = jnp.where(pos_clamped == j, dzmin[j], thr)
+            thin.append(active[k] & (Z[k] < thr) & (isnow < -1))
+        first_k = _first_layer(thin, big)
+        has_thin = first_k < big
+
+        is_top = first_k == firstactive
+        is_surf = first_k == surf
+        dz_im1 = jnp.zeros_like(snowh)
+        dz_i = jnp.zeros_like(snowh)
+        dz_ip1 = jnp.zeros_like(snowh)
+        for k in range(NSNOW):
+            sel = has_thin & (first_k == k)
+            dz_i = jnp.where(sel, Z[k], dz_i)
+            if k - 1 >= 0:
+                dz_im1 = jnp.where(sel, Z[k - 1], dz_im1)
+            if k + 1 < NSNOW:
+                dz_ip1 = jnp.where(sel, Z[k + 1], dz_ip1)
+        prefer_up = (dz_im1 + dz_i) < (dz_ip1 + dz_i)
+        neibor_up = is_surf | ((~is_top) & prefer_up)
+
+        for k in range(NSNOW):
+            sel = has_thin & (first_k == k)
+            up = sel & neibor_up
+            if k - 1 >= 0:
+                dzc, wlc, wic, tc = _combo(Z[k], L[k], I[k], T[k], Z[k - 1], L[k - 1], I[k - 1], T[k - 1])
+                put(Z, k, jnp.where(up, dzc, Z[k]), tZ)
+                put(L, k, jnp.where(up, wlc, L[k]), tL)
+                put(I, k, jnp.where(up, wic, I[k]), tI)
+                put(T, k, jnp.where(up, tc, T[k]), tT)
+            down = sel & (~neibor_up)
+            if k + 1 < NSNOW:
+                dzc, wlc, wic, tc = _combo(Z[k + 1], L[k + 1], I[k + 1], T[k + 1], Z[k], L[k], I[k], T[k])
+                put(Z, k + 1, jnp.where(down, dzc, Z[k + 1]), tZ)
+                put(L, k + 1, jnp.where(down, wlc, L[k + 1]), tL)
+                put(I, k + 1, jnp.where(down, wic, I[k + 1]), tI)
+                put(T, k + 1, jnp.where(down, tc, T[k + 1]), tT)
+
+        l_local = jnp.where(neibor_up, first_k - 1, first_k)
+        do_shift = has_thin
+        for k in range(NSNOW - 1, 0, -1):
+            in_range = do_shift & (k <= l_local) & (k >= firstactive + 1)
+            put(T, k, jnp.where(in_range, T[k - 1], T[k]), tT)
+            put(L, k, jnp.where(in_range, L[k - 1], L[k]), tL)
+            put(I, k, jnp.where(in_range, I[k - 1], I[k]), tI)
+            put(Z, k, jnp.where(in_range, Z[k - 1], Z[k]), tZ)
+
+        isnow = jnp.where(has_thin, isnow + 1, isnow)
+
+    if as_lists:
+        return isnow, snowh, sneqv, sh2o0, sice0, ponding1, ponding2, T, I, L, Z
+    return (isnow, snowh, sneqv, sh2o0, sice0, ponding1, ponding2,
+            jnp.stack(T), jnp.stack(I), jnp.stack(L), jnp.stack(Z))
 
 
 def _divide(isnow, stc, snice, snliq, dzsnso):
@@ -389,13 +561,13 @@ def _divide(isnow, stc, snice, snliq, dzsnso):
     half_dz = dz[0] / 2.0
     half_wi = swice[0] / 2.0
     half_wl = swliq[0] / 2.0
-    dz = dz.at[0].set(jnp.where(split1, half_dz, dz[0]))
-    swice = swice.at[0].set(jnp.where(split1, half_wi, swice[0]))
-    swliq = swliq.at[0].set(jnp.where(split1, half_wl, swliq[0]))
-    dz = dz.at[1].set(jnp.where(split1, half_dz, dz[1]))
-    swice = swice.at[1].set(jnp.where(split1, half_wi, swice[1]))
-    swliq = swliq.at[1].set(jnp.where(split1, half_wl, swliq[1]))
-    tsno = tsno.at[1].set(jnp.where(split1, tsno[0], tsno[1]))
+    dz = set_layer(dz, 0, jnp.where(split1, half_dz, dz[0]))
+    swice = set_layer(swice, 0, jnp.where(split1, half_wi, swice[0]))
+    swliq = set_layer(swliq, 0, jnp.where(split1, half_wl, swliq[0]))
+    dz = set_layer(dz, 1, jnp.where(split1, half_dz, dz[1]))
+    swice = set_layer(swice, 1, jnp.where(split1, half_wi, swice[1]))
+    swliq = set_layer(swliq, 1, jnp.where(split1, half_wl, swliq[1]))
+    tsno = set_layer(tsno, 1, jnp.where(split1, tsno[0], tsno[1]))
     msno = jnp.where(split1, jnp.int32(2), msno)
 
     # MSNO>1: trim top to 0.05, COMBO excess into layer 2 (:6851-6884)
@@ -409,13 +581,13 @@ def _divide(isnow, stc, snice, snliq, dzsnso):
     new_swice0 = propor2 * swice[0]
     new_swliq0 = propor2 * swliq[0]
     dzc, wlc, wic, tc = _combo(dz[1], swliq[1], swice[1], tsno[1], drr, zwliq, zwice, tsno[0])
-    swice = swice.at[0].set(jnp.where(do2, new_swice0, swice[0]))
-    swliq = swliq.at[0].set(jnp.where(do2, new_swliq0, swliq[0]))
-    dz = dz.at[0].set(jnp.where(do2, jnp.asarray(DZ_SPLIT1, dtype), dz[0]))
-    dz = dz.at[1].set(jnp.where(do2, dzc, dz[1]))
-    swliq = swliq.at[1].set(jnp.where(do2, wlc, swliq[1]))
-    swice = swice.at[1].set(jnp.where(do2, wic, swice[1]))
-    tsno = tsno.at[1].set(jnp.where(do2, tc, tsno[1]))
+    swice = set_layer(swice, 0, jnp.where(do2, new_swice0, swice[0]))
+    swliq = set_layer(swliq, 0, jnp.where(do2, new_swliq0, swliq[0]))
+    dz = set_layer(dz, 0, jnp.where(do2, jnp.asarray(DZ_SPLIT1, dtype), dz[0]))
+    dz = set_layer(dz, 1, jnp.where(do2, dzc, dz[1]))
+    swliq = set_layer(swliq, 1, jnp.where(do2, wlc, swliq[1]))
+    swice = set_layer(swice, 1, jnp.where(do2, wic, swice[1]))
+    tsno = set_layer(tsno, 1, jnp.where(do2, tc, tsno[1]))
 
     # subdivide layer 2 if MSNO<=2 and DZ(2)>0.20 (:6866-6883)
     split2 = do2 & (msno <= 2) & (dz[1] > DZ_SPLIT2)
@@ -424,16 +596,16 @@ def _divide(isnow, stc, snice, snliq, dzsnso):
     half_dz2 = dz[1] / 2.0
     half_wi2 = swice[1] / 2.0
     half_wl2 = swliq[1] / 2.0
-    dz = dz.at[1].set(jnp.where(split2, half_dz2, dz[1]))
-    swice = swice.at[1].set(jnp.where(split2, half_wi2, swice[1]))
-    swliq = swliq.at[1].set(jnp.where(split2, half_wl2, swliq[1]))
-    dz = dz.at[2].set(jnp.where(split2, half_dz2, dz[2]))
-    swice = swice.at[2].set(jnp.where(split2, half_wi2, swice[2]))
-    swliq = swliq.at[2].set(jnp.where(split2, half_wl2, swliq[2]))
+    dz = set_layer(dz, 1, jnp.where(split2, half_dz2, dz[1]))
+    swice = set_layer(swice, 1, jnp.where(split2, half_wi2, swice[1]))
+    swliq = set_layer(swliq, 1, jnp.where(split2, half_wl2, swliq[1]))
+    dz = set_layer(dz, 2, jnp.where(split2, half_dz2, dz[2]))
+    swice = set_layer(swice, 2, jnp.where(split2, half_wi2, swice[2]))
+    swliq = set_layer(swliq, 2, jnp.where(split2, half_wl2, swliq[2]))
     tsno3 = tsno[1] - dtdz * half_dz2 / 2.0
     warm3 = tsno3 >= TFRZ
-    tsno = tsno.at[2].set(jnp.where(split2, jnp.where(warm3, tsno[1], tsno3), tsno[2]))
-    tsno = tsno.at[1].set(jnp.where(split2 & (~warm3), tsno[1] + dtdz * half_dz2 / 2.0, tsno[1]))
+    tsno = set_layer(tsno, 2, jnp.where(split2, jnp.where(warm3, tsno[1], tsno3), tsno[2]))
+    tsno = set_layer(tsno, 1, jnp.where(split2 & (~warm3), tsno[1] + dtdz * half_dz2 / 2.0, tsno[1]))
     msno = jnp.where(split2, jnp.int32(3), msno)
 
     # MSNO>2: trim layer2 to 0.2, COMBO excess into layer 3 (:6887-6900)
@@ -447,13 +619,13 @@ def _divide(isnow, stc, snice, snliq, dzsnso):
     new_swice1 = propor3b * swice[1]
     new_swliq1 = propor3b * swliq[1]
     dzc3, wlc3, wic3, tc3 = _combo(dz[2], swliq[2], swice[2], tsno[2], drr3, zwliq3, zwice3, tsno[1])
-    swice = swice.at[1].set(jnp.where(do3, new_swice1, swice[1]))
-    swliq = swliq.at[1].set(jnp.where(do3, new_swliq1, swliq[1]))
-    dz = dz.at[1].set(jnp.where(do3, jnp.asarray(DZ_SPLIT2, dtype), dz[1]))
-    dz = dz.at[2].set(jnp.where(do3, dzc3, dz[2]))
-    swliq = swliq.at[2].set(jnp.where(do3, wlc3, swliq[2]))
-    swice = swice.at[2].set(jnp.where(do3, wic3, swice[2]))
-    tsno = tsno.at[2].set(jnp.where(do3, tc3, tsno[2]))
+    swice = set_layer(swice, 1, jnp.where(do3, new_swice1, swice[1]))
+    swliq = set_layer(swliq, 1, jnp.where(do3, new_swliq1, swliq[1]))
+    dz = set_layer(dz, 1, jnp.where(do3, jnp.asarray(DZ_SPLIT2, dtype), dz[1]))
+    dz = set_layer(dz, 2, jnp.where(do3, dzc3, dz[2]))
+    swliq = set_layer(swliq, 2, jnp.where(do3, wlc3, swliq[2]))
+    swice = set_layer(swice, 2, jnp.where(do3, wic3, swice[2]))
+    tsno = set_layer(tsno, 2, jnp.where(do3, tc3, tsno[2]))
 
     isnow_new = -msno
 
@@ -474,10 +646,10 @@ def _divide(isnow, stc, snice, snliq, dzsnso):
             wi_l = jnp.where(sel, swice[m], wi_l)
             wl_l = jnp.where(sel, swliq[m], wl_l)
             t_l = jnp.where(sel, tsno[m], t_l)
-        dzsnso = dzsnso.at[local].set(jnp.where(act, dz_l, dzsnso[local]))
-        snice = snice.at[local].set(jnp.where(act, wi_l, snice[local]))
-        snliq = snliq.at[local].set(jnp.where(act, wl_l, snliq[local]))
-        stc = stc.at[local].set(jnp.where(act, t_l, stc[local]))
+        dzsnso = set_layer(dzsnso, local, jnp.where(act, dz_l, dzsnso[local]))
+        snice = set_layer(snice, local, jnp.where(act, wi_l, snice[local]))
+        snliq = set_layer(snliq, local, jnp.where(act, wl_l, snliq[local]))
+        stc = set_layer(stc, local, jnp.where(act, t_l, stc[local]))
 
     return isnow_new, stc, snice, snliq, dzsnso
 
@@ -530,7 +702,7 @@ def _snowh2o(isnow, dzsnso, snowh, sneqv, snice, snliq, sh2o0, sice0, stc,
     for k in range(NSNOW):
         is_top = multilayer & (top == k)
         wgdif = snice[k] - qsnsub * dt + qsnfro * dt
-        snice = snice.at[k].set(jnp.where(is_top, wgdif, snice[k]))
+        snice = set_layer(snice, k, jnp.where(is_top, wgdif, snice[k]))
         wgdif_lt = wgdif_lt | (is_top & (wgdif < 1.0e-6))
 
     # embedded COMBINE when WGDIF<1e-6 (:7182-7187), masked re-call
@@ -557,7 +729,7 @@ def _snowh2o(isnow, dzsnso, snowh, sneqv, snice, snliq, sh2o0, sice0, stc,
     top = NSNOW + isnow
     for k in range(NSNOW):
         is_top = multilayer & (top == k)
-        snliq = snliq.at[k].set(jnp.where(is_top, jnp.maximum(0.0, snliq[k] + qrain * dt), snliq[k]))
+        snliq = set_layer(snliq, k, jnp.where(is_top, jnp.maximum(0.0, snliq[k] + qrain * dt), snliq[k]))
 
     # porosity + percolation top->surface (:7198-7224), branch-free sweep
     active = _active_mask(isnow)
@@ -582,7 +754,7 @@ def _snowh2o(isnow, dzsnso, snowh, sneqv, snice, snliq, sh2o0, sice0, stc,
         excess = snliq_k - MAX_LIQ_MASS_FRACTION / (1.0 - MAX_LIQ_MASS_FRACTION) * snice[k]
         qout_k = jnp.where(over, qout_k + excess, qout_k)
         snliq_k = jnp.where(over, MAX_LIQ_MASS_FRACTION / (1.0 - MAX_LIQ_MASS_FRACTION) * snice[k], snliq_k)
-        snliq = snliq.at[k].set(jnp.where(act, snliq_k, snliq[k]))
+        snliq = set_layer(snliq, k, jnp.where(act, snliq_k, snliq[k]))
         qout = jnp.where(act, qout_k, qout)
         qin = jnp.where(act, qout_k, qin)
 
@@ -597,6 +769,19 @@ def _snowwater_column(isnow, snowh, sneqv, snice, snliq, sh2o, sice, stc_snow,
                       zsoil, qsnow, snowhin, qsnfro, qsnsub, qrain, sfctmp,
                       ficeold, imelt, dzsnso, dt):
     """SNOWWATER driver (:6398-6535). All snow arrays top-aligned (axis 0)."""
+    if lists_enabled():  # GPUWRF_NOAHMP_LAYER_LISTS (+ _COLUMN_KERNELS: one column kernel, #14)
+        args = (isnow, snowh, sneqv, to_list(snice), to_list(snliq), sh2o, sice, to_list(stc_snow),
+                to_list(zsoil), qsnow, snowhin, qsnfro, qsnsub, qrain, sfctmp, to_list(ficeold),
+                to_list(imelt), to_list(dzsnso), dt)
+        if columns_enabled():
+            out = column_call(_snowwater_column_lists, args, grid_shape=jnp.shape(snowh),
+                              name="b_core_noah_snowwater")
+        else:
+            out = _snowwater_column_lists(*args)
+        (isnow, snowh, sneqv, snice, snliq, sh2o, sice, stc_snow, dzsnso, zsnso,
+         qsnbot, snoflow, ponding1, ponding2) = out
+        return (isnow, snowh, sneqv, jnp.stack(snice), jnp.stack(snliq), sh2o, sice, jnp.stack(stc_snow),
+                jnp.stack(dzsnso), jnp.stack(zsnso), qsnbot, snoflow, ponding1, ponding2)
     surf = NSNOW - 1
     dz1_soil = -zsoil[0]            # DZSNSO(1) = ZSOIL(1) magnitude
 
@@ -638,8 +823,8 @@ def _snowwater_column(isnow, snowh, sneqv, snice, snliq, sh2o, sice, stc_snow,
     bdsnow = snice[surf] / dz_surf_safe
     bdsnow_safe = jnp.where(bdsnow > 0.0, bdsnow, 1.0)
     snoflow_mass = sneqv - 5000.0
-    snice = snice.at[surf].set(jnp.where(glacier, snice[surf] - snoflow_mass, snice[surf]))
-    dzsnso = dzsnso.at[surf].set(jnp.where(glacier, dzsnso[surf] - snoflow_mass / bdsnow_safe, dzsnso[surf]))
+    snice = set_layer(snice, surf, jnp.where(glacier, snice[surf] - snoflow_mass, snice[surf]))
+    dzsnso = set_layer(dzsnso, surf, jnp.where(glacier, dzsnso[surf] - snoflow_mass / bdsnow_safe, dzsnso[surf]))
     snoflow = jnp.where(glacier, snoflow_mass / dt, 0.0)
 
     # re-sum SWE for layered snow (:6500-6505)
@@ -673,32 +858,356 @@ def _snowwater_column(isnow, snowh, sneqv, snice, snliq, sh2o, sice, stc_snow,
             zsnso_full, qsnbot, snoflow, ponding1, ponding2)
 
 
-def _snow_age(dt, tg, sneqvo, sneqv, tauss):
-    """SNOW_AGE (:3119-3167). Returns (tauss, fage). Branch-free."""
-    dela0 = dt / TAU0
-    tg_safe = jnp.where(tg > 0.0, tg, TFRZ)
-    arg = GRAIN_GROWTH * (1.0 / TFRZ - 1.0 / tg_safe)
-    age1 = jnp.exp(arg)
-    age2 = jnp.exp(jnp.minimum(0.0, EXTRA_GROWTH * arg))
-    age3 = DIRT_SOOT
-    tage = age1 + age2 + age3
-    dela = dela0 * tage
-    dels = jnp.maximum(0.0, sneqv - sneqvo) / SWEMX
-    sge = (tauss + dela) * (1.0 - dels)
-    tauss_new = jnp.where(sneqv <= 0.0, jnp.asarray(0.0, tauss.dtype), jnp.maximum(0.0, sge))
-    fage = tauss_new / (tauss_new + 1.0)
-    return tauss_new, fage
+def _layer_sum(values):
+    total = values[0]
+    for value in values[1:]:
+        total = total + value
+    return total
 
 
-def _snowalb_class(qsnow, dt, albold):
-    """SNOWALB_CLASS (:3226-3275, opt_alb=2). Returns new broadband ALB."""
-    alb = 0.55 + (albold - 0.55) * jnp.exp(-0.01 * dt / 3600.0)
-    fresh = qsnow > 0.0
-    alb_fresh = alb + jnp.minimum(qsnow, SWEMX / dt) * (0.84 - alb) / (SWEMX / dt)
-    return jnp.where(fresh, alb_fresh, alb)
+def _active_list(isnow):
+    return [k >= (NSNOW + isnow) for k in range(NSNOW)]
 
 
-@partial(jax.jit, static_argnames=("dt",))
+def _snowfall_lists(isnow, snowh, sneqv, Z, T, I, L, qsnow, snowhin, sfctmp, dt):
+    """:func:`_snowfall` on per-layer lists (same slot updates, same order)."""
+    surf = NSNOW - 1
+    dtype = T[0].dtype
+    Z, T, I, L = list(Z), list(T), list(I), list(L)
+    tZ, tI, tL = Z[0].dtype, I[0].dtype, L[0].dtype
+    no_layer = isnow == 0
+    add_bulk = no_layer & (qsnow > 0.0)
+    snowh = jnp.where(add_bulk, snowh + snowhin * dt, snowh)
+    sneqv = jnp.where(add_bulk, sneqv + qsnow * dt, sneqv)
+    newnode = no_layer & (snowh >= 0.025)
+    isnow = jnp.where(newnode, jnp.int32(-1), isnow)
+    put(Z, surf, jnp.where(newnode, snowh, Z[surf]), tZ)
+    put(T, surf, jnp.where(newnode, jnp.minimum(TFRZ, sfctmp), T[surf]), dtype)
+    put(I, surf, jnp.where(newnode, sneqv, I[surf]), tI)
+    put(L, surf, jnp.where(newnode, jnp.asarray(0.0, dtype), L[surf]), tL)
+    snowh = jnp.where(newnode, jnp.asarray(0.0, dtype), snowh)
+    add_to_top = (isnow < 0) & (~newnode) & (qsnow > 0.0)
+    top = NSNOW + isnow
+    for k in range(NSNOW):
+        hit = add_to_top & (top == k)
+        put(I, k, jnp.where(hit, I[k] + qsnow * dt, I[k]), tI)
+        put(Z, k, jnp.where(hit, Z[k] + snowhin * dt, Z[k]), tZ)
+    return isnow, snowh, sneqv, Z, T, I, L
+
+
+def _compact_lists(isnow, dt, T, I, L, imelt, ficeold, Z):
+    """:func:`_compact` on per-layer lists."""
+    multilayer = isnow < 0
+    active = _active_list(isnow)
+    burden = jnp.zeros_like(Z[0])
+    dz_new = list(Z)
+    for k in range(NSNOW):
+        wx = I[k] + L[k]
+        wx_safe = jnp.where(wx > 0.0, wx, 1.0)
+        fice = I[k] / wx_safe
+        dz_k = Z[k]
+        dz_safe = jnp.where(dz_k > 0.0, dz_k, 1.0)
+        void = 1.0 - (I[k] / DENICE + L[k] / DENH2O) / dz_safe
+
+        do_compact = active[k] & multilayer & (void > 0.001) & (I[k] > 0.1)
+
+        bi = I[k] / dz_safe
+        td = jnp.maximum(0.0, TFRZ - T[k])
+        dexpf = jnp.exp(-C4 * td)
+        ddz1 = -C3 * dexpf
+        ddz1 = jnp.where(bi > DM, ddz1 * jnp.exp(-46.0e-3 * (bi - DM)), ddz1)
+        ddz1 = jnp.where(L[k] > 0.01 * dz_k, ddz1 * C5, ddz1)
+        ddz2 = -(burden + 0.5 * wx) * jnp.exp(-0.08 * td - C2 * bi) / ETA0
+        ficeold_safe = jnp.maximum(1.0e-6, ficeold[k])
+        ddz3_melt = jnp.maximum(0.0, (ficeold[k] - fice) / ficeold_safe)
+        ddz3 = jnp.where(imelt[k] == 1, -ddz3_melt / dt, 0.0)
+        pdzdtc = jnp.maximum(-0.5, (ddz1 + ddz2 + ddz3) * dt)
+
+        dz_compacted = dz_k * (1.0 + pdzdtc)
+        dz_compacted = jnp.maximum(dz_compacted, I[k] / DENICE + L[k] / DENH2O)
+        dz_compacted = jnp.minimum(
+            jnp.maximum(dz_compacted, (I[k] + L[k]) / 500.0),
+            (I[k] + L[k]) / 50.0,
+        )
+        put(dz_new, k, jnp.where(do_compact, dz_compacted, dz_k), Z[0].dtype)
+        burden = burden + wx
+    return dz_new
+
+
+def _divide_lists(isnow, stc, snice, snliq, dzsnso):
+    """:func:`_divide` on per-layer lists (working sets kept as lists, same slot updates)."""
+    stc, snice, snliq, dzsnso = list(stc), list(snice), list(snliq), list(dzsnso)
+    dtype = stc[0].dtype
+    firstactive = NSNOW + isnow
+
+    def _gather(field):
+        cols = []
+        for m in range(NSNOW):
+            src = firstactive + m
+            acc = jnp.zeros_like(field[0])
+            for k in range(NSNOW):
+                acc = jnp.where(src == k, field[k], acc)
+            cols.append(acc)
+        return cols
+
+    dz = _gather(dzsnso)
+    swice = _gather(snice)
+    swliq = _gather(snliq)
+    tsno = _gather(stc)
+    tz, ti, tl, tt = dz[0].dtype, swice[0].dtype, swliq[0].dtype, tsno[0].dtype
+
+    msno = -isnow
+
+    split1 = (msno == 1) & (dz[0] > DZ_SPLIT1)
+    half_dz = dz[0] / 2.0
+    half_wi = swice[0] / 2.0
+    half_wl = swliq[0] / 2.0
+    put(dz, 0, jnp.where(split1, half_dz, dz[0]), tz)
+    put(swice, 0, jnp.where(split1, half_wi, swice[0]), ti)
+    put(swliq, 0, jnp.where(split1, half_wl, swliq[0]), tl)
+    put(dz, 1, jnp.where(split1, half_dz, dz[1]), tz)
+    put(swice, 1, jnp.where(split1, half_wi, swice[1]), ti)
+    put(swliq, 1, jnp.where(split1, half_wl, swliq[1]), tl)
+    put(tsno, 1, jnp.where(split1, tsno[0], tsno[1]), tt)
+    msno = jnp.where(split1, jnp.int32(2), msno)
+
+    do2 = (msno > 1) & (dz[0] > DZ_SPLIT1)
+    dz0_safe = jnp.where(dz[0] > 0.0, dz[0], 1.0)
+    drr = dz[0] - DZ_SPLIT1
+    propor = drr / dz0_safe
+    zwice = propor * swice[0]
+    zwliq = propor * swliq[0]
+    propor2 = DZ_SPLIT1 / dz0_safe
+    new_swice0 = propor2 * swice[0]
+    new_swliq0 = propor2 * swliq[0]
+    dzc, wlc, wic, tc = _combo(dz[1], swliq[1], swice[1], tsno[1], drr, zwliq, zwice, tsno[0])
+    put(swice, 0, jnp.where(do2, new_swice0, swice[0]), ti)
+    put(swliq, 0, jnp.where(do2, new_swliq0, swliq[0]), tl)
+    put(dz, 0, jnp.where(do2, jnp.asarray(DZ_SPLIT1, dtype), dz[0]), tz)
+    put(dz, 1, jnp.where(do2, dzc, dz[1]), tz)
+    put(swliq, 1, jnp.where(do2, wlc, swliq[1]), tl)
+    put(swice, 1, jnp.where(do2, wic, swice[1]), ti)
+    put(tsno, 1, jnp.where(do2, tc, tsno[1]), tt)
+
+    split2 = do2 & (msno <= 2) & (dz[1] > DZ_SPLIT2)
+    dz1_safe = jnp.where((dz[0] + dz[1]) > 0.0, (dz[0] + dz[1]), 1.0)
+    dtdz = (tsno[0] - tsno[1]) / (dz1_safe / 2.0)
+    half_dz2 = dz[1] / 2.0
+    half_wi2 = swice[1] / 2.0
+    half_wl2 = swliq[1] / 2.0
+    put(dz, 1, jnp.where(split2, half_dz2, dz[1]), tz)
+    put(swice, 1, jnp.where(split2, half_wi2, swice[1]), ti)
+    put(swliq, 1, jnp.where(split2, half_wl2, swliq[1]), tl)
+    put(dz, 2, jnp.where(split2, half_dz2, dz[2]), tz)
+    put(swice, 2, jnp.where(split2, half_wi2, swice[2]), ti)
+    put(swliq, 2, jnp.where(split2, half_wl2, swliq[2]), tl)
+    tsno3 = tsno[1] - dtdz * half_dz2 / 2.0
+    warm3 = tsno3 >= TFRZ
+    put(tsno, 2, jnp.where(split2, jnp.where(warm3, tsno[1], tsno3), tsno[2]), tt)
+    put(tsno, 1, jnp.where(split2 & (~warm3), tsno[1] + dtdz * half_dz2 / 2.0, tsno[1]), tt)
+    msno = jnp.where(split2, jnp.int32(3), msno)
+
+    do3 = (msno > 2) & (dz[1] > DZ_SPLIT2)
+    dz1b_safe = jnp.where(dz[1] > 0.0, dz[1], 1.0)
+    drr3 = dz[1] - DZ_SPLIT2
+    propor3 = drr3 / dz1b_safe
+    zwice3 = propor3 * swice[1]
+    zwliq3 = propor3 * swliq[1]
+    propor3b = DZ_SPLIT2 / dz1b_safe
+    new_swice1 = propor3b * swice[1]
+    new_swliq1 = propor3b * swliq[1]
+    dzc3, wlc3, wic3, tc3 = _combo(dz[2], swliq[2], swice[2], tsno[2], drr3, zwliq3, zwice3, tsno[1])
+    put(swice, 1, jnp.where(do3, new_swice1, swice[1]), ti)
+    put(swliq, 1, jnp.where(do3, new_swliq1, swliq[1]), tl)
+    put(dz, 1, jnp.where(do3, jnp.asarray(DZ_SPLIT2, dtype), dz[1]), tz)
+    put(dz, 2, jnp.where(do3, dzc3, dz[2]), tz)
+    put(swliq, 2, jnp.where(do3, wlc3, swliq[2]), tl)
+    put(swice, 2, jnp.where(do3, wic3, swice[2]), ti)
+    put(tsno, 2, jnp.where(do3, tc3, tsno[2]), tt)
+
+    isnow_new = -msno
+
+    firstactive_new = NSNOW + isnow_new
+    active_new = _active_list(isnow_new)
+    for local in range(NSNOW):
+        act = active_new[local]
+        m_idx = local - firstactive_new
+        dz_l = jnp.zeros_like(dzsnso[0])
+        wi_l = jnp.zeros_like(dzsnso[0])
+        wl_l = jnp.zeros_like(dzsnso[0])
+        t_l = jnp.zeros_like(dzsnso[0])
+        for m in range(NSNOW):
+            sel = m_idx == m
+            dz_l = jnp.where(sel, dz[m], dz_l)
+            wi_l = jnp.where(sel, swice[m], wi_l)
+            wl_l = jnp.where(sel, swliq[m], wl_l)
+            t_l = jnp.where(sel, tsno[m], t_l)
+        put(dzsnso, local, jnp.where(act, dz_l, dzsnso[local]), dzsnso[0].dtype)
+        put(snice, local, jnp.where(act, wi_l, snice[local]), snice[0].dtype)
+        put(snliq, local, jnp.where(act, wl_l, snliq[local]), snliq[0].dtype)
+        put(stc, local, jnp.where(act, t_l, stc[local]), stc[0].dtype)
+
+    return isnow_new, stc, snice, snliq, dzsnso
+
+
+def _snowh2o_lists(isnow, Z, snowh, sneqv, I, L, sh2o0, sice0, T, qsnfro, qsnsub, qrain, dz1_soil, dt):
+    """:func:`_snowh2o` on per-layer lists (whole-array layer ops become per-slot ops)."""
+    Z, I, L, T = list(Z), list(I), list(L), list(T)
+    dtype = T[0].dtype
+    tZ, tI, tL = Z[0].dtype, I[0].dtype, L[0].dtype
+    ponding1 = jnp.zeros_like(snowh)
+    ponding2 = jnp.zeros_like(snowh)
+
+    no_swe = sneqv == 0.0
+    sice0 = jnp.where(no_swe, sice0 + (qsnfro - qsnsub) * dt / (dz1_soil * 1000.0), sice0)
+    neg = no_swe & (sice0 < 0.0)
+    sh2o0 = jnp.where(neg, sh2o0 + sice0, sh2o0)
+    sice0 = jnp.where(neg, jnp.asarray(0.0, dtype), sice0)
+
+    shallow = (isnow == 0) & (sneqv > 0.0)
+    temp = sneqv
+    sneqv_s = sneqv - qsnsub * dt + qsnfro * dt
+    temp_safe = jnp.where(temp > 0.0, temp, 1.0)
+    propor = sneqv_s / temp_safe
+    snowh_s = jnp.maximum(0.0, propor * snowh)
+    snowh_s = jnp.minimum(jnp.maximum(snowh_s, sneqv_s / 500.0), sneqv_s / 50.0)
+    sneqv = jnp.where(shallow, sneqv_s, sneqv)
+    snowh = jnp.where(shallow, snowh_s, snowh)
+    neg_swe = shallow & (sneqv < 0.0)
+    sice0 = jnp.where(neg_swe, sice0 + sneqv / (dz1_soil * 1000.0), sice0)
+    sneqv = jnp.where(neg_swe, jnp.asarray(0.0, dtype), sneqv)
+    snowh = jnp.where(neg_swe, jnp.asarray(0.0, dtype), snowh)
+    neg2 = shallow & (sice0 < 0.0)
+    sh2o0 = jnp.where(neg2, sh2o0 + sice0, sh2o0)
+    sice0 = jnp.where(neg2, jnp.asarray(0.0, dtype), sice0)
+
+    tiny = (snowh <= 1.0e-8) | (sneqv <= 1.0e-6)
+    snowh = jnp.where(tiny, jnp.asarray(0.0, dtype), snowh)
+    sneqv = jnp.where(tiny, jnp.asarray(0.0, dtype), sneqv)
+
+    multilayer = isnow < 0
+    top = NSNOW + isnow
+    wgdif_lt = jnp.zeros_like(snowh, dtype=bool)
+    for k in range(NSNOW):
+        is_top = multilayer & (top == k)
+        wgdif = I[k] - qsnsub * dt + qsnfro * dt
+        put(I, k, jnp.where(is_top, wgdif, I[k]), tI)
+        wgdif_lt = wgdif_lt | (is_top & (wgdif < 1.0e-6))
+
+    need_combine = multilayer & wgdif_lt
+    (isnow_c, snowh_c, sneqv_c, sh2o0_c, sice0_c, p1_c, p2_c,
+     T_c, I_c, L_c, Z_c) = _combine_lists(isnow, sh2o0, sice0, T, I, L, Z, snowh, sneqv, dz1_soil, as_lists=True)
+    nc2 = need_combine
+    isnow = jnp.where(nc2, isnow_c, isnow)
+    snowh = jnp.where(nc2, snowh_c, snowh)
+    sneqv = jnp.where(nc2, sneqv_c, sneqv)
+    sh2o0 = jnp.where(nc2, sh2o0_c, sh2o0)
+    sice0 = jnp.where(nc2, sice0_c, sice0)
+    ponding1 = jnp.where(nc2, p1_c, ponding1)
+    ponding2 = jnp.where(nc2, p2_c, ponding2)
+    T = [jnp.where(nc2, T_c[k], T[k]) for k in range(len(T))]
+    I = [jnp.where(nc2, I_c[k], I[k]) for k in range(NSNOW)]
+    L = [jnp.where(nc2, L_c[k], L[k]) for k in range(NSNOW)]
+    Z = [jnp.where(nc2, Z_c[k], Z[k]) for k in range(NSNOW)]
+
+    multilayer = isnow < 0
+    top = NSNOW + isnow
+    for k in range(NSNOW):
+        is_top = multilayer & (top == k)
+        put(L, k, jnp.where(is_top, jnp.maximum(0.0, L[k] + qrain * dt), L[k]), tL)
+
+    active = _active_list(isnow)
+    dz_safe = [jnp.where(Z[k] > 0.0, Z[k], 1.0) for k in range(NSNOW)]
+    vol_ice = [jnp.minimum(1.0, I[k] / (dz_safe[k] * DENICE)) for k in range(NSNOW)]
+    epore = [1.0 - vol_ice[k] for k in range(NSNOW)]
+
+    qin = jnp.zeros_like(snowh)
+    qout = jnp.zeros_like(snowh)
+    for k in range(NSNOW):
+        act = active[k]
+        snliq_k = L[k] + qin
+        vol_liq = snliq_k / (dz_safe[k] * DENH2O)
+        qout_k = jnp.maximum(0.0, (vol_liq - SSI * epore[k]) * Z[k])
+        if k == (NSNOW - 1):
+            qout_k = jnp.maximum((vol_liq - epore[k]) * Z[k], SNOW_RET_FAC * dt * qout_k)
+        qout_k = qout_k * DENH2O
+        snliq_k = snliq_k - qout_k
+        denom = I[k] + snliq_k
+        denom_safe = jnp.where(denom > 0.0, denom, 1.0)
+        over = (snliq_k / denom_safe) > MAX_LIQ_MASS_FRACTION
+        excess = snliq_k - MAX_LIQ_MASS_FRACTION / (1.0 - MAX_LIQ_MASS_FRACTION) * I[k]
+        qout_k = jnp.where(over, qout_k + excess, qout_k)
+        snliq_k = jnp.where(over, MAX_LIQ_MASS_FRACTION / (1.0 - MAX_LIQ_MASS_FRACTION) * I[k], snliq_k)
+        put(L, k, jnp.where(act, snliq_k, L[k]), tL)
+        qout = jnp.where(act, qout_k, qout)
+        qin = jnp.where(act, qout_k, qin)
+
+    floor = [L[k] / DENH2O + I[k] / DENICE for k in range(NSNOW)]
+    Z = [jnp.where(active[k], jnp.maximum(Z[k], floor[k]), Z[k]) for k in range(NSNOW)]
+
+    qsnbot = qout / dt
+    return isnow, snowh, sneqv, I, L, sh2o0, sice0, T, Z, qsnbot, ponding1, ponding2
+
+
+def _snowwater_column_lists(isnow, snowh, sneqv, I, L, sh2o, sice, T, zsoil, qsnow, snowhin, qsnfro, qsnsub,
+                            qrain, sfctmp, ficeold, imelt, Z, dt):
+    """:func:`_snowwater_column` on per-layer lists (GPUWRF_NOAHMP_LAYER_LISTS); returns lists for the
+    layered fields (ZSNSO: NSNOW+NSOIL slots). One column kernel under GPUWRF_NOAHMP_COLUMN_KERNELS."""
+    surf = NSNOW - 1
+    dz1_soil = -zsoil[0]
+
+    isnow, snowh, sneqv, Z, T, I, L = _snowfall_lists(isnow, snowh, sneqv, Z, T, I, L, qsnow, snowhin, sfctmp, dt)
+    Z = _compact_lists(isnow, dt, T, I, L, imelt, ficeold, Z)
+    (isnow, snowh, sneqv, sh2o, sice, p1, p2, T, I, L, Z) = _combine_lists(
+        isnow, sh2o, sice, T, I, L, Z, snowh, sneqv, dz1_soil, as_lists=True)
+
+    multi = isnow < 0
+    isnow_d, T_d, I_d, L_d, Z_d = _divide_lists(isnow, T, I, L, Z)
+    isnow = jnp.where(multi, isnow_d, isnow)
+    T = [jnp.where(multi, T_d[k], T[k]) for k in range(len(T))]
+    I = [jnp.where(multi, I_d[k], I[k]) for k in range(NSNOW)]
+    L = [jnp.where(multi, L_d[k], L[k]) for k in range(NSNOW)]
+    Z = [jnp.where(multi, Z_d[k], Z[k]) for k in range(NSNOW)]
+
+    (isnow, snowh, sneqv, I, L, sh2o, sice, T, Z, qsnbot, p1b, p2b) = _snowh2o_lists(
+        isnow, Z, snowh, sneqv, I, L, sh2o, sice, T, qsnfro, qsnsub, qrain, dz1_soil, dt)
+    ponding1 = p1 + p1b
+    ponding2 = p2 + p2b
+
+    active = _active_list(isnow)
+    I = [jnp.where(active[k], I[k], 0.0) for k in range(NSNOW)]
+    L = [jnp.where(active[k], L[k], 0.0) for k in range(NSNOW)]
+    T = [jnp.where(active[k], T[k], 0.0) for k in range(NSNOW)]
+    Z = [jnp.where(active[k], Z[k], 0.0) for k in range(NSNOW)]
+
+    glacier = sneqv > 5000.0
+    dz_surf_safe = jnp.where(Z[surf] > 0.0, Z[surf], 1.0)
+    bdsnow = I[surf] / dz_surf_safe
+    bdsnow_safe = jnp.where(bdsnow > 0.0, bdsnow, 1.0)
+    snoflow_mass = sneqv - 5000.0
+    put(I, surf, jnp.where(glacier, I[surf] - snoflow_mass, I[surf]), I[0].dtype)
+    put(Z, surf, jnp.where(glacier, Z[surf] - snoflow_mass / bdsnow_safe, Z[surf]), Z[0].dtype)
+    snoflow = jnp.where(glacier, snoflow_mass / dt, 0.0)
+
+    multilayer = isnow < 0
+    active = _active_list(isnow)
+    sneqv_sum = _layer_sum([jnp.where(active[k], I[k] + L[k], 0.0) for k in range(NSNOW)])
+    sneqv = jnp.where(multilayer, sneqv_sum, sneqv)
+
+    dz_soil = [zsoil[0]] + [zsoil[k] - zsoil[k - 1] for k in range(1, NSOIL)]
+    full_neg = [jnp.where(active[k], -Z[k], 0.0) for k in range(NSNOW)] + dz_soil
+    zsnso = []
+    for k, value in enumerate(full_neg):
+        zsnso.append(value if k == 0 else zsnso[-1] + value)
+    zsnso = [jnp.where(active[k], zsnso[k], 0.0) for k in range(NSNOW)] + zsnso[NSNOW:]
+
+    snowh_ml = _layer_sum([jnp.where(active[k], Z[k], 0.0) for k in range(NSNOW)])
+    snowh = jnp.where(multilayer, snowh_ml, snowh)
+
+    return (isnow, snowh, sneqv, I, L, sh2o, sice, T, Z, zsnso, qsnbot, snoflow, ponding1, ponding2)
+
+
+@partial(jax.jit, static_argnames=("dt", "history", "return_fluxes"))
 def noahmp_snow(
     land_state: NoahMPLandState,
     forcing: NoahMPForcing,
@@ -707,20 +1216,25 @@ def noahmp_snow(
     imelt: jax.Array,
     qmelt: jax.Array,
     dt: float,
+    *, history: bool = False,
+    ficeold: jax.Array | None = None,
+    qrain: jax.Array | None = None,
+    qsnsub: jax.Array | None = None,
+    qsnfro: jax.Array | None = None,
+    return_fluxes: bool = False,
 ) -> NoahMPLandState:
-    """Advance the snow column one ``dt`` (SNOWWATER + albedo aging).
+    """Advance the snow column one ``dt`` (SNOWWATER).
 
-    Faithful to pristine-WRF Noah-MP ``SNOWWATER`` + ``SNOW_AGE`` +
-    ``SNOWALB_CLASS`` (opt_alb=2). Branch-free masked variable-layer kernel; fp64.
+    Faithful to pristine-WRF Noah-MP ``SNOWWATER``. Branch-free masked variable-layer kernel; fp64.
 
     Parameters
     ----------
     land_state : NoahMPLandState
         Prognostic land carry. Snow fields (``isnow``/``tsno``/``snice``/``snliq``/
-        ``zsnso``/``snowh``/``sneqv``/``sneqvo``/``tauss``/``albold``) and the top
+        ``zsnso``/``snowh``/``sneqv``/``sneqvo``) and the top
         soil layer of ``sh2o``/``smois`` are updated; all else returned unchanged.
     forcing : NoahMPForcing
-        Uses ``sfctmp`` (new-layer STC + BDFALL) and ``cosz`` (CLASS-albedo guard).
+        Uses ``sfctmp`` (new-layer STC + BDFALL).
     static : NoahMPStatic
         Uses ``zsoil`` (soil interface depths, <0) to rebuild ZSNSO/DZSNSO.
     qsnow : jax.Array
@@ -735,8 +1249,10 @@ def noahmp_snow(
     Returns
     -------
     NoahMPLandState
-        Land carry with snow + albedo-aging fields advanced.
+        Land carry with the snow fields advanced.
     """
+    from gpuwrf.physics.noahmp.precision import real_tree
+    land_state, forcing, static, qsnow, qmelt = real_tree((land_state, forcing, static, qsnow, qmelt))
     dtype = land_state.snice.dtype
 
     # SNOWHIN = QSNOW / BDFALL (PRECIP_HEAT :1216, opt_snf=1). BDFALL reconstructed
@@ -746,18 +1262,21 @@ def noahmp_snow(
     bdfall = jnp.minimum(120.0, 67.92 + 51.25 * jnp.exp((sfctmp - TFRZ) / 2.59))
     snowhin = jnp.where(qsnow > 0.0, qsnow / bdfall, 0.0)
 
-    # QRAIN / QSNSUB / QSNFRO are produced by the energy/water sprint; until then
-    # QRAIN = qmelt (melt + throughfall reaching the pack), no sublimation/frost.
-    qrain = qmelt
-    qsnsub = jnp.zeros_like(qsnow)
-    qsnfro = jnp.zeros_like(qsnow)
+    # WRF WATER passes SNOWWATER the ground rain QRAIN (PRECIP_HEAT) and QSNSUB/QSNFRO
+    # (:6116-6128); melt is already in SNLIQ via PHASECHANGE and must not be added again.
+    # Standalone calls without them keep the legacy placeholders.
+    qrain = qmelt if qrain is None else jnp.asarray(qrain, dtype)
+    qsnsub = jnp.zeros_like(qsnow) if qsnsub is None else jnp.asarray(qsnsub, dtype)
+    qsnfro = jnp.zeros_like(qsnow) if qsnfro is None else jnp.asarray(qsnfro, dtype)
 
     imelt_snow = imelt[:NSNOW].astype(jnp.int32)
 
-    # FICEOLD from the entering pack (prior-step ice fraction)
-    wx_old = land_state.snice + land_state.snliq
-    wx_old_safe = jnp.where(wx_old > 0.0, wx_old, 1.0)
-    ficeold = jnp.where(wx_old > 0.0, land_state.snice / wx_old_safe, 0.0)
+    # FICEOLD: the caller passes the START-of-step ice fraction (module_sf_noahmpdrv.F:1027-1028,
+    # before ENERGY/PHASECHANGE); standalone calls fall back to the entering pack.
+    if ficeold is None:
+        wx_old = land_state.snice + land_state.snliq
+        wx_old_safe = jnp.where(wx_old > 0.0, wx_old, 1.0)
+        ficeold = jnp.where(wx_old > 0.0, land_state.snice / wx_old_safe, 0.0)
 
     isnow = land_state.isnow.astype(jnp.int32)
     snowh = land_state.snowh.astype(dtype)
@@ -784,17 +1303,17 @@ def noahmp_snow(
         zsoil, qsnow, snowhin, qsnfro, qsnsub, qrain, sfctmp,
         ficeold, imelt_snow, dzsnso_snow, dt)
 
-    # albedo aging
+    # SNEQVO = SNEQV after ENERGY (:980). SNOW_AGE and SNOWALB_CLASS run once per step, inside ENERGY's
+    # ALBEDO (:2925-2945, energy_radiation), so TAUSS/ALBOLD pass through SNOWWATER unchanged.
     sneqvo = land_state.sneqv.astype(dtype)
-    tauss_n, _fage = _snow_age(dt, land_state.tg.astype(dtype), sneqvo, sneqv_n,
-                               land_state.tauss.astype(dtype))
-    alb_new = _snowalb_class(qsnow, dt, land_state.albold.astype(dtype))
-    albold_n = jnp.where(forcing.cosz > 0.0, alb_new, land_state.albold.astype(dtype))
 
-    smois_new = land_state.smois.at[0].set(sh2o_top_n + sice_top_n)
-    sh2o_new = land_state.sh2o.at[0].set(sh2o_top_n)
+    # SNOWWATER changes SH2O(1)/SICE(1) only when the pack moves water into the soil (COMBINE/
+    # ponding); pass the soil top through exactly otherwise (no SMC = SH2O + (SMC - SH2O) re-rounding).
+    touched = (sh2o_top_n != sh2o_top) | (sice_top_n != sice_top)
+    smois_new = set_layer(land_state.smois, 0, jnp.where(touched, sh2o_top_n + sice_top_n, land_state.smois[0]))
+    sh2o_new = set_layer(land_state.sh2o, 0, jnp.where(touched, sh2o_top_n, land_state.sh2o[0]))
 
-    return land_state.replace(
+    updated = land_state.replace(
         isnow=isnow_n.astype(land_state.isnow.dtype),
         tsno=stc_snow_n,
         snice=snice_n,
@@ -803,11 +1322,12 @@ def noahmp_snow(
         snowh=snowh_n,
         sneqv=sneqv_n,
         sneqvo=sneqvo,
-        tauss=tauss_n,
-        albold=albold_n,
         smois=smois_new,
         sh2o=sh2o_new,
     )
+    if return_fluxes:
+        return updated, qsnbot, ponding1, ponding2
+    return (updated, ponding1 + ponding2) if history else updated
 
 
 __all__ = ["noahmp_snow"]

@@ -358,9 +358,12 @@ def _install_fake_daily_pipeline(
     fake.DailyPipelineConfig = _Config
     fake.detect_init_mode = lambda config: "standalone_native_init"
     fake.execute_daily_pipeline = lambda config: dict(payload)
+    fake.NestedPipelineConfig = _Config
+    fake.execute_nested_pipeline = lambda config: dict(payload)
     monkeypatch.setitem(
         sys.modules, "gpuwrf.integration.daily_pipeline", fake
     )
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.nested_pipeline", fake)
 
 
 def test_run_payload_contains_effective_values(

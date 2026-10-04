@@ -297,13 +297,14 @@ def _grid_namespace(nz: int, ny: int, nx: int) -> SimpleNamespace:
 
 
 def field_shapes_for(nz: int, ny: int, nx: int) -> dict[str, tuple[int, ...]]:
-    # The 1 km worst-case memory model must size EVERY leaf in the State contract,
-    # including the conditional hail (qh/Nh/qvolg/qvolh/hail_acc) and aerosol
-    # (nwfa/nifa) leaves added in v0.16/v0.17. STATE_FIELD_ORDER and
-    # State.__slots__ carry all 67; request include_all_conditional=True so the
-    # shape map reconciles against the full contract (default args return only the
-    # 60 always-present leaves and tripped the contract-mismatch guard below).
-    return _state_field_shapes(_grid_namespace(nz, ny, nx), include_all_conditional=True)
+    # Conservative capacity envelope: include every optional physics slot and
+    # live-nest scalar boundary. A real run allocates only its selected subset.
+    shapes = _state_field_shapes(
+        _grid_namespace(nz, ny, nx), include_all_conditional=True
+    )
+    for field in ("qc_bdy", "qr_bdy", "qi_bdy", "qs_bdy", "qg_bdy", "Ni_bdy", "Nr_bdy"):
+        shapes[field] = shapes["qv_bdy"]
+    return shapes
 
 
 def dtype_record(field: str) -> dict[str, Any]:
@@ -351,7 +352,11 @@ def build_static_memory_model(grid_shape: dict[str, Any], total_vram_bytes: int 
         "status": "PASS" if total_vram is None or running_total <= total_vram else "FAIL_STATIC_EXCEEDS_VRAM",
         "field_count": len(fields),
         "state_slot_count": len(state_slots),
-        "contract_note": "state.py currently exposes 47 State fields; sprint text says 45, so this model follows code source of truth.",
+        "contract_note": (
+            f"Fully populated capacity envelope for all {len(state_slots)} State slots; "
+            "includes optional physics and live-nest boundary arrays. "
+            "Operational memory depends on the selected physics and boundaries."
+        ),
         "grid": {
             "nx": nx,
             "ny": ny,

@@ -5,6 +5,7 @@ import importlib.util
 import inspect
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -84,15 +85,30 @@ def _valid_manifest(root: Path) -> Path:
 
 
 def test_module_import_is_backend_dark() -> None:
-    forbidden = [name for name in sys.modules if name == "jax" or name.startswith(("jax.", "gpuwrf."))]
-    assert forbidden == []
+    code = (
+        "import importlib.util, sys; "
+        f"spec = importlib.util.spec_from_file_location('capture', {str(SCRIPT)!r}); "
+        "module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); "
+        "module.assert_no_backend_imported()"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True, timeout=30)
 
 
-def test_exact_source_seam_and_state_schema_are_hash_bound() -> None:
-    seam = capture.seam_authority()
+def test_exact_source_seam_and_state_schema_are_hash_bound(tmp_path: Path) -> None:
+    # The capture contract is sealed to the original model, not every later HEAD.
+    # Reconstruct its two source files from the signed contract's commit.
+    sources = {}
+    for relative in ("src/gpuwrf/runtime/operational_mode.py", "src/gpuwrf/contracts/state.py"):
+        source = tmp_path / Path(relative).name
+        source.write_bytes(subprocess.check_output([
+            "git", "-C", str(SCRIPT.parents[1]), "show",
+            f"{capture.CONTRACT_PATCH_COMMIT}:{relative}",
+        ]))
+        sources[relative] = source
+    seam = capture.seam_authority(sources["src/gpuwrf/runtime/operational_mode.py"])
     assert seam["assignment"] == "pbl_entry_state = next_state"
     assert seam["stop_line"] == seam["assignment_line"] + 1
-    state = capture.state_schema_authority()
+    state = capture.state_schema_authority(sources["src/gpuwrf/contracts/state.py"])
     assert state["state_slot_count"] == len(state["slot_names"])
     assert state["state_slot_count"] > 60
 
@@ -140,7 +156,8 @@ class _State:
         return (self.theta, self.optional), None
 
 
-def test_complete_ordered_slot_materialization_includes_none(tmp_path: Path) -> None:
+def test_complete_ordered_slot_materialization_includes_none(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(capture, "state_schema_authority", lambda: {"slot_names": ("theta", "optional")})
     leaves, inventory = capture.materialize_state(
         _State(), tmp_path, _Jax, expected_slot_names=("theta", "optional")
     )

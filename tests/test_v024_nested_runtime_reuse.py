@@ -23,6 +23,9 @@ from gpuwrf.runtime import domain_tree as dt
 @dataclass(frozen=True)
 class _Carry:
     value: int
+    # The pipeline snapshots initialized Noah-MP water tiles before resume.
+    # This host-only runtime gate has no land scheme, as in OperationalCarry.
+    noahmp_land: object | None = None
 
 
 def _bundle() -> SimpleNamespace:

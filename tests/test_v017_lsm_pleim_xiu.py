@@ -18,6 +18,7 @@ import json
 import os
 import subprocess
 from pathlib import Path
+from _historical_artifacts import require_historical
 
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_PLATFORMS", "cpu")
@@ -73,7 +74,9 @@ OUTPUT_MAP = {
 
 
 def _load(save_dir: Path, case_id: int) -> dict:
-    with (save_dir / f"pxlsm_case_{case_id}.json").open(encoding="utf-8") as fh:
+    path = save_dir / f"pxlsm_case_{case_id}.json"
+    require_historical(path)
+    with path.open(encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -154,6 +157,7 @@ def _run_case(case_id: int) -> dict:
 
 
 def _read_lines(path: Path) -> list[str]:
+    require_historical(path)
     return path.read_text(encoding="utf-8").splitlines()
 
 

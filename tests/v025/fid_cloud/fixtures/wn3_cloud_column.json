@@ -1,0 +1,37 @@
+{
+  "schema": "fid-cloud.wn3-column.v1",
+  "source": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260227_18z_a1/run/run/wrfout_d02_2026-02-28_03:00:00",
+  "source_sha256": "e5ba7d2baf03f3cf7c5e38984c50c28639bd44486bfaa8b57467b6902c9b0bb1",
+  "point_yx": [
+    45,
+    86
+  ],
+  "selection": "largest resolved cloud-water column over land, interior five cells",
+  "variables": [
+    "T",
+    "QVAPOR",
+    "QCLOUD",
+    "QICE",
+    "QRAIN",
+    "QSNOW",
+    "QGRAUP",
+    "P",
+    "PB",
+    "PH",
+    "PHB",
+    "W",
+    "QKE",
+    "U",
+    "V",
+    "TSK",
+    "UST",
+    "HFX",
+    "QFX",
+    "PSFC",
+    "PBLH"
+  ],
+  "storage": "WRF REAL4, field staggering retained, one column with adjacent wind faces",
+  "fixture_sha256": "0f7cbbd2094cb977c4f82c7eaaf3bc2b189ed4103fafd0c7d1c0ef8e66808c8c",
+  "gate": "two-step carry and radiation-input equality; no new physics tolerance",
+  "generate": "FC02 fixture extraction in fid-cloud notes; netCDF4 exact slices"
+}

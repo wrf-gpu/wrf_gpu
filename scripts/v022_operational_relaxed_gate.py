@@ -888,7 +888,7 @@ def build_domain_payload(args: argparse.Namespace, domain: str, bands: dict[str,
             "tier_o_band_pass": bool(tier_o_pass),
             "verdict": "TIER_O_ACCEPTED" if validation_pass and tier_o_pass and guards["all_hard_guards_pass"] else "TIER_O_REJECTED",
             "reject_reasons": lead_reasons,
-            "owner_signoff": {"required": args.gate_mode == "operational-relaxed", "recorded": False, "ref": None},
+            "enric_signoff": {"required": args.gate_mode == "operational-relaxed", "recorded": False, "ref": None},
             "provenance": {
                 "candidate_dir": str(candidate_dir),
                 "cpu_wrf_dir": str(cpu_dir),
@@ -1087,7 +1087,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--finite-scope", choices=("all", "required"), default="all")
     parser.add_argument("--grid-resolution", choices=("default", "3km", "1km"), default="default")
     parser.add_argument("--bands", type=Path, default=BANDS_PATH)
-    parser.add_argument("--wrf-fortran-ref", default="<DATA_ROOT>/src/wrf_pristine")
+    parser.add_argument("--wrf-fortran-ref", default="<USER_HOME>/src/wrf_pristine")
     parser.add_argument("--synthetic-example-root", type=Path, help="write a tiny Canary-shaped wrfout fixture and score it")
     parser.add_argument("--synthetic-perturb-t2", type=float, default=0.0)
     return parser.parse_args(argv)

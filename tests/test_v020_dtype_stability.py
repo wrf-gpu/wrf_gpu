@@ -37,6 +37,25 @@ from gpuwrf.profiling.dtype_audit import (
 from gpuwrf.runtime.operational_mode import _advance_chunk, _initial_carry_for_run
 
 
+def _carry_real() -> bool:
+    """WRF REAL dycore carry (GPUWRF_DYN_CARRY_FP32; release default) vs the legacy fp64 carry."""
+    from gpuwrf.kernels import dyn_carry_fp32
+
+    return dyn_carry_fp32.enabled()
+
+
+def _carry_real_all() -> bool:
+    """Every float carry leaf REAL (GPUWRF_CARRY_REAL_ALL on top of the REAL carry)."""
+    from gpuwrf.kernels import dyn_carry_fp32
+
+    return bool(getattr(dyn_carry_fp32, "real_all_enabled", lambda: False)())
+
+
+def _flipped(dtype):
+    """The other float precision: the injected leak must change the live leaf's dtype."""
+    return jnp.float32 if dtype == jnp.float64 else jnp.float64
+
+
 def _case():
     """Balanced warm-bubble operational case on CPU + a single fp64 hot step."""
 
@@ -58,18 +77,24 @@ def test_fp64_default_advance_chunk_is_dtype_stable():
     carry, step = _case()
     # Must NOT raise: every float leaf keeps its precision across the hot step.
     assert_dtype_stable(step, carry, label="_advance_chunk(fp64_default)")
-    # The carry is overwhelmingly float64 on the default path.
     hist = dtype_histogram(carry)
-    assert hist.get("float64", 0) > 0, f"expected float64 leaves on fp64 default, got {hist}"
+    if _carry_real_all():
+        # WRF REAL everywhere (ADR-038): no float64 carry leaf is left.
+        assert hist.get("float64", 0) == 0, f"expected no float64 leaves under CARRY_REAL_ALL, got {hist}"
+    else:
+        # The legacy / REAL-dycore carry still holds float64 leaves.
+        assert hist.get("float64", 0) > 0, f"expected float64 leaves, got {hist}"
 
 
 def test_named_per_field_dtype_report_covers_prognostics():
     carry, _ = _case()
     report = named_dtypes(carry, prefix="carry")
-    # The per-field report names real prognostic leaves and reports fp64 for them.
+    # The per-field report names real prognostic leaves: WRF REAL under the native REAL
+    # carry (release default), float64 on the legacy fp64_default carry.
+    expected = "float32" if _carry_real() else "float64"
     for name in ("carry.state.theta", "carry.state.p_total", "carry.state.ph_total", "carry.state.mu_total"):
         assert name in report, f"{name} missing from per-field dtype report"
-        assert report[name] == "float64", f"{name} should be float64 on default path, got {report[name]}"
+        assert report[name] == expected, f"{name} should be {expected}, got {report[name]}"
 
 
 # --------------------------------------------------------------------------- #
@@ -78,14 +103,17 @@ def test_named_per_field_dtype_report_covers_prognostics():
 def test_injected_f64_to_f32_downcast_is_caught():
     carry, step = _case()
 
+    live = carry.state.theta.dtype
+    leak = _flipped(live)
+
     def leaky_step(c):
         out = step(c)
-        # Silent f64->f32 downcast on a prognostic leaf (the exact storage-downcast
-        # contamination S2/S4 must never let slip onto the fp64 default path).
-        bad_state = out.state.replace(theta=out.state.theta.astype(jnp.float32), _cast=False)
+        # Silent precision change on a prognostic leaf: the f64->f32 storage downcast on
+        # the legacy fp64 carry, the f32->f64 promotion on the WRF REAL carry.
+        bad_state = out.state.replace(theta=out.state.theta.astype(leak), _cast=False)
         return out.replace(state=bad_state)
 
-    with pytest.raises(DtypePromotionError, match=r"float64 -> float32"):
+    with pytest.raises(DtypePromotionError, match=rf"{jnp.dtype(live).name} -> {jnp.dtype(leak).name}"):
         assert_dtype_stable(leaky_step, carry, label="injected-downcast")
 
 
@@ -111,10 +139,11 @@ def test_fori_loop_rejects_dtype_unstable_carry_second_layer():
     # prognostic into the real dycore step raises a carry-type TypeError, so a
     # silent promotion cannot even compile, independent of the explicit auditor.
     carry, step = _case()
-    f32_state = carry.state.replace(theta=carry.state.theta.astype(jnp.float32), _cast=False)
-    f32_carry = carry.replace(state=f32_state)
+    # Flip the precision of the live theta leaf (f64 -> f32 legacy, f32 -> f64 REAL carry).
+    flipped_state = carry.state.replace(theta=carry.state.theta.astype(_flipped(carry.state.theta.dtype)), _cast=False)
+    flipped_carry = carry.replace(state=flipped_state)
     with pytest.raises(TypeError, match=r"carry"):
-        jax.eval_shape(step, f32_carry)
+        jax.eval_shape(step, flipped_carry)
 
 
 # --------------------------------------------------------------------------- #

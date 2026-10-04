@@ -43,6 +43,7 @@ import re
 from pathlib import Path
 
 import pytest
+from _historical_artifacts import require_historical
 
 from gpuwrf.io.namelist_check import (
     NotOperationallyWiredError,
@@ -85,6 +86,7 @@ def _isfinite(v: float) -> bool:
 
 def _load_savepoint(code: int) -> dict:
     path = _SAVE_DIR / f"ra{code}_wrf_real.json"
+    require_historical(path)
     assert path.is_file(), (
         f"missing v0.18 RA tail real-WRF oracle savepoint {path} -- the operational "
         f"scan cites it as the fail-close evidence for ra_lw/sw_physics={code}; "
@@ -134,6 +136,7 @@ def test_ra_tail_source_checksums_record_physics_pristine_wrf() -> None:
 
     cks = _SAVE_DIR / "wrf_source_checksums.txt"
     raw = _SAVE_DIR / "raw_hash_manifest.txt"
+    require_historical(cks, raw)
     assert cks.is_file(), f"missing WRF source checksum file {cks}"
     assert raw.is_file(), f"missing raw provenance/hash manifest {raw}"
     text = cks.read_text()
@@ -188,6 +191,7 @@ def test_operational_scan_reasons_cite_existing_oracle_paths() -> None:
         for match in re.findall(r"proofs/\S+?\.json", reason):
             cited.add(match.rstrip(").,"))
     assert cited, "operational scan cites no RA tail oracle paths"
+    require_historical(*(_REPO_ROOT / rel for rel in sorted(cited)))
     for rel in sorted(cited):
         assert (_REPO_ROOT / rel).is_file(), (
             f"operational scan fail-close reason cites a missing oracle: {rel}"

@@ -1,0 +1,1296 @@
+{
+  "platform": "gpu",
+  "source_commit": "4576659ba2415b0d8e8dbe7e04b5d40c8cc10d20",
+  "fixture_sha256": {
+    "d01": "c527703b0250f72637b6bc276f38e8a464b442b523250d30cbbf23e8ecc48cc1",
+    "d02": "51be5aa7041c3e786f3491e7ffa55e241b9471e841399593b762e17794cd837d"
+  },
+  "bounds": "unchanged tests/v025/b_core/bench_acoustic.py:compare",
+  "deletion_sha256": "78b80036829c4ef31001b6637cd703ad5f2c35ba92c21dc40fdd7b540425b619",
+  "changed_model_files": false,
+  "cache": {
+    "JAX_COMPILATION_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/b-diff/BD13/cache",
+    "GPUWRF_XLA_AUTOTUNE_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/b-diff/BD13/autotune"
+  },
+  "oracle_checks": 36,
+  "mutant_velocity_checks": 12,
+  "cases": [
+    {
+      "platform": "gpu",
+      "domain": "d01",
+      "rk_step": 1,
+      "evolution": {
+        "changed_cells": 8400,
+        "delta_rms_Pa": 32.9456787109375,
+        "delta_max_Pa": 184.4140625,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039173948158000545,
+          "max_abs": 0.0078125,
+          "rms_ref": 96017.82643128115,
+          "max_ref": 97155.71875,
+          "rms_limit": 1.9203565286256232,
+          "max_limit": 19.43114375,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.7465300918724743e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.588835718134419e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.0482139384454338e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.0228868075614916,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.318369952628013e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.3339117481623,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234963246,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.757035775414351e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064337349,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128674698,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.6121135505097416e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853693689,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843707387379,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.1049397103339922e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.022886807564223146,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3236811689382943e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.33391174666434,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234933287,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0012777958382441947,
+          "max_abs": 0.01907062530517578,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.002424611430013652,
+          "max_abs": 0.024761199951171875,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3618s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3618.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+        "dt_s": 54.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    },
+    {
+      "platform": "gpu",
+      "domain": "d01",
+      "rk_step": 2,
+      "evolution": {
+        "changed_cells": 8400,
+        "delta_rms_Pa": 33.444828033447266,
+        "delta_max_Pa": 187.2109375,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039173948158000545,
+          "max_abs": 0.0078125,
+          "rms_ref": 96017.82643128115,
+          "max_ref": 97155.71875,
+          "rms_limit": 1.9203565286256232,
+          "max_limit": 19.43114375,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.7465300918724743e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.588835718134419e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.0482139384454338e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.0228868075614916,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.318369952628013e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.3339117481623,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234963246,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.757035775414351e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064337349,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128674698,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.6121135505097416e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853693689,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843707387379,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.1049397103339922e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.022886807564223146,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3236811689382943e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.33391174666434,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234933287,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0012971411448612984,
+          "max_abs": 0.019359588623046875,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.002461329407544739,
+          "max_abs": 0.02513408660888672,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3618s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3618.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+        "dt_s": 54.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    },
+    {
+      "platform": "gpu",
+      "domain": "d01",
+      "rk_step": 3,
+      "evolution": {
+        "changed_cells": 8400,
+        "delta_rms_Pa": 33.444828033447266,
+        "delta_max_Pa": 187.2109375,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039173948158000545,
+          "max_abs": 0.0078125,
+          "rms_ref": 96017.82643128115,
+          "max_ref": 97155.71875,
+          "rms_limit": 1.9203565286256232,
+          "max_limit": 19.43114375,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.7465300918724743e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.588835718134419e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.0482139384454338e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.0228868075614916,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.318369952628013e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.3339117481623,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234963246,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.757035775414351e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.595325064337349,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128674698,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.6121135505097416e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.982421853693689,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843707387379,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 1.1049397103339922e-09,
+          "max_abs": 5.960464477539063e-08,
+          "rms_ref": 0.022886807564223146,
+          "max_ref": 0.8018836975097656,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0002,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3236811689382943e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.33391174666434,
+          "max_ref": 495.46490478515625,
+          "rms_limit": 0.007106678234933287,
+          "max_limit": 0.09909298095703126,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5982.937992150642,
+          "max_ref": 10568.220703125,
+          "rms_limit": 0.11965875984301284,
+          "max_limit": 2.113644140625,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1535.0666874549336,
+          "max_ref": 2155.72216796875,
+          "rms_limit": 0.030701333749098673,
+          "max_limit": 0.43114443359375004,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0012971411448612984,
+          "max_abs": 0.019359588623046875,
+          "rms_ref": 5.595325064284945,
+          "max_ref": 18.593908309936523,
+          "rms_limit": 0.00011190650128569891,
+          "max_limit": 0.003718781661987305,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.002461329407544739,
+          "max_abs": 0.02513408660888672,
+          "rms_ref": 5.982421853403712,
+          "max_ref": 21.340087890625,
+          "rms_limit": 0.00011964843706807424,
+          "max_limit": 0.004268017578125,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3618s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3618.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+        "dt_s": 54.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    },
+    {
+      "platform": "gpu",
+      "domain": "d02",
+      "rk_step": 1,
+      "evolution": {
+        "changed_cells": 31239,
+        "delta_rms_Pa": 46.61400604248047,
+        "delta_max_Pa": 303.7578125,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039033103595256806,
+          "max_abs": 0.0078125,
+          "rms_ref": 96309.72848398372,
+          "max_ref": 96980.34375,
+          "rms_limit": 1.9261945696796745,
+          "max_limit": 19.39606875,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.4764977794911514e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5548322785112275e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.114922688232619e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.04732343099431975,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.322174014221741e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.1558489159768,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978319536,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.4859827502938996e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220475785,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440951571e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5849953616787436e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.948572676306753,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352613507,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.3639081691768993e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.047323431005887547,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3188071002087286e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.15584891696255,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978339252,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0016378096309684564,
+          "max_abs": 0.05393791198730469,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.003464271916556662,
+          "max_abs": 0.05631446838378906,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3600s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3600.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_01:00:00",
+        "dt_s": 18.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    },
+    {
+      "platform": "gpu",
+      "domain": "d02",
+      "rk_step": 2,
+      "evolution": {
+        "changed_cells": 31239,
+        "delta_rms_Pa": 46.8482551574707,
+        "delta_max_Pa": 305.28125,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039033103595256806,
+          "max_abs": 0.0078125,
+          "rms_ref": 96309.72848398372,
+          "max_ref": 96980.34375,
+          "rms_limit": 1.9261945696796745,
+          "max_limit": 19.39606875,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.4764977794911514e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5548322785112275e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.114922688232619e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.04732343099431975,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.322174014221741e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.1558489159768,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978319536,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.4859827502938996e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220475785,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440951571e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5849953616787436e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.948572676306753,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352613507,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.3639081691768993e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.047323431005887547,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3188071002087286e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.15584891696255,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978339252,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0016460339477786265,
+          "max_abs": 0.05420875549316406,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.003481665148873018,
+          "max_abs": 0.05659675598144531,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3600s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3600.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_01:00:00",
+        "dt_s": 18.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    },
+    {
+      "platform": "gpu",
+      "domain": "d02",
+      "rk_step": 3,
+      "evolution": {
+        "changed_cells": 31239,
+        "delta_rms_Pa": 46.8482551574707,
+        "delta_max_Pa": 305.28125,
+        "mu_muts_coherent": true,
+        "physical_mu_endpoint": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        },
+        "live_total_endpoint": {
+          "rms": 0.0039033103595256806,
+          "max_abs": 0.0078125,
+          "rms_ref": 96309.72848398372,
+          "max_ref": 96980.34375,
+          "rms_limit": 1.9261945696796745,
+          "max_limit": 19.39606875,
+          "finite": true,
+          "passed": true
+        },
+        "source": "recorded WRF previous/current history pair; literal coupled finish work",
+        "limitation": "observed history-endpoint operator fixture, not internal acoustic savepoints"
+      },
+      "checks": {
+        "u_2": {
+          "rms": 2.4764977794911514e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5548322785112275e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.114922688232619e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.04732343099431975,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.322174014221741e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.1558489159768,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978319536,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "endpoint_checks": {
+        "u_2": {
+          "rms": 2.4859827502938996e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 4.965108220475785,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440951571e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": true
+        },
+        "v_2": {
+          "rms": 2.5849953616787436e-07,
+          "max_abs": 1.9073486328125e-06,
+          "rms_ref": 5.948572676306753,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352613507,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": true
+        },
+        "w_2": {
+          "rms": 2.3639081691768993e-09,
+          "max_abs": 4.76837158203125e-07,
+          "rms_ref": 0.047323431005887547,
+          "max_ref": 4.267539024353027,
+          "rms_limit": 2e-05,
+          "max_limit": 0.0008535078048706055,
+          "finite": true,
+          "passed": true
+        },
+        "t_2": {
+          "rms": 3.3188071002087286e-06,
+          "max_abs": 3.0517578125e-05,
+          "rms_ref": 355.15584891696255,
+          "max_ref": 493.7781066894531,
+          "rms_limit": 0.007103116978339252,
+          "max_limit": 0.09875562133789063,
+          "finite": true,
+          "passed": true
+        },
+        "ph_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 5983.474467843765,
+          "max_ref": 10423.478515625,
+          "rms_limit": 0.1196694893568753,
+          "max_limit": 2.084695703125,
+          "finite": true,
+          "passed": true
+        },
+        "mu_2": {
+          "rms": 0.0,
+          "max_abs": 0.0,
+          "rms_ref": 1529.8987942266217,
+          "max_ref": 2168.9052734375,
+          "rms_limit": 0.030597975884532436,
+          "max_limit": 0.4337810546875,
+          "finite": true,
+          "passed": true
+        }
+      },
+      "deletion_checks": {
+        "u_2": {
+          "rms": 0.0016460339477786265,
+          "max_abs": 0.05420875549316406,
+          "rms_ref": 4.965108220461156,
+          "max_ref": 17.478557586669922,
+          "rms_limit": 9.930216440922313e-05,
+          "max_limit": 0.0034957115173339845,
+          "finite": true,
+          "passed": false
+        },
+        "v_2": {
+          "rms": 0.003481665148873018,
+          "max_abs": 0.05659675598144531,
+          "rms_ref": 5.9485726764660685,
+          "max_ref": 21.267465591430664,
+          "rms_limit": 0.00011897145352932138,
+          "max_limit": 0.004253493118286133,
+          "finite": true,
+          "passed": false
+        }
+      },
+      "all_finite": true,
+      "deletion_sensitive": true,
+      "passed": true,
+      "history_pair": {
+        "construction": "current + (current - previous) * dt/3600s over 19 prognostic fields",
+        "snapshot_interval_seconds": 3600.0,
+        "interval_source": "derived from the snapshots' own Times stamps",
+        "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_00:00:00",
+        "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/legacybind_r1/wrfout_d02_2026-07-26_01:00:00",
+        "dt_s": 18.0,
+        "fields": [
+          "Ni",
+          "Nr",
+          "mu_perturbation",
+          "mu_total",
+          "p_perturbation",
+          "p_total",
+          "ph_perturbation",
+          "ph_total",
+          "qc",
+          "qg",
+          "qi",
+          "qke",
+          "qr",
+          "qs",
+          "qv",
+          "theta",
+          "u",
+          "v",
+          "w"
+        ],
+        "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+      }
+    }
+  ],
+  "passed": true,
+  "gpu_lock_log": "<USER_HOME>/wrf_gpu2_lanes/b-diff/BD13/arm.log",
+  "GPU_arm_CPU_mask": "10,11,26,27",
+  "OMP_NUM_THREADS": 4,
+  "cleanup_receipt": "<USER_HOME>/wrf_gpu2_lanes/b-diff/cleanup_BD13.json"
+}

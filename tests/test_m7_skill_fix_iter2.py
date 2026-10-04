@@ -122,6 +122,14 @@ def _write_land_wrfout(path: Path, *, tsk: float, sst: float, smois: float) -> N
 
 
 def test_hourly_land_state_uses_wrfout_time_slice_and_sst_over_water(tmp_path: Path):
+    # WRF landuse season is bound to the initial clock, independently of the
+    # selected history frame. Supply the metadata required by that loader.
+    with Dataset(tmp_path / "wrfinput_d02", "w") as dataset:
+        dataset.createDimension("Time", 1)
+        dataset.createDimension("DateStrLen", 19)
+        dataset.CEN_LAT = 28.3
+        times = dataset.createVariable("Times", "S1", ("Time", "DateStrLen"))
+        times[0] = np.asarray(list("2026-05-21_18:00:00"), dtype="S1")
     _write_land_wrfout(tmp_path / "wrfout_d02_2026-05-21_18:00:00", tsk=280.0, sst=290.0, smois=0.20)
     _write_land_wrfout(tmp_path / "wrfout_d02_2026-05-21_19:00:00", tsk=281.0, sst=299.0, smois=0.42)
 

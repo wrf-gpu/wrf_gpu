@@ -1,8 +1,7 @@
 # License Notes
 
-This file is not legal advice. The project's own license is in
-[`LICENSE`](LICENSE); these notes cover the WRF-derived-material question on top
-of it.
+This file is not legal advice. No project license file is published with this release yet (decision
+pending); these notes cover the WRF-derived-material question.
 
 - **wrf_gpu is a clean reimplementation**, not a Fortran-source port of WRF. It
   validates against WRF as an oracle and does not redistribute WRF source.

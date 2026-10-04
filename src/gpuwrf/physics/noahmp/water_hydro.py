@@ -20,6 +20,11 @@ from __future__ import annotations
 from gpuwrf._x64_config import configure_jax_x64
 
 import jax.numpy as jnp
+
+from gpuwrf.physics.noahmp.precision import real_scalar, native_real_enabled
+from gpuwrf.kernels.phys_noahmp_columns import column_call, columns_enabled
+from gpuwrf.kernels.phys_noahmp_layers import (  # GPUWRF_NOAHMP_LAYER_SELECT / _LISTS
+    add_layer, lists_enabled, put, set_layer, to_list)
 from jax import config
 
 from gpuwrf.contracts.noahmp_state import NSOIL
@@ -150,14 +155,19 @@ def _canwater(
     fveg: jnp.ndarray,
     ch2op: jnp.ndarray,
     dt: jnp.ndarray,
+    frozen_canopy=None,
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
-    """WRF CANWATER, with ET already provided as mass fluxes."""
+    """WRF CANWATER, with ET already provided as mass fluxes.
+
+    FROZEN_CANOPY is ENERGY's flag from the TV entering ENERGY (:2210-2216, the same TV that
+    picked LATHEAV for ECAN); without it the post-ENERGY TV is used (legacy).
+    """
 
     del static
     canliq = jnp.asarray(land_state.canliq)
     canice = jnp.asarray(land_state.canice)
     tv = jnp.asarray(land_state.tv)
-    frozen_canopy = tv <= _TFRZ
+    frozen_canopy = tv <= _TFRZ if frozen_canopy is None else jnp.asarray(frozen_canopy, dtype=bool)
 
     ecan = jnp.asarray(et_fluxes.ecan, dtype=canliq.dtype)
     etran = jnp.maximum(jnp.asarray(et_fluxes.etran, dtype=canliq.dtype), 0.0)
@@ -359,7 +369,7 @@ def _srt(
 
 
 def _rosr12(ai: jnp.ndarray, bi: jnp.ndarray, ci: jnp.ndarray, rhs: jnp.ndarray) -> jnp.ndarray:
-    c = ci.at[NSOIL - 1].set(0.0)
+    c = set_layer(ci, NSOIL - 1, 0.0)
     p0 = -c[0] / bi[0]
     d0 = rhs[0] / bi[0]
     p1 = -c[1] / (bi[1] + ai[1] * p0)
@@ -399,42 +409,141 @@ def _sstep(
 
     epore3 = jnp.maximum(1.0e-4, smcmax[3] - sice[3])
     wplus3 = jnp.maximum(sh2o[3] - epore3, 0.0) * dzs[3]
-    sh2o = sh2o.at[3].set(jnp.minimum(epore3, sh2o[3]))
-    sh2o = sh2o.at[2].add(wplus3 / dzs[2])
+    sh2o = set_layer(sh2o, 3, jnp.minimum(epore3, sh2o[3]))
+    sh2o = add_layer(sh2o, 2, wplus3 / dzs[2])
 
     epore2 = jnp.maximum(1.0e-4, smcmax[2] - sice[2])
     wplus2 = jnp.maximum(sh2o[2] - epore2, 0.0) * dzs[2]
-    sh2o = sh2o.at[2].set(jnp.minimum(epore2, sh2o[2]))
-    sh2o = sh2o.at[1].add(wplus2 / dzs[1])
+    sh2o = set_layer(sh2o, 2, jnp.minimum(epore2, sh2o[2]))
+    sh2o = add_layer(sh2o, 1, wplus2 / dzs[1])
 
     epore1 = jnp.maximum(1.0e-4, smcmax[1] - sice[1])
     wplus1 = jnp.maximum(sh2o[1] - epore1, 0.0) * dzs[1]
-    sh2o = sh2o.at[1].set(jnp.minimum(epore1, sh2o[1]))
-    sh2o = sh2o.at[0].add(wplus1 / dzs[0])
+    sh2o = set_layer(sh2o, 1, jnp.minimum(epore1, sh2o[1]))
+    sh2o = add_layer(sh2o, 0, wplus1 / dzs[0])
 
     epore0 = jnp.maximum(1.0e-4, smcmax[0] - sice[0])
     wplus0 = jnp.maximum(sh2o[0] - epore0, 0.0) * dzs[0]
-    sh2o_base = sh2o.at[0].set(jnp.minimum(epore0, sh2o[0]))
+    sh2o_base = set_layer(sh2o, 0, jnp.minimum(epore0, sh2o[0]))
 
-    sh2o_true = sh2o_base.at[1].add(wplus0 / dzs[1])
+    sh2o_true = add_layer(sh2o_base, 1, wplus0 / dzs[1])
     epore1b = jnp.maximum(1.0e-4, smcmax[1] - sice[1])
     wplus1b = jnp.maximum(sh2o_true[1] - epore1b, 0.0) * dzs[1]
-    sh2o_true = sh2o_true.at[1].set(jnp.minimum(epore1b, sh2o_true[1]))
-    sh2o_true = sh2o_true.at[2].add(wplus1b / dzs[2])
+    sh2o_true = set_layer(sh2o_true, 1, jnp.minimum(epore1b, sh2o_true[1]))
+    sh2o_true = add_layer(sh2o_true, 2, wplus1b / dzs[2])
 
     epore2b = jnp.maximum(1.0e-4, smcmax[2] - sice[2])
     wplus2b = jnp.maximum(sh2o_true[2] - epore2b, 0.0) * dzs[2]
-    sh2o_true = sh2o_true.at[2].set(jnp.minimum(epore2b, sh2o_true[2]))
-    sh2o_true = sh2o_true.at[3].add(wplus2b / dzs[3])
+    sh2o_true = set_layer(sh2o_true, 2, jnp.minimum(epore2b, sh2o_true[2]))
+    sh2o_true = add_layer(sh2o_true, 3, wplus2b / dzs[3])
 
     epore3b = jnp.maximum(1.0e-4, smcmax[3] - sice[3])
     wplus3b = jnp.maximum(sh2o_true[3] - epore3b, 0.0) * dzs[3]
-    sh2o_true = sh2o_true.at[3].set(jnp.minimum(epore3b, sh2o_true[3]))
+    sh2o_true = set_layer(sh2o_true, 3, jnp.minimum(epore3b, sh2o_true[3]))
 
     mask = wplus0 > 0.0
     sh2o = jnp.where(mask[jnp.newaxis, ...], sh2o_true, sh2o_base)
     wplus = jnp.where(mask, wplus3b, wplus0)
     smc = sh2o + sice
+    return sh2o, smc, wplus
+
+
+def _srt_lists(zsoil, pddum, etrani, qseva, smx, fcr, slope, bexp, smcmax, dksat, dwsat):
+    """:func:`_srt` on per-layer lists (GPUWRF_NOAHMP_LAYER_LISTS): same expressions, list outputs."""
+    pairs = [_wdfcnd1(smx[k], fcr[k], bexp[k], smcmax[k], dksat[k], dwsat[k]) for k in range(NSOIL)]
+    wdf, wcnd = [w for w, _ in pairs], [c for _, c in pairs]
+
+    denom0 = -zsoil[0]
+    temp0 = -zsoil[1]
+    ddz0 = 2.0 / temp0
+    dsmdz0 = 2.0 * (smx[0] - smx[1]) / temp0
+    wflux0 = wdf[0] * dsmdz0 + wcnd[0] - pddum + etrani[0] + qseva
+
+    denom1 = zsoil[0] - zsoil[1]
+    temp1 = zsoil[0] - zsoil[2]
+    ddz1 = 2.0 / temp1
+    dsmdz1 = 2.0 * (smx[1] - smx[2]) / temp1
+    wflux1 = wdf[1] * dsmdz1 + wcnd[1] - wdf[0] * dsmdz0 - wcnd[0] + etrani[1]
+
+    denom2 = zsoil[1] - zsoil[2]
+    temp2 = zsoil[1] - zsoil[3]
+    ddz2 = 2.0 / temp2
+    dsmdz2 = 2.0 * (smx[2] - smx[3]) / temp2
+    wflux2 = wdf[2] * dsmdz2 + wcnd[2] - wdf[1] * dsmdz1 - wcnd[1] + etrani[2]
+
+    denom3 = zsoil[2] - zsoil[3]
+    qdrain = slope * wcnd[3]
+    wflux3 = -(wdf[2] * dsmdz2) - wcnd[2] + etrani[3] + qdrain
+
+    denom = [denom0, denom1, denom2, denom3]
+    ddz = [ddz0, ddz1, ddz2]
+    wflux = [wflux0, wflux1, wflux2, wflux3]
+
+    bi0 = wdf[0] * ddz[0] / denom[0]
+    ci0 = -bi0
+    ai1 = -wdf[0] * ddz[0] / denom[1]
+    ci1 = -wdf[1] * ddz[1] / denom[1]
+    bi1 = -(ai1 + ci1)
+    ai2 = -wdf[1] * ddz[1] / denom[2]
+    ci2 = -wdf[2] * ddz[2] / denom[2]
+    bi2 = -(ai2 + ci2)
+    ai3 = -wdf[2] * ddz[2] / denom[3]
+    ci3 = jnp.zeros_like(ai3)
+    bi3 = -(ai3 + ci3)
+
+    ai = [jnp.zeros_like(wflux0), ai1, ai2, ai3]
+    bi = [bi0, bi1, bi2, bi3]
+    ci = [ci0, ci1, ci2, ci3]
+    rhstt = [wflux[k] / (-denom[k]) for k in range(NSOIL)]
+    return rhstt, ai, bi, ci, qdrain
+
+
+def _rosr12_lists(ai, bi, c, rhs):
+    """:func:`_rosr12` on lists (``c[NSOIL-1]`` only enters the unused ``p3``)."""
+    p0 = -c[0] / bi[0]
+    d0 = rhs[0] / bi[0]
+    p1 = -c[1] / (bi[1] + ai[1] * p0)
+    d1 = (rhs[1] - ai[1] * d0) / (bi[1] + ai[1] * p0)
+    p2 = -c[2] / (bi[2] + ai[2] * p1)
+    d2 = (rhs[2] - ai[2] * d1) / (bi[2] + ai[2] * p1)
+    d3 = (rhs[3] - ai[3] * d2) / (bi[3] + ai[3] * p2)
+    x3 = d3
+    x2 = p2 * x3 + d2
+    x1 = p1 * x2 + d1
+    x0 = p0 * x1 + d0
+    return [x0, x1, x2, x3]
+
+
+def _sstep_lists(dt, dzs, sice, sh2o, ai, bi, ci, rhstt, smcmax):
+    """:func:`_sstep` on lists: the same slot updates (``set_layer``/``add_layer``) in order."""
+    tp = sh2o[0].dtype
+    delta = _rosr12_lists([a * dt for a in ai], [1.0 + b * dt for b in bi], [c * dt for c in ci],
+                          [r * dt for r in rhstt])
+    sh2o = [sh2o[k] + delta[k] for k in range(NSOIL)]
+
+    def overflow(layers, k, nxt):
+        epore = jnp.maximum(1.0e-4, smcmax[k] - sice[k])
+        wplus = jnp.maximum(layers[k] - epore, 0.0) * dzs[k]
+        put(layers, k, jnp.minimum(epore, layers[k]), tp)
+        if nxt is not None:
+            put(layers, nxt, layers[nxt] + wplus / dzs[nxt], tp)
+        return wplus
+
+    overflow(sh2o, 3, 2)
+    overflow(sh2o, 2, 1)
+    overflow(sh2o, 1, 0)
+    wplus0 = overflow(sh2o, 0, None)
+    sh2o_base = list(sh2o)
+    sh2o_true = list(sh2o_base)
+    put(sh2o_true, 1, sh2o_true[1] + wplus0 / dzs[1], tp)
+    overflow(sh2o_true, 1, 2)
+    overflow(sh2o_true, 2, 3)
+    wplus3b = overflow(sh2o_true, 3, None)
+
+    mask = wplus0 > 0.0
+    sh2o = [jnp.where(mask, sh2o_true[k], sh2o_base[k]) for k in range(NSOIL)]
+    wplus = jnp.where(mask, wplus3b, wplus0)
+    smc = [sh2o[k] + sice[k] for k in range(NSOIL)]
     return sh2o, smc, wplus
 
 
@@ -458,6 +567,7 @@ def _soilwater(
     frzx: jnp.ndarray,
     slope: jnp.ndarray,
     dt: jnp.ndarray,
+    urban: jnp.ndarray | None = None,
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     del smcref, smcwtd
     epore = jnp.maximum(1.0e-4, smcmax - sice)
@@ -465,18 +575,29 @@ def _soilwater(
     sh2o = jnp.minimum(epore, sh2o)
 
     ice_frac = jnp.minimum(1.0, sice / smcmax)
-    fcr = jnp.maximum(0.0, jnp.exp(-4.0 * (1.0 - ice_frac)) - jnp.exp(-4.0)) / (1.0 - jnp.exp(-4.0))
+    # WRF REAL EXP(-4.0): native REAL gets a REAL scalar, not an f64 0-d array promoting FCR to f64.
+    fcr = (jnp.maximum(0.0, jnp.exp(-4.0 * (1.0 - ice_frac)) - jnp.exp(real_scalar(-4.0)))
+           / (1.0 - jnp.exp(real_scalar(-4.0))))
     sicemax = jnp.max(sice, axis=0)
     fcrmax = jnp.max(fcr, axis=0)
 
+    # Pristine SOILWATER sets the urban top-layer impermeable fraction after
+    # computing FCRMAX (:7377); keep that caller order and the legacy path.
+    if urban is not None:
+        fcr = set_layer(fcr, 0, jnp.where(urban, 0.95, fcr[0]))
+
     pddum0, _ = _infil(qinsur, dt, zsoil, sh2o, sice, sicemax, bexp, smcmax, smcwlt, dksat, dwsat, kdt, frzx)
-    niter = jnp.where(pddum0 * dt > dzs[0] * smcmax[0], 6.0, 3.0)
+    niter = jnp.where(pddum0 * dt > dzs[0] * smcmax[0], real_scalar(6.0), real_scalar(3.0))
     dtfine = dt / niter
 
     qdrain_save = jnp.zeros_like(qinsur)
     runsrf_save = jnp.zeros_like(qinsur)
 
-    for iter_idx in range(6):
+    if lists_enabled():
+        sh2o, smc, rsat, qdrain_save, runsrf_save = _soilwater_loop_lists(
+            qinsur, qseva, etrani, sh2o, smc, sice, sicemax, zsoil, dzs, fcr, bexp, smcmax, smcwlt, dksat, dwsat,
+            kdt, frzx, slope, niter, dtfine, rsat, qdrain_save, runsrf_save)
+    for iter_idx in range(0 if lists_enabled() else 6):
         active = iter_idx < niter
         pddum, runsrf = _infil(qinsur, dtfine, zsoil, sh2o, sice, sicemax, bexp, smcmax, smcwlt, dksat, dwsat, kdt, frzx)
         pddum = jnp.where((qinsur > 0.0) & active, pddum, 0.0)
@@ -501,15 +622,49 @@ def _soilwater(
     runsub = jnp.zeros_like(qinsur)
     for iz in range(NSOIL - 1):
         xs = jnp.where(mliq[iz] < 0.0, 0.01 - mliq[iz], 0.0)
-        mliq = mliq.at[iz].add(xs)
-        mliq = mliq.at[iz + 1].add(-xs)
+        mliq = add_layer(mliq, iz, xs)
+        mliq = add_layer(mliq, iz + 1, -xs)
 
     xs = jnp.where(mliq[NSOIL - 1] < 0.01, 0.01 - mliq[NSOIL - 1], 0.0)
-    mliq = mliq.at[NSOIL - 1].add(xs)
+    mliq = add_layer(mliq, NSOIL - 1, xs)
     runsub = runsub - xs / dt
     sh2o = mliq / (dzs * 1000.0)
     smc = sh2o + sice
     return sh2o, smc, runsrf, qdrain, runsub
+
+
+def _soilwater_loop_lists(qinsur, qseva, etrani, sh2o, smc, sice, sicemax, zsoil, dzs, fcr, bexp, smcmax, smcwlt,
+                          dksat, dwsat, kdt, frzx, slope, niter, dtfine, rsat, qdrain_save, runsrf_save):
+    """The 6-trip SOILWATER sub-step loop of :func:`_soilwater` on per-layer lists (same order);
+    under GPUWRF_NOAHMP_COLUMN_KERNELS the whole loop is one column kernel."""
+    args = (qinsur, qseva, to_list(etrani), to_list(sh2o), to_list(smc), to_list(sice), sicemax, to_list(zsoil),
+            to_list(dzs), to_list(fcr), to_list(bexp), to_list(smcmax), to_list(smcwlt), to_list(dksat),
+            to_list(dwsat), kdt, frzx, slope, niter, dtfine, rsat, qdrain_save, runsrf_save)
+    if columns_enabled():
+        out = column_call(_soilwater_loop_core, args, grid_shape=jnp.shape(qinsur), name="b_core_noah_soilwater")
+    else:
+        out = _soilwater_loop_core(*args)
+    sh2o_l, smc_l, rsat, qdrain_save, runsrf_save = out
+    return jnp.stack(sh2o_l), jnp.stack(smc_l), rsat, qdrain_save, runsrf_save
+
+
+def _soilwater_loop_core(qinsur, qseva, etrani, sh2o_l, smc_l, sice_l, sicemax, zsoil, dzs, fcr, bexp, smcmax,
+                         smcwlt, dksat, dwsat, kdt, frzx, slope, niter, dtfine, rsat, qdrain_save, runsrf_save):
+    for iter_idx in range(6):
+        active = iter_idx < niter
+        pddum, runsrf = _infil(qinsur, dtfine, zsoil, sh2o_l, sice_l, sicemax, bexp, smcmax, smcwlt, dksat, dwsat,
+                               kdt, frzx)
+        pddum = jnp.where((qinsur > 0.0) & active, pddum, 0.0)
+        runsrf = jnp.where((qinsur > 0.0) & active, runsrf, 0.0)
+        rhstt, ai, bi, ci, qdrain = _srt_lists(zsoil, pddum, etrani, qseva, smc_l, fcr, slope, bexp, smcmax,
+                                               dksat, dwsat)
+        sh2o_next, smc_next, wplus = _sstep_lists(dtfine, dzs, sice_l, sh2o_l, ai, bi, ci, rhstt, smcmax)
+        sh2o_l = [jnp.where(active, sh2o_next[k], sh2o_l[k]) for k in range(NSOIL)]
+        smc_l = [jnp.where(active, smc_next[k], smc_l[k]) for k in range(NSOIL)]
+        rsat = rsat + jnp.where(active, wplus, 0.0)
+        qdrain_save = qdrain_save + jnp.where(active, qdrain, 0.0)
+        runsrf_save = runsrf_save + runsrf
+    return sh2o_l, smc_l, rsat, qdrain_save, runsrf_save
 
 
 def noahmp_water_hydro(
@@ -518,13 +673,27 @@ def noahmp_water_hydro(
     static: NoahMPStatic,
     et_fluxes: NoahMPEtFluxes,
     dt: float,
+    *, history: bool = False,
+    sneqv_before_snow=None,
+    qrain_ground=None,
+    frozen_canopy=None,
 ) -> NoahMPLandState:
     """Advance soil/canopy water one ``dt`` (Schaake96).
 
     Returns the land carry with SMC/SH2O/SMCWTD/CANLIQ/CANICE/FWET/SFCRUNOFF/
     UDRUNOFF updated; thermal and snow fields untouched (those are S2/S3).
+
+    WRF order (WATER :6095-6160, used by noah_mp_step): ``land_state`` already holds the
+    post-SNOWWATER pack, ``sneqv_before_snow`` is the SNEQV that split QSNSUB/QSNFRO off the
+    ground vapour/dew flux (:6116-6126) and ``et_fluxes.qmelt`` is the snow-to-soil water
+    flux (PONDING+PONDING1+PONDING2)/DT + QSNBOT in mm/s (:6149-6152). ``qrain_ground`` is
+    PRECIP_HEAT's ground rain QRAIN; it enters QINSUR unchanged on ISNOW == 0 (:6150) — the
+    frozen channels are not subtracted (OPT_SNF=1 never reads PRCPSNOW/GRPL/HAIL, :1163-1229).
+    ``frozen_canopy`` is ENERGY's FROZEN_CANOPY (TV entering ENERGY <= TFRZ) for CANWATER.
     """
 
+    from gpuwrf.physics.noahmp.precision import real_tree
+    land_state, forcing, static, et_fluxes = real_tree((land_state, forcing, static, et_fluxes))
     smc = jnp.asarray(land_state.smois)
     sh2o = jnp.asarray(land_state.sh2o)
     surface = jnp.asarray(land_state.smcwtd)
@@ -555,13 +724,16 @@ def noahmp_water_hydro(
         fveg = jnp.where(fveg <= 0.05, 0.05, fveg)
     ivgtyp = jnp.asarray(static.ivgtyp)
     fveg = jnp.where((ivgtyp == 25) | (ivgtyp == 26) | (ivgtyp == 27), 0.0, fveg)
-    canliq, canice, fwet, tv, etran = _canwater(land_state, forcing, static, et_fluxes, fveg, ch2op, dt_arr)
+    canliq, canice, fwet, tv, etran = _canwater(land_state, forcing, static, et_fluxes, fveg, ch2op, dt_arr,
+                                                frozen_canopy=frozen_canopy)
 
     ground_et = jnp.where(jnp.abs(et_fluxes.edir) > 0.0, et_fluxes.edir, et_fluxes.qseva)
     qvap = jnp.maximum(jnp.asarray(ground_et, dtype=surface.dtype), 0.0)
     qdew = jnp.maximum(-jnp.asarray(ground_et, dtype=surface.dtype), 0.0)
-    has_snow = land_state.sneqv > 0.0
-    qsnsubl = jnp.where(has_snow, jnp.minimum(qvap, land_state.sneqv / dt_arr), 0.0)
+    sneqv_w = land_state.sneqv if sneqv_before_snow is None else jnp.asarray(
+        sneqv_before_snow, dtype=jnp.asarray(land_state.sneqv).dtype)
+    has_snow = sneqv_w > 0.0
+    qsnsubl = jnp.where(has_snow, jnp.minimum(qvap, sneqv_w / dt_arr), 0.0)
     qseva_mm_s = qvap - qsnsubl
     qsdew_mm_s = jnp.where(has_snow, 0.0, qdew)
 
@@ -569,15 +741,18 @@ def noahmp_water_hydro(
     sice0_frozen = sice[0] + (qsdew_mm_s - qseva_mm_s) * dt_arr / (dzs[0] * 1000.0)
     sh2o0_frozen = sh2o[0] + jnp.minimum(sice0_frozen, 0.0)
     sice0_frozen = jnp.maximum(sice0_frozen, 0.0)
-    sh2o = sh2o.at[0].set(jnp.where(frozen_ground, sh2o0_frozen, sh2o[0]))
-    sice = sice.at[0].set(jnp.where(frozen_ground, sice0_frozen, sice[0]))
+    sh2o = set_layer(sh2o, 0, jnp.where(frozen_ground, sh2o0_frozen, sh2o[0]))
+    sice = set_layer(sice, 0, jnp.where(frozen_ground, sice0_frozen, sice[0]))
     qseva_mm_s = jnp.where(frozen_ground, 0.0, qseva_mm_s)
     qsdew_mm_s = jnp.where(frozen_ground, 0.0, qsdew_mm_s)
     smc = sh2o + sice
 
-    qrain_total = jnp.maximum(forcing.prcpconv, 0.0) + jnp.maximum(forcing.prcpnonc, 0.0)
-    solid_prcp = jnp.maximum(et_fluxes.qsnow, forcing.prcpsnow + forcing.prcpgrpl + forcing.prcphail)
-    qrain = jnp.maximum(qrain_total - jnp.maximum(solid_prcp, 0.0), 0.0)
+    if qrain_ground is None:
+        qrain_total = jnp.maximum(forcing.prcpconv, 0.0) + jnp.maximum(forcing.prcpnonc, 0.0)
+        solid_prcp = jnp.maximum(et_fluxes.qsnow, forcing.prcpsnow + forcing.prcpgrpl + forcing.prcphail)
+        qrain = jnp.maximum(qrain_total - jnp.maximum(solid_prcp, 0.0), 0.0)
+    else:
+        qrain = jnp.asarray(qrain_ground, dtype=surface.dtype)
     qinsur_mm_s = jnp.maximum(et_fluxes.qmelt, 0.0) + qsdew_mm_s + jnp.where(land_state.isnow == 0, qrain, 0.0)
     qinsur = qinsur_mm_s * 0.001
     qseva = qseva_mm_s * 0.001
@@ -603,12 +778,14 @@ def noahmp_water_hydro(
     sh2o, smc, runsrf_mm_s, qdrain_mm_s, runsub_mm_s = _soilwater(
         qinsur, qseva, etrani, sh2o, smc, sice, zsoil, dzs, land_state.smcwtd,
         bexp, smcmax, smcref, smcwlt, dksat, dwsat, kdt, frzx, slope, dt_arr,
+        urban=((ivgtyp == 13) | ((ivgtyp >= 51) & (ivgtyp <= 61)))
+        if native_real_enabled() else None,
     )
 
     runsrf_m = runsrf_mm_s * dt_arr * 0.001
     runsub_m = (runsub_mm_s + qdrain_mm_s) * dt_arr * 0.001
 
-    return land_state.replace(
+    updated = land_state.replace(
         smois=smc,
         sh2o=sh2o,
         canliq=canliq,
@@ -618,6 +795,7 @@ def noahmp_water_hydro(
         sfcrunoff=land_state.sfcrunoff + runsrf_m,
         udrunoff=land_state.udrunoff + runsub_m,
     )
+    return (updated, (runsrf_mm_s * dt_arr, (runsub_mm_s + qdrain_mm_s) * dt_arr)) if history else updated
 
 
 __all__ = ["noahmp_water_hydro"]

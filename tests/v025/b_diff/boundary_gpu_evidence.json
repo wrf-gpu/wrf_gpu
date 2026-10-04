@@ -1,0 +1,284 @@
+{
+  "passed": true,
+  "source": "47923fa24 (BD42, immutable BD48/source)",
+  "device": "RTX 5090 asserted, with_gpu_lock, cores 10,11,26,27",
+  "pristine_dry_suite": {
+    "d01_physical": true,
+    "d02_coupled": true,
+    "scope": "relax_bdy_dry 3 leads + spec_bdytend + QV scalar + PH history, unchanged bounds"
+  },
+  "work_targets_8": true,
+  "ring_relax_pristine": {
+    "passed": true,
+    "rms_by_lead": {
+      "0.0": 1.5052304316501993e-15,
+      "18.0": 2.5759576392778453e-10,
+      "27.0": 3.9050800603327756e-10
+    },
+    "fused_mass_rms_by_lead": {
+      "0.0": 1.5052304316501993e-15,
+      "18.0": 2.5759576392778453e-10,
+      "27.0": 3.9050800603327756e-10
+    },
+    "deletion_controls_fail": true
+  },
+  "nested_strip": {
+    "w_pass": true,
+    "ph": "fails closed under flag (non-bundle nest, not PROD)"
+  },
+  "lateral_vs_legacy": "dtype preserved, interior bit-exact, band max rel 1.03e-7 (d01 full) / 7.6e-8 (d01 spec-only), d02 nested-frozen identical",
+  "family_nsys_per_call": {
+    "d01": {
+      "dry": {
+        "legacy_kernels": 76.0,
+        "native_kernels": 5.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 225.51,
+        "native_device_us": 43.78
+      },
+      "lateral": {
+        "legacy_kernels": 138.0,
+        "native_kernels": 33.0,
+        "legacy_copies": 25.0,
+        "native_copies": 18.0,
+        "legacy_device_us": 680.33,
+        "native_device_us": 182.18
+      },
+      "lateral_spec_only": {
+        "legacy_kernels": 33.0,
+        "native_kernels": 25.0,
+        "legacy_copies": 26.0,
+        "native_copies": 21.0,
+        "legacy_device_us": 349.86,
+        "native_device_us": 124.57
+      },
+      "interpolate": {
+        "legacy_kernels": 1.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 3.12,
+        "native_device_us": 1.66
+      },
+      "specified": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 5.99,
+        "native_device_us": 3.54
+      },
+      "normal_u": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 6.45,
+        "native_device_us": 3.87
+      },
+      "normal_v": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 10.12,
+        "native_device_us": 4.61
+      },
+      "tangential_u": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 7.6,
+        "native_device_us": 3.04
+      },
+      "tangential_v": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 5.13,
+        "native_device_us": 2.93
+      },
+      "normal_apply": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 5.93,
+        "native_device_us": 4.13
+      },
+      "ph_relax": {
+        "legacy_kernels": 19.0,
+        "native_kernels": "fails_closed",
+        "legacy_copies": 0.0,
+        "native_copies": null,
+        "legacy_device_us": 47.29,
+        "native_device_us": null
+      },
+      "w_relax": {
+        "legacy_kernels": 19.0,
+        "native_kernels": 19.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 46.93,
+        "native_device_us": 50.89
+      },
+      "ph_spec_legacy": {
+        "legacy_kernels": 4.0,
+        "native_kernels": 4.0,
+        "legacy_copies": 1.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 3.87,
+        "native_device_us": 5.69
+      },
+      "ph_spec_live": {
+        "legacy_kernels": 5.0,
+        "native_kernels": 4.0,
+        "legacy_copies": 1.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 7.96,
+        "native_device_us": 4.67
+      }
+    },
+    "d02": {
+      "dry": {
+        "legacy_kernels": 127.0,
+        "native_kernels": 6.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 476.34,
+        "native_device_us": 116.75
+      },
+      "lateral": {
+        "legacy_kernels": 117.0,
+        "native_kernels": 15.0,
+        "legacy_copies": 26.0,
+        "native_copies": 20.0,
+        "legacy_device_us": 339.42,
+        "native_device_us": 213.61
+      },
+      "lateral_spec_only": {
+        "legacy_kernels": 0.0,
+        "native_kernels": 0.0,
+        "legacy_copies": 29.0,
+        "native_copies": 29.0,
+        "legacy_device_us": 0.0,
+        "native_device_us": 0.0
+      },
+      "interpolate": {
+        "legacy_kernels": 1.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 5.56,
+        "native_device_us": 1.88
+      },
+      "specified": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 7.08,
+        "native_device_us": 3.72
+      },
+      "normal_u": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 7.52,
+        "native_device_us": 6.68
+      },
+      "normal_v": {
+        "legacy_kernels": 3.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 18.12,
+        "native_device_us": 6.84
+      },
+      "tangential_u": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 6.04,
+        "native_device_us": 6.64
+      },
+      "tangential_v": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 1.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 14.42,
+        "native_device_us": 6.81
+      },
+      "normal_apply": {
+        "legacy_kernels": 2.0,
+        "native_kernels": 2.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 18.94,
+        "native_device_us": 10.14
+      },
+      "ph_relax": {
+        "legacy_kernels": 18.0,
+        "native_kernels": "fails_closed",
+        "legacy_copies": 0.0,
+        "native_copies": null,
+        "legacy_device_us": 68.63,
+        "native_device_us": null
+      },
+      "w_relax": {
+        "legacy_kernels": 18.0,
+        "native_kernels": 18.0,
+        "legacy_copies": 0.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 68.97,
+        "native_device_us": 69.34
+      },
+      "ph_spec_legacy": {
+        "legacy_kernels": 4.0,
+        "native_kernels": 4.0,
+        "legacy_copies": 1.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 7.75,
+        "native_device_us": 8.56
+      },
+      "ph_spec_live": {
+        "legacy_kernels": 5.0,
+        "native_kernels": 4.0,
+        "legacy_copies": 1.0,
+        "native_copies": 0.0,
+        "legacy_device_us": 8.21,
+        "native_device_us": 8.48
+      }
+    },
+    "totals_common": {
+      "d01": "kernels 291->103, device 1358.8->435.6 us",
+      "d02": "kernels 287->56, device 978.4->459.5 us"
+    }
+  },
+  "nest_scalar_ring_vs_legacy_scatter_d02_qv": {
+    "scalar_legacy": {
+      "kernels": 21.0,
+      "device_us": 54.32
+    },
+    "scalar_ring": {
+      "kernels": 1.0,
+      "device_us": 21.85
+    }
+  },
+  "dry_nsys_BD34": {
+    "d01": "75k/216.03us -> 5k/43.40us",
+    "d02": "94k/377.89us -> 6k/116.74us"
+  },
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-diff/BD42/ (family_parsed.json, ring.json, native_*.json, targets.json, logs); BD34/parsed.json",
+  "rebased_head_cpu_gates": {
+    "OFF25": "edbed04ff vs main 1d9f7b418: raw HLO d01 cd712d7c / d02 6b583bad EXACT, outputs 249/249",
+    "BD50": "flag-ON full-root carry avals 142+126 = 268/268 exact on edbed04ff",
+    "note": "boundary_apply.py / dyn_boundary_fp32.py unchanged by the rebase; edbed04ff only drops the nested_scalar cast (host-sync hunk) vs the GPU-measured 47923fa24"
+  }
+}

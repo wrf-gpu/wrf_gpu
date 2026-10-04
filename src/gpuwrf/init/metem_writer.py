@@ -19,6 +19,7 @@ import numpy as np
 
 try:
     import netCDF4
+    from gpuwrf.io.netcdf_lock import Dataset
 except Exception as exc:  # pragma: no cover
     netCDF4 = None
     _NETCDF_IMPORT_ERROR = exc
@@ -70,8 +71,7 @@ def write_met_em(
     proj = artifact.projection
     nx, ny = proj.nx, proj.ny
 
-    ds = netCDF4.Dataset(path, "w", format="NETCDF3_CLASSIC")
-    try:
+    with Dataset(path, "w", format="NETCDF3_CLASSIC") as ds:
         # --- dimensions (order mirrors met_em) ---
         ds.createDimension("Time", None)  # UNLIMITED
         ds.createDimension("DateStrLen", 19)
@@ -109,8 +109,6 @@ def write_met_em(
             v.setncattr("sr_y", np.int32(1))
 
         _write_global_attrs(ds, artifact)
-    finally:
-        ds.close()
     return path
 
 

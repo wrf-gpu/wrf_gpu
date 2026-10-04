@@ -1,0 +1,171 @@
+{
+ "schema": "wrf_gpu2.b_core.h_diabatic_evidence.v1",
+ "finding": "B38 WRF h_diabatic pair under WRF-order MP",
+ "wrf_source": [
+  "module_big_step_utilities_em.F:5735-5741 (h_diabatic*dt = theta_m increment of the MP call, use_theta_m=1)",
+  "module_em.F:1079 rk_addtend_dry t_tend += (c1*mut+c2)*h_diabatic/msfty every RK stage",
+  "module_small_step_em.F:417-423 final-stage small_step_finish removes dts*N*(c1*mut+c2)*h_diabatic"
+ ],
+ "implementation": [
+  "OperationalCarry.h_diabatic (appended last; None unless _h_diabatic_pair_enabled: WRF-order MP on, GPUWRF_MP_H_DIABATIC!=0, physics+mp on)",
+  "seed zeros in _initial_carry_for_run; capture (theta after - before post-RK MP)/dt",
+  "_rk_scan_step feeds the carry leaf to rk_addtend_dry via DryPhysicsTendencies.h_diabatic; _carry_from_finished_stage(stage) passes it to small_step_finish_wrf only at rk_step==rk_order",
+  "wrfrst OPTIONAL_CARRY_FIELDS += h_diabatic (pytree group; manifest default for older files); io/restart.py derives it from the dataclass"
+ ],
+ "pristine_gate": {
+  "scope": "b-diff pristine_rk.py verbatim REAL4 rk_addtend_dry/small_step_finish; D5 PROD d01 06:00->07:00:18 stage pair; h from the product Thompson adapter on that state (max 6.7e-4 K/s, 1308 cells >1e-4)",
+  "legacy": {
+   "passed": true,
+   "nonvacuous": true,
+   "h_max_K_s": 0.0006692146332372633,
+   "rows": {
+    "finish_rk3_with_h": {
+     "max_abs": 3.051757823868684e-05,
+     "max_limit": 0.03938428649902344,
+     "rms": 4.202275047638952e-06,
+     "rms_limit": 0.0014495000688532192,
+     "max_ref": 196.9214324951172,
+     "passed": true
+    },
+    "finish_rk3_increment": {
+     "max_abs": 4.6236266371124657e-07,
+     "max_limit": 0.0002,
+     "rms": 9.881531520633153e-09,
+     "rms_limit": 2e-05,
+     "max_ref": 0.03613770008087158,
+     "passed": true
+    },
+    "deletion_finish_without_removal": {
+     "max_abs": 0.03613770008087158,
+     "max_limit": 0.0002,
+     "rms": 0.0007259042460645464,
+     "rms_limit": 2e-05,
+     "max_ref": 0.03613770008087158,
+     "passed": false
+    },
+    "deletion_full_theta_report_only": {
+     "max_abs": 0.03613770008087158,
+     "max_limit": 0.03938428649902344,
+     "rms": 0.0007259162339135441,
+     "rms_limit": 0.0014495000688532192,
+     "max_ref": 196.9214324951172,
+     "passed": true
+    },
+    "addtend_rk1_theta": {
+     "max_abs": 7.703849043139144e-06,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.6347351847328236e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    },
+    "addtend_rk2_theta": {
+     "max_abs": 7.703849043139144e-06,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.6347351847328236e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    },
+    "addtend_rk3_theta": {
+     "max_abs": 7.703849043139144e-06,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.6347351847328236e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    }
+   }
+  },
+  "native": {
+   "passed": true,
+   "nonvacuous": true,
+   "h_max_K_s": 0.0006692146332372633,
+   "rows": {
+    "finish_rk3_with_h": {
+     "max_abs": 1.5497207641601562e-05,
+     "max_limit": 0.03938428955078125,
+     "rms": 2.2518160065420088e-06,
+     "rms_limit": 0.001449500038994334,
+     "max_ref": 196.92144775390625,
+     "passed": true
+    },
+    "finish_rk3_increment": {
+     "max_abs": 1.5497207641601562e-05,
+     "max_limit": 0.0002,
+     "rms": 1.0006649775804733e-06,
+     "rms_limit": 2e-05,
+     "max_ref": 0.03613770008087158,
+     "passed": true
+    },
+    "deletion_finish_without_removal": {
+     "max_abs": 0.03613770008087158,
+     "max_limit": 0.0002,
+     "rms": 0.0007259044755359342,
+     "rms_limit": 2e-05,
+     "max_ref": 0.03613770008087158,
+     "passed": false
+    },
+    "deletion_full_theta_report_only": {
+     "max_abs": 0.03613770008087158,
+     "max_limit": 0.03938428955078125,
+     "rms": 0.0007259071558833301,
+     "rms_limit": 0.001449500038994334,
+     "max_ref": 196.92144775390625,
+     "passed": true
+    },
+    "addtend_rk1_theta": {
+     "max_abs": 1.1444091796875e-05,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.104660688330648e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    },
+    "addtend_rk2_theta": {
+     "max_abs": 1.1444091796875e-05,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.104660688330648e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    },
+    "addtend_rk3_theta": {
+     "max_abs": 1.1444091796875e-05,
+     "max_limit": 0.014915736389160156,
+     "rms": 1.104660688330648e-07,
+     "rms_limit": 0.00010634362845216201,
+     "max_ref": 74.57868194580078,
+     "passed": true
+    }
+   }
+  },
+  "native_note": "CPU replay of native Pallas (interpret + RN emulation, b-diff cpuverify recipe); no GPU/native-HLO claim",
+  "v1_failure": "REGISTRATION_v1 required h*dt>=0.1 K and judged deletion on the full-theta bound (2e-4*197 K): real PROD heating gives 0.036 K/step -> v1 FAIL on vacuity (accuracy rows passed). v2 judges deletion on the pair-increment row (signal 0.036 K vs bound 2e-4 K)."
+ },
+ "dispatch_test": "tests/v025/b_core/test_h_diabatic_pair.py: real d01 own-step abstract trace, WRF-order on -> addtend sees h at 3/3 stages, finish removal only at stage 3, carry leaf shape/dtype kept; opt-out and ORDER0 -> no leaf, no pair",
+ "limits": [
+  "mp_tend_lim (10 K/s) clip of mpten not modelled (inactive at these rates)",
+  "coupled acoustic response is not separately oracled: h enters the acoustic only via t_tend, whose consumers are already pristine-gated for arbitrary real t_tend (BC21/BC27, b-diff RK); end-to-end response needs LW8/WN3 D6",
+  "nest h_diabatic down-interp/feedback (Registry 'du') not wired: nests start at t=0 with feedback 0 in PROD/WN3"
+ ],
+ "registrations": {
+  "REGISTRATION_v1.json": "166e0bdece3dffb1b70879c36ff48393e6f676faee1fe7b4c4a6dbb012eb452e",
+  "REGISTRATION_v2.json": "21c471b63f7ec1634335a77014b279d107e84a99eaf986e3f84a8f6efde0e5e2"
+ },
+ "artifacts": {
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC43_h_diabatic/h_gate_legacy.json": "c49ca2dbb32f80e3e51f0f6ef6331b9cb1f93cd7147977a825399cfbab566f4d",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC43_h_diabatic/h_gate_native.json": "8aa33a9d928158ff7792cbe4e3ca79b8a9703fb6823bf7be9cd9ae9f9660dc9e",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC43_h_diabatic/probe_h_finish.py": "242b697b36d03fabea1b4eeb834385d07886fa119a60538dc4824bfa3f146ebc",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC43_h_diabatic/oracle/manifest.json": "62ea92eed353730a4bafda830b253736dd329c604fefed786e344a5980ade3c7"
+ },
+ "off_identity": {
+  "order0_identical": true,
+  "order1_unseeded_identical": true,
+  "d01": "ba68092585c46dcd422ac802d7933155c1342da2adcf2c9afdacb4c874643317",
+  "d02": "bab2b7b8d7982fedf804be2714c5c7ab9bde09e0d785dc22df7e8c875740b54a",
+  "meaning": "jaxpr of the real d01/d02 own-step (_advance_chunk_fori, abstract PROD carries from common_inputs.pkl) at B37 885f82842 vs B38 tree: identical when the pair is off",
+  "artifact": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC43_h_diabatic/off_identity/off_identity.json"
+ },
+ "tests": "tests/v025/b_core/test_h_diabatic_pair.py 2 passed + B37 test (3 passed 48 s); restart suites tests/test_p0_5_restart_full_carry.py tests/test_v0110_wrfrst_netcdf.py tests/v025/restart/test_restart_store.py tests/test_v017_qh_hail_state.py 52 passed 1 skipped"
+}

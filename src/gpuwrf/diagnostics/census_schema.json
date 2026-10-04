@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gpuwrf.census.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "counter_dtype",
+    "domains"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "counter_dtype": {
+      "const": "uint64"
+    },
+    "domains": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "own_steps",
+          "resolved_namelist",
+          "guards",
+          "actual_work",
+          "output_submissions",
+          "full_output_set"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "own_steps": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resolved_namelist": {
+            "type": "object",
+            "required": [
+              "acoustic_substeps",
+              "stepcu",
+              "radt_minutes",
+              "output_cadence_steps",
+              "output_set"
+            ],
+            "properties": {
+              "acoustic_substeps": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "stepcu": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "radt_minutes": {
+                "type": "number",
+                "minimum": 0
+              },
+              "output_cadence_steps": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "output_set": {
+                "anyOf": [
+                  {
+                    "const": "default"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "guards": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "nonfinite",
+                "out_of_range",
+                "repaired"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "nonfinite": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "out_of_range": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "repaired": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "required": [
+              "dynamics.theta",
+              "dynamics.mu_total",
+              "dynamics.mu_perturbation",
+              "dynamics.qv",
+              "dynamics.qc",
+              "dynamics.qr",
+              "dynamics.qi",
+              "dynamics.qs",
+              "dynamics.qg",
+              "boundary.u",
+              "boundary.v",
+              "boundary.w",
+              "boundary.theta",
+              "boundary.p",
+              "boundary.ph",
+              "boundary.p_total",
+              "boundary.ph_total",
+              "boundary.p_perturbation",
+              "boundary.ph_perturbation",
+              "boundary.qv",
+              "boundary.mu_total",
+              "boundary.mu_perturbation"
+            ],
+            "propertyNames": {
+              "enum": [
+                "dynamics.theta",
+                "dynamics.mu_total",
+                "dynamics.mu_perturbation",
+                "dynamics.qv",
+                "dynamics.qc",
+                "dynamics.qr",
+                "dynamics.qi",
+                "dynamics.qs",
+                "dynamics.qg",
+                "boundary.u",
+                "boundary.v",
+                "boundary.w",
+                "boundary.theta",
+                "boundary.p",
+                "boundary.ph",
+                "boundary.p_total",
+                "boundary.ph_total",
+                "boundary.p_perturbation",
+                "boundary.ph_perturbation",
+                "boundary.qv",
+                "boundary.mu_total",
+                "boundary.mu_perturbation"
+              ]
+            }
+          },
+          "actual_work": {
+            "type": "object",
+            "required": [
+              "steps",
+              "acoustic_trips",
+              "kf_calls",
+              "radiation_tendency_calls",
+              "radiation_surface_calls",
+              "native_mass_guard_events",
+              "radiation_init_calls",
+              "radiation_output_calls",
+              "output_writes"
+            ],
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "output_submissions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "full_output_set": {
+            "type": "boolean"
+          },
+          "f2": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phases",
+              "moisture_cap_kg_kg",
+              "events",
+              "guard_water"
+            ],
+            "properties": {
+              "phases": {
+                "const": [
+                  "step_entry",
+                  "post_rk",
+                  "pre_dynamics_guard",
+                  "pre_boundary_guard"
+                ]
+              },
+              "moisture_cap_kg_kg": {
+                "type": "number"
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "phase",
+                    "field",
+                    "event",
+                    "count",
+                    "first_step",
+                    "first_flat_index",
+                    "first_value"
+                  ],
+                  "properties": {
+                    "phase": {
+                      "enum": [
+                        "step_entry",
+                        "post_rk",
+                        "pre_dynamics_guard",
+                        "pre_boundary_guard"
+                      ]
+                    },
+                    "field": {
+                      "type": "string"
+                    },
+                    "event": {
+                      "enum": [
+                        "negative",
+                        "nonfinite",
+                        "above_moisture_cap"
+                      ]
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "first_step": {
+                      "type": "integer"
+                    },
+                    "first_flat_index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "first_index_kji": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    },
+                    "first_value": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "enum": [
+                            "nan",
+                            "inf",
+                            "-inf"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "guard_water": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "added_kg",
+                      "removed_kg",
+                      "undefined_cells"
+                    ],
+                    "properties": {
+                      "added_kg": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "enum": [
+                              "nan",
+                              "inf",
+                              "-inf"
+                            ]
+                          }
+                        ]
+                      },
+                      "removed_kg": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "enum": [
+                              "nan",
+                              "inf",
+                              "-inf"
+                            ]
+                          }
+                        ]
+                      },
+                      "undefined_cells": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

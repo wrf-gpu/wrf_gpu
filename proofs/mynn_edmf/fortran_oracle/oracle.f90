@@ -201,7 +201,7 @@ contains
             bl_mynn_edmf_mom, bl_mynn_edmf_tke, bl_mynn_mixscalars, &
             u,v,w,th,thl,thv,tk, sqw,sqv,sqc,qke, &
             qnc,qni,qnwfa,qnifa,qnbca, exner,vt1,vq1,sgm1, &
-            ust,flt,fltv,flq,flqv, pblh,kpbl,dx, xland,ts, &
+            ust,flt,fltv,flq,flqv, pblh,kpbl,dx, xland,th_sfc, &
             edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc, &
             s_aw,s_awthl,s_awqt,s_awqv,s_awqc, &
             s_awu,s_awv,s_awqke, s_awqnc,s_awqni, &

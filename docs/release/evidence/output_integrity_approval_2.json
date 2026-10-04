@@ -1,0 +1,5 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260502_18z_a1.md",
+ "approval_reference": "2026-10-04T12:25:19Z",
+ "delivery_note": "Case 20260502_18z_a1; manager approval 2026-10-04T12:25:19Z\n\n2026-10-04T12:25:19Z manager -> release-docs/b-diff/wn3: RELEASE GATE (WN3 part) ACCEPTED on FINAL-b: 6/6 twins \u00d7 3 domains \u00d7 25 frames D6 0 bounded failures; strict integrity = only manager-approved disclosed classes (ice/snow trace \u2264 6e-11 kg/kg or onset timing 0227 d02 one frame; 0502 d01 canopy dew/frost one frame). release-docs: fill README now (gate line: 6 cases \u00d7 3 domains \u00d7 24 h, 375 fields compared, 62 with frozen bounds, 0 bound failures, all finite, integrity: disclosed exceptions linked), commit, post the docs-ref \u2192 I review \u2192 b-diff final.sh <ref> none.\n"
+}

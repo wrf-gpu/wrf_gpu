@@ -470,13 +470,12 @@ def collect_namelist_warnings(config: Any) -> list[str]:
 
     A naive user pointing the standalone ``gpuwrf run`` at a real WRF
     ``namelist.input`` must not be REJECTED for the cumulus/PBL cadence keys.
-    ``cudt``/``bldt`` ask the port to sub-step those physics every N minutes, but
-    the GPU port runs them EVERY dynamics step -- more frequent than requested, a
-    conservative approximation that can never silently substitute a different
-    scheme. So a positive ``cudt``/``bldt`` is NOT a fail-closed rejection
+    ``bldt`` asks the port to sub-step PBL physics every N minutes, but
+    the GPU port runs PBL EVERY dynamics step. A positive ``bldt`` is NOT a fail-closed rejection
     (handled by :func:`validate_namelist`); instead it surfaces here as a
     WARNING string naming the approximation, while the run proceeds. The CLI
-    prints these to stderr before launching the forecast.
+    prints these to stderr before launching the forecast. KF ``cudt`` follows
+    WRF STEPCU and does not generate an approximation warning.
 
     Each warning is a single human-readable line. ``config`` accepts the same
     forms as :func:`validate_namelist` (flat/nested mapping, dataclass, or a

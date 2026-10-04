@@ -85,17 +85,17 @@ tolerances). This is the honest current state, reported as-is, on the
 Do **not** read this release as "PSFC fixed" or "winds equivalent." The honest
 summary: **short-lead fields track CPU-WRF within tolerance; by 24 h the run is
 `NOT_EQUIVALENT`, driven by wind divergence.** Full numbers and framing:
-[`docs/equivalence-demo.md`](docs/equivalence-demo.md), tracked as **KI-9**.
+[`docs/equivalence-demo.md`](../docs/equivalence-demo.md), tracked as **KI-9**.
 
 ## Speedup (three distinct numbers, none dishonest)
 
 All numbers are one RTX 5090 vs 28-rank CPU-WRF on the same workstation, both
 fp64, same d02 3 km grid, computed per forecast-hour (same model time). Full
-reconciliation: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
+reconciliation: [`docs/PERFORMANCE.md`](../docs/PERFORMANCE.md).
 
 - **Warm kernel (apples-to-apples): ~5×** (band 5–8×, strict dt-parity floor
   ~3.2×) — compute-only per forecast-hour
-  ([`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md)).
+  ([`proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md)).
 - **Warm real-user wall: ~2.5×** — full command-to-finish wall, persistent cache
   warm, includes IO + case build.
 - **Equivalence-demo real-user: ~4.26× warm-cached / ~1.70× cold** — the 24 h d02
@@ -105,7 +105,7 @@ reconciliation: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ## Known issues (carried + new)
 
-See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
+See [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md) for full detail.
 
 | ID | Summary | Severity |
 |---|---|---|

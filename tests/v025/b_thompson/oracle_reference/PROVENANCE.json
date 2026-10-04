@@ -1,0 +1,50 @@
+{
+  "source_commit": "83c7ff126",
+  "source_worktree": "<USER_HOME>/src/wrf_gpu2_wt/v025-p0-k7",
+  "files": {
+    "p0_gate2_compare.py": {
+      "source_path": "gate2/p0_gate2_compare.py",
+      "source_sha256": "cb78b4f6eb65e507bd7c56f47fa7f3a2e8db6e8dc875f74cffa34df917d85e96",
+      "copy_sha256": "ec317d0ee00e6814accbb6298a2d955e65fc376005fe2da2eb826d1e005f1a5d"
+    },
+    "gate2_tolerances.json": {
+      "source_path": "gate2/gate2_tolerances.json",
+      "source_sha256": "5bdc03da9cd0099bce48e30de88e6c570114480728f0f12551cacaf137b48b41",
+      "copy_sha256": "5bdc03da9cd0099bce48e30de88e6c570114480728f0f12551cacaf137b48b41"
+    },
+    "p0c_ocol_runner.py": {
+      "source_path": "closure/l3/p0c_ocol_runner.py",
+      "source_sha256": "e70819d97464e8c671c0f9524e14154c5de761e869930f81fb9e6443283d6a32",
+      "copy_sha256": "3fb3a03c465a6742cc7ad6274454e426ce2a0d393ce9db0d8979a8ed7775c38b"
+    },
+    "p0c_mp28_tolerances.json": {
+      "source_path": "closure/l3/p0c_mp28_tolerances.json",
+      "source_sha256": "1601d68be1d7c4206b7f54ef27168304edc10a10d16878951eaa62efa677ceab",
+      "copy_sha256": "1601d68be1d7c4206b7f54ef27168304edc10a10d16878951eaa62efa677ceab"
+    },
+    "p0l3b7c_verify.py": {
+      "source_path": "closure/k7/p0l3b7c_verify.py",
+      "source_sha256": "5f7386af1a3c9ed2be9dbf242f3f2aefa9cdbaebc0f1274d2a35e1ac8340c40d",
+      "copy_sha256": "8cc5f3837225717a9698c4be20379ca4cee1753831a8d9a4c9fdbfb5fed15bfb",
+      "changes": "provenance header only"
+    },
+    "p0l3b7c_runner.py": {
+      "source_path": "closure/k7/p0l3b7c_runner.py",
+      "source_sha256": "8902b77c5832ffa7fd20b7df63c473502d5c56b1ff419bce38ef562c72d6b65a",
+      "copy_sha256": "d258870cdc78918b75ea5db3a5efff3da2479d488713ac8e2536522378cea506",
+      "changes": "provenance header; runner dependency SHA pins updated to header-bearing copies"
+    },
+    "p0c_column_discriminators.json": {
+      "source_path": "closure/l3/p0c_column_discriminators.json",
+      "source_sha256": "848db663d0d3b40d37797074ce44d591173d374adb76b9f77402e20f4d8d1d0a",
+      "copy_sha256": "848db663d0d3b40d37797074ce44d591173d374adb76b9f77402e20f4d8d1d0a",
+      "changes": "none"
+    },
+    "p0c_aero_column_manifest_r7.json": {
+      "source_path": "closure/l3/p0c_aero_column_manifest_r7.json",
+      "source_sha256": "31f7e9d4993895aee5f746a19c91d27d483b1c0bd55b21b02117f8523d677ff7",
+      "copy_sha256": "31f7e9d4993895aee5f746a19c91d27d483b1c0bd55b21b02117f8523d677ff7",
+      "changes": "none"
+    }
+  }
+}

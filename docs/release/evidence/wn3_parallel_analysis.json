@@ -1,0 +1,111 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/parallel_run.json",
+ "content": {
+  "schema": "gpuwrf-parallel-cases-v1",
+  "start_utc": "2026-10-04T11:33:22Z",
+  "argv": [
+   "~/wrf_gpu2_lanes/wn3/W9/source/scripts/parallel_cases.py",
+   "--out-root",
+   "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4",
+   "--gpu-log-interval",
+   "1",
+   "--compress",
+   "--compress-cpus",
+   "8,9,24,25",
+   "~/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260502_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260614_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260220_18z_a1",
+   "--",
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "6"
+  ],
+  "cli_args": [
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "6"
+  ],
+  "vram_total_bytes": 33664532480,
+  "vram_free_bytes_at_start": 30291263488,
+  "vram_capacity_bytes": 30291263488,
+  "cpu_affinity": [
+   10,
+   11,
+   12,
+   13,
+   26,
+   27,
+   28,
+   29
+  ],
+  "events": [
+   {
+    "t_s": 0.0,
+    "start": "20260227_18z_a1",
+    "running": 1
+   },
+   {
+    "t_s": 0.0,
+    "start": "20260502_18z_a1",
+    "running": 2
+   },
+   {
+    "t_s": 0.0,
+    "start": "20260614_18z_a1",
+    "running": 3
+   },
+   {
+    "t_s": 0.0,
+    "start": "20260220_18z_a1",
+    "running": 4
+   }
+  ],
+  "gpu_lock": {
+   "required": true,
+   "policy": "dev GPU lock infrastructure present (/tmp/wrf_gpu2_gpu.lock)",
+   "held": true
+  },
+  "end_utc": "2026-10-04T11:37:14Z",
+  "wall_s": 232.292,
+  "peak_concurrency": 4,
+  "stop_reason": null,
+  "cases": {
+   "20260614_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 179.046,
+    "vram_peak_mib": 4428,
+    "vmhwm_kb": 6160448
+   },
+   "20260227_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 188.14,
+    "vram_peak_mib": 4524,
+    "vmhwm_kb": 6164656
+   },
+   "20260502_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 188.141,
+    "vram_peak_mib": 4332,
+    "vmhwm_kb": 6194420
+   },
+   "20260220_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 189.141,
+    "vram_peak_mib": 4300,
+    "vmhwm_kb": 6197520
+   }
+  },
+  "case_hours": 24,
+  "wall_s_per_case_hour": 9.679,
+  "compress_rc": 0
+ }
+}

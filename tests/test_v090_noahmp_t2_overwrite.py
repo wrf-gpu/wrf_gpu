@@ -166,6 +166,37 @@ def test_legacy_three_tuple_without_bulk_t2():
     assert len(out) == 3
 
 
+@pytest.mark.skipif(not HAVE_TABLES, reason="pristine WRF MPTABLE not available")
+def test_output_only_matches_full_step_bytes(monkeypatch):
+    """History-only Noah-MP returns the full step's HFX/LH/TSK/T2 bit for bit and
+    never runs the post-ENERGY land updates (the overlay discards that land state)."""
+    import gpuwrf.physics.noahmp.noahmp_driver as drv
+
+    state, land, static, rad, clock = _build_operational()
+    forcing = _assemble(state, static, rad, clock)
+    _lo, nm = noah_mp_step(land, forcing, static, 90.0)
+
+    def _skipped(name):
+        def _fail(*_a, **_k):
+            raise AssertionError(f"output_only ran {name}")
+        return _fail
+
+    for name in ("thermoprop_full", "noahmp_phasechange", "noahmp_water_hydro", "noahmp_snow"):
+        monkeypatch.setattr(drv, name, _skipped(name))
+    only = noah_mp_step(land, forcing, static, 90.0, output_only=True)
+    for got, want in zip(only, (nm.hfx, nm.lh, nm.tsk, nm.t2), strict=True):
+        assert np.asarray(got).dtype == np.asarray(want).dtype
+        assert np.asarray(got).tobytes() == np.asarray(want).tobytes()
+
+    # The operational overlay takes the history-only path (the spies stay armed).
+    _h, _l, _t, t2 = overlay_noahmp_land_diagnostics(
+        state, land, static, jnp.full((1, 5), 100.0), jnp.full((1, 5), 50.0),
+        state.t_skin, 90.0, bulk_t2=state.t_skin, radiation=rad, clock=clock,
+    )
+    is_land = np.asarray((state.xland - 1.5) < 0.0)
+    assert np.asarray(t2)[is_land].tobytes() == np.asarray(nm.t2, dtype=np.float64)[is_land].tobytes()
+
+
 def _assemble(state, static, rad, clock):
     """Reproduce the hook's forcing assembly for the reference Noah-MP T2."""
     from gpuwrf.coupling.noahmp_surface_hook import _build_column_view

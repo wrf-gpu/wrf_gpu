@@ -97,7 +97,7 @@ the tolerance line, a variable×lead scoreboard, a GPU-vs-CPU 1:1 cell scatter
 scale, and a README-embeddable dashboard.
 
 - Tool: `scripts/build_identity_proof_plots.py`
-- Method + reproduce commands: [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md)
+- Method + reproduce commands: [`docs/IDENTITY_PROOF.md`](../docs/IDENTITY_PROOF.md)
 - Assets: `docs/assets/v014/identity_proof/{switzerland_d01,canary_l2_d02}/identity_dashboard.png`
 
 ```bash
@@ -137,8 +137,8 @@ unchanged.
 
 ## Known issues / scope boundaries
 
-Full detail in [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md) and
-[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+Full detail in [`KNOWN_ISSUES.md`](../KNOWN_ISSUES.md) and
+[`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md).
 
 | ID | Summary | Severity |
 |---|---|---|

@@ -1,0 +1,349 @@
+{
+  "schema": "b_core.payload.v2",
+  "baseline": "tests/v025/b_core/phase1_evidence.json",
+  "experiment": "BC18 timing/nsys plus BC21 asserted GPU corrected-oracle gates; supersedes BC17 fidelity",
+  "oracle": "pristine WRF binary32 with solve_em caller bindings; unchanged Tier-P resolved1/2/4 stage arms both PROD shapes",
+  "payload": "19 evolving leaves; theta_ave diagnostic alias reconstructed; stage invariants preserved",
+  "stage_fidelity": {
+    "d01": {
+      "passed": true,
+      "artifact": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d01_oracle.json",
+        "sha256": "1608d2ea6593f6ad2adb57ca026f444353fc3f4c85d596e7ad25ffb4eaaf5e20"
+      },
+      "backend_assertion_transcript": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/run.log",
+        "sha256": "64bdb6c2bcabb60a2dc3cf7451876a15458296dd08cbba624f57833e23c680db"
+      }
+    },
+    "d02": {
+      "passed": true,
+      "artifact": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d02_oracle.json",
+        "sha256": "39f6d85dc4a57dc1cffe6cbac86cc19d91288ee02870dadb6c9c28d9feaaf6ef"
+      },
+      "backend_assertion_transcript": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/run.log",
+        "sha256": "64bdb6c2bcabb60a2dc3cf7451876a15458296dd08cbba624f57833e23c680db"
+      }
+    }
+  },
+  "measurements": [
+    {
+      "domain": "d01",
+      "family": "substep",
+      "payload": "evolving",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "dts": 13.5,
+      "fixture_sha256": "57c0446d53f233abda4e87cd69ff45d935ea12742643c40a6f5c16008f11cdad",
+      "warm_dispatch_s": [
+        0.00020315578149165958,
+        0.0002050026560027618,
+        0.0002293456254847115,
+        0.0002251218747915118,
+        0.00023017596868157852,
+        0.0002064676555164624,
+        0.0002039470309682656,
+        0.00021494709380931454,
+        0.00020935300017299596,
+        0.00020377140663185855,
+        0.00021069584363431204,
+        0.00020902078085782705,
+        0.00020415515609784052,
+        0.00020539393790386384,
+        0.00021245925017865375,
+        0.00020355578180897282,
+        0.00020504078111116542,
+        0.00020378140561660985,
+        0.0002028089056693716,
+        0.0002044101556748501,
+        0.00020492515614023432,
+        0.0003230515940231271,
+        0.0002189093120250618,
+        0.00031244528145180084,
+        0.00020642046911234502,
+        0.0002041817188001005,
+        0.00021094393741805106,
+        0.00022130371871753596,
+        0.00020412796857272042,
+        0.000204546406166628,
+        0.00020404453152877977
+      ],
+      "median_dispatch_s": 0.00020539393790386384,
+      "min_dispatch_s": 0.0002028089056693716,
+      "reps": 31,
+      "batch": 32,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "9051e6d85a64f22e25f714f8bcad7ff4ba9dc301a0ad92358829b4f7632b0119"
+    },
+    {
+      "domain": "d02",
+      "family": "substep",
+      "payload": "evolving",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "dts": 4.5,
+      "fixture_sha256": "459bbed07e14465d4ed3459f817ca7d992439a012418280131dc3089ce5d3c5c",
+      "warm_dispatch_s": [
+        0.00042561665577522945,
+        0.0004268251250323374,
+        0.00042865765590249794,
+        0.00043825956254295306,
+        0.00043258546884317184,
+        0.0004608606877809507,
+        0.0004404992505442351,
+        0.0004268191878509242,
+        0.000425930437813804,
+        0.0004268360626156209,
+        0.00043382859439589083,
+        0.0004339726874604821,
+        0.00042620106250979006,
+        0.0004270797808203497,
+        0.0004258948129063356,
+        0.0004253741872162209,
+        0.0004253291563145467,
+        0.00042644668701541377,
+        0.00044362774951878237,
+        0.0004370101869426435,
+        0.0004348939064584556,
+        0.0004369323751234333,
+        0.0004358255000624922,
+        0.00042959387519658776,
+        0.00042647700047382386,
+        0.0004323054690757999,
+        0.00045367531220108503,
+        0.00043537265628401656,
+        0.0004273269996701856,
+        0.0004515175005508354,
+        0.00043998925048072124
+      ],
+      "median_dispatch_s": 0.0004323054690757999,
+      "min_dispatch_s": 0.0004253291563145467,
+      "reps": 31,
+      "batch": 32,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "0a2692209e515ea4866cea113dd1f9d6b1a78fa416a6a4f14854f86ff3f7fe01"
+    }
+  ],
+  "full_return_measurements": [
+    {
+      "domain": "d01",
+      "family": "substep",
+      "payload": "full",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "dts": 13.5,
+      "fixture_sha256": "57c0446d53f233abda4e87cd69ff45d935ea12742643c40a6f5c16008f11cdad",
+      "warm_dispatch_s": [
+        0.00037059503119962756,
+        0.00031325653162639355,
+        0.00031343309365183813,
+        0.0003181643751304364,
+        0.00032070909401227254,
+        0.0003582387189453584,
+        0.00031465996835322585,
+        0.00031346496871265117,
+        0.00031819934429222485,
+        0.0003193909378751414,
+        0.0003334169687150279,
+        0.00038444078199972864,
+        0.00032091968751046807,
+        0.00045883784332545474,
+        0.0003368832494743401,
+        0.00031357965599454474,
+        0.00031368153122457443,
+        0.0003146668741464964,
+        0.00031727903206046904,
+        0.0003128162188659189,
+        0.00031686249985796167,
+        0.00034871646948886337,
+        0.0003174755938744056,
+        0.00031270121871784795,
+        0.0003180396879542968,
+        0.00030900993715476943,
+        0.00030930368757253746,
+        0.00030977087499195477,
+        0.00031447653054783586,
+        0.00031283434418583056,
+        0.0003143171561532654
+      ],
+      "median_dispatch_s": 0.00031686249985796167,
+      "min_dispatch_s": 0.00030900993715476943,
+      "reps": 31,
+      "batch": 32,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "c79ca6dd763ae5d19b8eb179b30d573075acf6e11f77122cdb2e9d21f025f0a0"
+    },
+    {
+      "domain": "d02",
+      "family": "substep",
+      "payload": "full",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "dts": 4.5,
+      "fixture_sha256": "459bbed07e14465d4ed3459f817ca7d992439a012418280131dc3089ce5d3c5c",
+      "warm_dispatch_s": [
+        0.0005958040937912301,
+        0.00060678950012516,
+        0.0006129820312708034,
+        0.0006195405003381893,
+        0.000635240312476526,
+        0.0006854543753433973,
+        0.0006651824060099898,
+        0.0008128446243063081,
+        0.0007168636557253194,
+        0.0006265136871661525,
+        0.0006278521250351332,
+        0.0006220283430593554,
+        0.0006253314686546219,
+        0.0006765909065507003,
+        0.0006384797179634916,
+        0.0006014516247887514,
+        0.0005998706874379423,
+        0.0006378421876434004,
+        0.0006295624689300894,
+        0.0006294683744272334,
+        0.0006178617504701833,
+        0.0006651720941590611,
+        0.0006220908126124414,
+        0.0006212858434082591,
+        0.0006335565312838298,
+        0.0006439491244236706,
+        0.0006180198752190336,
+        0.0006944813439986319,
+        0.0006201054993653088,
+        0.0006297318441284006,
+        0.0006295590001172968
+      ],
+      "median_dispatch_s": 0.0006294683744272334,
+      "min_dispatch_s": 0.0005958040937912301,
+      "reps": 31,
+      "batch": 32,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "c4292f51bf2b9e9c21903adc6c00076be230df9c3867798f1eccd17226a477d7"
+    }
+  ],
+  "dispatch_reduction_fraction": {
+    "d01": 0.35178843190363407,
+    "d02": 0.3132213044552654
+  },
+  "extrapolation_s_per_fc_h": 0.7243166234426704,
+  "acoustic_budget_s_per_fc_h": 2.4,
+  "nsys": {
+    "d01": {
+      "source_path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d01.sqlite",
+      "source_sha256": "8feb0fc2842740fa4ae3a4b937a968783fce0da662b290531f586155f7a92b10",
+      "dispatches": 352,
+      "kernels": {
+        "loop_concatenate_fusion": {
+          "count": 352,
+          "total_ns": 352439,
+          "min_ns": 768,
+          "max_ns": 2816
+        },
+        "b_core_uv_fp32": {
+          "count": 352,
+          "total_ns": 4840821,
+          "min_ns": 13472,
+          "max_ns": 18400
+        },
+        "b_core_mass_fp32": {
+          "count": 352,
+          "total_ns": 17100025,
+          "min_ns": 47168,
+          "max_ns": 89664
+        },
+        "b_core_w_fp32": {
+          "count": 352,
+          "total_ns": 45127294,
+          "min_ns": 126305,
+          "max_ns": 345921
+        },
+        "b_core_pressure_fp32": {
+          "count": 352,
+          "total_ns": 1438181,
+          "min_ns": 3840,
+          "max_ns": 9376
+        }
+      },
+      "copies": {},
+      "kernels_per_dispatch": 5.0,
+      "device_s_per_dispatch": 0.0001956214772727273,
+      "copy_kind_enum": "CUPTI_ACTIVITY_MEMCPY_KIND: 1 HtoD, 2 DtoH, 8 DtoD"
+    },
+    "d02": {
+      "source_path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d02.sqlite",
+      "source_sha256": "fe19a55001ffd93ed66776e12ac4610f61ff3dab2fdb05a4545992b474561aa0",
+      "dispatches": 352,
+      "kernels": {
+        "loop_concatenate_fusion": {
+          "count": 352,
+          "total_ns": 544030,
+          "min_ns": 1056,
+          "max_ns": 4096
+        },
+        "b_core_uv_fp32": {
+          "count": 352,
+          "total_ns": 21399246,
+          "min_ns": 57920,
+          "max_ns": 64544
+        },
+        "b_core_mass_fp32": {
+          "count": 352,
+          "total_ns": 37929502,
+          "min_ns": 101313,
+          "max_ns": 109088
+        },
+        "b_core_w_fp32": {
+          "count": 352,
+          "total_ns": 83599996,
+          "min_ns": 231073,
+          "max_ns": 573506
+        },
+        "b_core_pressure_fp32": {
+          "count": 352,
+          "total_ns": 5809619,
+          "min_ns": 15872,
+          "max_ns": 28672
+        }
+      },
+      "copies": {},
+      "kernels_per_dispatch": 5.0,
+      "device_s_per_dispatch": 0.0004240977073863637,
+      "copy_kind_enum": "CUPTI_ACTIVITY_MEMCPY_KIND: 1 HtoD, 2 DtoH, 8 DtoD"
+    }
+  },
+  "ncu_status": "deferred by manager; principal driver action",
+  "artifacts": {
+    "warm_evolving.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/warm_evolving.json",
+      "sha256": "b6f4d7efbc5cc827684799e64ad6fa5a83949c355e810908ec438e89e080d5fe"
+    },
+    "nsys_evolving_d01_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d01_summary.json",
+      "sha256": "2b87637c0f55d03a09aed71053f7fc86beca324186906faf432118b018fbb339"
+    },
+    "nsys_evolving_d02_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d02_summary.json",
+      "sha256": "ff8c1fd604b0bf2e80d383ebb977bf8826359e93e58eee26a18525cbe2f29dc6"
+    }
+  },
+  "limits": [
+    "Component benchmark, not whole-step or end-to-end wall.",
+    "Runtime flag integration outside enabler until whole-step/3h validation.",
+    "Original extra7sameRK RED artifact retained; predates caller correction."
+  ]
+}

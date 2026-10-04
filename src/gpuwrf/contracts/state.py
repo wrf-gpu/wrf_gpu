@@ -13,7 +13,10 @@ from jax import config
 import jax.numpy as jnp
 
 from .grid import GridSpec
-from .precision import DEFAULT_DTYPES
+from .precision import (
+    DEFAULT_DTYPES, GWDO_DIAGNOSTIC_LEAVES,
+    GWDO_VOLUME_DIAGNOSTIC_LEAVES, GWDO_SURFACE_DIAGNOSTIC_LEAVES,
+)
 
 
 configure_jax_x64()
@@ -84,6 +87,7 @@ def _state_field_shapes(
     *,
     mp_physics: int | None = 8,
     include_all_conditional: bool = False,
+    gwd_opt: int = 0,
 ) -> dict[str, tuple[int, ...]]:
     """Returns the SoA field-shape contract for one static physics selection."""
 
@@ -161,7 +165,20 @@ def _state_field_shapes(
         "qc_bl": mass_3d,
         "qi_bl": mass_3d,
         "cldfra_bl": mass_3d,
+        # B39 MYNN surface-layer carry (REAL-locked, zero = WRF registry init).
+        "mol": surface_2d,
+        "hfx": surface_2d,
+        "qfx": surface_2d,
+        "qsfc": surface_2d,
+        "pblh": surface_2d,
+        "el_pbl": mass_3d,
+        "maxmf": surface_2d,
+        "maxwidth": surface_2d,
+        "ztop_plume": surface_2d,
     }
+    if int(gwd_opt) == 1 or include_all_conditional:
+        shapes.update({name: mass_3d for name in GWDO_VOLUME_DIAGNOSTIC_LEAVES})
+        shapes.update({name: surface_2d for name in GWDO_SURFACE_DIAGNOSTIC_LEAVES})
     active = set(
         conditional_state_leaves_for_mp(
             mp_physics,
@@ -591,6 +608,24 @@ class State:
         "qg_bdy",
         "Ni_bdy",
         "Nr_bdy",
+        # B39 MYNN surface-layer carry: WRF grid%MOL, HFX, QFX, QSFC, PBLH that
+        # surface_driver hands to SFCLAY_mynn on the next step. Appended at the
+        # end (pytree prefix unchanged); REAL-locked, ``None`` -> zeros.
+        "mol",
+        "hfx",
+        "qfx",
+        "qsfc",
+        "pblh",
+        # WRF history MYNN diagnostics; held from the existing PBL call.
+        "el_pbl",
+        "maxmf",
+        "maxwidth",
+        "ztop_plume",
+        # WRF GWDO history; absent unless gwd_opt=1, held between calls.
+        "dtaux3d",
+        "dtauy3d",
+        "dusfcg",
+        "dvsfcg",
     )
 
     def __init__(
@@ -672,6 +707,19 @@ class State:
         qg_bdy: jax.Array | None = None,
         Ni_bdy: jax.Array | None = None,
         Nr_bdy: jax.Array | None = None,
+        mol: jax.Array | None = None,
+        hfx: jax.Array | None = None,
+        qfx: jax.Array | None = None,
+        qsfc: jax.Array | None = None,
+        pblh: jax.Array | None = None,
+        el_pbl: jax.Array | None = None,
+        maxmf: jax.Array | None = None,
+        maxwidth: jax.Array | None = None,
+        ztop_plume: jax.Array | None = None,
+        dtaux3d: jax.Array | None = None,
+        dtauy3d: jax.Array | None = None,
+        dusfcg: jax.Array | None = None,
+        dvsfcg: jax.Array | None = None,
         # v0.20 S1: legacy total aliases accepted for call-site back-compat ONLY
         # (they are no longer pytree leaves; the read-only p/ph/mu properties below
         # re-expose the authoritative totals). A caller that still passes
@@ -800,6 +848,25 @@ class State:
         self.qg_bdy = None if qg_bdy is None else _as_dtype(qg_bdy, DEFAULT_DTYPES.dtype_for("qg_bdy"))
         self.Ni_bdy = None if Ni_bdy is None else _as_dtype(Ni_bdy, DEFAULT_DTYPES.dtype_for("Ni_bdy"))
         self.Nr_bdy = None if Nr_bdy is None else _as_dtype(Nr_bdy, DEFAULT_DTYPES.dtype_for("Nr_bdy"))
+        # B39 MYNN surface-layer carry: REAL-locked, ``None`` -> zeros (WRF
+        # registry initial value; wrfinput carries none of them).
+        for name, value in (("mol", mol), ("hfx", hfx), ("qfx", qfx), ("qsfc", qsfc), ("pblh", pblh)):
+            dtype = DEFAULT_DTYPES.dtype_for(name)
+            object.__setattr__(
+                self, name,
+                jnp.zeros_like(xland, dtype=dtype) if value is None else _as_dtype(value, dtype),
+            )
+        for name, value in (("dtaux3d", dtaux3d), ("dtauy3d", dtauy3d),
+                            ("dusfcg", dusfcg), ("dvsfcg", dvsfcg)):
+            object.__setattr__(self, name, None if value is None else _as_dtype(value, DEFAULT_DTYPES.dtype_for(name)))
+
+        # WRF Registry starts these history diagnostics at zero. Required
+        # restart leaves: old payloads fail the E78 missing-field schema gate.
+        for name, value, template in (("el_pbl", el_pbl, qke), ("maxmf", maxmf, xland),
+                                      ("maxwidth", maxwidth, xland), ("ztop_plume", ztop_plume, xland)):
+            dtype = DEFAULT_DTYPES.dtype_for(name)
+            object.__setattr__(self, name, jnp.zeros_like(template, dtype=dtype)
+                               if value is None else _as_dtype(value, dtype))
 
     # --- v0.20 S1 legacy total aliases (read-only properties; not pytree leaves) ---
     # ``p``/``ph``/``mu`` were bitwise-identical duplicates of the totals carried
@@ -820,13 +887,13 @@ class State:
         return self.mu_total
 
     @classmethod
-    def zeros(cls, grid: GridSpec, *, mp_physics: int | None = 8) -> "State":
+    def zeros(cls, grid: GridSpec, *, mp_physics: int | None = 8, gwd_opt: int = 0) -> "State":
         """Allocates the State leaves required by one static microphysics option."""
 
         device = _gpu_device()
         return cls(**{
             field: _zeros(shape, field, device)
-            for field, shape in _state_field_shapes(grid, mp_physics=mp_physics).items()
+            for field, shape in _state_field_shapes(grid, mp_physics=mp_physics, gwd_opt=gwd_opt).items()
         })
 
     @classmethod
@@ -938,6 +1005,29 @@ class State:
         """Presents state arrays as JAX scan carry leaves."""
 
         return tuple(getattr(self, name) for name in self.__slots__), None
+
+    def __setstate__(self, state):
+        """Unpickles States written before a slot existed (B39 leaves -> REAL zeros)."""
+
+        dict_state, slot_state = state if isinstance(state, tuple) else (state, None)
+        for source in (dict_state, slot_state):
+            for name, value in (source or {}).items():
+                object.__setattr__(self, name, value)
+        for name in GWDO_DIAGNOSTIC_LEAVES:
+            if not hasattr(self, name):
+                object.__setattr__(self, name, None)
+        for name in ("mol", "hfx", "qfx", "qsfc", "pblh"):
+            if not hasattr(self, name):
+                object.__setattr__(
+                    self, name, jnp.zeros_like(self.xland, dtype=DEFAULT_DTYPES.dtype_for(name))
+                )
+
+        # Raw State fixtures use zero Registry diagnostics; restart payload
+        # readers validate their explicit field order before constructing State.
+        for name in ("el_pbl", "maxmf", "maxwidth", "ztop_plume"):
+            if not hasattr(self, name):
+                template = self.qke if name == "el_pbl" else self.xland
+                object.__setattr__(self, name, jnp.zeros_like(template, dtype=DEFAULT_DTYPES.dtype_for(name)))
 
     @classmethod
     def tree_unflatten(cls, aux, children):

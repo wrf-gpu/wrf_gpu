@@ -19,7 +19,7 @@ from typing import Any, NamedTuple
 import jax
 from jax import config
 import jax.numpy as jnp
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 import numpy as np
 
 from gpuwrf.config.paths import tmp_root, wrf_l3_root
@@ -219,7 +219,8 @@ class _WRFInitLibm32:
     loadable (residual then bounded ~2.3 Pa worst-case instead of ~0.04 Pa).
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, native_arrays: bool = True) -> None:
+        self._native_arrays = native_arrays
         self._libm = None
         self.provider = "float64-rounded-fallback"
         try:
@@ -246,6 +247,14 @@ class _WRFInitLibm32:
         fn = getattr(self._libm, name)
         c_float = self._ctypes.c_float
         out = np.empty_like(x32)
+        if self._native_arrays and x32.flags.c_contiguous:
+            from gpuwrf.integration._init_libm_arrays import load
+            native = load()
+            if native is not None:
+                ptr = self._ctypes.POINTER(self._ctypes.c_float)
+                native.map1(self._ctypes.cast(fn,self._ctypes.c_void_p),
+                            x32.ctypes.data_as(ptr),out.ctypes.data_as(ptr),x32.size)
+                return out
         fi, fo = x32.ravel(), out.ravel()
         for i in range(fi.size):
             fo[i] = fn(c_float(float(fi[i])))
@@ -265,6 +274,14 @@ class _WRFInitLibm32:
         c_float = self._ctypes.c_float
         c_y = c_float(float(y32))
         out = np.empty_like(x32)
+        if self._native_arrays and x32.flags.c_contiguous:
+            from gpuwrf.integration._init_libm_arrays import load
+            native = load()
+            if native is not None:
+                ptr = self._ctypes.POINTER(c_float)
+                native.map2(self._ctypes.cast(self._libm.powf,self._ctypes.c_void_p),
+                            x32.ctypes.data_as(ptr),c_y,out.ctypes.data_as(ptr),x32.size)
+                return out
         fi, fo = x32.ravel(), out.ravel()
         for i in range(fi.size):
             fo[i] = self._libm.powf(c_float(float(fi[i])), c_y)
@@ -464,17 +481,13 @@ def load_history_boundary_leaves(
     n = min(history_count, int(ntimes if ntimes is not None else history_count))
     max_side = int(max(grid.nx + 1, grid.ny + 1))
     bdy_width, wrfbdy_path, width_source = _wrfbdy_width_for_run(run, fallback=5)
-    use_theta_m = _wrf_use_theta_m(run, domain)
-
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
-        # wrfout ``T`` is the DRY perturbation theta; operational State.theta
-        # is MOIST theta_m (use_theta_m=1), so recouple with the same file's
-        # QVAPOR (exact to wrfout fp32: THM == T_dry*(1+rvovrd*qv) at ~7e-5 K).
+        # wrfout ``T`` is the DRY perturbation theta under BOTH use_theta_m values; operational State.theta is
+        # always MOIST theta_m (use_theta_m=0 carries WRF's dry prognostic by the exact change of variables), so
+        # recouple with the same file's QVAPOR (exact to wrfout fp32: THM == T_dry*(1+rvovrd*qv) at ~7e-5 K).
         theta_full = data + P0_THETA_OFFSET_K
-        if use_theta_m == 1:
-            qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
-            theta_full = theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
-        return theta_full
+        qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
+        return theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
 
     leaves_np = {
         "u_bdy": _pack_history_3d(run, domain, "U", ntimes=n, z_len=grid.nz, max_side=max_side, bdy_width=bdy_width, dtype=np.float32),
@@ -723,17 +736,13 @@ def load_nested_parent_boundary_leaves(
         )
     max_side = int(max(grid.nx + 1, grid.ny + 1))
     bdy_width, wrfbdy_path, width_source = _wrfbdy_width_for_run(run, fallback=5)
-    use_theta_m = _wrf_use_theta_m(run, child_domain)
-
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
-        # Parent wrfout ``T`` is DRY perturbation theta; the child boundary
-        # forces operational State.theta = MOIST theta_m (use_theta_m=1), so
+        # Parent wrfout ``T`` is DRY perturbation theta under BOTH use_theta_m values; the child boundary forces
+        # operational State.theta = MOIST theta_m (always; use_theta_m=0 by the exact change of variables), so
         # recouple with the parent's QVAPOR BEFORE horizontal interpolation.
         theta_full = data + P0_THETA_OFFSET_K
-        if use_theta_m == 1:
-            qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
-            theta_full = theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
-        return theta_full
+        qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
+        return theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
 
     leaves_np = {
         "u_bdy": _pack_nested_parent_history_3d(
@@ -1416,7 +1425,7 @@ def _wrf_use_theta_m(run: Gen2Run, domain: str) -> int:
     """
 
     try:
-        from netCDF4 import Dataset  # noqa: PLC0415
+        from gpuwrf.io.netcdf_lock import Dataset  # noqa: PLC0415
 
         with Dataset(run.wrfinput_file(domain), "r") as dataset:
             if hasattr(dataset, "USE_THETA_M"):
@@ -1541,6 +1550,61 @@ def _wrf_live_nest_adjust_tempqv(
     return theta_full_out, qv_out_cast, meta
 
 
+def _wrf_set_w_surface(w, u, v, *, grid: GridSpec, metrics: DycoreMetrics):
+    """WRF ``module_bc_em.F::set_w_surface`` with ``fill_w_flag=.true.``.
+
+    ``start_em.F`` calls it for every domain at the start of a (non-restart)
+    simulation when the input surface ``W`` is identically ~0 over the whole
+    domain (``w_needs_to_be_set``): kinematic surface ``w`` from the terrain
+    slope and the lowest-three-level ``cf1/cf2/cf3`` winds, filled upward as
+    ``w(k) = w(1) * znw(k)**2``.  REAL(4) arithmetic as in WRF.  Returns
+    ``(w_float32, w_needs_to_be_set, input_surface_max_abs)``; the input ``W``
+    is returned unchanged when the gate is closed.
+    """
+
+    w32 = np.asarray(jax.device_get(w), dtype=np.float32)
+    w_surface_input_max = float(np.abs(w32[0]).max())
+    w_needs_to_be_set = w_surface_input_max < 1.0e-6
+    if not w_needs_to_be_set:
+        return w32, False, w_surface_input_max
+    ht32 = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float32)
+    u32 = np.asarray(jax.device_get(u), dtype=np.float32)
+    v32 = np.asarray(jax.device_get(v), dtype=np.float32)
+    msftx = np.asarray(jax.device_get(metrics.msftx), dtype=np.float32)
+    msfty = np.asarray(jax.device_get(metrics.msfty), dtype=np.float32)
+    znw = np.asarray(jax.device_get(grid.vertical.eta_levels), dtype=np.float32)
+    cf1 = np.float32(float(np.asarray(jax.device_get(metrics.cf1)).ravel()[0]))
+    cf2 = np.float32(float(np.asarray(jax.device_get(metrics.cf2)).ravel()[0]))
+    cf3 = np.float32(float(np.asarray(jax.device_get(metrics.cf3)).ravel()[0]))
+    rdx = np.float32(1.0) / np.float32(float(grid.projection.dx_m))
+    rdy = np.float32(1.0) / np.float32(float(grid.projection.dy_m))
+    half = np.float32(0.5)
+
+    ny, nx = ht32.shape
+    jp1 = np.minimum(np.arange(ny) + 1, ny - 1)
+    jm1 = np.maximum(np.arange(ny) - 1, 0)
+    ip1 = np.minimum(np.arange(nx) + 1, nx - 1)
+    im1 = np.maximum(np.arange(nx) - 1, 0)
+    # cf1*v(.,1,.)+cf2*v(.,2,.)+cf3*v(.,3,.) at the v-rows j and j+1
+    vv = (cf1 * v32[0] + cf2 * v32[1] + cf3 * v32[2]).astype(np.float32)  # (ny+1, nx)
+    uu = (cf1 * u32[0] + cf2 * u32[1] + cf3 * u32[2]).astype(np.float32)  # (ny, nx+1)
+    w_sfc = (
+        msfty
+        * half
+        * rdy
+        * ((ht32[jp1, :] - ht32) * vv[1:, :] + (ht32 - ht32[jm1, :]) * vv[:-1, :])
+        + msftx
+        * half
+        * rdx
+        * ((ht32[:, ip1] - ht32) * uu[:, 1:] + (ht32 - ht32[:, im1]) * uu[:, :-1])
+    ).astype(np.float32)
+    w_new = np.empty_like(w32)
+    w_new[0] = w_sfc
+    for k in range(1, w32.shape[0]):
+        w_new[k] = (w_sfc * znw[k] * znw[k]).astype(np.float32)
+    return w_new, True, w_surface_input_max
+
+
 def _wrf_live_nest_start_domain_perturb_init(
     run: Gen2Run,
     *,
@@ -1634,46 +1698,9 @@ def _wrf_live_nest_start_domain_perturb_init(
     mu_new = (mu32 + al[0] / (alt[0] * alb[0]) * _WRF32_G * (ht32 - ht_fine32)).astype(np.float32)
 
     # --- 3. set_w_surface(fill_w_flag=.true.) under the WRF w_needs_to_be_set gate ---
-    w32 = np.asarray(jax.device_get(w), dtype=np.float32)
-    w_surface_input_max = float(np.abs(w32[0]).max())
-    w_needs_to_be_set = w_surface_input_max < 1.0e-6
-    if w_needs_to_be_set:
-        u32 = np.asarray(jax.device_get(u), dtype=np.float32)
-        v32 = np.asarray(jax.device_get(v), dtype=np.float32)
-        msftx = np.asarray(jax.device_get(metrics.msftx), dtype=np.float32)
-        msfty = np.asarray(jax.device_get(metrics.msfty), dtype=np.float32)
-        znw = np.asarray(jax.device_get(grid.vertical.eta_levels), dtype=np.float32)
-        cf1 = np.float32(float(np.asarray(jax.device_get(metrics.cf1)).ravel()[0]))
-        cf2 = np.float32(float(np.asarray(jax.device_get(metrics.cf2)).ravel()[0]))
-        cf3 = np.float32(float(np.asarray(jax.device_get(metrics.cf3)).ravel()[0]))
-        rdx = np.float32(1.0) / np.float32(float(grid.projection.dx_m))
-        rdy = np.float32(1.0) / np.float32(float(grid.projection.dy_m))
-        half = np.float32(0.5)
-
-        ny, nx = ht32.shape
-        jp1 = np.minimum(np.arange(ny) + 1, ny - 1)
-        jm1 = np.maximum(np.arange(ny) - 1, 0)
-        ip1 = np.minimum(np.arange(nx) + 1, nx - 1)
-        im1 = np.maximum(np.arange(nx) - 1, 0)
-        # cf1*v(.,1,.)+cf2*v(.,2,.)+cf3*v(.,3,.) at the v-rows j and j+1
-        vv = (cf1 * v32[0] + cf2 * v32[1] + cf3 * v32[2]).astype(np.float32)  # (ny+1, nx)
-        uu = (cf1 * u32[0] + cf2 * u32[1] + cf3 * u32[2]).astype(np.float32)  # (ny, nx+1)
-        w_sfc = (
-            msfty
-            * half
-            * rdy
-            * ((ht32[jp1, :] - ht32) * vv[1:, :] + (ht32 - ht32[jm1, :]) * vv[:-1, :])
-            + msftx
-            * half
-            * rdx
-            * ((ht32[:, ip1] - ht32) * uu[:, 1:] + (ht32 - ht32[:, im1]) * uu[:, :-1])
-        ).astype(np.float32)
-        w_new = np.empty_like(w32)
-        w_new[0] = w_sfc
-        for k in range(1, w32.shape[0]):
-            w_new[k] = (w_sfc * znw[k] * znw[k]).astype(np.float32)
-    else:
-        w_new = w32
+    w_new, w_needs_to_be_set, w_surface_input_max = _wrf_set_w_surface(
+        w, u, v, grid=grid, metrics=metrics,
+    )
 
     meta = {
         "surfaces": [
@@ -2042,7 +2069,7 @@ def _wrfinput_start_label(run: Gen2Run, domain: str) -> str | None:
     """
 
     try:
-        from netCDF4 import Dataset
+        from gpuwrf.io.netcdf_lock import Dataset
 
         with Dataset(run.wrfinput_file(domain), "r") as ds:
             if "Times" not in ds.variables:
@@ -2062,6 +2089,30 @@ def build_replay_case(
     standalone: bool | None = None,
     load_lateral_boundaries: bool = True,
     live_nest_parent: ReplayCase | None = None,
+) -> ReplayCase:
+    """Load a replay case, sharing the native input handle during init only."""
+    from contextlib import nullcontext
+    run = Gen2Run(run_dir)
+    native = (len(list(run.path.glob(f"wrfout_{domain}_*"))) < 2
+              if standalone is None else bool(standalone))
+    scope = run.input_read_scope(domain) if native or not load_lateral_boundaries else nullcontext()
+    with scope:
+        return _build_replay_case(
+            run_dir, domain=domain, boundary_domain=boundary_domain,
+            standalone=standalone, load_lateral_boundaries=load_lateral_boundaries,
+            live_nest_parent=live_nest_parent, _run=run,
+        )
+
+
+def _build_replay_case(
+    run_dir: str | Path = DEFAULT_REPLAY_RUN_DIR,
+    *,
+    domain: str = "d02",
+    boundary_domain: str | None = None,
+    standalone: bool | None = None,
+    load_lateral_boundaries: bool = True,
+    live_nest_parent: ReplayCase | None = None,
+    _run: Gen2Run | None = None,
 ) -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved.
 
@@ -2090,7 +2141,7 @@ def build_replay_case(
     """
 
     _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
-    run = Gen2Run(run_dir)
+    run = _run if _run is not None else Gen2Run(run_dir)
     _debug("Gen2Run created")
     # Auto-detect the standalone native-init path before any grid/IC payload is
     # loaded.  The canonical CPU reference directory contains complete wrfout
@@ -2215,6 +2266,10 @@ def build_replay_case(
             metrics=metrics,
             use_theta_m=use_theta_m,
         )
+        if use_theta_m != 1:
+            # use_theta_m=0: WRF's prognostic is the adjusted DRY theta.  State.theta is always theta_m, so carry it
+            # by the exact change of variables with the ADJUSTED qv before start_domain (whose EOS then uses qvf=1).
+            theta = theta * (1.0 + _RVOVRD * qv_initial)
         # WRF ``start_domain(nest,.TRUE.)`` then re-derives the perturbation
         # pressure from ``ph_1`` (calc_p_rho_phi equations), applies the
         # ``press_adj`` column-mass correction, and sets the kinematic surface
@@ -2263,10 +2318,21 @@ def build_replay_case(
         # adapters' dry-view decoupling, and the live parent->child boundary
         # package all assume it. The live-nest branch above already converts
         # via _wrf_live_nest_adjust_tempqv. (v0.14 h1 root cause: d01 ran DRY
-        # theta against the moist-convention physics/EOS.)
-        if _wrf_use_theta_m(run, domain) == 1:
-            theta = theta * (1.0 + _RVOVRD * qv_initial)
-            _debug("standalone/replay IC theta dry->moist theta_m applied (use_theta_m=1)")
+        # theta against the moist-convention physics/EOS.)  wrfinput ``T`` is DRY under both use_theta_m
+        # values, so the recoupling is unconditional: use_theta_m=0 carries WRF's dry prognostic by the exact
+        # change of variables theta_m = theta*(1+rvovrd*qv) (P0 option-0 repair; physics decouples it back).
+        theta = theta * (1.0 + _RVOVRD * qv_initial)
+        _debug("standalone/replay IC theta dry->moist theta_m applied (both use_theta_m values)")
+        # WRF start_em runs set_w_surface(fill_w_flag) for EVERY domain at the
+        # start of a simulation whose input surface W is identically ~0
+        # (real.exe wrfinput); a replay IC from wrfout already carries WRF's W
+        # and closes the gate.  Previously only the live nest got it.
+        w_root, w_root_set, _w_root_input_max = _wrf_set_w_surface(
+            w_initial, u_initial, v_initial, grid=grid, metrics=metrics,
+        )
+        if w_root_set:
+            w_initial = jnp.asarray(w_root, dtype=jnp.asarray(w_initial).dtype)
+        _debug(f"root/standalone start_em set_w_surface applied={w_root_set}")
     # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
     # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
     # recomputed base inverse density ``alb`` matches the discrete ``alb`` the

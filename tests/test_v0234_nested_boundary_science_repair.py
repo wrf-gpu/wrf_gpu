@@ -122,8 +122,12 @@ def _np_couple(state, metrics):
         "ph": np.asarray(state.ph_perturbation) * mass_f,
         "mu": np.asarray(state.mu_perturbation),
     }
+    # B36: WRF REAL coupling (separately rounded) for the Thompson families.
+    c1h32 = np.asarray(metrics.c1h, np.float32)[:, None, None]
+    c2h32 = np.asarray(metrics.c2h, np.float32)[:, None, None]
+    mass_h32 = c1h32 * np.asarray(state.mu_total, np.float32)[None] + c2h32
     for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr"):
-        coupled[name] = np.asarray(getattr(state, name)) * mass_h
+        coupled[name] = np.asarray(getattr(state, name), np.float32) * mass_h32
     return coupled
 
 

@@ -1,0 +1,28 @@
+{
+ "schema": "wrf_gpu2.b_core.root_init_w_evidence.v1",
+ "finding": "ROOT (standalone wrfinput) init skipped WRF start_em set_w_surface(fill_w_flag); only the live nest applied it",
+ "wrf_source": [
+  "dyn_em/start_em.F:1475-1530 (w_needs_to_be_set gate: domain surface W identically ~0, start of non-restart run)",
+  "dyn_em/module_bc_em.F:1196-1295 set_w_surface (kinematic surface w, w(k)=w(1)*znw(k)**2)"
+ ],
+ "change": "_wrf_set_w_surface helper (verbatim REAL4 transcription moved out of the live-nest init, nest output bitwise unchanged) + applied in _build_replay_case root/standalone branch under the same gate; replay ICs from wrfout keep their W",
+ "init_gate": {
+  "leaves": 141,
+  "differing": [
+   "d01.state[<flat index 2>]"
+  ],
+  "d02_bitwise": true,
+  "w_vs_pristine_max": 0.0,
+  "pristine_absmax": 0.27148646116256714,
+  "old_w_absmax": 0.0
+ },
+ "init_gate_note": "product build_replay_case d01 (standalone) + d02 (live nest) on CPU, main vs patched: 1 of 141 leaves differs = d01 State.w; d02 all leaves bitwise",
+ "truth": "pristine serial WRF d01 t=0 history (dump-free copy <USER_HOME>/wrf_gpu2_lanes/b-core/wrf_pristine_nodump), same wrfinput sha 1024ddb7",
+ "step_effect_BC45b": "same W injected into the PROD init carry: step-1 interior U/V/W err vs pristine 0.0038/0.0038/0.0094 -> 0.0033/0.0030/0.0089; step-10 W int 0.0065 -> 0.0058; hot east face unchanged",
+ "step_program": "unchanged by construction: host-side init only (no traced code touched); AOT keys depend on shapes/dtypes, not init values",
+ "deletion": "mutant without the root application FAILS test_root_standalone_init_sets_kinematic_w (W stays 0); fixed tree 5 passed incl. tests/test_init_libm_arrays.py",
+ "artifacts": {
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC47_initw/init_gate.json": "c772040fae865dd8572a5d5d9a966eeb9caccad400701f290c540216c75c0f7b",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC47_initw/init_states.py": "ee53b1b99feab71610c57a82894034b1f4ff5e4e033f81e45aacc5f89d1a1c28"
+ }
+}

@@ -21,7 +21,17 @@ import pytest
 
 PROOFS = Path(__file__).resolve().parents[1] / "proofs" / "v090"
 ORACLE_SHA = "86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3"
-GF = "/home/user/miniconda3/envs/wrfbuild/bin/gfortran"
+
+
+def _gfortran() -> str | None:
+    """Resolve the oracle compiler like the other pristine oracles (FC, wrfbuild, PATH)."""
+
+    import shutil
+
+    for candidate in (os.environ.get("FC"), "<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran"):
+        if candidate and Path(candidate).exists():
+            return candidate
+    return shutil.which("gfortran")
 
 
 def _sha256(path: Path) -> str:
@@ -35,13 +45,16 @@ def test_oracle_source_is_byte_identical_pristine():
     assert _sha256(src) == ORACLE_SHA, "oracle source diverged from pristine module_sf_mynn.F"
 
 
-@pytest.mark.skipif(not Path(GF).exists(), reason="wrfbuild gfortran unavailable")
-def test_production_mynnsl_matches_pristine_oracle():
-    # build the fp32 oracle (how WRF runs) if not present
-    exe = PROOFS / "mynn_oracle"
-    if not exe.exists():
-        subprocess.run(["bash", str(PROOFS / "build_oracle.sh")], check=True,
-                       capture_output=True, text=True)
+def test_production_mynnsl_matches_pristine_oracle(tmp_path):
+    # The pristine oracle is REQUIRED: a missing compiler is a FAILURE, never a
+    # silent skip (B39: the old hard-coded /home/user path skipped on this host).
+    gf = _gfortran()
+    assert gf is not None, "gfortran for the pristine MYNN-SL oracle not found (set FC)"
+    # build the fp32 oracle (how WRF runs) into a private dir on lane cores
+    env = dict(os.environ, GF=gf, OUT_DIR=str(tmp_path))
+    subprocess.run(["bash", str(PROOFS / "build_oracle.sh")], check=True,
+                   capture_output=True, text=True, env=env)
+    exe = tmp_path / "mynn_oracle"
     assert exe.exists()
 
     os.environ.setdefault("JAX_PLATFORMS", "cpu")
@@ -52,7 +65,7 @@ def test_production_mynnsl_matches_pristine_oracle():
     from mynnsl_parity import make_cases, run_oracle, run_production  # noqa: E402
 
     cases, _ = make_cases()
-    orc = run_oracle(cases, "mynn_oracle")
+    orc = run_oracle(cases, str(exe))
     prod = run_production(cases)
 
     # flux + similarity faithfulness thresholds (relative); diagnostics tighter.

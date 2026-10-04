@@ -1,0 +1,117 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/integrity_24h.json",
+ "content": {
+  "cpu_dir": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260120_18z_a1/run/run",
+  "gpu_dir": "~/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/gpu_24h",
+  "rule": "missing CPU variables + degenerate fields + WRF globals (full CPU header, every paired frame)",
+  "domains": {
+   "d01": {
+    "frames_checked": [
+     "wrfout_d01_2026-01-21_00:00:00",
+     "wrfout_d01_2026-01-21_12:00:00",
+     "wrfout_d01_2026-01-22_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {
+     "QICE": [
+      {
+       "file": "wrfout_d01_2026-01-21_12:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -1.2807196092569077e-32,
+        5.099784136652907e-11
+       ]
+      },
+      {
+       "file": "wrfout_d01_2026-01-22_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -8.79784167987926e-35,
+        5.101891131786829e-11
+       ]
+      }
+     ],
+     "QSNOW": [
+      {
+       "file": "wrfout_d01_2026-01-21_12:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -1.4711879423253053e-29,
+        2.2563233226247092e-10
+       ]
+      },
+      {
+       "file": "wrfout_d01_2026-01-22_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -4.49132625413497e-26,
+        2.2446901282169307e-10
+       ]
+      }
+     ]
+    },
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": false
+   },
+   "d02": {
+    "frames_checked": [
+     "wrfout_d02_2026-01-21_00:00:00",
+     "wrfout_d02_2026-01-21_12:00:00",
+     "wrfout_d02_2026-01-22_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {},
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": true
+   },
+   "d03": {
+    "frames_checked": [
+     "wrfout_d03_2026-01-21_00:00:00",
+     "wrfout_d03_2026-01-21_12:00:00",
+     "wrfout_d03_2026-01-22_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {},
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": true
+   }
+  },
+  "pass": false
+ }
+}

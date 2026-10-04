@@ -1,0 +1,354 @@
+{
+  "schema": "b_core.wired_advection.v1",
+  "flag": "GPUWRF_DYN_ADVECTION_FP32",
+  "default": "0",
+  "scope": "WRF component oracles and measured paired PROD ordinary nested nsys; 6h/24h/72h station fidelity pending",
+  "model_sha256": "d0a50b7a42c805f8858bf086bc7322386968e7bdf85f14a7536b8f60067d82d6",
+  "momentum_source": "522090b2d6dc9b9b6af8c7c68fdd728b50940e32",
+  "scalar_source": "dfe5b63cfe291413c83c94ec9467a5005c394aad",
+  "gpu": {
+    "backend": "gpu",
+    "explicit_assertion": true,
+    "scalar_checks": 4,
+    "momentum_checks": 16,
+    "initial_bound_misses": 0,
+    "same_bounds": true,
+    "dynamic_arguments": true
+  },
+  "default_off": {
+    "backend": "cpu",
+    "raw_outputs_exact": 20,
+    "limiter_AST_unchanged": true
+  },
+  "source_fixes": [
+    "W horizontal transport uses pristine top extrapolation",
+    "W skips terrain surface face kts",
+    "W always picks up pristine top vertical flux independently of acoustic lid"
+  ],
+  "precision": "REAL32 arithmetic; current output ABI restored to old dtype; not whole S2",
+  "momentum_profiles": [
+    {
+      "domain": "d01",
+      "field": "u",
+      "mode": "float64",
+      "top_lid": false,
+      "device_sum_us_per_call": 17.861519886363634,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "field": "u",
+      "mode": "float32",
+      "top_lid": false,
+      "device_sum_us_per_call": 10.131076704545453,
+      "kernels_per_call": 2.0,
+      "device_ops_per_call": 2.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "field": "v",
+      "mode": "float64",
+      "top_lid": false,
+      "device_sum_us_per_call": 15.2179375,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "field": "v",
+      "mode": "float32",
+      "top_lid": false,
+      "device_sum_us_per_call": 8.672477272727273,
+      "kernels_per_call": 2.0,
+      "device_ops_per_call": 2.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "field": "w",
+      "mode": "float64",
+      "top_lid": true,
+      "device_sum_us_per_call": 24.77865056818182,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "field": "w",
+      "mode": "float32",
+      "top_lid": true,
+      "device_sum_us_per_call": 10.445326704545455,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "u",
+      "mode": "float64",
+      "top_lid": false,
+      "device_sum_us_per_call": 43.32401988636364,
+      "kernels_per_call": 4.0,
+      "device_ops_per_call": 4.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "u",
+      "mode": "float32",
+      "top_lid": false,
+      "device_sum_us_per_call": 39.20961363636364,
+      "kernels_per_call": 2.0,
+      "device_ops_per_call": 2.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "v",
+      "mode": "float64",
+      "top_lid": false,
+      "device_sum_us_per_call": 77.42223863636363,
+      "kernels_per_call": 4.0,
+      "device_ops_per_call": 4.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "v",
+      "mode": "float32",
+      "top_lid": false,
+      "device_sum_us_per_call": 67.62316761363637,
+      "kernels_per_call": 2.0,
+      "device_ops_per_call": 2.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "w",
+      "mode": "float64",
+      "top_lid": true,
+      "device_sum_us_per_call": 49.308431818181816,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "field": "w",
+      "mode": "float32",
+      "top_lid": true,
+      "device_sum_us_per_call": 21.691730113636364,
+      "kernels_per_call": 3.0,
+      "device_ops_per_call": 3.0,
+      "f64_arithmetic_op_count": 0,
+      "memcpy": {}
+    }
+  ],
+  "scalar_profiles": [
+    {
+      "domain": "d01",
+      "mode": "jax64",
+      "device_sum_us_per_call": 14.739349431818182,
+      "kernels_per_call": 10.0,
+      "device_ops_per_call": 10.0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d01",
+      "mode": "jax32",
+      "device_sum_us_per_call": 5.096102272727273,
+      "kernels_per_call": 1.0,
+      "device_ops_per_call": 1.0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "mode": "jax64",
+      "device_sum_us_per_call": 51.78538636363636,
+      "kernels_per_call": 10.0,
+      "device_ops_per_call": 10.0,
+      "memcpy": {}
+    },
+    {
+      "domain": "d02",
+      "mode": "jax32",
+      "device_sum_us_per_call": 16.73203693181818,
+      "kernels_per_call": 1.0,
+      "device_ops_per_call": 1.0,
+      "memcpy": {}
+    }
+  ],
+  "receipts": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33_lid/momentum_gpu.json",
+      "sha256": "82ee4da5ed671803f246f8ced222134e8529896956325dd21a01c3bb178721b4"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33_lid/profile_summary.json",
+      "sha256": "e8ba7852036770b11ec3c61403e1c5519e194e10b26839358bcfdba004cae182"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33_lid/cpu_comparison.json",
+      "sha256": "c972d968cbe2cc9491e30f90e872f7d625d7509e7bea3bc601dfafb62a24c084"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33_lid/hlo_aliases.json",
+      "sha256": "e37fee68d22b88079edbc030fa628a61d51c2b44f4c882b5bfc9ae6129ceffe5"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33/scalar_gpu.json",
+      "sha256": "335cd2d74e8d21961c35cb6e907f3e24e27135c8914f45b42e16d201e0e10c08"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33/scalar_profile_summary.json",
+      "sha256": "5ba958ba9bcf695f99148740739119e4fe2d377a2a6655fd6f0a8b224ca6f4b9"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33/default_scalar_cpu.json",
+      "sha256": "3b94885d7b44d293566f8ffbd1b7a607d0d679aef580bbab1dbe8b5edd3c0846"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC33/default_momentum_cpu.json",
+      "sha256": "9bcdf22412545bc103c754622ccd3eff1e551b202e6af5960a5cc6c198b653ff"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC35/comparison.json",
+      "sha256": "e98c515012271f7856dd60a3ea168478c8edbebb06ce74b96e91ec1bf6d84d80"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/baseline/warm/evidence/completed.json",
+      "sha256": "7e810104b261fac7236fc047ef7e200bcc508c8ac7502c0ab1415a48f1462bb2"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/baseline/warm/analysis/profile_summary.json",
+      "sha256": "a3fb5370881c589d6b322f2242e47a9651a5890bb0923940ce1d4bf0a547a318"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/baseline/warm/analysis/kernel_map.json",
+      "sha256": "6710b91841394e732d048d5de3411a95e9bf2cff57c41157f2a62e3588a6e95f"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/baseline/warm/run_receipt.json",
+      "sha256": "2164fbaae435b5184c76e048b8bc44a024f718936e6ec913ec81ac8ceb9d692c"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/flagged/warm/evidence/completed.json",
+      "sha256": "e00ab52052974cc3816503b6954ab548736422f70ce1c4a3dcd027f746a1395a"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/flagged/warm/analysis/profile_summary.json",
+      "sha256": "2edd409fad8006da7deba8f89bd5bb7fda650b2c3008cfc1bca1266f532d3bfe"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/flagged/warm/analysis/kernel_map.json",
+      "sha256": "7558978aa273a1e340feeda784853bbcf23f572cd7f97ed3e22ac42e7040718e"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/flagged/warm/run_receipt.json",
+      "sha256": "f7f01a899e1dbf07ad01c78d6afceb48d2cdbad1d5455832b652c3141b4a5542"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/comparison.json",
+      "sha256": "766a0f56d4bf4f4b4a5fff60f8288090b5ad4590150dd1e83cfd9d22fcbca0bd"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/measurement_source.json",
+      "sha256": "e29f0553c552098c03392b3f4b8dfce985e0cb4623ceeac42ae86dc6af4109e9"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/common_seed.receipt.json",
+      "sha256": "7b01401fb95385340476ed371b0af7ae2ae2856c8de2226d024030de5e595eaf"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/cleanup_20261002_bc34_completed.json",
+      "sha256": "fcf250735f13a3f769b77d15280729c7e0e3e7f5860db202b583f53ad9af5dea"
+    }
+  ],
+  "discarded": {
+    "BC35": "10-to-1 kernels but no device time improvement; old adapter kept",
+    "artifact": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC35/comparison.json"
+  },
+  "limits": [
+    "source operator caller maps, specified/nested h5/v3; old field args unused because open flags off",
+    "temporary fp64 interfaces add conversions",
+    "ncu permissions deferred to principal; no S4 roofline claim",
+    "nsys component sums not S1 or whole-hour cadence means"
+  ],
+  "implementation": {
+    "scalar": "one-stencil Pallas",
+    "momentum": "XLA-fused REAL32 stencil operations"
+  },
+  "nested": {
+    "comparison": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC34/comparison.json",
+      "sha256": "766a0f56d4bf4f4b4a5fff60f8288090b5ad4590150dd1e83cfd9d22fcbca0bd"
+    },
+    "source": "124e94eaf048cae76e51ce72761bba0038993ccc",
+    "same_source_seed_namelists_clocks": true,
+    "repeats": 11,
+    "census": false,
+    "all_finite": true,
+    "advection_ms": {
+      "baseline_ms": 15.568049181818182,
+      "flagged_ms": 7.119295454545454,
+      "delta_ms": -8.448753727272727,
+      "baseline_kernels": 583.0,
+      "flagged_kernels": 357.0
+    },
+    "advection_speedup": 2.1867401460180242,
+    "advection_reduction_percent": 54.2698293704003,
+    "observed_ranges_disjoint": true,
+    "whole_kernel_ms": {
+      "baseline": 466.042295,
+      "flagged": 447.83097636363635
+    },
+    "whole_device_union_ms": {
+      "baseline": 472.38970354545455,
+      "flagged": 453.92983727272724
+    },
+    "kernels_per_root": {
+      "baseline": 23702.0,
+      "flagged": 23100.0
+    },
+    "dtod_per_root": {
+      "baseline": 3543,
+      "flagged": 3523
+    },
+    "host_copies_per_root": {
+      "HtoD": 2,
+      "DtoH": 9
+    },
+    "host_cpu_changed": {
+      "baseline": "6,7,22,23",
+      "flagged": "10,11,26,27",
+      "omp_threads": 4,
+      "reason": "mandatory ALISIOS re-pin between arms; host wall not used for speed gate"
+    },
+    "limitations": [
+      "one arm per mode; within-arm spread is not independent A/A noise",
+      "fusion boundaries change; per-family deltas do not isolate every other-family causal effect",
+      "MIXED/UNKNOWN/UNMATCHED times kept intact, no allocation from instruction counts",
+      "ordinary fixed-input replay without outputs; no S1/hour-mean or long-fidelity claim",
+      "census OFF: pre-mask guard events unknown; residual host transfers disclosed",
+      "temporary fp64 interfaces and legacy limiter remain; not whole S2/S3/S4 green"
+    ],
+    "snapshot_ref": "refs/lane-evidence/b-core/BC34",
+    "disposable_artifacts_deleted": true
+  }
+}

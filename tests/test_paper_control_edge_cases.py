@@ -447,17 +447,15 @@ def test_honesty_audit_covers_skill_table_rows() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_paper_and_bib_are_ascii() -> None:
-    """The audit script enforces ASCII; we redundantly assert here so a
-    paper-only edit that introduces smart quotes is caught even if the
-    user is not running the shell audit."""
+def test_paper_and_bib_are_valid_utf8_without_control_characters() -> None:
+    """The publication audit permits UTF-8 and reports Unicode informationally."""
     for label, path in (("paper.md", PAPER), ("references.bib", BIB)):
         text = _read(path)
         bad_lines = []
         for i, line in enumerate(text.splitlines(), 1):
-            if any(ord(ch) > 127 for ch in line):
+            if any(ord(ch) < 32 and ch != "\t" or ord(ch) == 127 for ch in line):
                 bad_lines.append((i, line))
-        assert not bad_lines, f"{label} contains non-ASCII chars at lines {[l for l, _ in bad_lines]}"
+        assert not bad_lines, f"{label} contains control chars at lines {[l for l, _ in bad_lines]}"
 
 
 def test_word_count_inside_audit_band(paper_text: str) -> None:
@@ -508,6 +506,7 @@ def test_author_disclosure_present(paper_text: str) -> None:
     text_l = paper_text.lower()
     assert "ai system" in text_l, "missing AI system disclosure"
     assert "user r.g." in text_l, "missing human corresponding-author identification"
+    assert "human senior corresponding author" in text_l
     assert (
         "ai use disclosure" in text_l
         or "ai-use disclosure" in text_l

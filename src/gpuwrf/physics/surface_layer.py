@@ -30,8 +30,9 @@ references kept on THOSE table helpers identify the shared CB05 algebra, not a
 scheme choice. The load-bearing flux / z-L blocks carry ``module_sf_mynn.F:<line>``
 anchors. It does NOT resurrect the FAILED M12 MM5 ``module_sf_sfclay.F`` attempt.
 
-Computation is in float64 (x64 enabled at package import); callers cast outputs
-to the frozen storage dtype at the coupling boundary.
+The default path computes in float64; GPUWRF_SFCLAY_NATIVE_REAL=1 runs the same
+algorithm in WRF REAL (float32, physics/fp32/surface_layer_real.py). Callers cast
+outputs to their storage dtype at the coupling boundary.
 
 Sign conventions (kinematic, positive upward into the atmosphere), matching the
 ``mynn_surface_stub.SurfaceFluxes`` contract MYNN consumes:
@@ -95,12 +96,12 @@ def _psim_unstable_full(zolf):
     """psim_unstable_full, sf_sfclayrev.F90:1003-1015."""
 
     x = (1.0 - 16.0 * zolf) ** 0.25
-    psimk = 2.0 * jnp.log(0.5 * (1.0 + x)) + jnp.log(0.5 * (1.0 + x * x)) - 2.0 * jnp.arctan(x) + 2.0 * jnp.arctan(1.0)
+    psimk = 2.0 * jnp.log(0.5 * (1.0 + x)) + jnp.log(0.5 * (1.0 + x * x)) - 2.0 * jnp.arctan(x) + 2.0 * jnp.arctan(_lit(x, 1.0))
     ym = (1.0 - 10.0 * zolf) ** 0.33
     psimc = (
         (3.0 / 2.0) * jnp.log((ym**2.0 + ym + 1.0) / 3.0)
-        - jnp.sqrt(3.0) * jnp.arctan((2.0 * ym + 1.0) / jnp.sqrt(3.0))
-        + 4.0 * jnp.arctan(1.0) / jnp.sqrt(3.0)
+        - jnp.sqrt(_lit(ym, 3.0)) * jnp.arctan((2.0 * ym + 1.0) / jnp.sqrt(_lit(ym, 3.0)))
+        + 4.0 * jnp.arctan(_lit(ym, 1.0)) / jnp.sqrt(_lit(ym, 3.0))
     )
     return (psimk + zolf**2 * psimc) / (1.0 + zolf**2.0)
 
@@ -113,39 +114,67 @@ def _psih_unstable_full(zolf):
     yh = (1.0 - 34.0 * zolf) ** 0.33
     psihc = (
         (3.0 / 2.0) * jnp.log((yh**2.0 + yh + 1.0) / 3.0)
-        - jnp.sqrt(3.0) * jnp.arctan((2.0 * yh + 1.0) / jnp.sqrt(3.0))
-        + 4.0 * jnp.arctan(1.0) / jnp.sqrt(3.0)
+        - jnp.sqrt(_lit(yh, 3.0)) * jnp.arctan((2.0 * yh + 1.0) / jnp.sqrt(_lit(yh, 3.0)))
+        + 4.0 * jnp.arctan(_lit(yh, 1.0)) / jnp.sqrt(_lit(yh, 3.0))
     )
     return (psihk + zolf**2 * psihc) / (1.0 + zolf**2.0)
 
 
-# Precomputed CB05 lookup tables, exactly as sf_sfclayrev_init builds them
-# (sf_sfclayrev.F90:39-49): node n holds the "_full" value at zolf = +/- n*0.01.
-# Built once at import in float64 so the lookup matches WRF bit-for-table.
+# Fixed CB05 node values at z/L = +/- n*0.01, captured from the GPU reference.
+# Keep the analytic helpers above for the out-of-table path. The committed table
+# avoids backend-dependent rounding during import; provenance accompanies it.
 _N = SFCLAYREV_TABLE_N
+import hashlib as _hashlib
+from importlib.resources import files as _resource_files
+import io as _io
 import numpy as _np
 
-_ZOLF_STAB = _np.arange(0, _N + 1, dtype=_np.float64) * SFCLAYREV_TABLE_DZOL
-_ZOLF_UNSTAB = -_ZOLF_STAB
-_PSIM_STAB_TABLE = jnp.asarray(_np.asarray(_psim_stable_full(_ZOLF_STAB)), dtype=jnp.float64)
-_PSIH_STAB_TABLE = jnp.asarray(_np.asarray(_psih_stable_full(_ZOLF_STAB)), dtype=jnp.float64)
-_PSIM_UNSTAB_TABLE = jnp.asarray(_np.asarray(_psim_unstable_full(_ZOLF_UNSTAB)), dtype=jnp.float64)
-_PSIH_UNSTAB_TABLE = jnp.asarray(_np.asarray(_psih_unstable_full(_ZOLF_UNSTAB)), dtype=jnp.float64)
-del _np, _ZOLF_STAB, _ZOLF_UNSTAB
+_table_bytes = _resource_files(__package__).joinpath("surface_most_tables_v1.npz").read_bytes()
+if _hashlib.sha256(_table_bytes).hexdigest() != "5be823f1befe1c5d1d4fb2c19275577174b423a710a1dc434b78b58ded2e2570":
+    raise ValueError("surface MOST table asset checksum mismatch")
+with _np.load(_io.BytesIO(_table_bytes), allow_pickle=False) as _tables:
+    _PSIM_STAB_TABLE = jnp.asarray(_tables["_PSIM_STAB_TABLE"], dtype=jnp.float64)
+    _PSIH_STAB_TABLE = jnp.asarray(_tables["_PSIH_STAB_TABLE"], dtype=jnp.float64)
+    _PSIM_UNSTAB_TABLE = jnp.asarray(_tables["_PSIM_UNSTAB_TABLE"], dtype=jnp.float64)
+    _PSIH_UNSTAB_TABLE = jnp.asarray(_tables["_PSIH_UNSTAB_TABLE"], dtype=jnp.float64)
+del _hashlib, _resource_files, _io, _np, _tables, _table_bytes
+# REAL copies for the native path (WRF psi_init tabulates in REAL); the f64 default
+# path keeps using the f64 arrays above, selected by the argument dtype.
+_TABLES = {
+    jnp.dtype(jnp.float64): (_PSIM_STAB_TABLE, _PSIH_STAB_TABLE, _PSIM_UNSTAB_TABLE, _PSIH_UNSTAB_TABLE),
+    jnp.dtype(jnp.float32): tuple(
+        t.astype(jnp.float32) for t in (_PSIM_STAB_TABLE, _PSIH_STAB_TABLE, _PSIM_UNSTAB_TABLE, _PSIH_UNSTAB_TABLE)
+    ),
+}
+
+
+def _psi_table(zolf, index):
+    return _TABLES[jnp.dtype(jnp.result_type(zolf))][index]
+
+
+def _lit(like, value):
+    """Literal for the working dtype. REAL path: typed (no weak-f64 scalar operands,
+    E15); f64 default path: the original weak Python scalar (traced program unchanged)."""
+    dtype = jnp.result_type(like)
+    return value if dtype == jnp.float64 else jnp.asarray(value, dtype=dtype)
+
+
+def _clip(x, lo, hi):
+    return jnp.clip(x, _lit(x, lo), _lit(x, hi))
 
 
 def _table_lookup(zolf_scaled, table, full_fn, zolf):
-    """WRF look-up-table interpolation, sf_sfclayrev.F90:1034-1095.
+    """WRF MYNN look-up-table interpolation, module_sf_mynn.F:2196-2270.
 
     ``zolf_scaled = |zolf|*100`` is the (signed for stable, |.| for unstable)
     table coordinate. ``nzol = int(zolf_scaled)``; linear interpolation between
-    nodes ``nzol`` and ``nzol+1`` when ``nzol+1 < 1000`` (i.e. |z/L| < ~10),
-    else the analytic ``full_fn(zolf)``.
+    nodes ``nzol`` and ``nzol+1`` when ``nzol+1 .le. 1000`` (|z/L| < 10; the
+    sfclayrev variant uses ``.lt.``), else the analytic ``full_fn(zolf)``.
     """
 
     nzol = jnp.floor(zolf_scaled).astype(jnp.int32)
     rzol = zolf_scaled - nzol.astype(zolf_scaled.dtype)
-    in_table = (nzol + 1) < _N  # WRF: nzol+1 .lt. 1000
+    in_table = (nzol + 1) <= _N  # MYNN psim/psih_*: nzol+1 .le. 1000 (module_sf_mynn.F:2203-2260)
     nzol_c = jnp.clip(nzol, 0, _N - 1)
     base = table[nzol_c]
     nxt = table[jnp.clip(nzol_c + 1, 0, _N)]
@@ -156,25 +185,25 @@ def _table_lookup(zolf_scaled, table, full_fn, zolf):
 def _psim_stable(zolf):
     """psim_stable lookup, sf_sfclayrev.F90:1034-1047."""
 
-    return _table_lookup(zolf * 100.0, _PSIM_STAB_TABLE, _psim_stable_full, zolf)
+    return _table_lookup(zolf * 100.0, _psi_table(zolf, 0), _psim_stable_full, zolf)
 
 
 def _psih_stable(zolf):
     """psih_stable lookup, sf_sfclayrev.F90:1050-1063."""
 
-    return _table_lookup(zolf * 100.0, _PSIH_STAB_TABLE, _psih_stable_full, zolf)
+    return _table_lookup(zolf * 100.0, _psi_table(zolf, 1), _psih_stable_full, zolf)
 
 
 def _psim_unstable(zolf):
     """psim_unstable lookup, sf_sfclayrev.F90:1066-1079 (table coord = -zolf*100)."""
 
-    return _table_lookup(-zolf * 100.0, _PSIM_UNSTAB_TABLE, _psim_unstable_full, zolf)
+    return _table_lookup(-zolf * 100.0, _psi_table(zolf, 2), _psim_unstable_full, zolf)
 
 
 def _psih_unstable(zolf):
     """psih_unstable lookup, sf_sfclayrev.F90:1082-1095 (table coord = -zolf*100)."""
 
-    return _table_lookup(-zolf * 100.0, _PSIH_UNSTAB_TABLE, _psih_unstable_full, zolf)
+    return _table_lookup(-zolf * 100.0, _psi_table(zolf, 3), _psih_unstable_full, zolf)
 
 
 # ==================================================================================
@@ -251,6 +280,38 @@ def _zolri(ri, z, z0):
 # ==================================================================================
 
 
+_ZOLRIB_TRIPS = 19
+
+
+@jax.jit
+def _zolrib_scan(ri, za, z0, zt, logz0, logzt, unstable, carry):
+    """Stable identity for the existing fixed-point scan; eager arithmetic stays outside."""
+    def residual(zol_old):
+        zol20 = zol_old * z0 / za
+        zol3 = zol_old + zol20
+        zolt = zol_old * zt / za
+        psit2_u = jnp.maximum(logzt - (_psih_unstable(zol3) - _psih_unstable(zolt)), 1.0)
+        psix2_u = jnp.maximum(logz0 - (_psim_unstable(zol3) - _psim_unstable(zol20)), 1.0)
+        psit2_s = jnp.maximum(logzt - (_psih_stable(zol3) - _psih_stable(zolt)), 1.0)
+        psix2_s = jnp.maximum(logz0 - (_psim_stable(zol3) - _psim_stable(zol20)), 1.0)
+        psit2 = jnp.where(unstable, psit2_u, psit2_s)
+        psix2 = jnp.where(unstable, psix2_u, psix2_s)
+        return ri * (psix2 * psix2) / psit2  # WRF zolrib=ri*psix2**2/psit2
+
+    def body(_, carry):
+        zol_old, frozen = carry
+        zol_new = residual(zol_old)
+        converged = jnp.abs(zol_new - zol_old) <= 0.01
+        # freeze the endpoint once converged (matches WRF early-stop)
+        nxt = jnp.where(frozen, zol_old, zol_new)
+        new_frozen = frozen | converged
+        return (nxt, new_frozen)
+
+    # WRF zolrib: n=1; DO WHILE (|zolold-zolrib|>0.01 .and. n<nmax), nmax=20
+    # -> at most 19 evaluations, then Li_etal_2010 if still unconverged.
+    return jax.lax.fori_loop(0, _ZOLRIB_TRIPS, body, carry)
+
+
 def _zolrib(ri, za, z0, zt, logz0, logzt, zol1_seed=None):
     """MYNN ``zolrib`` brute-force z/L solve, module_sf_mynn.F:1984-2048.
 
@@ -277,18 +338,6 @@ def _zolrib(ri, za, z0, zt, logz0, logzt, zol1_seed=None):
 
     unstable = ri < 0.0
 
-    def residual(zol_old):
-        zol20 = zol_old * z0 / za
-        zol3 = zol_old + zol20
-        zolt = zol_old * zt / za
-        psit2_u = jnp.maximum(logzt - (_psih_unstable(zol3) - _psih_unstable(zolt)), 1.0)
-        psix2_u = jnp.maximum(logz0 - (_psim_unstable(zol3) - _psim_unstable(zol20)), 1.0)
-        psit2_s = jnp.maximum(logzt - (_psih_stable(zol3) - _psih_stable(zolt)), 1.0)
-        psix2_s = jnp.maximum(logz0 - (_psim_stable(zol3) - _psim_stable(zol20)), 1.0)
-        psit2 = jnp.where(unstable, psit2_u, psit2_s)
-        psix2 = jnp.where(unstable, psix2_u, psix2_s)
-        return ri * psix2 * psix2 / psit2
-
     # n==1: zolold = zol1 (the first guess). For a WARM step (itimestep>1) WRF seeds
     # the MOL-based guess (module_sf_mynn.F:796/881); for the very first step it seeds
     # Li_etal_2010 (lines 794/879). zolrib is a fixed-point that is NOT globally
@@ -297,19 +346,10 @@ def _zolrib(ri, za, z0, zt, logz0, logzt, zol1_seed=None):
     # cold start / when no seed is provided.
     zol1 = _li_etal_2010(ri, za / z0, z0 / zt) if zol1_seed is None else zol1_seed
     # WRF wrong-quadrant guard (module_sf_mynn.F:1998): zol1*ri<0 -> zol1=0.
-    zol1 = jnp.where(zol1 * ri < 0.0, 0.0, zol1)
-
-    def body(_, carry):
-        zol_old, frozen = carry
-        zol_new = residual(zol_old)
-        converged = jnp.abs(zol_new - zol_old) <= 0.01
-        # freeze the endpoint once converged (matches WRF early-stop)
-        nxt = jnp.where(frozen, zol_old, zol_new)
-        new_frozen = frozen | converged
-        return (nxt, new_frozen)
+    zol1 = jnp.where(zol1 * ri < 0.0, _lit(zol1, 0.0), zol1)
 
     frozen0 = jnp.zeros_like(ri, dtype=bool)
-    zol_conv, conv_flag = jax.lax.fori_loop(0, 20, body, (zol1, frozen0))
+    zol_conv, conv_flag = _zolrib_scan(ri, za, z0, zt, logz0, logzt, unstable, (zol1, frozen0))
 
     # non-convergence fallback (module_sf_mynn.F:2036-2039)
     zol_fallback = _li_etal_2010(ri, za / z0, z0 / zt)
@@ -330,8 +370,8 @@ def _li_etal_2010(rib, zaz0, z0zt):
     bw11, bw12, bw21, bw22 = -0.0539, 1.540, -0.669, -3.282
     as11, as21, bs11, bs21, bs22 = 0.7529, 14.94, 0.1569, -0.3091, -1.303
 
-    zaz02 = jnp.clip(zaz0, 100.0, 100000.0)
-    z0zt2 = jnp.clip(z0zt, 0.5, 100.0)
+    zaz02 = _clip(zaz0, 100.0, 100000.0)
+    z0zt2 = _clip(z0zt, 0.5, 100.0)
     alfa = jnp.log(zaz02)
     beta = jnp.log(z0zt2)
 
@@ -340,16 +380,16 @@ def _li_etal_2010(rib, zaz0, z0zt):
         + (bu21 * beta + bu22) * alfa
         + (bu31 * beta**2 + bu32 * beta + bu33)
     ) * rib
-    zl_uns = jnp.clip(zl_uns, -15.0, 0.0)
+    zl_uns = _clip(zl_uns, -15.0, 0.0)
 
     zl_wsta = (
         ((aw11 * beta + aw12) * alfa + (aw21 * beta + aw22)) * rib**2
         + ((bw11 * beta + bw12) * alfa + (bw21 * beta + bw22)) * rib
     )
-    zl_wsta = jnp.clip(zl_wsta, 0.0, 4.0)
+    zl_wsta = _clip(zl_wsta, 0.0, 4.0)
 
     zl_ssta = (as11 * alfa + as21) * rib + bs11 * alfa + bs21 * beta + bs22
-    zl_ssta = jnp.clip(zl_ssta, 1.0, 20.0)
+    zl_ssta = _clip(zl_ssta, 1.0, 20.0)
 
     return jnp.where(
         rib <= 0.0,
@@ -388,10 +428,16 @@ class SurfaceLayerDiagnostics(NamedTuple):
     psih: object
     br: object
     znt: object        # roughness length used
+    # 2-m exchange coefficients for diagnostics only (module_sf_mynn.F:1090-1091).
+    chs2: object = None  # UST*KARMAN/PSIT2
+    cqs2: object = None  # UST*KARMAN/PSIQ2
 
 
 def _field(state, name: str, default):
-    return getattr(state, name, default)
+    # Column views declare optional WRF inputs (B39: mol/hfx/qfx/qsfc/pblh/dx_m)
+    # as ``None`` when the caller has no value: treat that as absent.
+    value = getattr(state, name, default)
+    return default if value is None else value
 
 
 def _surface(field):
@@ -402,8 +448,8 @@ def _surface(field):
     return field
 
 
-def _as_surface(value, shape):
-    data = jnp.asarray(value, dtype=jnp.float64)
+def _as_surface(value, shape, dtype=jnp.float64):
+    data = jnp.asarray(value, dtype=dtype)
     if data.ndim >= 3:
         data = data[..., 0]
     if data.shape == ():
@@ -423,6 +469,13 @@ def surface_layer(state, *, first_timestep=False) -> SurfaceFluxes:
 
 
 def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLayerDiagnostics:
+    from gpuwrf.physics.fp32.surface_layer_real import native_real_enabled, surface_layer_with_diagnostics_real
+    if native_real_enabled():
+        return surface_layer_with_diagnostics_real(state, first_timestep=first_timestep)
+    return _surface_layer_impl(state, first_timestep, jnp.float64)
+
+
+def _surface_layer_impl(state, first_timestep, F) -> SurfaceLayerDiagnostics:
     """Run one vectorized ``sf_sfclayrev_run`` solve over surface columns.
 
     ``state`` is a column-oriented view (trailing-z) carrying ``u, v, theta, qv,
@@ -440,31 +493,31 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     """
 
     # --- lowest-level column inputs (sf_sfclayrev_pre_run picks kts) ---
-    u0 = _surface(jnp.asarray(state.u, dtype=jnp.float64))
-    v0 = _surface(jnp.asarray(state.v, dtype=jnp.float64))
-    theta0 = _surface(jnp.asarray(state.theta, dtype=jnp.float64))
-    qv0 = jnp.maximum(_surface(jnp.asarray(state.qv, dtype=jnp.float64)), 0.0)
+    u0 = _surface(jnp.asarray(state.u, dtype=F))
+    v0 = _surface(jnp.asarray(state.v, dtype=F))
+    theta0 = _surface(jnp.asarray(state.theta, dtype=F))
+    qv0 = jnp.maximum(_surface(jnp.asarray(state.qv, dtype=F)), 0.0)
     qvsh0 = qv0 / (1.0 + qv0)  # module_sf_mynn.F: QVSH specific humidity for virtual terms
-    p1d_pa = jnp.maximum(_surface(jnp.asarray(state.p, dtype=jnp.float64)), 1.0)  # lowest-level air pressure (p3d(kts))
+    p1d_pa = jnp.maximum(_surface(jnp.asarray(state.p, dtype=F)), 1.0)  # lowest-level air pressure (p3d(kts))
     shape = u0.shape
     first_step = jnp.asarray(first_timestep, dtype=bool)
 
-    dz = jnp.maximum(_as_surface(_field(state, "dz", 100.0), shape), 1.0)  # dz8w1d
-    t_skin = _as_surface(_field(state, "t_skin", None), shape) if _field(state, "t_skin", None) is not None else None
-    xland = _as_surface(_field(state, "xland", 1.0), shape)
-    lakemask = _as_surface(_field(state, "lakemask", 0.0), shape)
-    mavail = jnp.clip(_as_surface(_field(state, "mavail", _field(state, "soil_moisture", 1.0)), shape), 0.0, 1.0)
-    ust_warm = jnp.maximum(_as_surface(_field(state, "ustar", 0.1), shape), 0.0)
+    dz = jnp.maximum(_as_surface(_field(state, "dz", 100.0), shape, F), 1.0)  # dz8w1d
+    t_skin = _as_surface(_field(state, "t_skin", None), shape, F) if _field(state, "t_skin", None) is not None else None
+    xland = _as_surface(_field(state, "xland", 1.0), shape, F)
+    lakemask = _as_surface(_field(state, "lakemask", 0.0), shape, F)
+    mavail = _clip(_as_surface(_field(state, "mavail", _field(state, "soil_moisture", 1.0)), shape, F), 0.0, 1.0)
+    ust_warm = jnp.maximum(_as_surface(_field(state, "ustar", 0.1), shape, F), 0.0)
     # WRF MYNN cold start (module_sf_mynn.F:330-336): before SFCLAY1D_mynn,
     # itimestep==1 overwrites the carried UST/MOL/QSFC with deterministic first
     # guesses. Keep warm-step behavior as the default for existing callers.
     first_ust = jnp.maximum(0.04 * jnp.sqrt(u0 * u0 + v0 * v0), 0.001)
     ust_in = jnp.where(first_step, first_ust, ust_warm)
-    mol_warm = _as_surface(_field(state, "mol", 0.0), shape)
-    mol_in = jnp.where(first_step, 0.0, mol_warm)
-    pblh = jnp.maximum(_as_surface(_field(state, "pblh", 1000.0), shape), 1.0)
-    dx_m = jnp.maximum(_as_surface(_field(state, "dx_m", 3000.0), shape), 1.0)
-    znt = jnp.maximum(_roughness_from_state(state, shape, xland), 1.0e-7)
+    mol_warm = _as_surface(_field(state, "mol", 0.0), shape, F)
+    mol_in = jnp.where(first_step, _lit(mol_warm, 0.0), mol_warm)
+    pblh = jnp.maximum(_as_surface(_field(state, "pblh", 1000.0), shape, F), 1.0)
+    dx_m = jnp.maximum(_as_surface(_field(state, "dx_m", 3000.0), shape, F), 1.0)
+    znt = jnp.maximum(_roughness_from_state(state, shape, xland, F), 1.0e-7)
 
     # psfcpa: WRF passes the ACTUAL surface pressure (distinct from lowest-level
     # air pressure). WRF uses psfcpa for thgb, qsfc, rhox, t2 (sf_sfclayrev.F90:
@@ -472,7 +525,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # Use the prescribed ``psfc`` when present (real WRF columns), else fall back
     # to the lowest-level air pressure.
     psfc_field = _field(state, "psfc", None)
-    psfcpa = jnp.maximum(_as_surface(psfc_field, shape), 1.0) if psfc_field is not None else p1d_pa
+    psfcpa = jnp.maximum(_as_surface(psfc_field, shape, F), 1.0) if psfc_field is not None else p1d_pa
     psfc_cb = psfcpa / 1000.0  # PSFC in cb (sf_sfclayrev.F90:221)
 
     # --- ground potential temperature (sf_sfclayrev.F90:227-231) ---
@@ -481,7 +534,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # t1d: lowest-level air temperature. Use the prescribed ``t_air`` (t_phy) when
     # present, else derive from theta via Exner at the lowest-level pressure.
     t_air_field = _field(state, "t_air", None)
-    t1d = _as_surface(t_air_field, shape) if t_air_field is not None else _potential_to_temperature(theta0, p1d_pa)
+    t1d = _as_surface(t_air_field, shape, F) if t_air_field is not None else _potential_to_temperature(theta0, p1d_pa)
     tgdsa = t_skin if t_skin is not None else t1d
     thgb = tgdsa * (P0_PA / psfcpa) ** R_D_OVER_CP
 
@@ -506,7 +559,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
         SVP1_KPA * jnp.exp(4648.0 * (1.0 / 273.15 - 1.0 / tgdsa) - 11.64 * jnp.log(273.15 / tgdsa) + 0.02265 * (273.15 - tgdsa)),
         SVP1_KPA * jnp.exp(SVP2 * (tgdsa - SVPT0_K) / (tgdsa - SVP3_K)),
     )
-    qsfc_in = _as_surface(_field(state, "qsfc", -1.0), shape)
+    qsfc_in = _as_surface(_field(state, "qsfc", -1.0), shape, F)
     qsfc_first = qv0 / (1.0 + qv0)
     qsfc_in = jnp.where(first_step, qsfc_first, qsfc_in)
     recompute_q = is_water | (qsfc_in <= 0.0)
@@ -520,12 +573,12 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     cpm = CP_D * (1.0 + 0.84 * qx)
 
     # --- heights and density (sf_sfclayrev.F90:298-313) ---
-    zqklp1 = jnp.zeros(shape, dtype=jnp.float64)
+    zqklp1 = jnp.zeros(shape, dtype=F)
     rho_field = _field(state, "rho", None)
     # WRF MYNN receives RHO1D from ``phy_prep`` (`rho=(1+qv)/alt`) rather than
     # recomputing density from surface pressure. Analytic callers without a WRF
     # column keep the historical ideal-gas fallback.
-    rhox = _as_surface(rho_field, shape) if rho_field is not None else psfc_cb * 1000.0 / (R_D * scr4)
+    rhox = _as_surface(rho_field, shape, F) if rho_field is not None else psfc_cb * 1000.0 / (R_D * scr4)
     zqkl = dz + zqklp1
     za = 0.5 * (zqkl + zqklp1)                       # lowest mass-level height
     govrth = G / thx
@@ -543,8 +596,8 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # increased mixing height min(1.5*pblh,4000) to represent non-local mass-flux
     # transport above the PBL top. fluxc uses THVGB (=tskv) and g/TSK (=g/tgdsa).
     # On a cold start (no hfx/qfx carryover) fluxc=0 so WSTAR=0.
-    hfx_prev = _as_surface(_field(state, "hfx", 0.0), shape)
-    qfx_prev = _as_surface(_field(state, "qfx", 0.0), shape)
+    hfx_prev = _as_surface(_field(state, "hfx", 0.0), shape, F)
+    qfx_prev = _as_surface(_field(state, "qfx", 0.0), shape, F)
     fluxc = jnp.maximum(hfx_prev / rhox / CP_D + EP1 * tskv * qfx_prev / rhox, 0.0)
     height_land = jnp.minimum(1.5 * pblh, 4000.0)            # module_sf_mynn.F:578
     vconv_land = VCONVC_MYNN * (G / tgdsa * height_land * fluxc) ** 0.33  # :578
@@ -557,7 +610,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # Bulk-Ri clamp (module_sf_mynn.F:593-600): first timestep uses Li et al.'s
     # narrower [-2, 2] limit; warm steps use [-4, 4]. The "if previously unstable
     # -> BR<=0" block (lines 603-605) is COMMENTED OUT in WRF; do not apply.
-    br = jnp.where(first_step, jnp.clip(br, -2.0, 2.0), jnp.clip(br, -4.0, 4.0))
+    br = jnp.where(first_step, _clip(br, -2.0, 2.0), _clip(br, -4.0, 4.0))
 
     # ==============================================================================
     # MYNN thermal/moisture roughness z_t/z_q, computed BEFORE the z/L solve
@@ -578,8 +631,8 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # set the FIRST GZ1OZ0; faithfully updating water z0 here is required (otherwise
     # z0 stays at the ~2.85e-3 seed instead of the physical ~1e-4 open-ocean value).
     wsp10m = wspd * jnp.log(10.0 / 1.0e-4) / jnp.log(za / 1.0e-4)
-    czc = 0.011 + 0.007 * jnp.clip((wsp10m - 10.0) / 8.0, 0.0, 1.0)   # variable Charnock
-    znt_water = jnp.clip(
+    czc = 0.011 + 0.007 * _clip((wsp10m - 10.0) / 8.0, 0.0, 1.0)   # variable Charnock
+    znt_water = _clip(
         czc * ust_in * ust_in / G + 0.11 * visc / jnp.maximum(ust_in, 0.05),
         1.27e-7, 2.85e-3,
     )
@@ -595,7 +648,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar)), 0.75 * znt)
     # WATER: fairall_etal_2003 (COARE_OPT=3.0 default), z_q == z_t
     # (module_sf_mynn.F:1442-1467): Zt = 5.5e-5*restar^-0.6, clipped [2e-9, 1e-4].
-    z_t_water = jnp.clip((5.5e-5) * (restar ** (-0.60)), 2.0e-9, 1.0e-4)
+    z_t_water = _clip((5.5e-5) * (restar ** (-0.60)), 2.0e-9, 1.0e-4)
     z_t = jnp.where(is_land, z_t_land, z_t_water)
     z_q = z_t  # zilitinkevich land + fairall water both set z_q = z_t
 
@@ -614,10 +667,10 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # estimate ZA*k*g*MOL/(TH1D*max(ust^2,eps)) clamped per sign
     # (module_sf_mynn.F:793-804 stable / 878-889 unstable). BR is already clamped
     # to [-4,4] above; the extra ZOLRI_BR_CAP guard is now inert but harmless.
-    br_capped = jnp.clip(br, -ZOLRI_BR_CAP, ZOLRI_BR_CAP)
-    zol_guess_s = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-4)), 0.0, 20.0)
-    zol_guess_u = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-3)), -20.0, 0.0)
-    zol_warm_seed = jnp.where(br > 0.0, zol_guess_s, jnp.where(br < 0.0, zol_guess_u, 0.0))
+    br_capped = _clip(br, -ZOLRI_BR_CAP, ZOLRI_BR_CAP)
+    zol_guess_s = _clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-4)), 0.0, 20.0)
+    zol_guess_u = _clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-3)), -20.0, 0.0)
+    zol_warm_seed = jnp.where(br > 0.0, zol_guess_s, jnp.where(br < 0.0, zol_guess_u, _lit(br, 0.0)))
     zol_first_seed = _li_etal_2010(br_capped, za / znt, znt / z_t)
     zol1_seed = jnp.where(first_step, zol_first_seed, zol_warm_seed)
     zol = _zolrib(br_capped, za, znt, z_t, gz1oz0, gz1ozt, zol1_seed=zol1_seed)
@@ -625,8 +678,8 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # [-20,0]); neutral (br==0) -> zol=0 (module_sf_mynn.F:863).
     zol = jnp.where(
         br > 0.0,
-        jnp.clip(zol, 0.0, 20.0),
-        jnp.where(br < 0.0, jnp.clip(zol, -20.0, 0.0), 0.0),
+        _clip(zol, 0.0, 20.0),
+        jnp.where(br < 0.0, _clip(zol, -20.0, 0.0), _lit(zol, 0.0)),
     )
 
     # ==============================================================================
@@ -666,7 +719,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     psim2_u = _psim_unstable(zol2) - _psim_unstable(zolz0)
     psih2_u = _psih_unstable(zol2) - _psih_unstable(zolz0)    # MOMENTUM baseline
 
-    zeros = jnp.zeros(shape, dtype=jnp.float64)
+    zeros = jnp.zeros(shape, dtype=F)
     psim = jnp.where(stable, psim_s, jnp.where(unstable, psim_u, zeros))
     psih = jnp.where(stable, psih_s, jnp.where(unstable, psih_u, zeros))
     psim10 = jnp.where(stable, psim10_s, jnp.where(unstable, psim10_u, zeros))
@@ -694,8 +747,8 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     # stable), 0<BR<=0.2 -> 2 (damped mechanical turbulence), BR==0 -> 3 (neutral),
     # BR<0 -> 4 (free convection). Diagnostic only; the PSI path is identical for
     # regimes 1 and 2 (both use the stable branch).
-    regime = jnp.where(br > 0.2, 1.0, jnp.where(stable, 2.0, jnp.where(neutral, 3.0, 4.0)))
-    zol = jnp.where(neutral, 0.0, zol)
+    regime = jnp.where(br > 0.2, _lit(br, 1.0), jnp.where(stable, _lit(br, 2.0), jnp.where(neutral, _lit(br, 3.0), _lit(br, 4.0))))
+    zol = jnp.where(neutral, _lit(zol, 0.0), zol)
     rmol = zol / za
 
     # ==============================================================================
@@ -844,6 +897,9 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
         psih=psih,
         br=br,
         znt=znt,
+        chs2=ustar * KARMAN / psit2,
+        # WRF's flux loop re-derives PSIQ2 with z_q in the numerator (module_sf_mynn.F:1024).
+        cqs2=ustar * KARMAN / jnp.maximum(jnp.log((2.0 + z_q) / z_q) - psih2, 1.0),
     )
 
 
@@ -854,7 +910,7 @@ def _potential_to_temperature(theta, pressure_pa):
     return theta * exner
 
 
-def _roughness_from_state(state, shape, xland):
+def _roughness_from_state(state, shape, xland, dtype=jnp.float64):
     """Resolve roughness length z0 from the prescribed field or a land/water default.
 
     WRF gets ZNT from the land surface model / wrfinput. Real Canary cases supply
@@ -865,9 +921,9 @@ def _roughness_from_state(state, shape, xland):
 
     roughness = _field(state, "roughness_m", None)
     if roughness is not None:
-        return _as_surface(roughness, shape)
-    land_z0 = jnp.broadcast_to(jnp.asarray(0.10, dtype=jnp.float64), shape)
-    water_z0 = jnp.broadcast_to(jnp.asarray(OZO + 0.0 * 2.85e-3, dtype=jnp.float64), shape)
+        return _as_surface(roughness, shape, dtype)
+    land_z0 = jnp.broadcast_to(jnp.asarray(0.10, dtype=dtype), shape)
+    water_z0 = jnp.broadcast_to(jnp.asarray(OZO + 0.0 * 2.85e-3, dtype=dtype), shape)
     return jnp.where(xland > 1.5, jnp.broadcast_to(jnp.asarray(2.85e-3), shape), land_z0)
 
 

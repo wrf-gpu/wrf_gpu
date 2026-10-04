@@ -21,6 +21,8 @@ it in pure-CPU CI.
 
 from __future__ import annotations
 
+from gpuwrf.io.netcdf_lock import NETCDF_LOCK
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -250,7 +252,7 @@ def load_phase_b_savepoint(path: str | Path, *, verify_checksum: bool = True) ->
     )
 
     target = Path(path)
-    with h5py.File(target, "r") as handle:
+    with NETCDF_LOCK, h5py.File(target, "r") as handle:
         metadata = SavepointMetadata.from_json(json.loads(handle.attrs[METADATA_ATTR]))
         arrays = {name: np.asarray(handle[FIELDS_GROUP][name]) for name in handle[FIELDS_GROUP]}
         stored_digest = str(handle.attrs.get(PAYLOAD_SHA256_ATTR, ""))

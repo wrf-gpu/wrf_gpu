@@ -13,6 +13,7 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.contracts.precision import force_fp64_island
+from gpuwrf.kernels.dyn_real_fp32 import dyn_island, enabled as dyn_real_enabled, real as dyn_real
 from gpuwrf.contracts.state import BaseState, State
 # WRF/MPAS source anchors for the imported damping hooks:
 # module_small_step_em.F:548-563, :1559-1569 and
@@ -190,7 +191,7 @@ def _inverse_density_from_theta_pressure(theta: jax.Array, pressure: jax.Array, 
     # large theta*pressure powers). Widen the EOS inputs to fp64 IN-OPERATOR so an
     # fp32 storage downcast cannot contaminate the diagnosis. No-op (bit-identical)
     # on fp64_default.
-    theta, pressure, qv = force_fp64_island(theta, pressure, qv)
+    theta, pressure, qv = dyn_island()(theta, pressure, qv)
     qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     return (R_D / P0_PA) * theta * qvf * ((_safe_pressure(pressure) / P0_PA) ** CVPM)
 
@@ -205,7 +206,7 @@ def _pressure_from_theta_alt(theta: jax.Array, alt: jax.Array, qv: jax.Array | N
 
     # v0.20 S2 intrinsic fp64-island lock (EOS pressure inversion). No-op
     # (bit-identical) on fp64_default; protects an fp32 caller's diagnostic.
-    theta, alt, qv = force_fp64_island(theta, alt, qv)
+    theta, alt, qv = dyn_island()(theta, alt, qv)
     qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     argument = (R_D * theta * qvf) / (P0_PA * _safe_alt(alt))
     return P0_PA * (jnp.maximum(argument, 1.0e-12) ** CPOVCV)
@@ -357,6 +358,21 @@ def diagnose_pressure_al_alt(
         alt = _inverse_density_from_theta_pressure(state.theta, state.p_total)
         al = jnp.zeros_like(alt)
         return state.p_perturbation, al, alt
+
+    if dyn_real_enabled():
+        # S2-DYN: WRF calc_p_rho_phi is REAL; the native kernel keeps the literal
+        # binary32 association (an XLA REAL fusion reassociates the log ratios).
+        from gpuwrf.kernels.dyn_rk_fp32 import diagnose_pressure_fp32, real_base, real_metrics
+
+        state32 = state.replace(
+            _cast=False,
+            theta=dyn_real(state.theta),
+            ph_perturbation=dyn_real(state.ph_perturbation),
+            mu_perturbation=dyn_real(state.mu_perturbation),
+        )
+        return diagnose_pressure_fp32(
+            state32, real_base(base_state), real_metrics(metrics), hypsometric_opt=int(hypsometric_opt)
+        )
 
     # Base inverse density ``alb`` must be the EXACT discrete inverse density the
     # base geopotential ``phb`` was hydrostatically integrated from at init

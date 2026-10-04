@@ -31,6 +31,34 @@ that would also (wrongly) skip the many CPU-runnable tests sharing those files.
 
 from __future__ import annotations
 
+import os
+
+# GPU hygiene (manager 2026-10-02, E50): pytest outside the GPU lock must never touch the shared GPU.
+# JAX would otherwise initialise CUDA and (by default) preallocate ~75 % of VRAM, starving the locked arm.
+if os.environ.get("GPUWRF_GPU_LOCK_HELD") != "1":
+    if not os.environ.get("JAX_PLATFORMS"):
+        os.environ["JAX_PLATFORMS"] = "cpu"
+    os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+    # v0.3 release defaults turn the Triton/Pallas fast paths ON; on a CPU pin those kernels run only
+    # in interpret mode, so the CPU suite keeps the legacy defaults unless a test opts in explicitly
+    # (tests/test_fast_defaults.py checks the release resolution in clean subprocesses; owner tests
+    # set their flags; GPU-locked runs get the release defaults).
+    if os.environ.get("JAX_PLATFORMS", "").strip().lower() == "cpu":
+        os.environ.setdefault("GPUWRF_FAST_DEFAULTS", "0")
+
+# M0 evidence builders require their real CPU guard to precede JAX. Collection
+# also imports ordinary model tests, so establish that order at the suite entry
+# instead of relying on which test file pytest happens to collect first.
+if os.environ.get("JAX_PLATFORMS") == "cpu":
+    from pathlib import Path
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts/v025"))
+    try:
+        import cpu_guard  # noqa: F401
+    finally:
+        sys.path.pop(0)
+
 import pytest
 
 # The exact substrings emitted by gpuwrf.contracts.state._gpu_device() when no

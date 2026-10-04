@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -165,7 +166,8 @@ def test_band_masks_match_frozen_distance():
 
 
 def test_no_jax_or_gpuwrf_imported_by_discriminator():
-    assert "jax" not in sys.modules
-    assert not any(
-        name == "gpuwrf" or name.startswith("gpuwrf.") for name in sys.modules
+    code = (
+        "import sys; from scripts import v0234_dycore_internal_split_kimi; "
+        "assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)"
     )
+    subprocess.run([sys.executable, "-c", code], cwd=REPO, check=True, timeout=30)

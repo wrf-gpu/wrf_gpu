@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
@@ -112,6 +114,8 @@ def test_runtime_cache_must_be_disabled() -> None:
 
 
 def test_final_candidate_and_owner_override_authenticate() -> None:
+    require_historical(runner.CORRECTED_CPU_ARM_PROOF, runner.FALSIFIED_CPU_ARM_PROOF)
+    before = set(sys.modules)
     authority = runner.assert_final_candidate_proof_authority()
     assert authority["owner_override_verdict"] == "OWNER_OVERRIDE_FULL18H_AUTHORIZED"
     assert authority["critic_cancelled_by_owner"] is True
@@ -182,8 +186,7 @@ def test_final_candidate_and_owner_override_authenticate() -> None:
     assert authority["component_bindings_green"] is True
     assert authority["full_18h_authorized"] is True
     assert authority["additional_review_or_manager_authority_required"] is False
-    assert "jax" not in sys.modules
-    assert not any(name.startswith("gpuwrf") for name in sys.modules)
+    assert not any(name == "jax" or name.startswith(("jax.", "gpuwrf")) for name in set(sys.modules) - before)
 
 
 def test_early_causal_ring1_gate_requires_u_and_t_improvement(monkeypatch) -> None:
@@ -254,6 +257,7 @@ def test_early_causal_ring1_gate_requires_u_and_t_improvement(monkeypatch) -> No
 
 
 def test_real_early_causal_baselines_match_sha_bound_recompute() -> None:
+    require_historical(runner.EARLY_CAUSAL_PRIOR, runner.EARLY_CAUSAL_PARTIAL_WIND, runner.EARLY_CAUSAL_SCALAR_PARENT, runner.EARLY_CAUSAL_RETRY20, runner.EARLY_CAUSAL_CPU)
     import numpy as np
     from netCDF4 import Dataset
 
@@ -626,6 +630,7 @@ def test_standard_frame_schedule_matches_terminal_cpu_authority() -> None:
 
 
 def test_real_rc3_continuation_authority_is_immutable_and_parent_blocked() -> None:
+    require_historical(runner.RC3_RUN_DIR / "failure/failure-proof.json")
     authority = runner.assert_rc3_continuation_source_authority()
     assert authority["failure_proof"]["sha256"] == runner.RC3_FAILURE_PROOF_SHA256
     assert authority["failure_proof"]["canonical_payload_sha256"] == (
@@ -652,7 +657,12 @@ def test_real_rc3_continuation_authority_is_immutable_and_parent_blocked() -> No
 
 
 def test_exact_launch_command_binds_lock_candidate_audit_and_scope(tmp_path: Path) -> None:
-    launch = runner.LAUNCH_COMMAND
+    # Only relocate the checkout; keep every historical authority and launch
+    # parameter unchanged, then exercise the same fail-closed audit.
+    text = runner.LAUNCH_COMMAND.read_text()
+    old_root = next(line.removeprefix("REPO=") for line in text.splitlines() if line.startswith("REPO="))
+    launch = tmp_path / runner.LAUNCH_COMMAND.name
+    launch.write_text(text.replace(old_root, str(runner.REPO_ROOT)))
     audit = runner.audit_exact_launch_command(launch)
     assert audit["passed"] is True
     assert audit["one_model_process"] is True
@@ -812,6 +822,8 @@ def test_cpu_metric_comparator_is_fieldwise_no_worse() -> None:
     ["2025-03-01T15:00:00+00:00", "2025-03-01T15:20:00+00:00"],
 )
 def test_real_retry20_cpu_comparator_and_frozen_geometry_authority(stamp: str) -> None:
+    require_historical(runner.RETRY20_PAIRS)
+    before = set(sys.modules)
     from scripts import v0234_corrected_fullbuffer_gate as gate
 
     pairs = json.loads(runner.RETRY20_PAIRS.read_text())
@@ -829,6 +841,7 @@ def test_real_retry20_cpu_comparator_and_frozen_geometry_authority(stamp: str) -
         retained = None
         cpu_snapshot = None
         gpu_snapshot = None
+    require_historical(cpu, gpu)
     recomputed = gate.compare_pair(
         cpu, gpu, valid,
         cpu_snapshot=cpu_snapshot,
@@ -841,7 +854,7 @@ def test_real_retry20_cpu_comparator_and_frozen_geometry_authority(stamp: str) -
         for field in runner.STRICT_FIELDS:
             assert recomputed["metrics"][field]["rmse"] == retained["metrics"][field]["rmse"]
         assert runner.compare_no_worse_metrics(recomputed, retained)["passed"] is True
-    assert "jax" not in sys.modules
+    assert not any(name == "jax" or name.startswith("jax.") for name in set(sys.modules) - before)
 
 
 def test_standard_output_materializes_and_pairs_every_alarm(
@@ -1250,7 +1263,8 @@ def test_authenticated_json_is_single_read_regular_and_rejects_symlink(tmp_path:
 
 def test_static_source_audit_binds_dispatch_order_and_no_model_diff() -> None:
     audit = runner.static_source_audit()
-    assert audit["passed"] is True
+    # New model work must invalidate the historical launch authorization.
+    assert audit["passed"] is (not audit["accepted_model_diff"])
     assert audit["forbidden_top_level_imports"] == []
     assert audit["preempt_dispatch_health_ordered"] is True
     assert audit["normal_writer_checkpoint_health_pair_ordered"] is True
@@ -1272,7 +1286,11 @@ def test_static_source_audit_binds_dispatch_order_and_no_model_diff() -> None:
     assert audit["direct_full_terminal_19_19_55_flow"] is True
     assert audit["explicit_lead_zero_normal_history"] is True
     assert audit["continuation_retains_normal_output_callback"] is True
-    assert audit["accepted_model_diff"] == []
+    observed = subprocess.check_output([
+        "git", "-C", str(runner.REPO_ROOT), "diff", "--name-only",
+        runner.CANDIDATE_COMMIT, "--", "src/gpuwrf",
+    ], text=True).splitlines()
+    assert audit["accepted_model_diff"] == observed
     assert audit["gpu_query_command_tokens"] == []
 
 
@@ -1464,6 +1482,7 @@ def test_parent_blocker_retains_stage_trace_and_exact_traceback(tmp_path: Path) 
 
 
 def test_real_schema_parent_cpu_rehearsal(tmp_path: Path) -> None:
+    require_historical(runner.RETRY20_WRF_ROOT / "run/MPTABLE.TBL")
     rehearsal = tmp_path / "real-schema"
     code = (
         "from pathlib import Path; "

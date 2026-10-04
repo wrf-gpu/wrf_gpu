@@ -1,0 +1,135 @@
+{
+  "passed": true,
+  "owned_entrypoints_per_domain": 14,
+  "source": "1c40edb5c (BD45)",
+  "runtime": "CPU CUDA hidden + CompileOnly RTX target HLO; no compile/execute",
+  "scope": "isolated entrypoint HLO f64-result arithmetic; Pallas interiors: backend preflight f64-arithmetic 0 (BD41)",
+  "native_f64_math_prod_dry_total": 0,
+  "legacy_positive_control_total": 7917,
+  "excluded_not_prod": {
+    "w_relax": "non-bundle nest relax (operational_mode gates it by not nested_frozen_bundle; nested_w_relax default False): retained legacy f64",
+    "ph_relax": "non-bundle nest ph relax: NotImplementedError under the flag (REAL interpolation of physical strips misses pristine RMS 4x, BD41)"
+  },
+  "moist_clamps_not_rounding": {
+    "lateral": "exact max(q,0) whole-field clamps of qv + optional scalars (host-sync B36 moist hunk), storage dtype kept",
+    "lateral_spec_only": "same moist clamps"
+  },
+  "rows": {
+    "d01": {
+      "dry": {
+        "legacy": 783,
+        "native": 0
+      },
+      "lateral": {
+        "legacy": 2734,
+        "native": 8
+      },
+      "lateral_spec_only": {
+        "legacy": 1271,
+        "native": 8
+      },
+      "interpolate": {
+        "legacy": 9,
+        "native": 0
+      },
+      "specified": {
+        "legacy": 4,
+        "native": 0
+      },
+      "normal_u": {
+        "legacy": 40,
+        "native": 0
+      },
+      "normal_v": {
+        "legacy": 40,
+        "native": 0
+      },
+      "tangential_u": {
+        "legacy": 8,
+        "native": 0
+      },
+      "tangential_v": {
+        "legacy": 8,
+        "native": 0
+      },
+      "normal_apply": {
+        "legacy": 6,
+        "native": 0
+      },
+      "ph_relax": {
+        "legacy": 149,
+        "native": "fails_closed"
+      },
+      "w_relax": {
+        "legacy": 149,
+        "native": 149
+      },
+      "ph_spec_legacy": {
+        "legacy": 1,
+        "native": 0
+      },
+      "ph_spec_live": {
+        "legacy": 14,
+        "native": 0
+      }
+    },
+    "d02": {
+      "dry": {
+        "legacy": 931,
+        "native": 0
+      },
+      "lateral": {
+        "legacy": 1366,
+        "native": 1
+      },
+      "lateral_spec_only": {
+        "legacy": 0,
+        "native": 0
+      },
+      "interpolate": {
+        "legacy": 9,
+        "native": 0
+      },
+      "specified": {
+        "legacy": 4,
+        "native": 0
+      },
+      "normal_u": {
+        "legacy": 30,
+        "native": 0
+      },
+      "normal_v": {
+        "legacy": 30,
+        "native": 0
+      },
+      "tangential_u": {
+        "legacy": 6,
+        "native": 0
+      },
+      "tangential_v": {
+        "legacy": 6,
+        "native": 0
+      },
+      "normal_apply": {
+        "legacy": 6,
+        "native": 0
+      },
+      "ph_relax": {
+        "legacy": 149,
+        "native": "fails_closed"
+      },
+      "w_relax": {
+        "legacy": 149,
+        "native": 149
+      },
+      "ph_spec_legacy": {
+        "legacy": 1,
+        "native": 0
+      },
+      "ph_spec_live": {
+        "legacy": 14,
+        "native": 0
+      }
+    }
+  }
+}

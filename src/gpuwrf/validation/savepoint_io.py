@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf.io.netcdf_lock import NETCDF_LOCK
+
 import hashlib
 import json
 from pathlib import Path
@@ -49,7 +51,7 @@ def write_savepoint(path: str | Path, savepoint: Savepoint) -> None:
     arrays = {name: np.asarray(array) for name, array in savepoint.arrays.items()}
     metadata_json = _canonical_metadata(savepoint.metadata).decode("utf-8")
     digest = _payload_digest(savepoint.metadata, arrays)
-    with h5py.File(target, "w") as handle:
+    with NETCDF_LOCK, h5py.File(target, "w") as handle:
         handle.attrs[METADATA_ATTR] = metadata_json
         handle.attrs[PAYLOAD_SHA256_ATTR] = digest
         fields = handle.create_group(FIELDS_GROUP)
@@ -79,7 +81,7 @@ def read_savepoint(
 
     source = Path(path)
     try:
-        with h5py.File(source, "r") as handle:
+        with NETCDF_LOCK, h5py.File(source, "r") as handle:
             if METADATA_ATTR not in handle.attrs:
                 raise ValueError(f"{source} is missing {METADATA_ATTR}")
             metadata_payload = json.loads(str(handle.attrs[METADATA_ATTR]))

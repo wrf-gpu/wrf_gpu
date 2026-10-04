@@ -156,7 +156,7 @@
         }
       },
       "hourly_release_regression_pass": true,
-      "input_dir": "<ac1fit-input>",
+      "input_dir": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu",
       "max_dom": 3,
       "run_start": "2026-04-28T18:00:00"
     },

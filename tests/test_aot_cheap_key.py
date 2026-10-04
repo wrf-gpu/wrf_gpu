@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -33,6 +34,52 @@ import jax.numpy as jnp
 from gpuwrf.runtime import aot_cheap_key as ck
 
 pytestmark = pytest.mark.filterwarnings("ignore")
+
+
+# Fresh-process children must run THIS checkout's gpuwrf, never whatever an
+# ambient PYTHONPATH points at (S3-A/B critic R1). The child's source root is
+# pinned first on PYTHONPATH, and the child fails fast unless ``gpuwrf.__file__``
+# resolves under it; the parent re-checks the reported origin. Children are
+# CPU-only: an override of the backend env is refused before spawning.
+_CANDIDATE_SRC = str(Path(__file__).resolve().parents[1] / "src")
+_CHILD_ORIGIN_CHECK = """
+import os, sys, jax, gpuwrf
+assert jax.default_backend() == "cpu", jax.default_backend()
+_GPUWRF_FILE = os.path.realpath(gpuwrf.__file__)
+assert _GPUWRF_FILE.startswith(sys.argv[2] + os.sep), (
+    f"child imported gpuwrf from {_GPUWRF_FILE}, not {sys.argv[2]}")
+"""
+
+
+def _run_pinned_child(code: str, payload: dict, env_overrides=None, src_root=_CANDIDATE_SRC) -> dict:
+    """Run ``code`` in a fresh CPU process on ``src_root`` (the candidate tree); return its JSON."""
+    import json
+    import subprocess
+    import sys
+
+    env = dict(os.environ)
+    env.update(env_overrides or {})
+    for k, v in (("JAX_PLATFORMS", "cpu"), ("CUDA_VISIBLE_DEVICES", "")):
+        assert (env_overrides or {}).get(k, v) == v, f"fresh-process child must stay CPU-only: {k}"
+        env[k] = v
+    env["PYTHONPATH"] = os.pathsep.join(
+        p for p in (src_root, env.get("PYTHONPATH")) if p)
+    proc = subprocess.run(
+        [sys.executable, "-c", _CHILD_ORIGIN_CHECK + code, json.dumps(payload),
+         src_root],
+        capture_output=True, text=True, env=env, timeout=300,
+    )
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    out = json.loads(proc.stdout.strip().splitlines()[-1])
+    assert out["gpuwrf_file"].startswith(src_root + os.sep), out["gpuwrf_file"]
+    print(f"child gpuwrf origin: {out['gpuwrf_file']}")
+    return out
+
+
+@pytest.mark.parametrize("override", [{"JAX_PLATFORMS": "cuda"}, {"CUDA_VISIBLE_DEVICES": "0"}])
+def test_pinned_child_refuses_non_cpu_backend_override(override):
+    with pytest.raises(AssertionError, match="CPU-only"):
+        _run_pinned_child("raise SystemExit(0)", {}, override)
 
 
 # --------------------------------------------------------------------------- #
@@ -108,20 +155,37 @@ def _cheap_key(carry, namelist, clock_base, *, n_steps=1, cadence=1):
 # fix) does NOT include the env. So a second in-process ``.lower()`` after an env
 # change returns the STALE cached HLO. To observe the env's true effect on the
 # HLO (and on the cheap_key), the env-axis cells must lower in a FRESH process.
-def _lower_in_subprocess(env_overrides: dict[str, str], nl_kwargs=None, call_kwargs=None):
+def _lower_in_subprocess(
+    env_overrides: dict[str, str], nl_kwargs=None, call_kwargs=None, *, src_root=_CANDIDATE_SRC
+):
     """Return (cheap_key, hlo_sha256) computed in a FRESH process under ``env``.
 
     Fresh process => empty JAX lowering cache => the env knobs are read at trace
     time and their true effect on both the HLO and the cheap_key is observed."""
-    import json
-    import subprocess
-    import sys
+    out = _lower_record_in_subprocess(env_overrides, nl_kwargs, call_kwargs, src_root=src_root)
+    return out["key"], out["hlo"], out["incomplete_key"]
+
+
+def _lower_record_in_subprocess(
+    env_overrides: dict[str, str],
+    nl_kwargs=None,
+    call_kwargs=None,
+    *,
+    bake_init_date_gases: bool = False,
+    src_root: str = _CANDIDATE_SRC,
+) -> dict:
+    """Fresh-process lowering record: key, hlo, incomplete_key, clock digest.
+
+    ``bake_init_date_gases`` is the deliberate S3 mutation: it restores the
+    pre-S3 program, where the host interpolated the CLWRF gases for the init
+    date at trace time and baked them into the step HLO."""
     import textwrap
 
     payload = {
         "env": env_overrides,
         "nl_kwargs": nl_kwargs or {},
         "call_kwargs": call_kwargs or {},
+        "bake_init_date_gases": bool(bake_init_date_gases),
     }
     code = textwrap.dedent(
         """
@@ -154,6 +218,10 @@ def _lower_in_subprocess(env_overrides: dict[str, str], nl_kwargs=None, call_kwa
         nl = OperationalNamelist(**kw)
         carry = _initial_carry_for_run(state, nl)
         cb = build_clock_base(nl)
+        if spec["bake_init_date_gases"]:
+            from gpuwrf.coupling import physics_couplers as pc
+            host_gases = pc.clwrf_ssp245_gases_for_time
+            pc.clwrf_gases_at_lead = lambda clock, lead: host_gases(time_utc)
         n_steps = int(call_kwargs.get("n_steps", 1))
         cadence = int(call_kwargs.get("cadence", 1))
         key = ck.cheap_key(_advance_chunk_fori,
@@ -173,23 +241,14 @@ def _lower_in_subprocess(env_overrides: dict[str, str], nl_kwargs=None, call_kwa
         low = _advance_chunk_fori.lower(carry, nl, jnp.asarray(1, jnp.int32), cb,
                                         n_steps=n_steps, cadence=cadence)
         hlo = hashlib.sha256(low.as_text().encode("utf-8")).hexdigest()
-        print(json.dumps({"key": key, "hlo": hlo, "incomplete_key": incomplete}))
+        clock = hashlib.sha256(b"".join(
+            np.asarray(leaf).tobytes() for leaf in jax.tree_util.tree_leaves(cb)
+        )).hexdigest()
+        print(json.dumps({"key": key, "hlo": hlo, "incomplete_key": incomplete,
+                          "clock": clock, "gpuwrf_file": _GPUWRF_FILE}))
         """
     )
-    env = dict(os.environ)
-    env["JAX_PLATFORMS"] = "cpu"
-    for k, v in env_overrides.items():
-        env[k] = v
-    proc = subprocess.run(
-        [sys.executable, "-c", code, json.dumps(payload)],
-        capture_output=True,
-        text=True,
-        env=env,
-        timeout=300,
-    )
-    assert proc.returncode == 0, proc.stderr[-2000:]
-    out = json.loads(proc.stdout.strip().splitlines()[-1])
-    return out["key"], out["hlo"], out["incomplete_key"]
+    return _run_pinned_child(code, payload, env_overrides, src_root)
 
 
 # The determinant matrix. Each cell is (name, build_kwargs_or_env, call_kwargs).
@@ -200,8 +259,10 @@ def _lower_in_subprocess(env_overrides: dict[str, str], nl_kwargs=None, call_kwa
 # the no-over-fragment direction.
 _MATRIX = [
     ("base", {}, {}, {}),
-    # date varies -> key + HLO MUST be IDENTICAL to base (#114 date-blindness).
-    ("date2", {"time_utc": "2025-12-25_06:00:00"}, {}, {}),
+    # NOTE: the DATE axis is NOT an in-process cell. The namelist treedef is
+    # date-blind (#114), so an in-process lower of a second date returns the first
+    # date's cached HLO and can never expose a baked date constant (v0.25 S3 F1).
+    # Date cells lower in FRESH SUBPROCESSES in test_date_axis_* below.
     # n_steps / cadence vary -> traced int32 -> key + HLO IDENTICAL to base.
     ("nsteps9", {}, {"n_steps": 9, "cadence": 3}, {}),
     # dt_s changes a baked scalar -> key + HLO MUST DIFFER.
@@ -258,11 +319,11 @@ def test_cheap_key_is_injective_over_hlo(matrix_results):
 # --------------------------------------------------------------------------- #
 # (2) date / n_steps / cadence are NOT determinants -> key AND HLO invariant.
 # --------------------------------------------------------------------------- #
-def test_date_and_nsteps_are_key_and_hlo_invariant(matrix_results):
-    """base, date2, nsteps9 must all share ONE key AND ONE HLO."""
+def test_nsteps_is_key_and_hlo_invariant(matrix_results):
+    """base and nsteps9 must share ONE key AND ONE HLO (date: see test_date_axis_*)."""
     by_name = {name: (key, hlo) for name, key, hlo in matrix_results}
     base_key, base_hlo = by_name["base"]
-    for name in ("date2", "nsteps9"):
+    for name in ("nsteps9",):
         key, hlo = by_name[name]
         assert hlo == base_hlo, (
             f"{name}: HLO unexpectedly differs from base -- the matrix assumption "
@@ -316,6 +377,139 @@ def test_env_axis_changes_both_hlo_and_key(env):
         f"{env}: HLO changed but cheap_key did NOT -> SILENT WRONG LOAD risk "
         "(component 5 / global_trace_env_hash is missing this knob)"
     )
+
+
+# --------------------------------------------------------------------------- #
+# (3c) DATE AXIS (v0.25 S3) via FRESH SUBPROCESSES.
+#      The key is date-blind by design (#114): that is correct ONLY if the
+#      lowered step is date-independent, with every date-derived value (solar
+#      clock, CLWRF gases, Noah-MP clock) an operand. Each date lowers in its own
+#      fresh process so no in-process cache can hide a baked date constant.
+# --------------------------------------------------------------------------- #
+_DATE_CELLS = ("2024-09-01_00:00:00", "2025-12-25_06:00:00", "2024-02-29_12:00:00")
+
+
+def test_date_axis_fresh_processes_share_key_and_hlo():
+    """Far-apart dates (incl. a leap day) -> ONE cheap_key, ONE HLO, and
+    genuinely different clock operands."""
+    records = [
+        _lower_record_in_subprocess({}, {"time_utc": date}) for date in _DATE_CELLS
+    ]
+    assert len({r["key"] for r in records}) == 1, "cheap_key over-fragments on date"
+    assert len({r["hlo"] for r in records}) == 1, (
+        "CHEAP_KEY COLLISION on the date axis: one key, different step HLOs "
+        f"{[r['hlo'][:12] for r in records]} -- a date constant is baked in"
+    )
+    assert len({r["clock"] for r in records}) == len(records), (
+        "precondition: the dates must reach the program as different operands"
+    )
+
+
+def test_date_axis_detector_catches_baked_init_date_gases():
+    """Deliberate wrong-key mutation: bake init-date CLWRF gases into the step
+    (the pre-S3 program). The date-blind key then COLLIDES -- one key, two HLOs --
+    exactly what test_date_axis_fresh_processes_share_key_and_hlo rejects."""
+    first, second = (
+        _lower_record_in_subprocess({}, {"time_utc": date}, bake_init_date_gases=True)
+        for date in _DATE_CELLS[:2]
+    )
+    assert first["key"] == second["key"]
+    assert first["hlo"] != second["hlo"], (
+        "the baked-gas mutation did not change the HLO; the date-axis test "
+        "would not detect a date constant"
+    )
+
+
+_GAS_PROBE_CODE = """
+import json, sys
+import numpy as np, jax, jax.numpy as jnp
+from gpuwrf.contracts.grid import GridSpec
+from gpuwrf.contracts.precision import DEFAULT_DTYPES
+from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
+from gpuwrf.coupling import physics_couplers as pc
+from gpuwrf.runtime import aot_cheap_key as ck, aot_executable as aotx
+from gpuwrf.runtime import aot_precompile as aotp, operational_mode as op
+spec = json.loads(sys.argv[1])
+grid = GridSpec.canary_3km_template()
+shapes = _state_field_shapes(grid)
+state = State(**{f: jnp.asarray(np.zeros(s), dtype=DEFAULT_DTYPES.dtype_for(f))
+                 for f, s in shapes.items()})
+sk = {"p": "p_total", "ph": "ph_total", "mu": "mu_total"}
+tend = Tendencies(**{k: jnp.zeros(shapes[sk.get(k, k)], dtype=DEFAULT_DTYPES.dtype_for(k))
+                     for k in ("u", "v", "w", "theta", "qv", "p", "ph", "mu")})
+nl = op.OperationalNamelist(grid=grid, tendencies=tend, metrics=grid.metrics,
+                            dt_s=10.0, acoustic_substeps=6, time_utc=spec["time_utc"])
+cb = op.build_clock_base(nl)
+if spec["bake"]:
+    host_gases = pc.clwrf_ssp245_gases_for_time
+    pc.clwrf_gases_at_lead = lambda clock, lead: host_gases(spec["time_utc"])
+
+@jax.jit
+def gas_probe(state, namelist, lead_seconds, clock_base):
+    sw, lw, *_ = pc._rrtmg_column_inputs(
+        state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds,
+        clock_base=op._rad_clock_base(clock_base), radiation_static=namelist.radiation_static)
+    return jnp.stack([lw.co2_vmr, lw.n2o_vmr, lw.ch4_vmr, lw.cfc11_vmr, lw.cfc12_vmr])
+
+args = (state, nl, jnp.asarray(spec["lead"], dtype=jnp.float64), cb)
+key = ck.cheap_key(gas_probe, args, {}, nl)
+lowered = gas_probe.lower(*args)
+out = {"key": key, "hlo": aotx.hlo_sha256_from_lowered(lowered),
+       "gpuwrf_file": _GPUWRF_FILE}
+if spec["mode"] == "write":
+    status = aotp._serialize_domain_blob("s3gas", lowered.compile(), spec["cache"],
+                                         lowered=lowered, cheap_key=key,
+                                         key_schema=ck.KEY_SCHEMA)
+    out["written"] = bool(status["aot_written"])
+else:
+    call, status = aotp.load_domain_blob("s3gas", spec["cache"], cheap_key=key,
+                                         return_status=True)
+    out.update(loaded=call is not None, source=status["source"],
+               meta_hlo=status["meta_hlo_sha256"],
+               gases=np.asarray(call(*args)).tolist() if call is not None else None)
+print(json.dumps(out))
+"""
+
+
+def _gas_probe_in_subprocess(mode: str, time_utc: str, cache: str, lead: float, bake: bool):
+    payload = {"mode": mode, "time_utc": time_utc, "cache": cache, "lead": lead,
+               "bake": bake}
+    return _run_pinned_child(_GAS_PROBE_CODE, payload)
+
+
+@pytest.mark.parametrize("bake", [False, True], ids=["s3", "baked-mutation"])
+def test_prior_date_aot_blob_serves_current_date_gases(tmp_path, bake):
+    """Persisted AOT across dates: a blob written by a date-1 process is found by
+    a FRESH date-2 process under the same cheap_key and must return date-2 valid
+    time gases. The baked mutation shows the pre-S3 failure: the date-2 process
+    loads the date-1 program and silently serves date-1 gases."""
+    from datetime import datetime, timedelta, timezone
+
+    from gpuwrf.physics.wrf_clwrf_ghg import clwrf_ssp245_gases_for_time
+
+    cache = str(tmp_path / "aot")
+    lead = 3.0 * 86400.0 + 3618.0
+    dates = ("2024-09-01_00:00:00", "2025-12-25_06:00:00")
+    writer = _gas_probe_in_subprocess("write", dates[0], cache, lead, bake)
+    reader = _gas_probe_in_subprocess("read", dates[1], cache, lead, bake)
+    assert writer["written"] and reader["loaded"], reader
+    assert reader["source"] == "aot_blob" and reader["key"] == writer["key"]
+
+    def host(date):
+        valid = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+        return np.asarray(clwrf_ssp245_gases_for_time(valid + timedelta(seconds=lead)))
+
+    served = np.asarray(reader["gases"])
+    rtol = 4.0 * float(np.finfo(np.float32).eps)
+    if not bake:
+        assert reader["hlo"] == writer["hlo"] == reader["meta_hlo"]
+        np.testing.assert_allclose(served, host(dates[1]), rtol=rtol, atol=0.0)
+    else:
+        assert reader["hlo"] != reader["meta_hlo"], "mutation must collide"
+        np.testing.assert_allclose(
+            served, np.asarray(clwrf_ssp245_gases_for_time(dates[0])), rtol=rtol, atol=0.0
+        )
+        assert not np.allclose(served, host(dates[1]), rtol=1.0e-4)
 
 
 # --------------------------------------------------------------------------- #
@@ -375,6 +569,67 @@ def test_gpu_lock_env_does_not_fragment_cheap_key():
         "the GPU-lock env must be inert vs no-lock too (it is pure infra "
         f"bookkeeping): lock={key_a[:16]} no-lock={key_none[:16]}"
     )
+
+
+def test_gpu_arm_cpu_pinning_does_not_fragment_cheap_key():
+    """with_gpu_lock's core plan (GPUWRF_GPU_ARM_CPUS) is process placement, not HLO."""
+    import os as _os
+
+    saved = _os.environ.get("GPUWRF_GPU_ARM_CPUS")
+    try:
+        _os.environ.pop("GPUWRF_GPU_ARM_CPUS", None)
+        base = ck.global_trace_env_hash()
+        for cpus in ("10,11,26,27", "10,11,12,13,26,27,28,29", ""):
+            _os.environ["GPUWRF_GPU_ARM_CPUS"] = cpus
+            assert ck.global_trace_env_hash() == base, (
+                f"GPUWRF_GPU_ARM_CPUS={cpus!r} leaked into global_trace_env_hash: a cold "
+                "and a warm arm with different core plans miss each other's AOT blobs"
+            )
+    finally:
+        if saved is None:
+            _os.environ.pop("GPUWRF_GPU_ARM_CPUS", None)
+        else:
+            _os.environ["GPUWRF_GPU_ARM_CPUS"] = saved
+
+
+@pytest.mark.parametrize(
+    "name,values",
+    [
+        ("GPUWRF_BENCH_FLAGS_ENV", ("scripts/bench/flags_lw9.env", "/abs/flags_lw10b.env", "")),
+        ("GPUWRF_MIN_FREE_VRAM_GIB", ("24", "8")),
+        ("GPUWRF_MIN_FREE_VRAM_FRACTION", ("0.5", "0.1")),
+    ],
+)
+def test_bench_and_preflight_infra_env_does_not_fragment_cheap_key(monkeypatch, name, values):
+    """No traced reader: the bench flag-file path and the preflight VRAM threshold."""
+    monkeypatch.delenv(name, raising=False)
+    base = ck.global_trace_env_hash()
+    for value in values:
+        monkeypatch.setenv(name, value)
+        assert ck.global_trace_env_hash() == base, f"{name}={value!r} leaked into the cheap key"
+    assert ck.trace_env_is_inert(name)
+
+
+def test_trace_env_is_inert_is_the_hash_rule(monkeypatch):
+    for name in ("GPUWRF_GPU_ARM_CPUS", "GPUWRF_JAX_CACHE_DIR", "GPUWRF_GPU_LOCK_FUTURE_FIELD"):
+        assert ck.trace_env_is_inert(name), name
+    assert not ck.trace_env_is_inert("GPUWRF_MOIST_CQW")
+    monkeypatch.delenv("GPUWRF_MOIST_CQW", raising=False)
+    base = ck.global_trace_env_hash()
+    monkeypatch.setenv("GPUWRF_MOIST_CQW", "0")
+    assert ck.global_trace_env_hash() != base, "positive control: a physics knob must stay keyed"
+
+
+def test_process_infra_env_is_a_narrow_subset_of_the_hlo_denylist():
+    """Both keys drop process infra; only the cheap key drops 'HLO keyed elsewhere' knobs."""
+    assert ck.PROCESS_INFRA_ENV <= ck.HLO_AFFECTING_ENV_DENYLIST
+    for name in (*ck.PROCESS_INFRA_ENV, "GPUWRF_GPU_LOCK_TOKEN", "GPUWRF_GPU_LOCK_FUTURE_FIELD"):
+        assert ck.is_process_infra_env(name) and ck.trace_env_is_inert(name), name
+    for name in ("GPUWRF_NESTED_FUSE", "GPUWRF_NESTED_DEFUSE_COMPILE", "GPUWRF_ADVANCE_CHUNK_LOOP",
+                 "GPUWRF_TRAINING_OUTPUT_SUBSET", "GPUWRF_NESTED_AOT", "GPUWRF_PROFILE",
+                 "GPUWRF_AOT_VERIFY"):
+        assert ck.trace_env_is_inert(name) and not ck.is_process_infra_env(name), name
+    assert not ck.is_process_infra_env("GPUWRF_MOIST_CQW")
 
 
 def test_aot_prewarm_env_does_not_fragment_cheap_key():
@@ -633,13 +888,10 @@ def _compile_mini_with_lowered(mult: int):
 
 @pytest.fixture()
 def _cache(monkeypatch, tmp_path):
-    from gpuwrf.runtime import compile_cache as cc
+    from tests._jax_cache_isolation import private_jax_cache
 
-    cache_dir = tmp_path / "jit"
-    monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(cache_dir))
-    monkeypatch.delenv("GPUWRF_JAX_CACHE", raising=False)
-    cc.configure_compilation_cache()
-    return cache_dir
+    with private_jax_cache(monkeypatch, tmp_path / "jit") as cache_dir:
+        yield cache_dir
 
 
 # --------------------------------------------------------------------------- #
@@ -648,7 +900,7 @@ def _cache(monkeypatch, tmp_path):
 def test_v3_terrain_source_path_is_inert_but_content_and_geometry_remain_keyed():
     from gpuwrf.contracts.grid import TerrainProvenance
 
-    assert ck.KEY_SCHEMA == "GPUWRF-AOTKEY-v3"
+    assert ck.KEY_SCHEMA == "GPUWRF-AOTKEY-v4"
     base = TerrainProvenance(
         source_path="/namespace/a/terrain.nc",
         sha256="a" * 64,
@@ -673,6 +925,27 @@ def test_v3_terrain_source_path_is_inert_but_content_and_geometry_remain_keyed()
     for field, value in mutations.items():
         changed = dataclasses.replace(base, **{field: value})
         assert ck.canonical_digest(changed) != base_digest, field
+
+
+def test_v4_wrfinput_provenance_path_is_inert_but_prefix_and_geometry_are_keyed():
+    carry, namelist, clock_base = _build_call()
+    del carry, clock_base
+
+    def with_provenance(value):
+        metrics = dataclasses.replace(namelist.metrics)
+        object.__setattr__(metrics, "provenance", value)
+        return dataclasses.replace(namelist, metrics=metrics)
+
+    key = ck._structure_fingerprint  # metrics provenance enters via the call treedef
+    case_a = with_provenance("wrfinput:/cases/20260227_18z_a1/wrfinput_d01:nz=44:eta=(45,)")
+    case_b = with_provenance("wrfinput:/cases/20260502_18z_a1/wrfinput_d01:nz=44:eta=(45,)")
+    assert key(case_a) == key(case_b)
+    for other in ("wrfinput:/cases/a/wrfinput_d01:nz=45:eta=(46,)",
+                  "analytic-flat",
+                  "wrfinput:/cases/20260227_18z_a1/wrfinput_d01:nz=44:eta=(45,):x-sharded"):
+        assert key(with_provenance(other)) != key(case_a), other
+    assert key(with_provenance("wrfinput:/x/wrfinput_d01:nz=44:eta=(45,):x-sharded")) != key(
+        with_provenance("wrfinput:/y/wrfinput_d01:nz=44:eta=(45,):x-sharded"))
 
 
 def test_v3_real_static_config_hash_is_terrain_path_invariant():
@@ -865,17 +1138,46 @@ def test_p0_2_source_fingerprint_is_nonempty_and_stable():
 # SUPERSET of the trace-reachable set -> an orchestration/IO edit is invariant,
 # but a genuine traced-callee (dynamics/physics/coupling) edit still shifts it.
 # --------------------------------------------------------------------------- #
-def _patch_one_source_file_byte(rel_path: str):
-    """Context manager: append a harmless comment to one src file, then restore.
+@pytest.fixture(scope="module")
+def _src_copy(tmp_path_factory):
+    """Private copy of the candidate source tree for the source-EDIT tests (E125).
+
+    Those tests model a working-tree edit; doing it in src/ in place races any
+    concurrent run in the same checkout and can leave the edit behind. data/ and
+    scripts/ are linked next to the copy for package-relative lookups."""
+    import shutil
+
+    repo = Path(_CANDIDATE_SRC).parent
+    tree = tmp_path_factory.mktemp("src_copy")
+    shutil.copytree(
+        Path(_CANDIDATE_SRC) / "gpuwrf",
+        tree / "src" / "gpuwrf",
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
+    for name in ("data", "scripts"):
+        (tree / name).symlink_to((repo / name).resolve())
+    return tree / "src"
+
+
+@pytest.fixture()
+def _fingerprint_on_copy(_src_copy, monkeypatch):
+    """Point source_fingerprint_hash at the private copy; yields the copy's src root."""
+    monkeypatch.setattr(ck, "_gpuwrf_package_root", lambda: _src_copy / "gpuwrf")
+    ck.source_fingerprint_hash.cache_clear()
+    yield _src_copy
+    ck.source_fingerprint_hash.cache_clear()
+
+
+def _patch_one_source_file_byte(src_root, rel_path: str):
+    """Context manager: append a harmless comment to one file under ``src_root``, then restore.
 
     Models a real working-tree edit (the exact failure mode: a concurrent agent
-    edits a .py between the cold and warm runs). Returns a contextmanager."""
+    edits a .py between the cold and warm runs) on a private copy, never src/.
+    Returns a contextmanager."""
     import contextlib
-    from pathlib import Path
 
     @contextlib.contextmanager
     def _ctx():
-        src_root = Path(ck.__file__).resolve().parents[2]  # .../src
         target = src_root / rel_path
         original = target.read_bytes()
         try:
@@ -889,7 +1191,7 @@ def _patch_one_source_file_byte(rel_path: str):
     return _ctx()
 
 
-def test_source_fingerprint_invariant_to_orchestration_edit():
+def test_source_fingerprint_invariant_to_orchestration_edit(_fingerprint_on_copy):
     """An edit to a NON-traced orchestration module must NOT shift the fingerprint.
 
     domain_tree.py / nested_pipeline.py / cli.py / aot_*.py import the traced body
@@ -905,7 +1207,7 @@ def test_source_fingerprint_invariant_to_orchestration_edit():
         "gpuwrf/cli.py",
         "gpuwrf/runtime/aot_precompile.py",
     ):
-        with _patch_one_source_file_byte(orchestration):
+        with _patch_one_source_file_byte(_fingerprint_on_copy, orchestration):
             shifted = ck.source_fingerprint_hash()
         assert shifted == base, (
             f"source_fingerprint shifted on an HLO-IRRELEVANT edit to {orchestration} "
@@ -920,11 +1222,13 @@ def test_source_fingerprint_invariant_to_orchestration_edit():
         "gpuwrf/runtime/operational_mode.py",  # the traced body itself
         "gpuwrf/dynamics/core/acoustic.py",  # a deep traced dycore callee
         "gpuwrf/physics/__init__.py",  # a traced physics module
+        "gpuwrf/nesting/interp.py",  # fused cascade force-down interpolation
+        "gpuwrf/coupling/boundary_feedback.py",  # fused cascade feedback
         "gpuwrf/coupling/physics_couplers.py",  # a traced coupling callee
         "gpuwrf/contracts/state.py",  # a traced contract (carry struct)
     ],
 )
-def test_source_fingerprint_responds_to_traced_callee_edit(traced_module):
+def test_source_fingerprint_responds_to_traced_callee_edit(traced_module, _fingerprint_on_copy):
     """An edit to a TRACE-REACHABLE module MUST shift the fingerprint (SAFETY).
 
     The safety side of the scope fix: a real source edit to a module that CAN
@@ -933,7 +1237,7 @@ def test_source_fingerprint_responds_to_traced_callee_edit(traced_module):
     this positive control guards against an over-narrow closure."""
     ck.source_fingerprint_hash.cache_clear()
     base = ck.source_fingerprint_hash()
-    with _patch_one_source_file_byte(traced_module):
+    with _patch_one_source_file_byte(_fingerprint_on_copy, traced_module):
         shifted = ck.source_fingerprint_hash()
     assert shifted != base, (
         f"source_fingerprint did NOT respond to an edit of the trace-reachable "
@@ -961,6 +1265,13 @@ def test_trace_closure_includes_traced_excludes_orchestration():
     assert any(r.startswith("dynamics/") for r in rels), "closure missing dynamics/"
     assert any(r.startswith("physics/") for r in rels), "closure missing physics/"
     assert any(r.startswith("coupling/") for r in rels), "closure missing coupling/"
+    # The fused cascade traces the nest force-down and feedback too.
+    for needle in (
+        "nesting/boundary_construction.py",
+        "nesting/interp.py",
+        "coupling/boundary_feedback.py",
+    ):
+        assert needle in rels, f"closure missing fused-cascade callee {needle}"
     # MUST NOT contain orchestration/IO (the bug source).
     for forbidden in (
         "runtime/domain_tree.py",
@@ -982,7 +1293,7 @@ def test_trace_closure_includes_traced_excludes_orchestration():
     assert rels < whole, "closure is not a strict subset of the whole tree"
 
 
-def test_cheap_key_stable_across_process_and_concurrent_orchestration_edit():
+def test_cheap_key_stable_across_process_and_concurrent_orchestration_edit(_src_copy):
     """END-TO-END regression for the 9-nest blocker, on CPU, two fresh processes.
 
     Process A (cold): computes the cheap_key with a clean tree.
@@ -990,18 +1301,16 @@ def test_cheap_key_stable_across_process_and_concurrent_orchestration_edit():
     HLO-irrelevant orchestration edit applied (domain_tree.py) -- exactly the
     cold->warm window that broke the GPU 9-nest. The keys MUST match. Before the
     scope fix B's key would differ (whole-tree digest shifted by the edit), so this
-    test would have CAUGHT the blocker."""
-    import contextlib
-    from pathlib import Path
+    test would have CAUGHT the blocker. Both processes run on a private copy of the
+    tree, which receives the edit (E125: never src/ in place)."""
+    src_root = str(_src_copy)
+    key_a, hlo_a, _ = _lower_in_subprocess({"PYTHONHASHSEED": "0"}, src_root=src_root)
 
-    key_a, hlo_a, _ = _lower_in_subprocess({"PYTHONHASHSEED": "0"})
-
-    src_root = Path(ck.__file__).resolve().parents[2]
-    orchestration = src_root / "gpuwrf/runtime/domain_tree.py"
+    orchestration = _src_copy / "gpuwrf/runtime/domain_tree.py"
     original = orchestration.read_bytes()
     try:
         orchestration.write_bytes(original + b"\n# concurrent de-fuse-flip edit\n")
-        key_b, hlo_b, _ = _lower_in_subprocess({"PYTHONHASHSEED": "31337"})
+        key_b, hlo_b, _ = _lower_in_subprocess({"PYTHONHASHSEED": "31337"}, src_root=src_root)
     finally:
         orchestration.write_bytes(original)
 
@@ -1084,68 +1393,122 @@ def test_p1_5_module_const_env_changes_when_resolved_constant_changes(monkeypatc
 # (P1-5 CI scanner) Flag trace-reachable import-time env-derived module constants
 #        that are NOT covered by IMPORT_TIME_ENV_CONSTANTS.
 # --------------------------------------------------------------------------- #
-def test_no_uncovered_import_time_env_constants():
-    """CI scan: every module-level constant resolved from env at IMPORT in a
-    trace-reachable module must be in IMPORT_TIME_ENV_CONSTANTS (so the key hashes
-    its resolved value). A NEW one trips this test -> add it to the registry.
+def _reads_env(node, helpers=frozenset()):
+    """``os.environ.get/pop/setdefault``, ``os.getenv``, ``os.environ[...]``,
+    ``... in os.environ`` or a call (``f(...)`` or ``mod.f(...)``) to an env helper."""
+    import ast
 
-    Detection: a module-level (column-0) assignment whose RHS contains an
-    ``os.environ.get(``/``os.getenv(`` call. Functions/methods (indented env reads)
-    are NOT import-time constants -- they resolve at TRACE time and are covered by
+    for c in ast.walk(node):
+        if isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute):
+            if c.func.attr == "getenv" or (
+                c.func.attr in ("get", "pop", "setdefault")
+                and isinstance(c.func.value, ast.Attribute)
+                and c.func.value.attr == "environ"
+            ):
+                return True
+        if isinstance(c, ast.Call) and getattr(c.func, "id", getattr(c.func, "attr", None)) in helpers:
+            return True
+        if isinstance(c, ast.Subscript) and isinstance(c.value, ast.Attribute) and c.value.attr == "environ":
+            return True
+        if isinstance(c, ast.Compare) and any(
+            isinstance(x, ast.Attribute) and x.attr == "environ" for x in c.comparators
+        ):
+            return True
+    return False
+
+
+# Import-time env-derived bindings that are deliberately NOT in the registry.
+_IMPORT_TIME_ENV_NOT_HLO = {
+    "gpuwrf/__init__.py::_JAX_X64_FORCE_STATUS": "resolved jax_enable_x64 is in program_config_hash",
+    "gpuwrf/__init__.py::_COMMAND_BUFFER_STATUS": "XLA_FLAGS is in exec_env_hash",
+    "gpuwrf/__init__.py::_FAST_DEFAULTS_STATUS": "release switch VALUES land in os.environ; global_trace_env_hash hashes them",
+    "gpuwrf/__init__.py::_JAX_CACHE_STATUS": "cache location, not a program determinant",
+    "gpuwrf/physics/ra_lw_rrtm.py::WRF_ROOT": "known residual: ra_lw_physics=1 table path (not PROD)",
+}
+
+
+# Import-time env-reading calls whose effect is keyed elsewhere.
+_IMPORT_TIME_ENV_SIDE_EFFECTS = {
+    "configure_jax_x64": "resolved jax_enable_x64 is in program_config_hash",
+}
+
+
+def test_no_uncovered_import_time_env_constants():
+    """CI scan: every module-level constant resolved from env at IMPORT in the
+    traced import closure (the same file set the source fingerprint hashes) must be
+    in IMPORT_TIME_ENV_CONSTANTS, so the key hashes its RESOLVED value. A NEW one
+    trips this test -> add it to the registry.
+
+    Detection: a module-level (column-0) assignment whose RHS reads env directly or
+    through an env-reading helper ANYWHERE in the closure, transitively and through
+    import aliases (``_env_bool(...)``, ``column_tiling.env_bool(...)``,
+    ``sgs_cloud_enabled()``). Bare-name matching over-approximates (safe).
+    Env reads inside functions resolve at TRACE time and are covered by
     ``global_trace_env_hash`` (live env) instead."""
     import ast
 
-    src_root = Path(__file__).resolve().parent.parent / "src"
+    import gpuwrf
+
+    pkg_root = Path(gpuwrf.__file__).resolve().parent
+    src_root = pkg_root.parent
+    files = ck._trace_reachable_source_files(pkg_root)
+    assert files, "trace closure unavailable"
     covered = {
         f"{m.replace('.', '/')}.py::{a}" for (m, a) in ck.IMPORT_TIME_ENV_CONSTANTS
     }
+    trees = {py: ast.parse(py.read_text(), filename=str(py)) for py in files}
+    nodes = [n for t in trees.values() for n in ast.walk(t)]
+    defs = [n for n in nodes if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    aliases = [a for n in nodes if isinstance(n, ast.ImportFrom) for a in n.names if a.asname]
+    helpers: frozenset[str] = frozenset()
+    while True:  # fixpoint: env helpers, helpers of helpers, and their import aliases
+        grown = helpers | {f.name for f in defs if _reads_env(f, helpers)}
+        grown |= {a.asname for a in aliases if a.name in grown}
+        if grown == helpers:
+            break
+        helpers = frozenset(grown)
     offenders: list[str] = []
-    for rel in ck.TRACE_REACHABLE_ENV_SCAN_ROOTS:
-        root = src_root / rel
-        if not root.is_dir():
-            continue
-        for py in sorted(root.rglob("*.py")):
-            if "__pycache__" in py.parts:
+    for py, tree in trees.items():
+        rel = py.relative_to(src_root).as_posix()
+        for node in tree.body:  # MODULE-LEVEL statements only (import-time)
+            # Other import-time env reads: bare statements/branches, class bodies,
+            # def-time default arguments. Each must be an allowlisted side effect.
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                parts = [d for d in node.args.defaults + node.args.kw_defaults if d is not None]
+            elif isinstance(node, ast.ClassDef):
+                parts = [b for b in node.body if not isinstance(b, (ast.FunctionDef, ast.AsyncFunctionDef))]
+            elif not isinstance(node, (ast.Assign, ast.AnnAssign, ast.Import, ast.ImportFrom)):
+                parts = [node]
+            else:
+                parts = []
+            for part in parts:
+                calls = {getattr(c.func, "id", getattr(c.func, "attr", None))
+                         for c in ast.walk(part) if isinstance(c, ast.Call)}
+                if _reads_env(part, helpers) and not calls & set(_IMPORT_TIME_ENV_SIDE_EFFECTS):
+                    offenders.append(f"{rel}::<{type(node).__name__}@{node.lineno}>")
+            if not isinstance(node, (ast.Assign, ast.AnnAssign)) or node.value is None:
                 continue
-            try:
-                tree = ast.parse(py.read_text(), filename=str(py))
-            except SyntaxError:
+            if not _reads_env(node.value, helpers):
                 continue
-            for node in tree.body:  # MODULE-LEVEL statements only (import-time)
-                if not isinstance(node, (ast.Assign, ast.AnnAssign)):
-                    continue
-                value = node.value
-                if value is None:
-                    continue
-                reads_env = any(
-                    isinstance(c, ast.Call)
-                    and isinstance(c.func, ast.Attribute)
-                    and (
-                        (
-                            c.func.attr == "get"
-                            and isinstance(c.func.value, ast.Attribute)
-                            and c.func.value.attr == "environ"
-                        )
-                        or c.func.attr == "getenv"
-                    )
-                    for c in ast.walk(value)
-                )
-                if not reads_env:
-                    continue
-                targets = (
-                    node.targets if isinstance(node, ast.Assign) else [node.target]
-                )
-                for t in targets:
-                    if isinstance(t, ast.Name):
-                        rel_mod = py.relative_to(src_root).as_posix()
-                        ident = f"{rel_mod}::{t.id}"
-                        if ident not in covered:
-                            offenders.append(ident)
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for t in targets:
+                if isinstance(t, ast.Name):
+                    ident = f"{py.relative_to(src_root).as_posix()}::{t.id}"
+                    if ident not in covered and ident not in _IMPORT_TIME_ENV_NOT_HLO:
+                        offenders.append(ident)
     assert not offenders, (
         "UNCOVERED import-time env-derived module constants in trace-reachable code "
         "(add each to aot_cheap_key.IMPORT_TIME_ENV_CONSTANTS so the cheap_key hashes "
         f"its RESOLVED value): {sorted(offenders)}"
     )
+
+
+def test_import_time_env_registry_entries_resolve():
+    """Every registered constant exists, so the key never hashes a stale sentinel."""
+    import importlib
+
+    for module, attr in ck.IMPORT_TIME_ENV_CONSTANTS:
+        assert hasattr(importlib.import_module(module), attr), f"{module}:{attr}"
 
 
 # --------------------------------------------------------------------------- #

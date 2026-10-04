@@ -37,9 +37,11 @@ from __future__ import annotations
 
 from gpuwrf._x64_config import configure_jax_x64
 
-from dataclasses import is_dataclass, replace
+from dataclasses import fields as dataclass_fields, is_dataclass, replace
 from pathlib import Path
 import pickle
+import os
+import tempfile
 from typing import Any
 
 import jax
@@ -47,6 +49,7 @@ from jax import config
 import numpy as np
 
 from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
+from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES
 from gpuwrf.runtime.operational_state import OperationalCarry
 
 try:  # Noah-MP land/static live in the v0.2.0 land package; optional so a
@@ -60,10 +63,18 @@ except Exception:  # pragma: no cover
 configure_jax_x64()
 
 FORMAT = "gpuwrf-operational-restart"
-# v1: full OperationalCarry (State + small-step scratch + held rthraten +
-# Noah-MP land carry + held noahmp_rad) + grid + namelist + step index.
-FORMAT_VERSION = 1
-SUPPORTED_FORMAT_VERSIONS = (1,)
+# v1: State + small-step scratch + Noah-MP land/radiation.
+# v2: every current OperationalCarry field, including cadence-held physics,
+# radiation diagnostics, optional land/base-state trees and census counters.
+# v3: resident full-history accumulators. v4: held GWDO stress diagnostics;
+# pre-GWDO-schema checkpoints fail closed (including old inactive domains).
+# v5: held Noah-MP precipitation.
+FORMAT_VERSION = 5
+SUPPORTED_FORMAT_VERSIONS = (1, 2, 3, 4, 5)
+# E78: a populated pre-cloud-fraction diagnostics tuple must not acquire None
+# from the new NamedTuple default during unpickling and silently lose CLDFRA.
+RADIATION_DIAGNOSTICS_SCHEMA_VERSION = 1
+GWDO_DIAGNOSTICS_SCHEMA_VERSION = 2
 
 # OperationalCarry leaves that are NOT themselves nested pytrees handled
 # specially below (state / noahmp_land / noahmp_rad). These are the WRF
@@ -84,6 +95,29 @@ _CARRY_SCRATCH_FIELDS: tuple[str, ...] = (
     "ww_save",
     "rthraten",
 )
+
+# Nested carry groups this format serializes (each as an explicit field dict).
+_SUPPORTED_CARRY_GROUPS: tuple[str, ...] = ("noahmp_land", "noahmp_rad")
+
+# Fields absent from the v1 payload. v2 stores each as an exact host pytree.
+_V1_UNSUPPORTED_CARRY_FIELDS: tuple[str, ...] = tuple(
+    field.name
+    for field in dataclass_fields(OperationalCarry)
+    if field.name != "state"
+    and field.name not in _CARRY_SCRATCH_FIELDS
+    and field.name not in _SUPPORTED_CARRY_GROUPS
+)
+UNSUPPORTED_CARRY_FIELDS: tuple[str, ...] = ()
+_CARRY_FIELD_ORDER = tuple(field.name for field in dataclass_fields(OperationalCarry))
+
+
+def _reject_unsupported_carry(carry: OperationalCarry) -> None:
+    populated = [name for name in UNSUPPORTED_CARRY_FIELDS if getattr(carry, name) is not None]
+    if populated:
+        raise ValueError(
+            f"restart format {FORMAT!r} v{FORMAT_VERSION} has no payload for populated "
+            f"OperationalCarry fields {populated}; refusing to drop them"
+        )
 
 
 def _hostify(leaf: Any) -> np.ndarray:
@@ -125,10 +159,10 @@ def _validate_state_field_order(recorded: tuple[str, ...]) -> None:
     if recorded != tuple(field for field in expected if field in recorded):
         raise ValueError("restart State field order does not match current State schema")
     missing = tuple(field for field in expected if field not in recorded)
-    if any(field not in CONDITIONAL_STATE_LEAVES for field in missing):
+    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES) for field in missing):
         raise ValueError(
             "restart State fields are missing non-conditional leaves: "
-            f"{[field for field in missing if field not in CONDITIONAL_STATE_LEAVES]}"
+            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES)]}"
         )
 
 
@@ -157,7 +191,28 @@ def _carry_to_payload(carry: OperationalCarry) -> dict[str, Any]:
         payload["noahmp_land_fields"] = _land_fields(carry.noahmp_land)
     if carry.noahmp_rad is not None:
         payload["noahmp_rad"] = [_hostify(component) for component in carry.noahmp_rad]
+    payload["carry_field_order"] = list(_CARRY_FIELD_ORDER)
+    payload["extra_fields"] = {
+        name: _hostify_tree(getattr(carry, name)) for name in _V1_UNSUPPORTED_CARRY_FIELDS
+    }
+    payload["radiation_diagnostics_schema_version"] = RADIATION_DIAGNOSTICS_SCHEMA_VERSION
+    payload["gwdo_diagnostics_schema_version"] = GWDO_DIAGNOSTICS_SCHEMA_VERSION
     return payload
+
+
+def _validate_radiation_diagnostics_schema(payload: dict[str, Any]) -> None:
+    if payload.get("extra_fields", {}).get("radiation_diagnostics") is None:
+        return  # Legacy dycore-only restarts have no held radiation to lose.
+    if payload.get("radiation_diagnostics_schema_version") != RADIATION_DIAGNOSTICS_SCHEMA_VERSION:
+        raise ValueError("restart radiation diagnostics schema predates held cloud_fraction (E78)")
+
+
+def _validate_gwdo_diagnostics_schema(payload: dict[str, Any]) -> None:
+    # An old checkpoint can omit these optional leaves even on an active GWDO
+    # domain. They cannot be recomputed from its post-RK state: WRF used the
+    # preceding pre-PBL inputs. Refuse rather than silently emit zeros (E78).
+    if payload.get("gwdo_diagnostics_schema_version") != GWDO_DIAGNOSTICS_SCHEMA_VERSION:
+        raise ValueError("restart GWDO diagnostics schema predates held DTAUX3D/DTAUY3D and DUSFCG/DVSFCG (E78)")
 
 
 def write_restart(
@@ -181,6 +236,7 @@ def write_restart(
     write is GPU-free.
     """
 
+    _reject_unsupported_carry(carry)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     host_grid = _hostify_tree(grid)
@@ -195,10 +251,17 @@ def write_restart(
         "noahmp_static": None if noahmp_static is None else _hostify_static(noahmp_static),
         "metadata": dict(extra_metadata) if extra_metadata else {},
     }
-    tmp = target.with_name(f"{target.name}.tmp")
-    with tmp.open("wb") as handle:
+    with tempfile.NamedTemporaryFile(dir=target.parent, prefix=target.name + ".", suffix=".tmp", delete=False) as handle:
+        tmp = Path(handle.name)
         pickle.dump(payload, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        handle.flush()
+        os.fsync(handle.fileno())
     tmp.replace(target)
+    directory_fd = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
     return target
 
 
@@ -231,6 +294,19 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
         )
 
     carry = payload["carry"]
+    _validate_radiation_diagnostics_schema(carry)
+    if version < 5 and carry.get("noahmp_land_fields") is not None:
+        raise ValueError("restart predates held Noah-MP precipitation (E78); cannot resume land physics")
+    if version < 3:
+        from gpuwrf.runtime.history_accumulators import full_history_enabled
+        if full_history_enabled() and carry.get("noahmp_land_fields") is not None:
+            raise ValueError("restart predates resident full-history accumulators; cannot resume full history")
+    _validate_gwdo_diagnostics_schema(carry)
+    if version >= 2:
+        if tuple(carry.get("carry_field_order", ())) != _CARRY_FIELD_ORDER:
+            raise ValueError("restart OperationalCarry field order does not match current schema")
+        if set(carry.get("extra_fields", {})) != set(_V1_UNSUPPORTED_CARRY_FIELDS):
+            raise ValueError("restart OperationalCarry extra fields do not match current schema")
     # Fail-closed schema checks (exact field-order + field-set match), so a State /
     # scratch / land schema drift raises instead of mis-reconstructing the carry.
     recorded_state_order = tuple(carry.get("state_field_order", ()))
@@ -253,12 +329,17 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
 
 
 def _restore_carry(carry_payload: dict[str, Any]) -> OperationalCarry:
-    state = State(
-        **{
-            name: jax.device_put(carry_payload["state_fields"][name])
-            for name in carry_payload["state_field_order"]
-        }
-    )
+    # Verbatim pytree rebuild (``tree_unflatten``), NOT ``State(**fields)``: the
+    # constructor re-canonicalises leaves to the fp32-gated default matrix and
+    # would silently DOWNCAST the fp64 boundary/number leaves a ``force_fp64``
+    # operational run carries.  The fail-closed field-order check above already
+    # guarantees every non-conditional leaf is present; conditional leaves absent
+    # from the payload stay ``None`` exactly as they were on the written State.
+    stored = {
+        name: jax.device_put(carry_payload["state_fields"][name])
+        for name in carry_payload["state_field_order"]
+    }
+    state = State.tree_unflatten(None, tuple(stored.get(name) for name in State.__slots__))
     scratch = {
         name: jax.device_put(carry_payload["scratch_fields"][name])
         for name in _CARRY_SCRATCH_FIELDS
@@ -274,11 +355,18 @@ def _restore_carry(carry_payload: dict[str, Any]) -> OperationalCarry:
     noahmp_rad = None
     if carry_payload.get("noahmp_rad") is not None:
         noahmp_rad = tuple(jax.device_put(component) for component in carry_payload["noahmp_rad"])
+    extra = {name: _device_tree(value) for name, value in carry_payload.get("extra_fields", {}).items()}
+    if extra.get("land_history") is not None or extra.get("energy_accumulators") is not None:
+        # Checkpoints written before the packed history families hold per-name dicts.
+        from gpuwrf.runtime.history_accumulators import ENERGY_ACCUMULATORS, LAND_FLUX_FIELDS, as_packed
+        extra["land_history"] = as_packed(extra.get("land_history"), LAND_FLUX_FIELDS)
+        extra["energy_accumulators"] = as_packed(extra.get("energy_accumulators"), ENERGY_ACCUMULATORS)
     return OperationalCarry(
         state=state,
         noahmp_land=noahmp_land,
         noahmp_rad=noahmp_rad,
         **scratch,
+        **extra,
     )
 
 
@@ -321,6 +409,7 @@ __all__ = [
     "FORMAT",
     "FORMAT_VERSION",
     "SUPPORTED_FORMAT_VERSIONS",
+    "UNSUPPORTED_CARRY_FIELDS",
     "read_restart",
     "read_restart_metadata",
     "write_restart",

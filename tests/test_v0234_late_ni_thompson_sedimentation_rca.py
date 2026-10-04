@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 
 import numpy as np
 
@@ -39,8 +40,17 @@ def test_source_literal_ice_balance_caps_diameter_not_mass() -> None:
     assert qi[0] == 4.881511619437367e-6
 
 
-def test_source_authority_proves_balance_order_and_nstep_discrepancy() -> None:
-    authority = _module().source_authority()
+def test_source_authority_proves_balance_order_and_nstep_discrepancy(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    # The RCA describes the old, faulty implementation, which was subsequently
+    # repaired. Its source-order assertions belong to the accepted RCA commit.
+    port = tmp_path / "thompson_column.py"
+    port.write_bytes(subprocess.check_output([
+        "git", "-C", str(ROOT), "show",
+        f"{module.EXPECTED_MODEL_COMMIT}:src/gpuwrf/physics/thompson_column.py",
+    ]))
+    monkeypatch.setattr(module, "PORT_SOURCE", port)
+    authority = module.source_authority()
     assert all(authority["assertions"].values())
     assert authority["accepted_src_gpuwrf_tree"] == (
         "e627605f6a8bc0dc23f5c474be4bb532b99297c1"

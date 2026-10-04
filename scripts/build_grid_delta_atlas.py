@@ -224,6 +224,8 @@ def normalize_tolerance_record(value: Any) -> dict[str, float]:
         "max_abs_rel": "max_abs_rel",
         "correlation_min": "correlation_min",
         "pearson_min": "correlation_min",
+        "relative_l2_max": "relative_l2_max",
+        "rel_l2_max": "relative_l2_max",
         "finite_pair_fraction_min": "finite_pair_fraction_min",
     }
     out: dict[str, float] = {}
@@ -424,6 +426,8 @@ class StatsAccumulator:
                     "max_abs_rel": None,
                 },
                 "correlation": None,
+                "relative_l2": None,
+                "total_conservation_rel": None,
                 "worst": self.worst,
             }
         abs_all = np.concatenate(self.abs_chunks) if self.abs_chunks else np.asarray([], dtype=np.float64)
@@ -458,6 +462,24 @@ class StatsAccumulator:
                 self.sum_gpu_sq,
                 self.sum_cpu_sq,
                 self.sum_gpu_cpu,
+            ),
+            # Relative L2 error ||gpu - cpu||_2 / ||cpu||_2 over finite pairs.
+            # sum_sq = Sigma (gpu - cpu)^2 ; sum_cpu_sq = Sigma cpu^2. This is the
+            # scientifically correct skill metric for fields whose absolute error
+            # grows by construction (accumulators) but whose magnitude also grows.
+            "relative_l2": (
+                clean_float(math.sqrt(self.sum_sq / self.sum_cpu_sq))
+                if self.sum_cpu_sq > 0.0
+                else None
+            ),
+            # Domain-integral conservation error for accumulating fields:
+            # |Sigma gpu - Sigma cpu| / |Sigma cpu|. For precipitation/snow this
+            # measures whether the GPU produces the same TOTAL water as the CPU
+            # even if it places it in different cells.
+            "total_conservation_rel": (
+                clean_float(abs(self.sum_gpu - self.sum_cpu) / abs(self.sum_cpu))
+                if self.sum_cpu != 0.0
+                else None
             ),
             "worst": self.worst,
         }
@@ -578,6 +600,13 @@ def apply_tolerance(metrics: dict[str, Any], spec: dict[str, float] | None) -> d
         checks["correlation_min"] = {"value": value, "limit": limit, "pass": passed}
         if not passed:
             failures.append({"metric": "correlation_min", "value": value, "limit": limit})
+    if "relative_l2_max" in spec:
+        value = metrics.get("relative_l2")
+        limit = spec["relative_l2_max"]
+        passed = bool(value is not None and float(value) <= limit)
+        checks["relative_l2_max"] = {"value": value, "limit": limit, "pass": passed}
+        if not passed:
+            failures.append({"metric": "relative_l2_max", "value": value, "limit": limit})
     if "finite_pair_fraction_min" in spec:
         value = metrics.get("finite_pair_fraction")
         limit = spec["finite_pair_fraction_min"]

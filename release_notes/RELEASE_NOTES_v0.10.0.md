@@ -3,8 +3,8 @@
 - **Tag:** `v0.10.0`
 - **Release commit:** resolve with `git rev-parse v0.10.0^{commit}` after the annotated tag is created. Source-freeze basis reviewed by the gap-critic: `246a3dc` (Wave-B3 complete revert; source frozen). Mandatory gap-critic record is committed at `563599e`.
 - **Tag date:** 2026-06-05.
-- **Release gate:** mandatory cross-model pre-release **gap-analysis critic** (GPT-5.5 xhigh) -> **verdict SHIP, 0 fix-now source blockers** ([`.agent/reviews/2026-06-05-gpt-v0100-gapcritic.md`](.agent/reviews/2026-06-05-gpt-v0100-gapcritic.md)).
-- **Binding numbers:** every performance or fidelity figure below traces to committed proof objects under [`proofs/v0100/`](proofs/v0100/) and the v0.9.0 baseline proofs. Nothing is rounded upward, invented, or relaxed to manufacture a pass.
+- **Release gate:** mandatory cross-model pre-release **gap-analysis critic** (GPT-5.5 xhigh) -> **verdict SHIP, 0 fix-now source blockers** ([`.agent/reviews/2026-06-05-gpt-v0100-gapcritic.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.10.0/.agent/reviews/2026-06-05-gpt-v0100-gapcritic.md)).
+- **Binding numbers:** every performance or fidelity figure below traces to committed proof objects under [`proofs/v0100/`](../proofs/v0100) and the v0.9.0 baseline proofs. Nothing is rounded upward, invented, or relaxed to manufacture a pass.
 
 ## What v0.10.0 is
 
@@ -27,12 +27,12 @@ Wave-B3 daily-wrapper source changes were reverted before release; `daily_pipeli
 
 Thompson NSED16 is proven cap16==cap64 on the precip oracle and 24 h d02
 hydrometeor/precip/skill checks:
-[`wave_b1_nsed16_precip_oracle.json`](proofs/v0100/wave_b1_nsed16_precip_oracle.json),
-[`wave_b1_nsed16_skill_24h.json`](proofs/v0100/wave_b1_nsed16_skill_24h.json), and
-[`wave_b1_nsed16_conservation.json`](proofs/v0100/wave_b1_nsed16_conservation.json).
+[`wave_b1_nsed16_precip_oracle.json`](../proofs/v0100/wave_b1_nsed16_precip_oracle.json),
+[`wave_b1_nsed16_skill_24h.json`](../proofs/v0100/wave_b1_nsed16_skill_24h.json), and
+[`wave_b1_nsed16_conservation.json`](../proofs/v0100/wave_b1_nsed16_conservation.json).
 
 The warmed coupled d02 step improves **74.25 -> 64.76 ms**, a **12.78% reduction**
-(**1.146x**) in [`wave_b1_nsed16_timing.json`](proofs/v0100/wave_b1_nsed16_timing.json).
+(**1.146x**) in [`wave_b1_nsed16_timing.json`](../proofs/v0100/wave_b1_nsed16_timing.json).
 Applied to the v0.9.0 conservative warm real-user d02 ratio, the end-to-end
 real-user speedup vs 28-rank CPU-WRF rises from **~2.16x to ~2.47x warm**.
 
@@ -46,16 +46,16 @@ The release is **bit-identical-output to v0.9.0** on the validated forecast traj
 and final wrfout semantics:
 
 - Wave-A changes are value-preserving and gate bit-identical on idealized checks
-  (`worst_reldiff=0.0`) in [`wave_a_gates.json`](proofs/v0100/wave_a_gates.json).
+  (`worst_reldiff=0.0`) in [`wave_a_gates.json`](../proofs/v0100/wave_a_gates.json).
 - Thompson NSED16 is bit-identical to cap64 for the release d02 trajectory and
   hydrometeor/precip fields, with zero precip/water deltas.
 - Wave-B3 writer/output changes were reverted after the proof run that changed Q2
   output semantics; the final release writer is v0.9.0 source-equivalent.
 
-Note: [`proofs/v0100/v0100_release_d02_vs_v090.json`](proofs/v0100/v0100_release_d02_vs_v090.json)
+Note: [`proofs/v0100/v0100_release_d02_vs_v090.json`](../proofs/v0100/v0100_release_d02_vs_v090.json)
 contains a stale pre-complete-revert Q2 interpretation. Treat it as historical
 rejected evidence for B3, not as shipped v0.10.0 output evidence; see
-[`proofs/v0100/v0100_release_d02_vs_v090_POST_REVERT_NOTE.md`](proofs/v0100/v0100_release_d02_vs_v090_POST_REVERT_NOTE.md).
+[`proofs/v0100/v0100_release_d02_vs_v090_POST_REVERT_NOTE.md`](../proofs/v0100/v0100_release_d02_vs_v090_POST_REVERT_NOTE.md).
 
 ## Lever dispositions
 
@@ -77,7 +77,7 @@ rewrite or equivalent architecture branch, not another low-risk release tweak.
 
 ## Known issues / carried forward
 
-Full write-up: [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). The current open issues
+Full write-up: [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md). The current open issues
 are carried forward unchanged by v0.10.0's bit-identical forecast/wrfout release:
 
 - **d03 1 km gated-fp32 dynamics/qke instability:** still non-finite after forecast

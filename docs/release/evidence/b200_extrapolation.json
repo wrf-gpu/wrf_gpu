@@ -1,0 +1,133 @@
+{
+ "source_path": "docs/release/img/b200.json",
+ "content": {
+  "label": "extrapolated from B200 runs on old version",
+  "method": "B200 extrapolation for today's code, anchored on the OLD-version B200 + RTX 5090 measurements.\n\nEvery output number is labelled \"extrapolated from B200 runs on old version\" ([I]).\n\nSources (old version, v0.20 era, measured 2026-06-23, fp64, single-domain Swiss base state tiled 128^2..1024^2 x 44 lev,\nboundary/GWD/Noah-MP off):\n  B200  : git 43379efb5:publication/paper.tex tab:perf (L522-540) = PAPER_DATA_INVENTORY.md L99-126 (raw dir gone)\n  5090  : proofs/v020/benchmark/T2T3_REPORT.md L28-36 (same version, same ladder)\nMethod:\n  r = B200/5090 speed ratio measured on the old code (same grid): 2.69 (128^2), 3.15 (256^2), 3.61 (384^2); R_inf 3.53.\n  The old code ran fp32 ~ fp64 on the 5090 (no fp64-FLOP limit) -> r is a memory-bandwidth/latency-class ratio; today's\n  fp32 code is bandwidth-bound too (A54: ~77 % of the HBM floor) -> apply r to today's SATURATED 5090 throughput.\n  Upper cap = HBM bandwidth ratio 8.0 / 1.792 TB/s = 4.46. Low end = 2.69 (small-grid ratio).\n  Cases per GPU = conservative 180 decimal GB budget / (per-case peak in bytes + 1 GiB growth margin).\n  The process peak already includes context/modules; the extra GiB is a portability margin.\n  Cases to saturate = N_sat(5090) x r (assumed, not demonstrated on today's B200 code).\n  Energy = old-ladder B200 board power at saturation (653-685 W) x extrapolated s per case-hour.\n",
+  "inputs": {
+   "sat_stepping_s_per_case_h": 5.33585000038147,
+   "sat_whole_s_per_case_h": 9.678833333333333,
+   "sat_n": 4,
+   "rtx_board_w": 296.8965517241379,
+   "rtx_board_w_label": "M: R4 board-power samples",
+   "case_vram_gib": 4.41796875,
+   "cpu_s_per_case_h": 123.38,
+   "cpu_w_lo": 200.0,
+   "cpu_w_hi": 200.0,
+   "cpu_power_label": "M",
+   "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour",
+   "tree": "dead7d004",
+   "theme": "dark",
+   "out": "~/wrf_gpu2_lanes/release-docs/RD34/plots/b200_dark.png",
+   "json": "~/wrf_gpu2_lanes/release-docs/RD34/plots/b200.json"
+  },
+  "old_version": {
+   "b200_s_per_fch": {
+    "128": 12.12,
+    "256": 31.95,
+    "384": 65.84,
+    "512": 112.84,
+    "768": 250.62,
+    "896": 356.94,
+    "1024": 475.97
+   },
+   "b200_cell_updates_s": {
+    "128": 21400000.0,
+    "256": 32500000.0,
+    "384": 35500000.0,
+    "512": 36800000.0,
+    "768": 37300000.0,
+    "896": 35600000.0,
+    "1024": 34900000.0
+   },
+   "b200_board_w": {
+    "128": 453,
+    "256": 582,
+    "384": 617,
+    "512": 653,
+    "768": 679,
+    "896": 685,
+    "1024": 678
+   },
+   "b200_r_inf": 37400000.0,
+   "rtx5090_fp64_s_per_fch": {
+    "128": 32.6,
+    "256": 100.8,
+    "384": 237.5
+   },
+   "rtx5090_r_inf_fp64": 10600000.0,
+   "ref_b200": "git 43379efb5:publication/paper.tex tab:perf L522-540 (2026-07-09; ladder measured 2026-06-23, v0.20 era)",
+   "ref_5090": "proofs/v020/benchmark/T2T3_REPORT.md L28-36"
+  },
+  "hbm_tb_s": {
+   "rtx5090": 1.792,
+   "b200": 8.0
+  },
+  "capacity_assumptions": {
+   "budget_bytes": 180000000000,
+   "gb_is_decimal": true,
+   "per_case_process_peak_gib": 4.41796875,
+   "extra_growth_margin_gib": 1.0,
+   "note": "conservative capacity scenario; B200 allocator peak unmeasured"
+  },
+  "wn3_cell_updates_per_case_h": 572070400.0,
+  "rtx5090_today": {
+   "cell_updates_s_stepping": 107212609.04243965,
+   "case_h_per_h_stepping": 674.6816345554372,
+   "case_h_per_h_whole": 371.9456546071324,
+   "kj_per_case_h": 1.5841954656304984,
+   "speedup_vs_old_version_r_inf": 10.11439707947544,
+   "throughput_label": "M",
+   "energy_label": "I",
+   "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour"
+  },
+  "b200": {
+   "lo": {
+    "r": 2.6897689768976902,
+    "stepping_s_per_case_h": 1.983757730203172,
+    "whole_s_per_case_h_unscaled_startup": 6.326741063155035,
+    "case_h_per_h_stepping": 1814.7377299098396,
+    "cell_updates_s": 288377149.73461497,
+    "kj_per_case_h": 1.336556770724387
+   },
+   "mid": {
+    "r": 3.5283018867924527,
+    "stepping_s_per_case_h": 1.512299732728438,
+    "whole_s_per_case_h_unscaled_startup": 5.855283065680302,
+    "case_h_per_h_stepping": 2380.480484186165,
+    "cell_updates_s": 378278450.7723814,
+    "kj_per_case_h": 1.018911944925785
+   },
+   "hi_measured": {
+    "r": 3.6072296476306196,
+    "stepping_s_per_case_h": 1.479209953789962,
+    "whole_s_per_case_h_unscaled_startup": 5.822193286741825,
+    "case_h_per_h_stepping": 2433.73159488026,
+    "cell_updates_s": 386740501.937719,
+    "kj_per_case_h": 0.9966177063659868
+   },
+   "cap_bandwidth": {
+    "r": 4.464285714285714,
+    "stepping_s_per_case_h": 1.1952304000854492,
+    "whole_s_per_case_h_unscaled_startup": 5.538213733037313,
+    "case_h_per_h_stepping": 3011.971582836773,
+    "cell_updates_s": 478627718.9394628,
+    "kj_per_case_h": 0.8052864820575715
+   }
+  },
+  "b200_board_w_saturated_old": 673.75,
+  "b200_cases_fit_vram": 30,
+  "b200_cases_to_saturate": {
+   "lo": 10.759075907590761,
+   "mid": 14.11320754716981,
+   "hi_measured": 14.428918590522478,
+   "cap_bandwidth": 17.857142857142858
+  },
+  "cpu": {
+   "s_per_case_h": 123.38,
+   "case_h_per_h": 29.178148808558923,
+   "kj_per_case_h_lo": 24.676,
+   "kj_per_case_h_hi": 24.676,
+   "energy_label": "M"
+  }
+ }
+}

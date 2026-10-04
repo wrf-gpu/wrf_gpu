@@ -1,0 +1,239 @@
+{
+ "_doc": "FINAL-b exact dead7d004, version0.3.0. Prepared paths are not evidence until corresponding actual receipts exist. R4 fully admitted six-hour N sweep ONLY supplies throughput; R3 all6 72h supplies identity and 24h release gates. Approvals must retain exact rawFAIL plus fresh FINAL-b delivery note.",
+ "tree_label": "FINAL-b dead7d004 (0.3.0)",
+ "cpu": {
+  "prod_12rank_s_per_fch": {
+   "value": 92.3,
+   "label": "M",
+   "ref": "CPU-WRF 12 ranks, PROD 20260725_18z (FINDINGS A6)"
+  },
+  "wn3_4rank_s_per_simh": {
+   "value": 370.15,
+   "label": "M",
+   "ref": "CPU-WRF 4 ranks per case, mean of clean 0227/0502 runs (wn3 W1; FINDINGS D28)"
+  },
+  "wn3_3x4_s_per_case_h": {
+   "value": 123.38,
+   "label": "M",
+   "ref": "3 cases x 4 ranks on 12 cores = 370.15/3 (wn3 W1 / wn3_parallel_analyze.py)"
+  },
+  "package_w_12core": {
+   "lo": 200.0,
+   "hi": 200.0,
+   "label": "M",
+   "ref": "maintainer measurement: CPU-WRF on 12 cores \u2248200 W"
+  }
+ },
+ "gpu_host_cpu_w": {
+  "lo": 20.0,
+  "hi": 40.0,
+  "label": "I",
+  "ref": "host CPU share of a GPU run: 1 busy dispatch thread + helpers on 4 pinned cores (estimate)"
+ },
+ "prod": {
+  "bench_json": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINALb/bench/finalb_s1/bench.json",
+  "whole_run_arm": "extra24h",
+  "whole_run_hours": 24,
+  "endpoint_receipt": "<USER_HOME>/wrf_gpu2_lanes/release-docs/FINALb/prod_s1_publication_times.json",
+  "dmon": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINALb/bench/finalb_s1/extra24h/nvidia-smi.dmon.log"
+ },
+ "wn3_solo": {
+  "warm_s_per_simh": {
+   "value": null,
+   "label": "U",
+   "ref": "FINAL-b R4 N=1 receipt required"
+  }
+ },
+ "wn3_arms": [
+  {
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n1",
+   "tree": "dead7d004"
+  },
+  {
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n2",
+   "tree": "dead7d004"
+  },
+  {
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n3",
+   "tree": "dead7d004"
+  },
+  {
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4",
+   "tree": "dead7d004"
+  }
+ ],
+ "history_s1_proxy": [
+  {
+   "label": "WRF cadence\n10-01",
+   "date": "2026-10-01",
+   "value": 56.18,
+   "ref": "FINDINGS A10",
+   "tree": "LW2"
+  },
+  {
+   "label": "fused fp32\nkernels\n10-02",
+   "date": "2026-10-02",
+   "value": 19.13,
+   "ref": "FINDINGS A29",
+   "tree": "LW6t"
+  },
+  {
+   "label": "host sync\n10-02",
+   "date": "2026-10-02",
+   "value": 15.52,
+   "ref": "FINDINGS A34",
+   "tree": "LW7"
+  },
+  {
+   "label": "dispatch\nmemo\n10-03",
+   "date": "2026-10-03",
+   "value": 9.017,
+   "ref": "FINDINGS A52",
+   "tree": "LW8d'"
+  },
+  {
+   "label": "fp32 carry\n+ in-step diag\n10-03",
+   "date": "2026-10-03",
+   "value": 5.633,
+   "ref": "FINDINGS A55",
+   "tree": "LW9"
+  }
+ ],
+ "history_baseline": {
+  "label": "start\n10-01",
+  "value": 107.6,
+  "ref": "FINDINGS A1b (main 2a594eb7, 3 h proxy seg 2-3, warm)"
+ },
+ "identity": [
+  {
+   "name": "identity_curves_wn3",
+   "title": "GPU vs CPU-WRF: RMSE over forecast lead",
+   "subtitle": "Tenerife9/3/1km, all six cases \u00d724h release window \u2014 FINAL-b dead7d004",
+   "footer": "wn3 D6 scorer JSONs (frozen manifest); dashed = release-gate RMSE limit",
+   "domains": [
+    "d01",
+    "d02",
+    "d03"
+   ],
+   "cases": {
+    "0227": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/d6_24h",
+    "0502": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260502_18z_a1/d6_24h",
+    "0614": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/d6_24h",
+    "0220": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260220_18z_a1/d6_24h",
+    "0608": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260608_18z_a1/d6_24h",
+    "0120": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/d6_24h"
+   }
+  },
+  {
+   "name": "identity_curves_prod162",
+   "title": "Canary 9/3 km (PROD): GPU vs CPU-WRF over the forecast",
+   "subtitle": "Canary PROD 20260725, two domains \u00d7162h \u2014 FINAL-b dead7d004; older WN2 input path, numerical illustration",
+   "footer": "compare_wrfout_grid.py, 10 gate fields, frozen manifest",
+   "domains": [
+    "d01",
+    "d02"
+   ],
+   "cases": {
+    "PROD": "<USER_HOME>/wrf_gpu2_lanes/release-docs/FINALb/prod162"
+   }
+  }
+ ],
+ "maps": [
+  {
+   "name": "maps_d03",
+   "domain": "d03",
+   "lead": 72,
+   "cpu_dir": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260227_18z_a1/run/run",
+   "gpu_dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/wrfout",
+   "footer": "FINAL-b dead7d004, Tenerife0227 d03; originalCPU-WRF identical inputs"
+  }
+ ],
+ "points": [
+  {
+   "name": "points_d03",
+   "domain": "d03",
+   "cpu_dir": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260227_18z_a1/run/run",
+   "gpu_dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/wrfout",
+   "footer": "FINAL-b dead7d004, Tenerife0227 d03; originalCPU-WRF identical inputs"
+  }
+ ],
+ "b200": {
+  "arm_dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4",
+  "sat_n": 4,
+  "case_vram_gib": 4.41796875,
+  "rtx_board_w": 296.8965517241379,
+  "rtx_board_w_label": "M: R4 board-power samples",
+  "tree": "dead7d004"
+ },
+ "gate_d6_dirs": [
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/d6_24h",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260502_18z_a1/d6_24h",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/d6_24h",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260220_18z_a1/d6_24h",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260608_18z_a1/d6_24h",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/d6_24h"
+ ],
+ "manual": {
+  "TREE": "dead7d004",
+  "CPU_ENERGY_METHOD": "uses approximately200W on twelve cores (maintainer measurement); GPU host CPU energy is outside the board-power comparison",
+  "_doc": "FINAL-b manual facts only; remaining numeric/license/extended-lead keys must be filled from actual reports and manager decisions.",
+  "LICENSE_LINE": "See [LICENSE_NOTES.md](LICENSE_NOTES.md) for attribution and licensing information.",
+  "_license_decision": "manager2026-10-04T11:10:09Z: no LICENSE file, neutral wording unless principal changes the decision",
+  "V030_WN3_GAIN": "1.4",
+  "wn3_fit_32gb": 4,
+  "_development_gain": "oldLW9W6 24h N3 vs FINAL-b R4 six-hour N4; different horizons/concurrency explicitly identified in METHODS",
+  "EXTENDED_LEAD_DISCLOSURE": "Beyond 24 h, the complete six-case predecessor (`1fece48da`) exceeds limits on the 1 km domain: 0227 U10/V10 from +41 h, V at +67 h, W at +69\u201370 h and RAINNC at +67\u201372 h; 0120 U10 at +58 h. The scored v0.3.0 0227 case agrees with that displaced wake/convection pattern. [Exact hours and signed biases](docs/release/VALIDATION.md) preserve every failure.",
+  "OUTPUT_INTEGRITY_STATUS": "[disclosed exceptions](docs/release/VALIDATION.md#wn3-output-integrity) (raw FAIL retained)"
+ },
+ "output_integrity_jsons": [
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/integrity_24h.json",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260502_18z_a1/integrity_24h.json",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/integrity_24h.json",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260220_18z_a1/integrity_24h.json",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260608_18z_a1/integrity_24h.json",
+  "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/integrity_24h.json"
+ ],
+ "output_integrity_approvals": [
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260227_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260227_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260227_18z_a1.md"
+  },
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260502_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260502_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260502_18z_a1.md"
+  },
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260614_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260614_18z_a1.md"
+  },
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260220_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260220_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260220_18z_a1.md"
+  },
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260608_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260608_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260608_18z_a1.md"
+  },
+  {
+   "report": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260120_18z_a1/integrity_24h.json",
+   "exception": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260120_18z_a1.json",
+   "approval_reference": "2026-10-04T12:25:19Z",
+   "delivery_note": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD34/release_approval_20260120_18z_a1.md"
+  }
+ ],
+ "production_batch": {
+  "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3"
+ },
+ "publication_wn3_lead_h": 24,
+ "_publication_decision": "manager2026-10-04T12:01:52Z priority: all6 24h gate before release;72h reporting/deliveries may follow"
+}

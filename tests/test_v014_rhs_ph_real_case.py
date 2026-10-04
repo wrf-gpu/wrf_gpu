@@ -23,6 +23,15 @@ import jax.numpy as jnp  # noqa: E402
 from gpuwrf.dynamics.core.rhs_ph import rhs_ph_wrf  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _legacy_fp64_dycore(monkeypatch):
+    """These tests pin the fp64 legacy dycore; GPUWRF_DYN_REAL_ALL (WRF REAL consumers)
+    has its own pristine REAL4 gates (tests/v025/b_diff). Flag-aware for the RC default flip."""
+    monkeypatch.setenv("GPUWRF_DYN_REAL_ALL", "0")
+    monkeypatch.setenv("GPUWRF_CARRY_REAL_ALL", "0")  # the v0.3 release pairs them; CARRY_REAL_ALL alone is refused
+
+
+
 def _synthetic_fields(nz: int = 8, ny: int = 18, nx: int = 20):
     rng = np.random.default_rng(20260611)
     # terrain-following phb: smooth ridge + per-level growth

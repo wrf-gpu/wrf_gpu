@@ -26,7 +26,7 @@
       "5": {
         "fail_closed_ok": true,
         "label": "Grell-3D",
-        "named_reason": "Grell-3D ensemble has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
+        "named_reason": "Grell-3D ensemble has a v0.18 pristine-WRF G3DRV oracle harness/savepoints, including nontrivial active columns; faithful traceable JAX endpoint and operational scan wiring remain blocked",
         "operationally_wired": false
       },
       "14": {
@@ -38,7 +38,7 @@
       "16": {
         "fail_closed_ok": true,
         "label": "New-Tiedtke",
-        "named_reason": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
+        "named_reason": "New Tiedtke has a module-specific single-column fp64 pristine-WRF oracle staged (proofs/v013/savepoints/cumulus/ntiedtke_case_*.json from phys/module_cu_ntiedtke.F), but no faithful traceable JAX kernel or CU scan adapter is wired yet",
         "operationally_wired": false
       }
     },
@@ -51,7 +51,7 @@
     ]
   },
   "gate_pass": true,
-  "generated_utc": "2026-06-08T21:50:56.343506+00:00",
+  "generated_utc": "2026-06-27T09:54:19.129428+00:00",
   "operational_schemes": [],
   "oracle_staged_schemes": [
     16,

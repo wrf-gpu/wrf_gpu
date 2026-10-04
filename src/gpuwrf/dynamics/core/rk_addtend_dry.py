@@ -28,6 +28,7 @@ Two distinct WRF behaviours live here:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 import jax
 import jax.numpy as jnp
@@ -38,6 +39,15 @@ from gpuwrf.dynamics.acoustic_wrf import (
     _inverse_density_from_theta_pressure,
     moisture_coupling_factors,
 )
+
+
+_NATIVE_RK_FP32 = os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1"
+_RK_WORK_DTYPE = jnp.float32 if _NATIVE_RK_FP32 else jnp.float64
+if _NATIVE_RK_FP32:
+    from gpuwrf.kernels.dyn_rk_fp32 import (
+        real_state, real_metrics, real_base, inverse_density_fp32, diagnose_pressure_fp32,
+    )
+    _inverse_density_from_theta_pressure = inverse_density_fp32
 
 
 _SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
@@ -164,25 +174,25 @@ def _absolute_diagnostics(
       ``php``  = ``0.5*(phb+ph' faces)`` on mass levels (full geopotential).
     """
 
-    ph_pert = state.ph_perturbation.astype(jnp.float64)
-    mu_pert = state.mu_perturbation.astype(jnp.float64)
-    mu_total = state.mu_total.astype(jnp.float64)
+    ph_pert = state.ph_perturbation.astype(_RK_WORK_DTYPE)
+    mu_pert = state.mu_perturbation.astype(_RK_WORK_DTYPE)
+    mu_total = state.mu_total.astype(_RK_WORK_DTYPE)
     mub = (
-        base_state.mub.astype(jnp.float64)
+        base_state.mub.astype(_RK_WORK_DTYPE)
         if base_state is not None
-        else (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+        else (state.mu_total - state.mu_perturbation).astype(_RK_WORK_DTYPE)
     )
     alt = _inverse_density_from_theta_pressure(
-        state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
+        state.theta.astype(_RK_WORK_DTYPE), state.p_total.astype(_RK_WORK_DTYPE)
     )
-    p_pert = state.p_perturbation.astype(jnp.float64)
+    p_pert = state.p_perturbation.astype(_RK_WORK_DTYPE)
     c1h = metrics.c1h[:, None, None]
     c2h = metrics.c2h[:, None, None]
     rdnw = metrics.rdnw[:, None, None]
     phb = (
-        base_state.phb.astype(jnp.float64)
+        base_state.phb.astype(_RK_WORK_DTYPE)
         if base_state is not None
-        else (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+        else (state.ph_total - state.ph_perturbation).astype(_RK_WORK_DTYPE)
     )
     # WRF-faithful al (calc_p_rho_phi :1029).  Denominator = TOTAL column mass
     # muts = mut + mu_2 (solve_em.F:3610); the mu' term carries the BASE-state
@@ -202,8 +212,8 @@ def _absolute_diagnostics(
         # LOG(total) - LOG(base) to ~1.7e-6 rel, while subtracting the linear
         # alb leaves the one-signed hypso bias inside ``al`` and corrupts the
         # dominant ``pb*al`` HPG face term over terrain.
-        muts = state.mu_total.astype(jnp.float64)  # WRF grid%muts = mut + mu_2 (dry total)
-        p_top = jnp.reshape(metrics.p_top, ()).astype(jnp.float64)
+        muts = state.mu_total.astype(_RK_WORK_DTYPE)  # WRF grid%muts = mut + mu_2 (dry total)
+        p_top = jnp.reshape(metrics.p_top, ()).astype(_RK_WORK_DTYPE)
 
         def _log_alpha(dph: jax.Array, mass_col: jax.Array) -> jax.Array:
             pfu = metrics.c3f[1:, None, None] * mass_col + metrics.c4f[1:, None, None] + p_top
@@ -223,6 +233,13 @@ def _absolute_diagnostics(
         al = -(alb * mu_term + rdnw * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_t
     ph_total = phb + ph_pert
     php = 0.5 * (ph_total[:-1, :, :] + ph_total[1:, :, :])
+    if _NATIVE_RK_FP32 and base_state is not None:
+        # rk_step_prep calls calc_alt on the geometry-based AL+ALB; it does
+        # not independently reconstruct ALT from the carried pressure EOS.
+        _, al, alt = diagnose_pressure_fp32(state, base_state, metrics,
+                                           hypsometric_opt=hypsometric_opt)
+        php = 0.5 * (phb[:-1, :, :] + phb[1:, :, :]
+                     + ph_pert[:-1, :, :] + ph_pert[1:, :, :])
     return ph_pert, p_pert, al, alt, php
 
 
@@ -258,20 +275,22 @@ def large_step_horizontal_pgf(
     singleton y axis, so the v-PGF is structurally zero there.
     """
 
+    if _NATIVE_RK_FP32:
+        state, metrics, base_state = real_state(state), real_metrics(metrics), real_base(base_state)
     ph, p_abs, al, alt, php = _absolute_diagnostics(
         state, metrics, hypsometric_opt=hypsometric_opt, base_state=base_state
     )
     pb = (
-        base_state.pb.astype(jnp.float64)
+        base_state.pb.astype(_RK_WORK_DTYPE)
         if base_state is not None
-        else (state.p_total - state.p_perturbation).astype(jnp.float64)
+        else (state.p_total - state.p_perturbation).astype(_RK_WORK_DTYPE)
     )
     mut = (
-        base_state.mub.astype(jnp.float64)
+        base_state.mub.astype(_RK_WORK_DTYPE)
         if base_state is not None
-        else (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+        else (state.mu_total - state.mu_perturbation).astype(_RK_WORK_DTYPE)
     )
-    mu_pert = state.mu_perturbation.astype(jnp.float64)
+    mu_pert = state.mu_perturbation.astype(_RK_WORK_DTYPE)
     cqu, cqv = moisture_coupling_factors(state)
     rdx = 1.0 / float(dx_m)
     rdy = 1.0 / float(dy_m)
@@ -403,10 +422,12 @@ def large_step_coriolis(
     idealized cases ``f=0`` makes every term identically zero regardless.
     """
 
-    u = jnp.asarray(state.u, dtype=jnp.float64)  # (nz, ny, nx+1)
-    v = jnp.asarray(state.v, dtype=jnp.float64)  # (nz, ny+1, nx)
-    w = jnp.asarray(state.w, dtype=jnp.float64)  # (nz+1, ny, nx)
-    mu_total = jnp.asarray(state.mu_total, dtype=jnp.float64)  # (ny, nx)
+    if _NATIVE_RK_FP32:
+        state, metrics = real_state(state), real_metrics(metrics)
+    u = jnp.asarray(state.u, dtype=_RK_WORK_DTYPE)  # (nz, ny, nx+1)
+    v = jnp.asarray(state.v, dtype=_RK_WORK_DTYPE)  # (nz, ny+1, nx)
+    w = jnp.asarray(state.w, dtype=_RK_WORK_DTYPE)  # (nz+1, ny, nx)
+    mu_total = jnp.asarray(state.mu_total, dtype=_RK_WORK_DTYPE)  # (ny, nx)
 
     c1h = metrics.c1h[:, None, None]
     c2h = metrics.c2h[:, None, None]
@@ -452,7 +473,7 @@ def large_step_coriolis(
 
     if specified:
         # WRF excludes the first/last u-face column for specified/nested (:3714-3717).
-        edge_mask_u = jnp.ones((1, 1, u.shape[2]), dtype=jnp.float64)
+        edge_mask_u = jnp.ones((1, 1, u.shape[2]), dtype=_RK_WORK_DTYPE)
         edge_mask_u = edge_mask_u.at[:, :, 0].set(0.0).at[:, :, -1].set(0.0)
         ru_cor = ru_cor * edge_mask_u
 
@@ -473,7 +494,7 @@ def large_step_coriolis(
 
     if specified:
         # WRF excludes the first/last v-face row for specified/nested (:3776-3778).
-        edge_mask_v = jnp.ones((1, v.shape[1], 1), dtype=jnp.float64)
+        edge_mask_v = jnp.ones((1, v.shape[1], 1), dtype=_RK_WORK_DTYPE)
         edge_mask_v = edge_mask_v.at[:, 0, :].set(0.0).at[:, -1, :].set(0.0)
         rv_cor = rv_cor * edge_mask_v
 
@@ -504,10 +525,12 @@ def large_step_horizontal_curvature(
     previous bytes.
     """
 
-    u = jnp.asarray(state.u, dtype=jnp.float64)
-    v = jnp.asarray(state.v, dtype=jnp.float64)
-    w = jnp.asarray(state.w, dtype=jnp.float64)
-    mu_total = jnp.asarray(state.mu_total, dtype=jnp.float64)
+    if _NATIVE_RK_FP32:
+        state, metrics = real_state(state), real_metrics(metrics)
+    u = jnp.asarray(state.u, dtype=_RK_WORK_DTYPE)
+    v = jnp.asarray(state.v, dtype=_RK_WORK_DTYPE)
+    w = jnp.asarray(state.w, dtype=_RK_WORK_DTYPE)
+    mu_total = jnp.asarray(state.mu_total, dtype=_RK_WORK_DTYPE)
     c1h = metrics.c1h[:, None, None]
     c2h = metrics.c2h[:, None, None]
     c1f = metrics.c1f[:, None, None]
@@ -521,9 +544,9 @@ def large_step_horizontal_curvature(
         c1f * mu_total[None, :, :] + c2f
     ) / metrics.msfty[None, :, :]
 
-    rdx = jnp.asarray(1.0 / float(dx_m), dtype=jnp.float64)
-    rdy = jnp.asarray(1.0 / float(dy_m), dtype=jnp.float64)
-    reradius = jnp.asarray(1.0 / 6370.0e3, dtype=jnp.float64)
+    rdx = jnp.asarray(1.0 / float(dx_m), dtype=_RK_WORK_DTYPE)
+    rdy = jnp.asarray(1.0 / float(dy_m), dtype=_RK_WORK_DTYPE)
+    reradius = jnp.asarray(1.0 / 6370.0e3, dtype=_RK_WORK_DTYPE)
     vxgm = (
         0.5 * (u[:, :, :-1] + u[:, :, 1:])
         * (metrics.msfvx[1:, :] - metrics.msfvx[:-1, :])[None, :, :]
@@ -579,6 +602,69 @@ def large_step_horizontal_curvature(
     return ru_curv, rv_curv
 
 
+def large_step_uv_fused_enabled(u_t, v_t, base_state) -> bool:
+    """GPUWRF_DYN_GLUE_FUSED: one REAL kernel per stagger for PGF + Coriolis + curvature."""
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    return (bool({"uv", "uv2", "uvn"} & glue_parts()) and _NATIVE_RK_FP32
+            and base_state is not None and u_t.dtype == jnp.float32 and v_t.dtype == jnp.float32)
+
+
+def large_step_uv_nested_only() -> bool:
+    """Part ``uvn``: the fused large-step u/v kernel on nested domains only (the root keeps XLA)."""
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    return "uvn" in glue_parts() and not ({"uv", "uv2"} & glue_parts())
+
+
+def large_step_uv_fused(
+    state: State,
+    metrics: DycoreMetrics,
+    u_t: jax.Array,
+    v_t: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    top_lid: bool,
+    hypsometric_opt: int,
+    base_state: BaseState,
+) -> tuple[jax.Array, jax.Array]:
+    """``u_t + pgf + coriolis + curvature`` (and v) for the specified/nested native path.
+
+    Same operands and arithmetic as large_step_horizontal_pgf (non-hydrostatic),
+    large_step_coriolis(specified=True) and large_step_horizontal_curvature, added
+    in that order; the face pairs/quads are built inside kernels/dyn_uvtend_fp32.
+    """
+
+    from gpuwrf.kernels.dyn_uvtend_fp32 import large_step_uv_fp32
+
+    state, metrics, base_state = real_state(state), real_metrics(metrics), real_base(base_state)
+    ph, p_abs, al, alt, php = _absolute_diagnostics(
+        state, metrics, hypsometric_opt=hypsometric_opt, base_state=base_state
+    )
+    cqu, cqv = moisture_coupling_factors(state)
+    _dn_top = metrics.dn[-1]
+    _dn_top_safe = jnp.where(jnp.abs(_dn_top) > 1.0e-30, _dn_top, jnp.asarray(1.0, dtype=_dn_top.dtype))
+    cfn = (0.5 * metrics.dnw[-1] + metrics.dn[-1]) / _dn_top_safe
+    cfn1 = -0.5 * metrics.dnw[-1] / _dn_top_safe
+    coef = jnp.stack([jnp.reshape(c, ()) for c in (metrics.cf1, metrics.cf2, metrics.cf3, cfn, cfn1)]).astype(jnp.float32)
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    split = "uv2" in glue_parts()
+    out = large_step_uv_fp32(
+        u_t, v_t, state.u, state.v, state.w, ph, p_abs, base_state.pb, al, alt, php, cqu, cqv,
+        base_state.mub, state.mu_perturbation, state.mu_total, metrics, coef,
+        rdx=1.0 / float(dx_m), rdy=1.0 / float(dy_m), top_lid=bool(top_lid), curvature=True,
+        split=split, interpret=_glue_interpret(),
+    )
+    if not split:
+        return out
+    # Moisture-coupled cq stays an XLA operand (no layout pin on the species); same add order.
+    (dpu, coru, curvu), (dpv, corv, curvv) = out
+    return ((u_t + -cqu * dpu) + coru) + curvu, ((v_t + -cqv * dpv) + corv) + curvv
+
+
+def _glue_interpret() -> bool:
+    return jax.default_backend() == "cpu"
+
+
 def _zeros_like(reference: jax.Array, candidate: jax.Array | None) -> jax.Array:
     return jnp.zeros_like(reference) if candidate is None else jnp.asarray(candidate, dtype=reference.dtype)
 
@@ -610,6 +696,10 @@ def rk_addtend_dry(
     so this returns ``tendencies`` unchanged numerically.
     """
 
+    if _NATIVE_RK_FP32:
+        metrics = real_metrics(metrics)
+        tendencies = jax.tree_util.tree_map(lambda a: jnp.asarray(a, jnp.float32), tendencies)
+        mut = jnp.asarray(mut, jnp.float32)
     one = jnp.asarray(1.0, dtype=tendencies.u.dtype)
     msfuy = metrics.msfuy[None, :, :]
     msfvx_inv = (one / metrics.msfvx)[None, :, :]

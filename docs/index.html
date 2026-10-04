@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.4</span>
+          <span class="brand-sub">User's Guide · v0.3.0</span>
         </span>
       </a>
       <div class="search-box">
@@ -141,7 +141,7 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
   </a>
   <a class="card" href="running.html">
     <div class="card-title">Running the Model →</div>
-    <div class="card-desc">The <code>gpuwrf run</code> command: single-domain, nested, restart.</div>
+    <div class="card-desc">The <code>gpuwrf run</code> command: single-domain and nested forecasts.</div>
   </a>
   <a class="card" href="physics.html">
     <div class="card-title">Physics Options →</div>
@@ -161,7 +161,7 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
 <ul>
   <li><strong>Running real regional ARW forecasts on a GPU</strong> from a standard WRF
   namelist — single-domain or live-nested (validated through d01→…→d09), with native
-  init, restart, and a WRF-compatible <code>wrfout</code>.</li>
+  init and a WRF-compatible <code>wrfout</code>.</li>
   <li><strong>Capability the CPU stack cannot reach on one box.</strong> A 1&nbsp;km single
   domain fits one RTX&nbsp;5090 bit-identically, and the all-7-island 1&nbsp;km nested case runs
   end-to-end on one card.</li>
@@ -184,6 +184,9 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
   <li><strong>Nested radiation cadence is not yet namelist-faithful.</strong> The nested
   pipeline targets a fixed 30-minute cadence rather than arbitrary <code>radt</code>, and nested
   <code>topo_shading</code>/<code>slope_rad</code> currently bind disabled.</li>
+  <li><strong>Operational restart is not wired yet.</strong> Serializer foundations exist, but
+  the current NetCDF structural suite has a boundary-schema regression and the public
+  single-domain and nested run paths do not emit or resume checkpoints.</li>
   <li><strong>Not a blanket single-card speedup.</strong> On tiny geometries the GPU can be
   launch/occupancy-bound and slower than multi-rank CPU-WRF; the advantage grows with scale.</li>
   <li><strong>Not</strong> WPS/<code>real.exe</code>, DFI, FDDA/nudging, WRF-Chem, WRF-Fire,
@@ -198,14 +201,14 @@ deliberate boundary. Full detail on the <a href="namelist.html">Namelist Compati
 <table>
 <thead><tr><th>Area</th><th>Implemented (runs)</th><th>Fail-closed (refused with a named reason)</th><th>Out of scope</th></tr></thead>
 <tbody>
-<tr><td><strong>Init</strong></td><td>Standalone init from <code>wrfinput</code>/<code>wrfbdy</code> real-data artifacts; WRF restart</td><td>Raw <code>met_em</code>-only CLI input</td><td>WPS (geogrid/ungrib/metgrid)</td></tr>
+<tr><td><strong>Init</strong></td><td>Standalone init from <code>wrfinput</code>/<code>wrfbdy</code> real-data artifacts</td><td>Operational restart/resume; raw <code>met_em</code>-only CLI input</td><td>WPS (geogrid/ungrib/metgrid)</td></tr>
 <tr><td><strong>Dynamics</strong></td><td>Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K + 2-D Smagorinsky diffusion</td><td>3-D TKE / full Smagorinsky (<code>km_opt=2/3/5</code>)</td><td>Global nests</td></tr>
 <tr><td><strong>Microphysics</strong></td><td>Kessler, Purdue-Lin, WSM3/5/6/7, Thompson (+aerosol-aware), Morrison, SBU-YLin, WDM5/6/7, Goddard GCE</td><td>Morrison-aerosol (mp=40), NSSL, MP tail</td><td>WRF-Chem coupling</td></tr>
 <tr><td><strong>PBL / sfc</strong></td><td>YSU, MYJ, MYNN-EDMF, ACM2, BouLac, GFS, GBM-TKE, MRF, Shin-Hong; MYNN-SL, revised-MM5, Pleim-Xiu, Janjic, GFS sfclay</td><td>CAM-UW (bl=9); reference-only PBL tail</td><td>—</td></tr>
 <tr><td><strong>Cumulus</strong></td><td>Kain-Fritsch, BMJ, Tiedtke, New-Tiedtke, Grell-Freitas</td><td>Reference-only / documented-boundary CU tail</td><td>—</td></tr>
 <tr><td><strong>Radiation</strong></td><td>RRTMG SW+LW, Dudhia SW + RRTM LW; nested RRTMG has a disclosed fixed-30-minute cadence and disabled topo/slope effects</td><td>Reference-only RA tail</td><td>—</td></tr>
 <tr><td><strong>Land</strong></td><td>Noah, Noah-MP, Pleim-Xiu LSM, thermal-diffusion slab</td><td>RUC LSM (reference-only); CLM4/CTSM (boundary)</td><td>—</td></tr>
-<tr><td><strong>Nesting</strong></td><td>One-way live d01→…→d09 on the v0.23.4 fixture, sub-cycling, restart; GWD default-on nested</td><td>—</td><td>Global nests</td></tr>
+<tr><td><strong>Nesting</strong></td><td>One-way live d01→…→d09 on the v0.23.4 fixture, sub-cycling; GWD default-on nested</td><td>Synchronized multi-domain restart/resume</td><td>Global nests</td></tr>
 <tr><td><strong>Output</strong></td><td>Focused 104-variable WRF-compatible <code>wrfout</code>; opt-in 375-variable stream</td><td>—</td><td>CLI-exposed auxhist streams</td></tr>
 <tr><td><strong>Other</strong></td><td>Lateral-BC relaxation; opt-in two-way &amp; moving nests</td><td>Urban (BEP/BEM), lake (reference-only)</td><td>DFI, FDDA/nudging, WRF-Chem/Fire/Hydro</td></tr>
 </tbody>

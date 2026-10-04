@@ -3,8 +3,8 @@
 - **Tag:** `v0.9.0`
 - **Release commit:** resolve with `git rev-parse v0.9.0^{commit}` (branch `release/v0.9.0`, descends from `v0.1.0`).
 - **Tag date:** 2026-06-04 (annotated tag; `main` promoted to this commit so the org front page lands on the latest release).
-- **Release gate:** mandatory cross-model pre-release **gap-analysis critic** (GPT-5.5 xhigh) → **verdict SHIP, 0 fix-now, 8 carry-over** ([`.agent/reviews/2026-06-04-gpt-v090-gap-critic.md`](.agent/reviews/2026-06-04-gpt-v090-gap-critic.md)).
-- **Binding numbers:** every figure below traces to a committed proof under [`proofs/v090/`](proofs/v090/). Nothing is rounded, invented, or relaxed to manufacture a pass.
+- **Release gate:** mandatory cross-model pre-release **gap-analysis critic** (GPT-5.5 xhigh) → **verdict SHIP, 0 fix-now, 8 carry-over** ([`.agent/reviews/2026-06-04-gpt-v090-gap-critic.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.9.0/.agent/reviews/2026-06-04-gpt-v090-gap-critic.md)).
+- **Binding numbers:** every figure below traces to a committed proof under [`proofs/v090/`](../proofs/v090). Nothing is rounded, invented, or relaxed to manufacture a pass.
 
 ## What v0.9.0 is
 
@@ -26,7 +26,7 @@ v0.9.0 **ships fp64 as the operational mode** (the production daily-pipeline cas
 as an **experimental performance preview** and is deferred to the v0.10.0 kernel/numerics sprint.
 **This loses no measured speed today**: the current workload is launch-tax / memory-bandwidth bound,
 not arithmetic-throughput bound — the committed roofline analysis measures fp32 at **~1.00×** over fp64
-([`proofs/perf/compute_cycle_analysis.md`](proofs/perf/compute_cycle_analysis.md)). The large remaining
+([`proofs/perf/compute_cycle_analysis.md`](../proofs/perf/compute_cycle_analysis.md)). The large remaining
 gains (XLA fusion, launch-count reduction) are the explicit target of **v0.10.0**.
 
 ## Validated capabilities
@@ -36,8 +36,8 @@ gains (XLA fusion, launch-count reduction) are the explicit target of **v0.10.0*
 | **Native real-init equivalence** | Native `wrfinput`/`wrfbdy` savepoint-parity-equivalent to `real.exe` at t=0 (v0.4.0; one-cell categorical-LSM residual documented). Removes the CPU-WRF dependency for IC/BC. |
 | **Per-scheme savepoint parity** | Each GPU-operational scheme passes an fp64 math-faithfulness gate vs an **unmodified-WRF oracle**. |
 | **Idealized dycore** | Skamarock warm bubble + Straka density current pass vs published references + pristine WRF v4.7.1 ground truth. |
-| **Coupled vs CPU-WRF, d02 (3 km)** | 72 h, backfilled MAM case `20260507_18z`, vs 28-rank CPU-WRF v4.7.1. **Finite + stable all 72 h.** Per-lead RMSE: **T2 within 3.0 K bar at 72/72 leads** (mean 1.06, final 0.81 K); **V10 within 7.5 m/s bar at 72/72** (mean 3.21, final 2.97); **U10 within bar at 66/72** (transient evening-peak breach to 8.04 m/s, recovers). Proof [`proofs/v090/d02_coupled_skill_72h.json`](proofs/v090/d02_coupled_skill_72h.json). This is the **operational equivalence evidence** (single case, single season). |
-| **End-to-end wall-clock speedup** | Real-user command-to-finish, single RTX 5090 vs 28-rank CPU-WRF, same workstation, same forecast length: **≈ 2.16× (conservative) / 2.41× / 2.59× warm** (72 h d02); **≈ 1.33× cold** (24 h, pays the one-time XLA compile). Precision-independent (see above). Proof [`proofs/v090/speedup_benchmark.json`](proofs/v090/speedup_benchmark.json). |
+| **Coupled vs CPU-WRF, d02 (3 km)** | 72 h, backfilled MAM case `20260507_18z`, vs 28-rank CPU-WRF v4.7.1. **Finite + stable all 72 h.** Per-lead RMSE: **T2 within 3.0 K bar at 72/72 leads** (mean 1.06, final 0.81 K); **V10 within 7.5 m/s bar at 72/72** (mean 3.21, final 2.97); **U10 within bar at 66/72** (transient evening-peak breach to 8.04 m/s, recovers). Proof [`proofs/v090/d02_coupled_skill_72h.json`](../proofs/v090/d02_coupled_skill_72h.json). This is the **operational equivalence evidence** (single case, single season). |
+| **End-to-end wall-clock speedup** | Real-user command-to-finish, single RTX 5090 vs 28-rank CPU-WRF, same workstation, same forecast length: **≈ 2.16× (conservative) / 2.41× / 2.59× warm** (72 h d02); **≈ 1.33× cold** (24 h, pays the one-time XLA compile). Precision-independent (see above). Proof [`proofs/v090/speedup_benchmark.json`](../proofs/v090/speedup_benchmark.json). |
 
 **Kept clearly separate (NOT the headline):** the kernel / compute-only (compile-*excluded*) ceiling
 of **≈ 5.3×–7.84×** is a steady-state per-step number, not real-user wall-clock — do not conflate it
@@ -45,7 +45,7 @@ with the 2.16× end-to-end headline.
 
 ## Known issues / carried over to v0.10.0
 
-Full write-up: [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). The 8 gap-critic carry-overs:
+Full write-up: [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md). The 8 gap-critic carry-overs:
 
 - **d02 machine `status=FAIL`** is *solely* the 6/72 U10 evening-peak breaches; final-hour Tier-4 RMSE
   passes on T2/U10/V10 and T2/V10 pass at every lead. Not a degrading instability.
@@ -72,4 +72,4 @@ Not the full WRF v4 physics catalog (unported schemes fail closed); **no powered
 MAM corpus is prepared but the formal equivalence is the paper's analysis, honestly unscored here); not
 bitwise-WRF (RMSE-equivalence is the operational bar); d03 1 km not validated; multi-GPU and live
 two-way nesting not in scope. The gap chain to a complete WRF replacement is inventoried in
-[`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md).
+[`publish/GPU_PORT_GAPS_TODO.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.9.0/publish/GPU_PORT_GAPS_TODO.md).

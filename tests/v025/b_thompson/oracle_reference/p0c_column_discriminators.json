@@ -1,0 +1,546 @@
+{
+ "base": {
+  "driver_input.txt": {
+   "sha256": "23516cdacbc124f0f045ef8c173dab6269a0f94b7a967e6388f6ecb32e55d0ff",
+   "size": 9332
+  },
+  "port_column.npz": {
+   "sha256": "56c3c3859a96175cef5686de2a571491f84d477c82138712b2d4cadb96491e37",
+   "size": 14664
+  }
+ },
+ "columns": {
+  "C1_kept": {
+   "discriminators": {
+    "g_old": {
+     "bound": {},
+     "floor_at_bound_levels": {},
+     "levels_1based": [],
+     "max_effect": 1.066475277099882e-08,
+     "max_floor": 8.565412514135139e-09,
+     "reason": "max effect 1.066e-08 at level 1: effect/10 < 10 x floor (8.130e-09)",
+     "status": "UNDISCRIMINABLE"
+    },
+    "gate_off": {
+     "bound": {
+      "1": 3.1230216323583323e-06,
+      "2": 1.3334414415518332e-07
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.014080878082641e-09,
+       "production": 8.130496199909576e-09
+      },
+      "2": {
+       "fp64": 8.536308683678405e-09,
+       "production": 8.565412514135139e-09
+      }
+     },
+     "levels_1based": [
+      1,
+      2
+     ],
+     "max_effect": 3.1230216323583325e-05,
+     "max_floor": 8.565412514135139e-09,
+     "status": "DISCRIMINATING"
+    },
+    "post_rho": {
+     "bound": {},
+     "floor_at_bound_levels": {},
+     "levels_1based": [],
+     "max_effect": 3.3406829466620103e-07,
+     "max_floor": 8.565412514135139e-09,
+     "reason": "max effect 3.341e-07 at level 1: effect/10 < 10 x floor (8.130e-09)",
+     "status": "UNDISCRIMINABLE"
+    }
+   },
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qc",
+     "level_0based": 0,
+     "value": 0.0005000000237487257
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    }
+   ],
+   "files": {
+    "driver_input_C1_kept.txt": {
+     "sha256": "77e22eb2ff9e120d14d340f6fe8bef147576bba5afb5859c2ea5435855c22626",
+     "size": 9332
+    },
+    "port_column_C1_kept.npz": {
+     "sha256": "b7a02a33663f15292752d2d414701c7ed4bc419fe1f983efde1583ab4a1941d7",
+     "size": 14664
+    }
+   },
+   "why": "pre-existing cloud kept at two band levels -> ANY(L_qc) on, cloud flux leaves the column"
+  },
+  "C2_full_evap": {
+   "discriminators": {
+    "post_branch": {
+     "bound": {
+      "1": 1.8926896305200255e-06
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.186861303032672e-09,
+       "production": 8.303276624859607e-09
+      }
+     },
+     "levels_1based": [
+      1
+     ],
+     "max_effect": 1.8926896305200254e-05,
+     "max_floor": 8.303276624859607e-09,
+     "status": "DISCRIMINATING"
+    },
+    "rev0_ungated": {
+     "bound": {
+      "1": 1.8926896305200255e-06
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.186861303032672e-09,
+       "production": 8.303276624859607e-09
+      }
+     },
+     "levels_1based": [
+      1
+     ],
+     "max_effect": 1.8926896305200254e-05,
+     "max_floor": 8.303276624859607e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qc",
+     "level_0based": 3,
+     "value": 9.999999974752427e-07
+    }
+   ],
+   "files": {
+    "driver_input_C2_full_evap.txt": {
+     "sha256": "46109e618cd289f6bba578e654fc64a4006508beab46929563f010b312d87343",
+     "size": 9332
+    },
+    "port_column_C2_full_evap.npz": {
+     "sha256": "b118ddd5aa2dbaa849b00b514b61bccdc5f64dfb037b6fc6fd8b21e3ed91cc6f",
+     "size": 14664
+    }
+   },
+   "why": "thin cloud (1e-6) in RH~0.69 air fully evaporates in the branch -> L_qc cleared; the fresh level-0 condensate must stay unsedimented"
+  },
+  "C3_mixed": {
+   "discriminators": {
+    "all_lqc": {
+     "bound": {
+      "1": 1.7218972177643561e-06,
+      "2": 1.3334414415518332e-07
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.064938696690158e-09,
+       "production": 8.181354018517092e-09
+      },
+      "2": {
+       "fp64": 8.536308683678405e-09,
+       "production": 8.565412514135139e-09
+      }
+     },
+     "levels_1based": [
+      1,
+      2
+     ],
+     "max_effect": 1.721897217764356e-05,
+     "max_floor": 8.565412514135139e-09,
+     "status": "DISCRIMINATING"
+    },
+    "gate_off": {
+     "bound": {
+      "1": 1.7218972177643561e-06,
+      "2": 1.3334414415518332e-07
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.064938696690158e-09,
+       "production": 8.181354018517092e-09
+      },
+      "2": {
+       "fp64": 8.536308683678405e-09,
+       "production": 8.565412514135139e-09
+      }
+     },
+     "levels_1based": [
+      1,
+      2
+     ],
+     "max_effect": 1.721897217764356e-05,
+     "max_floor": 8.565412514135139e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    }
+   ],
+   "files": {
+    "driver_input_C3_mixed.txt": {
+     "sha256": "87655bfeb45d399fa5898de511dd4d4915986eeb6a2a6ded4c1b455e8c74c568",
+     "size": 9332
+    },
+    "port_column_C3_mixed.npz": {
+     "sha256": "c0216905c60476c5baed945b1fe979caa4b021a96ca17d82cf7a70898304bc44",
+     "size": 14664
+    }
+   },
+   "why": "kept cloud at level 1 + fresh condensation at level 0 -> ANY(L_qc) on through level 1 only"
+  },
+  "C4_band_top": {
+   "discriminators": {
+    "no_ksed": {
+     "bound": {
+      "3": 2.3172708614568206e-12
+     },
+     "floor_at_bound_levels": {
+      "3": {
+       "fp64": 1.401298464324817e-45,
+       "production": 2.802596928649634e-45
+      }
+     },
+     "levels_1based": [
+      3
+     ],
+     "max_effect": 2.3172708614568207e-11,
+     "max_floor": 9.162793921378171e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qv",
+     "level_0based": 3,
+     "value": 0.016198577359318733
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "qc",
+     "level_0based": 3,
+     "value": 4.999999987376214e-07
+    }
+   ],
+   "files": {
+    "driver_input_C4_band_top.txt": {
+     "sha256": "7188fa402dcfcb2d4fa442fa371883b550d1fe847355368cfbfef0d2da957419",
+     "size": 9332
+    },
+    "port_column_C4_band_top.npz": {
+     "sha256": "789533bd9576d341cbd315dbd92305618705f1dee2ca0b57828905e3d672d782",
+     "size": 14664
+    }
+   },
+   "why": "kept cloud (rc > R2) at level 1 + thin cloud (R1 < rc <= R2) at level 3 at saturation -> ksed1(5) = 1, level 3 must not sediment"
+  },
+  "C5_w_switch": {
+   "discriminators": {
+    "mass_w": {
+     "bound": {
+      "1": 3.293814045114002e-06
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 7.933806874709307e-09,
+       "production": 8.050222196536241e-09
+      }
+     },
+     "levels_1based": [
+      1
+     ],
+     "max_effect": 3.293814045114002e-05,
+     "max_floor": 8.050222196536241e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qc",
+     "level_0based": 0,
+     "value": 0.0005000000237487257
+    },
+    {
+     "field": "w_face",
+     "level_0based": 0,
+     "value": 0.0
+    },
+    {
+     "field": "w_face",
+     "level_0based": 1,
+     "value": 0.25
+    }
+   ],
+   "files": {
+    "driver_input_C5_w_switch.txt": {
+     "sha256": "ffd5ccd49ccb7038f5bb18058e8c7257f1e938a2588efb26edb6be7191ce7af2",
+     "size": 9332
+    },
+    "port_column_C5_w_switch.npz": {
+     "sha256": "ad8a7c1b6b6816a80877af64ffc6a17a955b978fecedea5153560ff72d719fef",
+     "size": 14664
+    }
+   },
+   "why": "kept cloud at level 0 with bottom face w = 0 < 0.1 <= mass-point w = 0.125 -> WRF sediments"
+  },
+  "C6n_density_norain": {
+   "discriminators": {
+    "g_old": {
+     "bound": {},
+     "floor_at_bound_levels": {},
+     "levels_1based": [],
+     "max_effect": 6.463313213193184e-09,
+     "max_floor": 9.030545392962712e-09,
+     "reason": "max effect 6.463e-09 at level 1: effect/10 < 10 x floor (8.101e-09)",
+     "status": "UNDISCRIMINABLE"
+    },
+    "gate_off": {
+     "bound": {
+      "1": 1.8926896305200255e-06,
+      "2": 8.84136045375255e-07,
+      "3": 7.085392442063863e-07
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 7.984664693316823e-09,
+       "production": 8.101080015143758e-09
+      },
+      "2": {
+       "fp64": 1.3955914281847833e-10,
+       "production": 1.4046863752025125e-10
+      },
+      "3": {
+       "fp64": 8.972337732049245e-09,
+       "production": 9.030545392962712e-09
+      }
+     },
+     "levels_1based": [
+      1,
+      2,
+      3
+     ],
+     "max_effect": 1.8926896305200254e-05,
+     "max_floor": 9.030545392962712e-09,
+     "status": "DISCRIMINATING"
+    },
+    "post_rho": {
+     "bound": {
+      "2": 4.534026197526659e-09
+     },
+     "floor_at_bound_levels": {
+      "2": {
+       "fp64": 1.3955914281847833e-10,
+       "production": 1.4046863752025125e-10
+      }
+     },
+     "levels_1based": [
+      2
+     ],
+     "max_effect": 1.9199590438529791e-07,
+     "max_floor": 9.030545392962712e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 2,
+     "value": 0.016747089102864265
+    },
+    {
+     "field": "qc",
+     "level_0based": 2,
+     "value": 0.0003000000142492354
+    }
+   ],
+   "files": {
+    "driver_input_C6n_density_norain.txt": {
+     "sha256": "6d2faa4a6954d8a6881e66ff74707f73db3d7d93b0949c93458147b6f26c4dc2",
+     "size": 9332
+    },
+    "port_column_C6n_density_norain.npz": {
+     "sha256": "722fd70ffbe5e447beec4ae72a0eea40aa89a6032755c1b9a39fc1d8a2cbcdad",
+     "size": 14664
+    }
+   },
+   "why": "kept cloud at level 2 at 15% supersaturation (large condensation -> large rho change) above the clean level 1 (no cloud, no branch: its received flux is noise-free); no rain -> rhof from the pre-condensation rho"
+  },
+  "C6r_density_rain": {
+   "discriminators": {
+    "gate_off": {
+     "bound": {
+      "1": 1.900978141380124e-06,
+      "2": 8.86086346912095e-07,
+      "3": 7.101021995729373e-07
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 7.98324062173568e-09,
+       "production": 8.099655943562614e-09
+      },
+      "2": {
+       "fp64": 1.4013408979259587e-10,
+       "production": 1.410435844943688e-10
+      },
+      "3": {
+       "fp64": 8.971876016639416e-09,
+       "production": 9.030083677552883e-09
+      }
+     },
+     "levels_1based": [
+      1,
+      2,
+      3
+     ],
+     "max_effect": 1.900978141380124e-05,
+     "max_floor": 9.030083677552883e-09,
+     "status": "DISCRIMINATING"
+    },
+    "post_rho": {
+     "bound": {
+      "2": 6.484327734366664e-09
+     },
+     "floor_at_bound_levels": {
+      "2": {
+       "fp64": 1.4013408979259587e-10,
+       "production": 1.410435844943688e-10
+      }
+     },
+     "levels_1based": [
+      2
+     ],
+     "max_effect": 2.748810129862833e-07,
+     "max_floor": 9.030083677552883e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 2,
+     "value": 0.016747089102864265
+    },
+    {
+     "field": "qc",
+     "level_0based": 2,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "qr",
+     "level_0based": 0,
+     "value": 0.0005000000237487257
+    },
+    {
+     "field": "qr",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "qr",
+     "level_0based": 2,
+     "value": 9.999999747378752e-05
+    },
+    {
+     "field": "nr",
+     "level_0based": 0,
+     "value": 10000.0
+    },
+    {
+     "field": "nr",
+     "level_0based": 1,
+     "value": 10000.0
+    },
+    {
+     "field": "nr",
+     "level_0based": 2,
+     "value": 10000.0
+    }
+   ],
+   "files": {
+    "driver_input_C6r_density_rain.txt": {
+     "sha256": "f4039b23bd42a6071a80838a1a8852e4901803e3a278ddd51a152cd3ef5b52a3",
+     "size": 9332
+    },
+    "port_column_C6r_density_rain.npz": {
+     "sha256": "395e303fa2043c493fb4d42df1a8e4ce58995335527731911d411f537e91f192",
+     "size": 14664
+    }
+   },
+   "why": "as C6n with rain at levels 0-2 (ANY(L_qr): rhof from the current rho; rain evaporation at the receiving level)"
+  },
+  "C7_regression": {
+   "discriminators": {
+    "rev0_ungated": {
+     "bound": {
+      "1": 1.8926896305200255e-06
+     },
+     "floor_at_bound_levels": {
+      "1": {
+       "fp64": 8.186861303032672e-09,
+       "production": 8.303276624859607e-09
+      }
+     },
+     "levels_1based": [
+      1
+     ],
+     "max_effect": 1.8926896305200254e-05,
+     "max_floor": 8.303276624859607e-09,
+     "status": "DISCRIMINATING"
+    }
+   },
+   "edits": [],
+   "files": {
+    "driver_input_C7_regression.txt": {
+     "sha256": "23516cdacbc124f0f045ef8c173dab6269a0f94b7a967e6388f6ecb32e55d0ff",
+     "size": 9332
+    },
+    "port_column_C7_regression.npz": {
+     "sha256": "56c3c3859a96175cef5686de2a571491f84d477c82138712b2d4cadb96491e37",
+     "size": 14664
+    }
+   },
+   "why": "the unchanged Gate-2 base column (must reproduce O-2)"
+  }
+ },
+ "contract": "P0_CLOSURE_CONTRACT.md rev 2 \u00a73.3; manager L3 decision A",
+ "dt_s": 18.0,
+ "frozen_tolerances_sha256": "5bdc03da9cd0099bce48e30de88e6c570114480728f0f12551cacaf137b48b41",
+ "nz": 44,
+ "schema": "p0c_column_manifest/1",
+ "tool_sha256": "64257156f6b72b2613a73b7a3d408adf3162a58af77d5eaff505d53708fd90a1",
+ "undiscriminable_by_construction": {
+  "qc_gt_0_threshold": "the old qc > 0 branch threshold differs only for qc in (0, R1]; its column effect is <= R1 and both WRF and the port write qc <= R1 as 0 at the end of the step, so no column can separate it; covered by tests/test_p0c_closure_jax.py::test_m3_aero_condensation_branch_needs_qc_above_r1 and tests/test_p0g2_thompson_cloud_sed_gate.py::test_condensation_branch_uses_wrf_l_qc_threshold"
+ }
+}

@@ -67,6 +67,9 @@ def test_wrf_root_env_relocates_tbl_and_source_lookups(monkeypatch, tmp_path: Pa
     relocated = tmp_path / "relocated" / "WRF"
     _write_minimal_wrf_tree(relocated)
     monkeypatch.setenv("GPUWRF_WRF_ROOT", str(relocated))
+    # The extractor's explicit source override outranks the root resolver;
+    # this test exercises root relocation without that independent override.
+    monkeypatch.delenv("GPUWRF_WRF_SRC", raising=False)
     monkeypatch.delenv("WRF_BUILD", raising=False)
 
     assert wrf_root() == relocated

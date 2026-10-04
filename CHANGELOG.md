@@ -3,9 +3,28 @@
 All notable changes to wrf_gpu are recorded here. This file is a concise index;
 each release has full, honest release notes in `RELEASE_NOTES_v<version>.md`.
 Versions follow a 0.x pre-1.0 line (the v1.0.0 target is a complete, validated
-WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
+WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
+
+## [0.3.0] - UNRELEASED
+
+- **GPU rewrite:** fused fp32 dynamics, acoustics and column-physics kernels are
+  enabled by default, while WRF's DOUBLE precision islands remain in double
+  precision. JAX/Pallas executables are cached for subsequent runs. The previous
+  public release was v0.23.4.
+- **WRF-order fixes:** snow-temperature write-back, snow/soil-water coupling,
+  canopy rain and freezing, glacier initialization, nighttime albedo retention,
+  initial albedo seeding and one snow-aging update per step.
+- **Outputs and examples:** full WRF history is the default; the bundled Swiss
+  single-domain example uses the current CLI and has its own original CPU-WRF
+  reference, identity plots and four-core CPU versus GPU benchmark.
+- **Release evidence:** the validation plan covers six Tenerife cases through
+  24 h, with separate 72 h drift reports and a 162 h Canary numerical comparison.
+  Timing includes startup and output; parallel timing also includes compression
+  and launcher completion. GPU board and CPU package energy have separate
+  provenance. See [methods](docs/release/METHODS.md),
+  [validation](docs/release/VALIDATION.md) and [known issues](KNOWN_ISSUES.md).
 
 ## [0.23.4] - UNRELEASED
 
@@ -69,7 +88,7 @@ dynamics, no physics, no default numerical change** (the batched math is unchang
 - Documents + verifies the distinct-init CLI contract (nested one-way, exactly `B`
   same-geometry dirs, only the day differs). New CPU unit tests.
 
-Full notes: [`RELEASE_NOTES_v0.23.2.md`](RELEASE_NOTES_v0.23.2.md).
+Full notes: [`RELEASE_NOTES_v0.23.2.md`](release_notes/RELEASE_NOTES_v0.23.2.md).
 
 ## [0.23.1] - 2026-07-04
 
@@ -89,7 +108,7 @@ identical to v0.23.0 (the compute/dispatch path is untouched).
 - **Doc-accuracy fixes**: init = `wrfinput`/`wrfbdy` (no `real.exe`/CPU-WRF dependency);
   training subset = 39 variables; `*=0` disabled slots marked accepted.
 
-Full notes: [`RELEASE_NOTES_v0.23.1.md`](RELEASE_NOTES_v0.23.1.md).
+Full notes: [`RELEASE_NOTES_v0.23.1.md`](release_notes/RELEASE_NOTES_v0.23.1.md).
 Parity plan: [`docs/WRF_PARITY_ROADMAP.md`](docs/WRF_PARITY_ROADMAP.md).
 
 ## [0.23.0] - 2026-07-04
@@ -140,7 +159,7 @@ Nested host-bound GPU-idle reduction point release on top of `v0.22.1`. The
 default path keeps full wrfout semantics and byte-identical output while cutting
 host work at nested output boundaries; the larger overlap levers remain opt-in
 until the manager-scheduled 0:2 GPU idle / VRAM validation run. Full notes:
-[`RELEASE_NOTES_v0.22.2.md`](RELEASE_NOTES_v0.22.2.md).
+[`RELEASE_NOTES_v0.22.2.md`](release_notes/RELEASE_NOTES_v0.22.2.md).
 
 ### Changed
 - **Default-on byte-identical host-work cuts.** Nested output no longer performs
@@ -182,7 +201,7 @@ until the manager-scheduled 0:2 GPU idle / VRAM validation run. Full notes:
 Pod-data-quality point release on top of `v0.22.0`. Default behavior remains
 bit-identical / convention-preserving: no numerics, masking, clamp, or schema
 change; WRF-standard wrfout names with `HH:MM:SS` remain the default. Full
-notes: [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md).
+notes: [`RELEASE_NOTES_v0.22.1.md`](release_notes/RELEASE_NOTES_v0.22.1.md).
 
 ### Fixed
 - **Nested d02 output cadence.** Leaf-domain advance now splits at history
@@ -208,7 +227,7 @@ notes: [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md).
 Default-safe hygiene, opt-in validated features, and fail-closed scaffolds on
 top of `v0.21.1`. The default forecast path remains bit-identical to v0.21.1;
 all new runtime behavior is opt-in or validation-only. Full notes:
-[`RELEASE_NOTES_v0.22.0.md`](RELEASE_NOTES_v0.22.0.md).
+[`RELEASE_NOTES_v0.22.0.md`](release_notes/RELEASE_NOTES_v0.22.0.md).
 
 ### Added
 - **Authoritative v0.22 feature-push table.** LANDED, validated, opt-in rows:
@@ -264,7 +283,7 @@ all new runtime behavior is opt-in or validation-only. Full notes:
 ## [0.21.1] - 2026-06-27
 
 Point release off `v0.21.0` for the Mont-Blanc-class extreme-terrain stability
-blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](RELEASE_NOTES_v0.21.1.md).
+blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](release_notes/RELEASE_NOTES_v0.21.1.md).
 
 ### Fixed
 - **Mont-Blanc-class specified-boundary vertical-velocity runaway.** The native-dt
@@ -292,7 +311,7 @@ blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](RELEASE_NOTES_v0.21.1.md).
 Stability + compile-cache-speed release. Priority order: **STABILITY > IDENTITY >
 SPEED > MEMORY**. The fp64 default path stays byte-identical and warm forecast
 throughput is unchanged from v0.20; the speed win is **compile / warm-start time**.
-Full notes: [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md).
+Full notes: [`RELEASE_NOTES_v0.21.0.md`](release_notes/RELEASE_NOTES_v0.21.0.md).
 
 ### Added
 - **AOT cheap-key cross-process warm-start of the FUSED cascade (default on).** After a
@@ -387,7 +406,7 @@ mitigated and carried), makes the nested compile cache hit across forecast dates
 adds an opt-in compact training-output mode, lands the paid-B200 I/O readiness
 tooling, and applies a no-fabrication honesty refresh to the public claims. The
 fp64 default path stays byte-for-byte unchanged. Full notes:
-[`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md).
+[`RELEASE_NOTES_v0.20.1.md`](release_notes/RELEASE_NOTES_v0.20.1.md).
 
 - **#114 — cross-date warm NEST compile cache (bit-identical). CONFIRMED.** The
   nested path carried a residual baked date scalar in the pytree treedef; it is now
@@ -676,7 +695,7 @@ nested 1 km path; re-landed GPU-validated compile-speed infra; wired MYJ PBL +
 Janjic-Eta surface layer to operational; added clear-sky radiation diagnostics,
 moisture flux-advection into RK3 (opt-in), and `shard_map` fake-mesh multi-GPU
 sharding; hardened reproducibility + community validation. Full notes:
-[`RELEASE_NOTES_v0.13.0.md`](RELEASE_NOTES_v0.13.0.md).
+[`RELEASE_NOTES_v0.13.0.md`](release_notes/RELEASE_NOTES_v0.13.0.md).
 
 ## [0.12.0] — Standalone out-of-box CLI
 
@@ -684,24 +703,24 @@ Made wrf_gpu a true out-of-the-box standalone GPU forecast system: standalone
 native-init + live-nested `--max-dom` CLI (no CPU-WRF `wrfout` dependency),
 persistent JIT cache (on by default), fail-closed scheme catalog, WRF-faithful
 PSFC fix, and a runnable GPU-vs-CPU equivalence demo. Full notes:
-[`RELEASE_NOTES_v0.12.0.md`](RELEASE_NOTES_v0.12.0.md).
+[`RELEASE_NOTES_v0.12.0.md`](release_notes/RELEASE_NOTES_v0.12.0.md).
 
 ## [0.11.0] — Live nesting, restart, conservation
 
 Live multi-domain nesting (d01→d02→d03, one-way), bit-identical WRF restart,
 closed conservation budgets, MYNN-EDMF mass flux, topographic/slope radiation,
 terrain-slope diffusion, and KF/BMJ/Tiedtke/Grell-Freitas cumulus. Full notes:
-[`RELEASE_NOTES_v0.11.0.md`](RELEASE_NOTES_v0.11.0.md).
+[`RELEASE_NOTES_v0.11.0.md`](release_notes/RELEASE_NOTES_v0.11.0.md).
 
 ## [0.10.0]
 
 Removed one faithful Thompson sedimentation inefficiency. Full notes:
-[`RELEASE_NOTES_v0.10.0.md`](RELEASE_NOTES_v0.10.0.md).
+[`RELEASE_NOTES_v0.10.0.md`](release_notes/RELEASE_NOTES_v0.10.0.md).
 
 ## [0.9.0] — Standalone forecast system
 
 Consolidated native real-init + the operational physics menu into a standalone
-forecast system. Full notes: [`RELEASE_NOTES_v0.9.0.md`](RELEASE_NOTES_v0.9.0.md).
+forecast system. Full notes: [`RELEASE_NOTES_v0.9.0.md`](release_notes/RELEASE_NOTES_v0.9.0.md).
 
 ## [0.4.0]
 
@@ -720,4 +739,4 @@ The stable paper-claims baseline. Accessible via the `v0.2.0` git tag.
 
 Single-domain replay path consuming CPU-WRF/Gen2 artifacts for initialization;
 Coriolis-corrected 3 km d02 validated against nightly CPU-WRF over real days.
-Full notes: [`RELEASE_NOTES_v0.1.0.md`](RELEASE_NOTES_v0.1.0.md).
+Full notes: [`RELEASE_NOTES_v0.1.0.md`](release_notes/RELEASE_NOTES_v0.1.0.md).

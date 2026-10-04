@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import jax.numpy as jnp
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 import numpy as np
 
 from gpuwrf.io.gen2_accessor import Gen2Run

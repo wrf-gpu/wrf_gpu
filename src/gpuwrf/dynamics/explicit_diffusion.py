@@ -23,11 +23,15 @@ specified/nested ownership.
 
 from __future__ import annotations
 
+import os
+
 from gpuwrf._x64_config import configure_jax_x64
 
 import jax
 from jax import config
 import jax.numpy as jnp
+
+_NATIVE_DIFFUSION_FP32 = os.environ.get("GPUWRF_DYN_DIFFUSION_FP32", "0") == "1"
 
 
 configure_jax_x64()
@@ -295,6 +299,12 @@ def wrf_sixth_order_scalar_tendf(
     from in-domain neighbours, so no wrapped value can enter the result.
     """
 
+    if _NATIVE_DIFFUSION_FP32 and specified_or_nested:
+        from gpuwrf.kernels.dyn_diff_fp32 import sixth_order_fp32
+        arrays = [jnp.asarray(a, jnp.float32) for a in
+                  (field, mu_total, c1, c2, msftx, msfty)]
+        return sixth_order_fp32(*arrays, name="m", dt=dt,
+                                factor=diff_6th_factor, monotonic=monotonic)
     field = jnp.asarray(field)
     dtype = field.dtype
     mut = jnp.asarray(mu_total, dtype=dtype)
@@ -416,6 +426,16 @@ def wrf_sixth_order_uvw_tendf(
     difference exactly as in the Fortran.
     """
 
+    if _NATIVE_DIFFUSION_FP32:
+        from gpuwrf.kernels.dyn_diff_fp32 import sixth_order_fp32
+        def native(field, c1, c2, mx, my, name):
+            arrays = [jnp.asarray(a, jnp.float32) for a in
+                      (field, mu_total, c1, c2, mx, my)]
+            return sixth_order_fp32(*arrays, name=name, dt=dt,
+                                    factor=diff_6th_factor, monotonic=monotonic)
+        return (native(u, c1h, c2h, msfux, msfuy, "u"),
+                native(v, c1h, c2h, msfvx, msfvy, "v"),
+                native(w, c1f, c2f, msftx, msfty, "w"))
     dtype = u.dtype
     mut = jnp.asarray(mu_total, dtype=dtype)
     coef = float(diff_6th_factor) * 0.015625 / (2.0 * float(dt))
@@ -1659,6 +1679,16 @@ def horizontal_diffusion_coord_scalar_tendency(
     prandtl=1/3, matching WRF khdq=3*khdif).
     """
 
+    if _NATIVE_DIFFUSION_FP32 and nonperiodic_owned and all(
+        a is not None for a in (msftx, msfty, msfux, msfuy, msfvx, msfvy)
+    ):
+        from gpuwrf.kernels.dyn_diff_fp32 import horizontal_diffusion_fp32
+        q = jnp.asarray(field, jnp.float32)
+        if base_3d is not None:
+            q = q - jnp.asarray(base_3d, jnp.float32)
+        arrays = [jnp.asarray(a, jnp.float32) for a in
+                  (xkhh, mass, msftx, msfty, msfux, msfuy, msfvx, msfvy)]
+        return horizontal_diffusion_fp32(q, *arrays, name="m", dx=dx_m, dy=dy_m)
     diff_field = field if base_3d is None else (field - base_3d)
     return _hdiff_coord_scalar(
         diff_field,
@@ -1768,6 +1798,17 @@ def wrf_nested_horizontal_diffusion_momentum_tendency(
     periodic padding or wrap face is synthesized here.
     """
 
+    if _NATIVE_DIFFUSION_FP32:
+        from gpuwrf.kernels.dyn_diff_fp32 import horizontal_diffusion_fp32
+        mut32 = jnp.asarray(mut, jnp.float32)
+        mh = jnp.asarray(c1h, jnp.float32)[:, None, None] * mut32[None] + jnp.asarray(c2h, jnp.float32)[:, None, None]
+        mf = jnp.asarray(c1f, jnp.float32)[:, None, None] * mut32[None] + jnp.asarray(c2f, jnp.float32)[:, None, None]
+        kh = jnp.asarray(xkmhd, jnp.float32)
+        maps = [jnp.asarray(a, jnp.float32) for a in
+                (msftx, msfty, msfux, msfuy, msfvx, msfvy)]
+        return tuple(horizontal_diffusion_fp32(jnp.asarray(q, jnp.float32), kh,
+                    mass, *maps, name=name, dx=dx_m, dy=dy_m)
+                    for q, mass, name in ((u, mh, "u"), (v, mh, "v"), (w, mf, "w")))
     u = jnp.asarray(u)
     v = jnp.asarray(v)
     w = jnp.asarray(w)

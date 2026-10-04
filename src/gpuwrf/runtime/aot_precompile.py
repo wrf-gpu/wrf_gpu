@@ -63,8 +63,10 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import threading
 import time
-from concurrent.futures import ProcessPoolExecutor, as_completed
+import weakref
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
@@ -78,6 +80,11 @@ from gpuwrf.runtime.compile_cache import (
     resolve_cache_dir,
     version_cache_tag,
 )
+from gpuwrf.runtime import jax_cache_thunks as _jax_cache_thunks
+
+# Triton-bearing JAX persistent-cache entries (e.g. the nest force-down) are
+# written as compiled thunks like the AOT blobs below (B12n).
+_jax_cache_thunks.install()
 
 __all__ = [
     "GridConfig",
@@ -604,7 +611,9 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
                 pass
 
 
-def _atomic_link_or_copy(source: Path, destination: Path, data: bytes) -> str:
+def _atomic_link_or_copy(
+    source: Path, destination: Path, data: bytes | Callable[[], bytes]
+) -> str:
     """Atomically alias ``source`` at ``destination``; copy if links are unavailable.
 
     The exact-HLO and cheap-key addresses name the same executable bytes. A hard
@@ -631,7 +640,7 @@ def _atomic_link_or_copy(source: Path, destination: Path, data: bytes) -> str:
                 tmp.unlink()
             except OSError:
                 pass
-        _atomic_write_bytes(destination, data)
+        _atomic_write_bytes(destination, data() if callable(data) else data)
         return "copy"
     finally:
         if tmp.exists():
@@ -685,6 +694,7 @@ def _serialize_domain_blob(
             lowered=lowered,
             cheap_key=cheap_key,
             key_schema=key_schema,
+            status=out,
         )
         import pickle as _pickle
 
@@ -784,6 +794,7 @@ def _serialize_domain_blob(
                 alias_mode = "standalone"
             _atomic_write_bytes(cheap_meta_path, meta_bytes)
             written.append("cheap_key")
+            record_last_cheap_key(name, write_cheap_key, cache_dir)
             out["aot_cheap_path"] = str(cheap_blob_path)
             out["aot_cheap_meta_path"] = str(cheap_meta_path)
             primary_paths = cheap_paths
@@ -810,7 +821,468 @@ def _serialize_domain_blob(
     return out
 
 
+_prefetch_lock = threading.Lock()
+_prefetched_loads: dict[tuple[str, str, int], Any] = {}
+_active_prefetches = weakref.WeakSet()
+
+
+class DomainAotPrefetch:
+    """Own background loads until each domain first requests its real key."""
+
+    def __init__(self, keys, cache_dir=None, *, dev=None, max_workers=2):
+        if any(not key for key in keys.values()):
+            raise ValueError("AOT prefetch requires an explicit cheap key")
+        # Backend/configuration initialization belongs to the calling thread.
+        self.dev = dev if dev is not None else jax.devices()[0]
+        self.executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="wrf-aot")
+        self.futures = {}
+        self._slots = {}
+        self._domains = {}
+        try:
+            for name, cheap_key in keys.items():
+                paths = _aot_blob_paths(name, cache_dir, cheap_key=cheap_key)
+                if paths is None:
+                    continue
+                slot = (str(paths[0]), str(paths[1]), id(self.dev.client))
+                future = self.executor.submit(self._load, name, cache_dir, cheap_key)
+                self.futures[name] = future
+                self._slots[slot] = future
+                self._domains[name] = (str(paths[0].parent), id(self.dev.client))
+                with _prefetch_lock:
+                    _prefetched_loads[slot] = future
+            with _prefetch_lock:
+                _active_prefetches.add(self)
+        except BaseException:
+            self.close()
+            raise
+
+    def _load(self, name, cache_dir, cheap_key):
+        start = time.perf_counter()
+        paths = _aot_blob_paths(name, cache_dir, cheap_key=cheap_key)
+        before = _blob_identity(paths[0]) if paths is not None else None
+        call, status = _load_domain_blob(
+            name, cache_dir, cheap_key=cheap_key, dev=self.dev, return_status=True
+        )
+        status["prefetch_load_s"] = time.perf_counter() - start
+        if paths is not None and before == _blob_identity(paths[0]):
+            status["prefetch_blob_identity"] = before
+        return call, status
+
+    def release_domain(self, name):
+        """Retire the hint once that domain's first real key is known."""
+        with _prefetch_lock:
+            future = self.futures.pop(name, None)
+            self._domains.pop(name, None)
+            for slot, owned in list(self._slots.items()):
+                if owned is future:
+                    if _prefetched_loads.get(slot) is owned:
+                        _prefetched_loads.pop(slot)
+                    self._slots.pop(slot)
+            finished = not self.futures
+        if future is not None:
+            future.cancel()
+        if finished:
+            self.close()
+
+    def close(self):
+        self.executor.shutdown(wait=True, cancel_futures=True)
+        with _prefetch_lock:
+            for slot, future in self._slots.items():
+                if _prefetched_loads.get(slot) is future:
+                    _prefetched_loads.pop(slot)
+            self._slots.clear()
+            self.futures.clear()
+            self._domains.clear()
+            _active_prefetches.discard(self)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+def prefetch_domain_blobs(keys, cache_dir=None, *, dev=None, max_workers=2):
+    """Load explicit cached keys while the caller initializes model inputs.
+
+    Initialize flags and the GPU client on the main thread first. This never
+    compiles or executes a forecast. The ordinary loader consumes each future
+    only at its exact cache address and client; normal call-contract validation
+    remains in the returned executable. Each first real domain lookup retires
+    its speculative result; the pool closes after all such lookups. The caller
+    must also close the handle on early exit.
+    """
+    return DomainAotPrefetch(keys, cache_dir, dev=dev, max_workers=max_workers)
+
+
+def _compile_lowered_threads(jobs, *, max_workers=2):
+    """Lower on the caller, overlapping each compile with the next lowering.
+
+    Jobs supply ``lower`` and ``finish`` callbacks. No forecast is executed.
+    Join all workers on failure before the caller resumes its serial path.
+    """
+    results = []
+    failures = []
+    x64 = bool(jax.config.jax_enable_x64)
+
+    def compile_and_finish(job, lowered):
+        from gpuwrf.runtime import aot_executable as ax
+
+        # JAX x64 is thread-local when the caller uses an explicit context.
+        with jax.enable_x64(x64):
+            compiled = lowered.compile(ax.export_compile_options())
+            return job["finish"](compiled, lowered)
+
+    with ThreadPoolExecutor(max_workers=max(1, min(2, int(max_workers))),
+                            thread_name_prefix="wrf-cold") as pool:
+        futures = []
+        for job in jobs:
+            try:
+                lowered = job["lower"]()
+                futures.append((job["name"], pool.submit(compile_and_finish, job, lowered)))
+            except Exception as exc:  # serial fallback after workers finish
+                failures.append({"name": job["name"], "error": f"{type(exc).__name__}: {exc}"})
+                break
+        for name, future in futures:
+            try:
+                results.append(future.result())
+            except Exception as exc:
+                failures.append({"name": name, "error": f"{type(exc).__name__}: {exc}"})
+    return results, failures
+
+
+def prewarm_runtime_threads(tree, *, carries, max_workers=2):
+    """Warm exact live per-domain AOT calls using two compilation threads.
+
+    A cache-wide compile lease prevents concurrent cases from duplicating the
+    same cold work and multiplying compiler memory. Contenders check their
+    keys again after the lease. Existing runtime loaders retain all validation;
+    any failure returns a report and leaves the eager serial path available.
+    """
+    import fcntl
+    import resource
+    import jax.numpy as jnp
+    from gpuwrf.runtime import operational_mode as op, aot_cheap_key as ck
+    from gpuwrf.runtime import domain_tree as dt
+    from gpuwrf.runtime import aot_executable as ax
+
+    started = time.perf_counter()
+    report = {"active": False, "workers": max(1, min(2, int(max_workers))),
+              "results": [], "errors": [], "source": "threads", "warm_all": False}
+    try:
+        if jax.devices()[0].platform != "gpu" or not _aot_enabled():
+            report["source"] = "skip:backend-or-aot"
+            return report
+        directory = aot_dir()
+        if directory is None:
+            report["source"] = "skip:cache-disabled"
+            return report
+        # Children are advanced only after the real force-down producer replaces
+        # their initial boundary placeholders. Preserve its leaf placement too:
+        # ShapeDtypeStruct alone would create a different cheap key. These local
+        # carries are discarded; the forecast's initial carries stay untouched.
+        runtime_carries = dict(carries)
+        for parent, edges in tree.edges.items():
+            for edge in edges:
+                runtime_carries[edge.child] = dt._operational_force(
+                    edge, runtime_carries[parent], runtime_carries[edge.child])
+        steps = {name: 1 for name in tree.domains}
+        for edges in tree.edges.values():
+            for edge in edges:
+                if not tree.hierarchy.children(edge.child):
+                    steps[edge.child] = int(edge.parent_grid_ratio)
+        specs = []
+        for name, bundle in tree.domains.items():
+            nl = bundle.namelist
+            args = (runtime_carries[name], nl, jnp.asarray(1, jnp.int32), op.build_clock_base(nl))
+            kwargs = {"n_steps": steps[name], "cadence": int(nl.radiation_cadence_steps)}
+            key = ck.cheap_key(op._advance_chunk_fori, args, kwargs, nl)
+            if key is None or cheap_key_is_quarantined(name, key):
+                raise ValueError(f"{name}: unavailable or quarantined runtime key")
+            specs.append((name, args, kwargs, key))
+
+        def absent(spec):
+            paths = _aot_blob_paths(spec[0], cheap_key=spec[3])
+            return paths is None or not all(p.is_file() for p in paths)
+
+        if not any(absent(spec) for spec in specs):
+            report["source"] = "skip:artifacts-present"
+            return report
+        directory.mkdir(parents=True, exist_ok=True)
+        with (directory / "thread_compile.lock").open("a+b") as lease:
+            wait_start = time.perf_counter()
+            fcntl.flock(lease.fileno(), fcntl.LOCK_EX)
+            report["lease_wait_s"] = time.perf_counter() - wait_start
+            jobs = []
+            for name, args, kwargs, key in specs:
+                if not absent((name, args, kwargs, key)):
+                    continue
+
+                def lower(args=args, kwargs=kwargs):
+                    return op._advance_chunk_fori.lower(*args, **kwargs)
+
+                def finish(compiled, lowered, name=name, key=key):
+                    status = _serialize_domain_blob(name, compiled, None, lowered=lowered,
+                        hlo_sha256=ax.hlo_sha256_from_lowered(lowered),
+                        cheap_key=key, key_schema=ck.KEY_SCHEMA)
+                    if not status.get("aot_written"):
+                        raise RuntimeError(status.get("aot_error") or "AOT capture failed")
+                    return {"name": name, "cheap_key": key, "status": status}
+
+                jobs.append({"name": name, "lower": lower, "finish": finish})
+            report["active"] = bool(jobs)
+            report["results"], report["errors"] = _compile_lowered_threads(
+                jobs, max_workers=report["workers"])
+            report["warm_all"] = not report["errors"] and all(not absent(s) for s in specs)
+    except Exception as exc:  # deterministic fail-open to existing serial stepping
+        report["errors"].append({"error": f"{type(exc).__name__}: {exc}"})
+    finally:
+        report["wall_s"] = time.perf_counter() - started
+        report["host_peak_rss_bytes"] = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024
+    return report
+
+
+def alias_cheap_key_to_hlo(
+    name: str,
+    cheap_key: str | None,
+    hlo_sha256: str | None,
+    cache_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Publish ``k_<cheap_key>`` for an exact-HLO blob this process just ran.
+
+    Call only after the SAME process lowered the variant addressed by
+    ``cheap_key`` to ``hlo_sha256`` and executed the HLO-addressed blob. That is
+    the cold path's dual-address proof, so the next process skips lowering and
+    can prefetch. The blob address is a hard link (atomic-copy fallback); the
+    meta is the HLO meta with this cheap key, written last. Collisions and
+    quarantine follow :func:`_serialize_domain_blob`. Fail-open: never raises.
+    """
+    out: dict[str, Any] = {"aliased": False, "reason": None,
+                           "cheap_key": cheap_key, "hlo_sha256": hlo_sha256}
+    try:
+        if not cheap_key or not hlo_sha256:
+            out["reason"] = "missing-key"
+            return out
+        if cheap_key_is_quarantined(name, cheap_key, cache_dir):
+            out["reason"] = "quarantined"
+            return out
+        hlo_paths = _aot_blob_paths(name, cache_dir, hlo_sha256=hlo_sha256)
+        cheap_paths = _aot_blob_paths(name, cache_dir, cheap_key=cheap_key)
+        if hlo_paths is None or cheap_paths is None:
+            out["reason"] = "cache-disabled"
+            return out
+        import dataclasses as _dc
+        import pickle as _pickle
+
+        from gpuwrf.runtime import aot_cheap_key as ck
+
+        with open(hlo_paths[1], "rb") as fh:
+            meta = _pickle.load(fh)
+        if getattr(meta, "hlo_sha256", None) != hlo_sha256 or not getattr(
+            meta, "blob_sha256", None
+        ):
+            out["reason"] = "hlo-meta-contract"
+            return out
+        if cheap_paths[1].is_file():
+            try:
+                with open(cheap_paths[1], "rb") as fh:
+                    existing_hlo = getattr(_pickle.load(fh), "hlo_sha256", None)
+            except Exception:  # noqa: BLE001 - unreadable sibling meta
+                existing_hlo = None
+            if existing_hlo != hlo_sha256:
+                quarantine_cheap_key(
+                    name, cheap_key, cache_dir,
+                    reason="cheap_key alias HLO collision",
+                    detail={"existing_hlo": existing_hlo, "new_hlo": hlo_sha256},
+                )
+                out["reason"] = "quarantined-collision"
+                return out
+            if cheap_paths[0].is_file():
+                out["reason"] = "already-present"
+                return out
+        alias_meta = _dc.replace(meta, cheap_key=cheap_key, key_schema=ck.KEY_SCHEMA)
+        out["alias_mode"] = _atomic_link_or_copy(
+            hlo_paths[0], cheap_paths[0], hlo_paths[0].read_bytes
+        )
+        _atomic_write_bytes(
+            cheap_paths[1], _pickle.dumps(alias_meta, protocol=_pickle.HIGHEST_PROTOCOL)
+        )
+        out.update(aliased=True, reason="aliased", aot_cheap_path=str(cheap_paths[0]))
+        record_last_cheap_key(name, cheap_key, cache_dir)
+        return out
+    except Exception as exc:  # noqa: BLE001 - alias is an optimisation only
+        out["reason"] = f"error:{type(exc).__name__}: {exc}"
+        return out
+
+
+_LAST_CHEAP_KEY = "last_cheap_key"
+
+
+def record_last_cheap_key(
+    name: str, cheap_key: str | None, cache_dir: str | Path | None = None
+) -> None:
+    """Remember the cheap key the runtime last loaded, aliased or captured.
+
+    Prefetch hints only: a guess never bypasses the exact runtime-key and loader
+    guards. Speculative prefetch loads never record. Fail-open.
+    """
+    try:
+        d = aot_dir(cache_dir)
+        if d is None or not cheap_key:
+            return
+        path = d / _safe_aot_component(name) / _LAST_CHEAP_KEY
+        if path.is_file() and path.read_text() == cheap_key:
+            return
+        _atomic_write_bytes(path, str(cheap_key).encode("ascii"))
+    except Exception:  # noqa: BLE001 - hint only
+        pass
+
+
+def preferred_prefetch_key(
+    directory: str | Path, name: str, candidates: list[str]
+) -> str | None:
+    """Unique complete candidate, else the runtime's last key if complete."""
+    if len(candidates) == 1:
+        return candidates[0]
+    try:
+        last = (Path(directory) / name / _LAST_CHEAP_KEY).read_text().strip()
+    except OSError:
+        return None
+    return last if last in candidates else None
+
+
 def load_domain_blob(
+    name, cache_dir=None, *, cheap_key=None, hlo_sha256=None, dev=None,
+    check_fingerprint=True, return_status=False,
+):
+    result = _load_domain_blob_owned(
+        name, cache_dir, cheap_key=cheap_key, hlo_sha256=hlo_sha256, dev=dev,
+        check_fingerprint=check_fingerprint, return_status=return_status,
+    )
+    call = result[0] if return_status else result
+    if cheap_key and call is not None:
+        record_last_cheap_key(name, cheap_key, cache_dir)
+    return result
+
+
+def _load_domain_blob_owned(
+    name, cache_dir=None, *, cheap_key=None, hlo_sha256=None, dev=None,
+    check_fingerprint=True, return_status=False,
+):
+    owners = []
+    if cheap_key and _active_prefetches:
+        device = dev if dev is not None else jax.devices()[0]
+        paths = _aot_blob_paths(name, cache_dir, cheap_key=cheap_key)
+        if paths is not None:
+            domain = (str(paths[0].parent), id(device.client))
+            with _prefetch_lock:
+                owners = [handle for handle in _active_prefetches
+                          if handle._domains.get(name) == domain]
+    try:
+        return _load_domain_blob_prefetched(
+            name, cache_dir, cheap_key=cheap_key, hlo_sha256=hlo_sha256,
+            dev=dev, check_fingerprint=check_fingerprint, return_status=return_status,
+        )
+    finally:
+        # Matching calls survive in the returned value/runtime memo. Mismatched
+        # speculative results are never executed and must not survive the run.
+        for handle in owners:
+            handle.release_domain(name)
+
+
+def _load_domain_blob_prefetched(
+    name, cache_dir=None, *, cheap_key=None, hlo_sha256=None, dev=None,
+    check_fingerprint=True, return_status=False,
+):
+    if cheap_key and _prefetched_loads:
+        device = dev if dev is not None else jax.devices()[0]
+        paths = _aot_blob_paths(name, cache_dir, cheap_key=cheap_key)
+        if paths is not None:
+            slot = (str(paths[0]), str(paths[1]), id(device.client))
+            with _prefetch_lock:
+                future = _prefetched_loads.pop(slot, None)
+            if future is None and not cheap_key_is_quarantined(name, cheap_key, cache_dir):
+                alias = _prefetched_alias(name, cheap_key, paths, device)
+                if alias is not None:
+                    return alias if return_status else alias[0]
+            if future is not None and not cheap_key_is_quarantined(name, cheap_key, cache_dir):
+                start = time.perf_counter()
+                try:
+                    call, status = future.result()
+                except Exception:
+                    return _load_domain_blob(
+                        name, cache_dir, cheap_key=cheap_key, hlo_sha256=hlo_sha256,
+                        dev=dev, check_fingerprint=check_fingerprint, return_status=return_status,
+                    )
+                from gpuwrf.runtime import aot_executable as aotx
+                from gpuwrf.runtime import aot_cheap_key as ck
+
+                if call is None or (
+                    call.meta.cheap_key == cheap_key
+                    and call.meta.key_schema == ck.KEY_SCHEMA
+                    and aotx.fingerprint_matches(call.meta.fingerprint, dev=device)
+                ):
+                    status = dict(status, prefetched=True, prefetch_wait_s=time.perf_counter() - start)
+                    return (call, status) if return_status else call
+    return _load_domain_blob(
+        name, cache_dir, cheap_key=cheap_key, hlo_sha256=hlo_sha256, dev=dev,
+        check_fingerprint=check_fingerprint, return_status=return_status,
+    )
+
+
+def _blob_identity(path):
+    """Attest an unchanged hard-linked blob without reading its large payload."""
+    try:
+        stat = path.stat()
+        return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+    except OSError:
+        return None
+
+
+def _prefetched_alias(name, cheap_key, paths, device):
+    """Reuse a domain hint under an attested hard-link alias; otherwise fall back."""
+    try:
+        from gpuwrf.runtime import aot_executable as aotx, aot_cheap_key as ck
+        import pickle
+
+        domain = (str(paths[0].parent), id(device.client))
+        with _prefetch_lock:
+            hints = [(h.futures[name], next(s for s, f in h._slots.items()
+                                          if f is h.futures[name]))
+                     for h in _active_prefetches if h._domains.get(name) == domain]
+        for future, source in hints:
+            identity = _blob_identity(paths[0])
+            if identity is None or identity != _blob_identity(Path(source[0])):
+                continue
+            meta = pickle.loads(paths[1].read_bytes())
+            if (meta.cheap_key != cheap_key or meta.key_schema != ck.KEY_SCHEMA
+                    or not meta.hlo_sha256 or not meta.blob_sha256
+                    or not aotx.fingerprint_matches(meta.fingerprint, dev=device)):
+                continue
+            start = time.perf_counter()
+            call, status = future.result()
+            if call is None or identity != status.get("prefetch_blob_identity"):
+                continue
+            # in_tree contains identity-based static holders. The existing loader
+            # accepts their leaf count; the requested alias supplies its own tree.
+            fields = ("hlo_sha256", "blob_sha256", "fingerprint", "key_schema",
+                      "kept_var_idx", "in_avals", "out_tree", "executable_format",
+                      "trace_metadata", "retained_module")
+            if (any(getattr(meta, f, None) != getattr(call.meta, f, None) for f in fields)
+                    or aotx._tree_num_leaves(meta.in_tree) != aotx._tree_num_leaves(call.meta.in_tree)
+                    or identity != _blob_identity(paths[0])):
+                continue
+            rebound = aotx.bind_loaded_executable(call.loaded_executable, meta, device)
+            status = dict(status, prefetched=True, prefetched_alias_from=call.meta.cheap_key,
+                          prefetch_wait_s=time.perf_counter() - start, cheap_key=cheap_key,
+                          blob_path=str(paths[0]), meta_path=str(paths[1]))
+            return rebound, status
+    except Exception:  # noqa: BLE001 - ordinary loader retains every guard
+        pass
+    return None
+
+
+def _load_domain_blob(
     name: str,
     cache_dir: str | Path | None = None,
     *,
@@ -1042,6 +1514,11 @@ def _compile_one_domain_worker(spec: "DomainCompileSpec") -> dict[str, Any]:
                     cheap_key=ck,
                     key_schema=key_schema,
                 )
+            )
+            res["compile_seconds"] = round(
+                result.compile_seconds
+                + res.get("aot_recovery_compile_seconds", 0.0)
+                + res.get("aot_trace_compaction_seconds", 0.0), 3
             )
         return res
     except BaseException as exc:  # noqa: BLE001 - report, never propagate

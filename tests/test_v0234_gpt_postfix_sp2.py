@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import importlib.util
 import inspect
 import json
@@ -86,6 +88,7 @@ def test_cpu_recorder_calls_explicit_fresh_lifecycle_once() -> None:
 
 
 def test_reference_and_comparator_authorities_are_frozen() -> None:
+    require_historical(compare.COMPARATOR, compare.AUTHENTIC_28_ARCHIVE, compare.AUTHENTIC_28_MANIFEST)
     assert len(compare.REQUIRED) == 28
     assert tuple(compare.REQUIRED[-6:]) == tuple(compare.RESIDUALS)
     assert compare.sha256_file(compare.COMPARATOR) == compare.COMPARATOR_SHA256

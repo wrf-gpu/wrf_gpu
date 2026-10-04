@@ -20,7 +20,9 @@ import numpy as np
 import pytest
 
 from gpuwrf.contracts import physics_registry as registry
+from gpuwrf.contracts import precision as precision_contract
 from gpuwrf.contracts.precision import DEFAULT_DTYPES, FP32_GATED, PRECISION_MATRIX, STATE_FIELD_ORDER
+from gpuwrf.contracts.precision import SURFACE_LAYER_CARRY_LEAVES
 from gpuwrf.contracts.state import (
     AEROSOL_CONDITIONAL_LEAVES,
     CONDITIONAL_STATE_LEAVES,
@@ -32,6 +34,10 @@ from gpuwrf.contracts.state import (
 
 
 P0_PA, R_D, C_P, GRAVITY = 1.0e5, 287.0, 1004.0, 9.80665
+MYNN_HISTORY_LEAVES = getattr(precision_contract, "MYNN_DIAGNOSTIC_LEAVES", ())
+assert MYNN_HISTORY_LEAVES in ((), ("el_pbl", "maxmf", "maxwidth", "ztop_plume"))
+GWDO_HISTORY_LEAVES = getattr(precision_contract, "GWDO_DIAGNOSTIC_LEAVES", ())
+assert GWDO_HISTORY_LEAVES in ((), ("dtaux3d", "dtauy3d", "dusfcg", "dvsfcg"))
 
 
 class _GridShim:
@@ -115,13 +121,19 @@ def test_state_field_order_appends_nwfa_nifa_at_end() -> None:
     # then the v0.16 aerosol-aware Thompson leaves (nwfa/nifa), then the v0.17 hail
     # surface accumulator (hail_acc). nwfa/nifa sit before the hail_acc accumulator,
     # still after the v0.6.0 + v0.15 prefix and before the optional wrfbdy scalars.
-    assert STATE_FIELD_ORDER[-10:-8] == ("nwfa", "nifa")
-    assert State.__slots__[-10:-8] == ("nwfa", "nifa")
-    assert State.__slots__[-21:-7] == (
+    # The 76-slot substrate remains fixed; later diagnostics append after B39's
+    # five REAL surface-layer leaves without shifting the aerosol pair.
+    assert len(State.__slots__) == 76 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES)
+    assert STATE_FIELD_ORDER[61:63] == ("nwfa", "nifa")
+    assert State.__slots__[61:63] == ("nwfa", "nifa")
+    assert State.__slots__[50:64] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
     )
-    assert State.__slots__[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
+    assert State.__slots__[64:71] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
+    expected_tail = SURFACE_LAYER_CARRY_LEAVES + MYNN_HISTORY_LEAVES + GWDO_HISTORY_LEAVES
+    assert State.__slots__[71:] == expected_tail
+    assert STATE_FIELD_ORDER[71:] == expected_tail
     assert PRECISION_MATRIX["nwfa"] == (FP32_GATED, True)
     assert PRECISION_MATRIX["nifa"] == (FP32_GATED, True)
 
@@ -160,12 +172,15 @@ def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
     # mp=28 carries the base plus nwfa/nifa only; hail leaves remain None and are
-    # not JAX pytree leaves. v0.20 S1/v0.22 optional suffix: base is still 57, so
-    # total slots - optional/conditional leaves + 2 aerosol = 59.
-    assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 59
-    assert state.active_field_names()[-2:] == AEROSOL_CONDITIONAL_LEAVES
-    assert leaves[-2] is state.nwfa
-    assert leaves[-1] is state.nifa
+    # not JAX pytree leaves. MYNN diagnostics are required; GWDO diagnostics
+    # remain absent with gwd_opt=0, independently of the microphysics scheme.
+    assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) - len(GWDO_HISTORY_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 64 + len(MYNN_HISTORY_LEAVES)
+    suffix = 5 + len(MYNN_HISTORY_LEAVES)
+    assert state.active_field_names()[-(suffix + 2):-suffix] == AEROSOL_CONDITIONAL_LEAVES
+    assert leaves[-(suffix + 2)] is state.nwfa
+    assert leaves[-(suffix + 1)] is state.nifa
+    for name in GWDO_HISTORY_LEAVES:
+        assert getattr(state, name) is None, name
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
     for name in State.__slots__:
         assert getattr(rebuilt, name) is getattr(state, name), name

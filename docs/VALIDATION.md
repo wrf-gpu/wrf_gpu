@@ -133,11 +133,16 @@ identity** of every field. The on-disk schema also carries the standard WRF
 restart variables (`U,V,W,T,P,PB,PH,PHB,MU,MUB,QVAPOR,…`, plus map factors,
 `XLAT/XLONG`, `TSLB/SMOIS/SH2O/…`).
 
-Latest CPU result: **PASS** — full-carry bit-identical `True`, stochastic-seed
-bit-identical `True`, schema version `v0.11.0-wrfrst-netcdf-2`.
+Latest current-tree CPU result (2026-07-31): **REGRESSED** — across
+`test_p0_5_restart_full_carry.py`, `test_v0110_wrfrst_netcdf.py`, and
+`test_m7_restart_checkpoint_roundtrip.py`, 10 tests pass and four NetCDF
+roundtrips fail in `_restart_dimension_sizes` after boundary-state schema growth.
+The serializer foundation remains, but structural restart is not currently green.
 
-> Scope: this is the **structural** bit-identity gate (the checkpoint format is
-> lossless). The multi-hour **forecast-continuity acceptance** gate — that a run
+> Scope: this is the **structural** bit-identity gate; the format was designed for
+> lossless continuation, but the current boundary-schema regression must be repaired
+> before that property is green again. The multi-hour **forecast-continuity acceptance**
+> gate — that a run
 > split at hour N, checkpointed, and restarted produces the identical trajectory
 > to an uninterrupted run — needs a GPU + the real corpus and is listed in the gap
 > table below.

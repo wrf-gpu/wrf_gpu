@@ -1,0 +1,332 @@
+{
+  "source_path": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD11",
+  "source_git_head": "b2d0b19d88616f1f6944da2d3a0b4945d9fc7d7c",
+  "reference": "original CPU-WRF v4; same install_gen2_dmpar binary as WN3 references",
+  "inputs": {
+    "namelist.input": {
+      "sha256": "98eb3e0457b53a510931401ad1575e980a716da4588f8cbca4be95fd92846039",
+      "bytes": 3701
+    },
+    "wrfinput_d01": {
+      "sha256": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781",
+      "bytes": 3991757
+    },
+    "wrfbdy_d01": {
+      "sha256": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230",
+      "bytes": 10084632
+    }
+  },
+  "wrf_executable": {
+    "path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+    "sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+  },
+  "physics": {
+    "mp": 8,
+    "lw": 4,
+    "sw": 4,
+    "lsm": 4,
+    "pbl": 5,
+    "sfclay": 5,
+    "cu": 0,
+    "dt_s": 18,
+    "radt_min": 10
+  },
+  "mpi_ranks": 4,
+  "cpus": [
+    8,
+    9,
+    12,
+    13
+  ],
+  "nice": 19,
+  "omp_num_threads": 1,
+  "wrf_rc": 0,
+  "wrf_success": true,
+  "forecast_hours": 24,
+  "frames": [
+    {
+      "file": "wrfout_d01_2023-01-15_00:00:00",
+      "bytes": 3930149,
+      "last_write_s": 2.5228018760681152,
+      "first_seen_s": 2.5280027389526367
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_01:00:00",
+      "bytes": 4971519,
+      "last_write_s": 11.163864135742188,
+      "first_seen_s": 11.215024471282959
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_02:00:00",
+      "bytes": 5064913,
+      "last_write_s": 19.796926498413086,
+      "first_seen_s": 19.875938177108765
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_03:00:00",
+      "bytes": 5129281,
+      "last_write_s": 28.993992805480957,
+      "first_seen_s": 29.084033489227295
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_04:00:00",
+      "bytes": 5163945,
+      "last_write_s": 38.116058588027954,
+      "first_seen_s": 38.30809473991394
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_05:00:00",
+      "bytes": 5150126,
+      "last_write_s": 48.12113070487976,
+      "first_seen_s": 48.07796621322632
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_06:00:00",
+      "bytes": 5104218,
+      "last_write_s": 62.481234312057495,
+      "first_seen_s": 62.50671648979187
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_07:00:00",
+      "bytes": 5067122,
+      "last_write_s": 72.30330514907837,
+      "first_seen_s": 72.25595617294312
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_08:00:00",
+      "bytes": 5171872,
+      "last_write_s": 82.03137516975403,
+      "first_seen_s": 81.93779516220093
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_09:00:00",
+      "bytes": 5205295,
+      "last_write_s": 91.9824469089508,
+      "first_seen_s": 92.1399598121643
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_10:00:00",
+      "bytes": 5240022,
+      "last_write_s": 102.35852193832397,
+      "first_seen_s": 102.36000680923462
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_11:00:00",
+      "bytes": 5302808,
+      "last_write_s": 113.30060076713562,
+      "first_seen_s": 113.58745574951172
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_12:00:00",
+      "bytes": 5517376,
+      "last_write_s": 124.6816828250885,
+      "first_seen_s": 124.8378472328186
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_13:00:00",
+      "bytes": 5636317,
+      "last_write_s": 136.11276531219482,
+      "first_seen_s": 136.04292011260986
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_14:00:00",
+      "bytes": 5672302,
+      "last_write_s": 148.49085450172424,
+      "first_seen_s": 148.836097240448
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_15:00:00",
+      "bytes": 5665134,
+      "last_write_s": 158.7059280872345,
+      "first_seen_s": 159.05605816841125
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_16:00:00",
+      "bytes": 5574019,
+      "last_write_s": 169.8050081729889,
+      "first_seen_s": 169.76796770095825
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_17:00:00",
+      "bytes": 5372111,
+      "last_write_s": 179.64407920837402,
+      "first_seen_s": 179.963032245636
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_18:00:00",
+      "bytes": 5290796,
+      "last_write_s": 188.34914183616638,
+      "first_seen_s": 188.63720154762268
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_19:00:00",
+      "bytes": 5213389,
+      "last_write_s": 196.435200214386,
+      "first_seen_s": 196.7799587249756
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_20:00:00",
+      "bytes": 5157292,
+      "last_write_s": 204.325257062912,
+      "first_seen_s": 204.41996312141418
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_21:00:00",
+      "bytes": 5136730,
+      "last_write_s": 212.08531308174133,
+      "first_seen_s": 212.0689253807068
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_22:00:00",
+      "bytes": 5196998,
+      "last_write_s": 220.14537119865417,
+      "first_seen_s": 220.2381088733673
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_23:00:00",
+      "bytes": 5160925,
+      "last_write_s": 228.020427942276,
+      "first_seen_s": 227.8880693912506
+    },
+    {
+      "file": "wrfout_d01_2023-01-16_00:00:00",
+      "bytes": 5135909,
+      "last_write_s": 236.45948886871338,
+      "first_seen_s": null
+    }
+  ],
+  "per_hour": {
+    "1": {
+      "steps": 200,
+      "main_s": 8.604230000000006
+    },
+    "2": {
+      "steps": 200,
+      "main_s": 8.63038
+    },
+    "3": {
+      "steps": 200,
+      "main_s": 9.165799999999997
+    },
+    "4": {
+      "steps": 200,
+      "main_s": 9.13029
+    },
+    "5": {
+      "steps": 200,
+      "main_s": 10.02770999999999
+    },
+    "6": {
+      "steps": 200,
+      "main_s": 14.291020000000012
+    },
+    "7": {
+      "steps": 200,
+      "main_s": 9.881239999999998
+    },
+    "8": {
+      "steps": 200,
+      "main_s": 9.721199999999998
+    },
+    "9": {
+      "steps": 200,
+      "main_s": 9.942499999999997
+    },
+    "10": {
+      "steps": 200,
+      "main_s": 10.381180000000004
+    },
+    "11": {
+      "steps": 200,
+      "main_s": 10.93142000000001
+    },
+    "12": {
+      "steps": 200,
+      "main_s": 11.353290000000005
+    },
+    "13": {
+      "steps": 200,
+      "main_s": 11.442239999999996
+    },
+    "14": {
+      "steps": 200,
+      "main_s": 12.365839999999997
+    },
+    "15": {
+      "steps": 200,
+      "main_s": 10.207210000000005
+    },
+    "16": {
+      "steps": 200,
+      "main_s": 11.087459999999998
+    },
+    "17": {
+      "steps": 200,
+      "main_s": 9.828000000000003
+    },
+    "18": {
+      "steps": 200,
+      "main_s": 8.698799999999999
+    },
+    "19": {
+      "steps": 200,
+      "main_s": 8.074419999999998
+    },
+    "20": {
+      "steps": 200,
+      "main_s": 7.906450000000002
+    },
+    "21": {
+      "steps": 200,
+      "main_s": 7.7509999999999994
+    },
+    "22": {
+      "steps": 200,
+      "main_s": 8.053479999999999
+    },
+    "23": {
+      "steps": 200,
+      "main_s": 7.8611799999999965
+    },
+    "24": {
+      "steps": 200,
+      "main_s": 8.438830000000001
+    }
+  },
+  "last_file_wall_s": 236.45948886871338,
+  "process_wall_s": 236.55940294265747,
+  "whole_s_per_forecast_hour": 9.852478702863058,
+  "main_s_per_forecast_hour": 9.740632083333333,
+  "timing_valid": true,
+  "rank_affinity": {
+    "3543866": [
+      8,
+      9,
+      12,
+      13
+    ],
+    "3543867": [
+      8,
+      9,
+      12,
+      13
+    ],
+    "3543868": [
+      8,
+      9,
+      12,
+      13
+    ],
+    "3543869": [
+      8,
+      9,
+      12,
+      13
+    ]
+  },
+  "verification_note": "WRF rc0/SUCCESS,25 exact hourly Times and4 permitted nice19 ranks independently verified. Raw runner complete=false reflects PG-only affinity scan: PRTE ranks have separate PGIDs but share the new session. No model/input/time changes.",
+  "raw_receipt": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD11/receipt.json",
+  "rank_affinity_audit": "<USER_HOME>/wrf_gpu2_lanes/release-docs/RD11/rank_affinity_audit.json",
+  "power_label": "U",
+  "power": "not measured"
+}

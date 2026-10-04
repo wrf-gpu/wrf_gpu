@@ -14,7 +14,7 @@ from typing import Any, NamedTuple
 import jax
 import jax.numpy as jnp
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.state import State, Tendencies

@@ -136,7 +136,7 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     assert "scalar_adv_opt" not in by_key
 
     # cudt=5 (cumulus sub-stepping cadence): NO LONGER fail-closed. It is a
-    # conservative approximation (the port runs cumulus every step), so it must
+    # WRF STEPCU cadence in the nested KF path, so it must
     # NOT appear as a failure -- a naive user with a real WRF namelist must RUN.
     assert "cudt" not in by_key
 
@@ -167,7 +167,7 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
         "topo_shading",
         "radt",
         "bldt",
-        "cudt",  # cudt>0 is an approximation WARNING now, never a failure
+        "cudt",  # KF cudt is implemented, never a failure
         "scalar_adv_opt",
         "h_sca_adv_order",
         "v_sca_adv_order",
@@ -181,10 +181,9 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     ):
         assert wired not in by_key, f"{wired} was wrongly fail-closed (it is implemented/wired/off)"
 
-    # And the cudt=5 approximation surfaces as a non-fatal WARNING (run proceeds).
+    # KF honors cudt=5 through WRF STEPCU, so there is no warning.
     cudt_warnings = [w for w in collect_namelist_warnings(REAL_WRF_NAMELIST) if "cudt" in w]
-    assert cudt_warnings, "cudt=5 must surface a non-fatal approximation warning"
-    assert any("every dynamics step" in w.lower() for w in cudt_warnings)
+    assert not cudt_warnings, "KF cudt=5 is implemented"
 
 
 def test_implemented_slope_topo_radiation_is_not_failed() -> None:
@@ -270,8 +269,8 @@ def test_recognized_control_keyspace_is_covered() -> None:
     assert promised_recognized <= RECOGNIZED_CONTROL_KEYS
     # slope_rad/topo_shading are recognized AND implemented (not fail-closed).
     assert {"slope_rad", "topo_shading"} <= IMPLEMENTED_CONTROL_KEYS
-    # cudt/bldt are the APPROXIMATED cadence controls (warn, do not reject).
-    assert {"cudt", "bldt"} == APPROXIMATED_CONTROL_KEYS
+    # Only bldt remains approximated; KF cudt uses WRF STEPCU.
+    assert {"bldt"} == APPROXIMATED_CONTROL_KEYS
     assert APPROXIMATED_CONTROL_KEYS <= RECOGNIZED_CONTROL_KEYS
 
 
@@ -332,33 +331,17 @@ REAL_CANARY_NAMELIST = """\
 """
 
 
-def test_real_canary_namelist_proceeds_with_cudt_warning() -> None:
-    """(a) The real Canary production namelist must PROCEED (no raise) and emit a
-    cudt cadence WARNING -- the naive-user out-of-box fix.
-
-    cudt=5 (and a positive bldt, were it set) is a conservative approximation
-    (the GPU port runs cumulus/PBL every step), so the operational validator does
-    NOT reject it. gwd_opt=1 is implemented; radt=30 is the radiation cadence;
-    everything else in this namelist is implemented/wired."""
-
-    # Neither the validation layer nor the strict OPERATIONAL run path may raise.
+def test_real_canary_namelist_proceeds_with_wrf_kf_cadence() -> None:
+    """The real Canary CUDT is applied by KF, with no approximation warning."""
     validate_namelist(REAL_CANARY_NAMELIST)
     validate_operational_namelist(REAL_CANARY_NAMELIST)
-
-    # The cudt approximation is surfaced as a non-fatal warning naming it.
-    warnings = collect_namelist_warnings(REAL_CANARY_NAMELIST)
-    cudt_warnings = [w for w in warnings if "cudt" in w]
-    assert cudt_warnings, "real Canary cudt=5 must emit a cadence warning"
-    text = " ".join(cudt_warnings).lower()
-    assert "every dynamics step" in text or "every step" in text
-    assert "approximation" in text
+    assert not any("cudt" in w for w in collect_namelist_warnings(REAL_CANARY_NAMELIST))
 
 
 def test_cadence_keys_are_approximation_warnings_not_rejections() -> None:
-    """cudt>0 and bldt>0 are RECOGNIZED_APPROXIMATED (warn, proceed) -- never a
-    fail-closed rejection."""
+    """PBL bldt warns; KF cudt is implemented and silent."""
 
-    for key, value in (("cudt", 5), ("bldt", 5), ("cudt", 10.5)):
+    for key, value in (("bldt", 5),):
         support = classify_control(key, value)
         assert support is not None
         assert support.status is SupportStatus.RECOGNIZED_APPROXIMATED, (
@@ -371,6 +354,11 @@ def test_cadence_keys_are_approximation_warnings_not_rejections() -> None:
         # And it surfaces a warning.
         warnings = collect_namelist_warnings({"physics": {key: [value]}})
         assert any(key in w for w in warnings)
+
+    for value in (5, 10.5):
+        assert classify_control("cudt", value).status is SupportStatus.IMPLEMENTED
+        validate_operational_namelist({"physics": {"cudt": [value]}})
+        assert not collect_namelist_warnings({"physics": {"cudt": [value]}})
 
     # cudt=0 / bldt=0 (the exactly-wired every-step request) pass with NO warning.
     assert classify_control("cudt", 0).status is SupportStatus.IMPLEMENTED

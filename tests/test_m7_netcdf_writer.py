@@ -806,8 +806,8 @@ def test_grid_id_is_only_semantic_change_for_every_written_variable(
     before, after = tmp_path / "before.nc", tmp_path / "after.nc"
     original = writer_module._write_global_attrs
 
-    def legacy_global_attrs(dataset, grid, namelist, dimensions, run_start, valid_time, _authority):
-        return original(dataset, grid, namelist, dimensions, run_start, valid_time, None)
+    def legacy_global_attrs(dataset, grid, namelist, dimensions, run_start, valid_time, _authority, **kwargs):
+        return original(dataset, grid, namelist, dimensions, run_start, valid_time, None, **kwargs)
 
     monkeypatch.setattr(writer_module, "_write_global_attrs", legacy_global_attrs)
     write_prepared_wrfout(

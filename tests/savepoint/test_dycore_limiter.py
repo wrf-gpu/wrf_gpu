@@ -5,6 +5,16 @@ import jax.numpy as jnp
 
 from gpuwrf.runtime.operational_mode import _positive_definite_theta_increment_limiter
 
+import pytest
+
+@pytest.fixture(autouse=True)
+def _legacy_fp64_dycore(monkeypatch):
+    """These tests pin the fp64 legacy dycore; GPUWRF_DYN_REAL_ALL (WRF REAL consumers)
+    has its own pristine REAL4 gates (tests/v025/b_diff). Flag-aware for the RC default flip."""
+    monkeypatch.setenv("GPUWRF_DYN_REAL_ALL", "0")
+    monkeypatch.setenv("GPUWRF_CARRY_REAL_ALL", "0")  # the v0.3 release pairs them; CARRY_REAL_ALL alone is refused
+
+
 
 def test_theta_positive_definite_limiter_counts_first_cell_and_conserves_mass() -> None:
     origin = jnp.full((1, 2, 3), 300.0, dtype=jnp.float64)

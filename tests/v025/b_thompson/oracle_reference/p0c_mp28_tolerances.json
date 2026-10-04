@@ -1,0 +1,22 @@
+{
+ "schema": "p0c_mp28_tolerances/1",
+ "contract": "P0_CLOSURE_CONTRACT.md rev 2 §3.4: the frozen Gate-2 atol/rtol on the shared fields + nc and nwfa bounds fixed before any result by the same ulp rule",
+ "frozen_gate2_tolerances_sha256": "5bdc03da9cd0099bce48e30de88e6c570114480728f0f12551cacaf137b48b41",
+ "level_mask": "warm_T_in_gt_275K",
+ "fields": {
+  "T":          {"atol": 0.03,   "rtol": 0.0},
+  "qv":         {"atol": 1.5e-5, "rtol": 0.0},
+  "qc":         {"atol": 1.5e-5, "rtol": 0.0},
+  "dT":         {"atol": 0.03,   "rtol": 0.0},
+  "dtheta_dry": {"atol": 0.03,   "rtol": 0.0},
+  "theta_m":    {"atol": 0.04,   "rtol": 0.0},
+  "nc":         {"atol": 1.0,    "rtol": 5.0e-4},
+  "nwfa":       {"atol": 1.0,    "rtol": 2.0e-4}
+ },
+ "derivation": {
+  "method": "as gate2_tolerances_PROPOSAL.md: the warm-level port/WRF input-T offset delta <= 0.015 K (Exner kappa, item 1) and the fp32 ulp, propagated one step, then x3 (Gate-2 qc: floor 5e-6 -> atol 1.5e-5)",
+  "nc": "working nc = Nc*rho and the activation source ~ nwfa*rho carry delta/T <= 0.015/280 = 5.4e-5 (rho ~ 1/T); the condensation-amount floor (<= 4e-6 kg/kg, item 2) enters the one-step number flux vtnc*nc ~ nc^(1/3) rc^(2/3) with a one-step sedimented fraction <= 1e-2: (2/3)(4e-6/3e-4)(1e-2) = 9e-5; fp32 output ulp 6e-8 (+ the production-arm carry): relative floor ~1.5e-4 -> rtol 5e-4 (x3, rounded up).  atol 1 per kg covers exact-zero clear levels.  Guard: the column tool refuses any activation level within 0.15 K (10 x delta) of an activ_ncloud 10-K T-bin edge, where nc would be discontinuous in T.",
+  "nwfa": "nwfa changes in one step only by the activation sink (relative noise <= 5.4e-5 of a change <= nwfa), the full-evaporation return and the surface emission nwfa2d*dt at level 1 (fp32 vs fp64 ~1e-7 of a <1e-2 fraction): relative floor ~6e-5 -> rtol 2e-4 (x3, rounded up); atol 1 per kg.",
+  "status": "pre-registered with the package, before any column generation, WRF run or port output; the shared-field values are the frozen Gate-2 values unchanged; per-level discriminators (p0c_aero_column_manifest) can only ADD failures"
+ }
+}

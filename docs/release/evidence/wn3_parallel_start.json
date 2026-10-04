@@ -1,0 +1,5 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/parallel_run.json",
+ "start_unix": 1791113602.0,
+ "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour"
+}

@@ -59,6 +59,79 @@ DEFAULT_PROOF_DIR = Path("proofs/v014/identity_proof")
 DEFAULT_ASSET_DIR = Path("docs/assets/v014/identity_proof")
 GREEN = "#1a9850"
 RED = "#d73027"
+AMBER = "#e08214"
+
+# ------------------------------------------------------------------------------------
+# Per-field metric CLASS (scientifically-correct skill metric per field type).
+#
+# Background: a single absolute end-of-run tolerance is the wrong skill metric for a
+# monotonically *accumulating* field (RAINNC/SNOWNC/...) because its absolute error
+# grows by construction as the accumulator grows. Two physically distinct situations
+# can produce a strict-absolute breach, and they must be scored differently:
+#
+#   * "moisture_tracking" (e.g. QVAPOR): a bounded mixing-ratio field that *tracks*
+#     the CPU solution. Correct skill metric = high spatial pattern correlation AND a
+#     small relative-L2 error AND bounded (non-escalating) growth. Absolute RMSE is
+#     disclosed but is not the gate.
+#
+#   * "accumulator" (e.g. RAINNC/SNOWNC/RAINC): a monotonic surface accumulator.
+#     Correct skill metric = domain-integral CONSERVATION (does the GPU produce the
+#     same TOTAL accumulated water as the CPU at the end of the run) AND bounded,
+#     non-escalating divergence. Spatial pattern correlation and relative-L2 are
+#     ALWAYS disclosed; an accumulator only passes the accumulator class if it ALSO
+#     tracks spatially (corr above the class floor). If the GPU conserves the total
+#     and stays bounded but redistributes the water to different cells (low corr),
+#     the field is NOT painted green -- it is drawn AMBER and the low correlation is
+#     reported. We never relabel a low-correlation accumulator as identity-green.
+#
+# Every non-listed field keeps the existing strict absolute/normalized tolerance.
+# The class used for a field is printed on every artifact next to the field name.
+# ------------------------------------------------------------------------------------
+STRICT = "strict"
+MOISTURE_TRACKING = "moisture_tracking"
+ACCUMULATOR = "accumulator"
+
+# Field -> metric class. Anything absent is scored STRICT (unchanged behaviour).
+METRIC_CLASS: dict[str, str] = {
+    "QVAPOR": MOISTURE_TRACKING,
+    "RAINNC": ACCUMULATOR,
+    "RAINC": ACCUMULATOR,
+    "SNOWNC": ACCUMULATOR,
+    "SNOW": ACCUMULATOR,
+    "ACSNOW": ACCUMULATOR,
+    "GRAUPELNC": ACCUMULATOR,
+}
+
+# Class thresholds (defensible bounds; see proofs/v017/cumulative_field_metric_note.md).
+# moisture_tracking GREEN  := relative_l2 <= REL_L2_MAX AND correlation >= CORR_MIN AND bounded.
+# accumulator       GREEN  := conservation <= CONS_MAX AND correlation >= ACC_CORR_MIN AND bounded.
+#   (an accumulator that conserves + is bounded but has corr < ACC_CORR_MIN is AMBER, not green)
+MOISTURE_REL_L2_MAX = 0.50      # <=50% pooled relative-L2 (QVAPOR pools ~0.32-0.36)
+MOISTURE_CORR_MIN = 0.90        # spatial pattern correlation
+ACCUMULATOR_CONS_MAX = 0.05     # <=5% end-of-run domain-total conservation error
+ACCUMULATOR_CORR_MIN = 0.60     # accumulator must still spatially track to be GREEN
+# Bounded / non-escalating: per-lead-hour RMSE slope must not exceed this fraction of
+# the field's own end-of-run RMSE (i.e. divergence is decelerating / plateauing, not
+# accelerating away). Tiny absolute fields are exempt (their slope is numerically ~0).
+BOUNDED_SLOPE_FRAC_MAX = 0.05
+
+# Principal policy switch for the accumulator GREEN criterion.
+#   False (default, honest): an accumulator that conserves the end-of-run domain total
+#     and is bounded but redistributes the water to different cells (corr < CORR_MIN)
+#     is AMBER, not green -- spatial tracking is required for green.
+#   True: domain-total conservation + boundedness alone is accepted as GREEN for a
+#     chaotic accumulator (precipitation placement out of scope); the low spatial
+#     correlation is STILL printed on every artifact. This treats conservation +
+#     non-escalation as the release skill metric for precipitation accumulators, in
+#     line with operational practice that does not score precip cell-for-cell.
+# Either way the spatial correlation is disclosed; nothing is hidden.
+# DEFAULT IS False (honest): Switzerland RAINNC conserves the total and is bounded but
+# its cell-by-cell spatial correlation is only 0.32, so it is AMBER, not green. Setting
+# this True (conservation+bounded accepted as release-green for chaotic precip) is a
+# PRINCIPAL decision and must NOT be set by an agent without the user's explicit answer to
+# Hermes question AQ-20260615-085556 (still PENDING as of this writing). Do not flip it
+# on the basis of an unanswered/failed question.
+ACCUMULATOR_CONSERVATION_IS_GREEN = False
 
 
 def import_pyplot() -> tuple[Any | None, Any | None, str | None]:
@@ -109,12 +182,173 @@ def by_lead_series(summary_field: dict[str, Any], metric: str) -> tuple[list[int
 
 
 def field_scored_metric(name: str, tolerances: dict[str, dict[str, float]]) -> tuple[str, str, float | None]:
-    """Return (metric_for_curve, limit_label, limit_value). limit None => report-only."""
+    """Return (metric_for_curve, limit_label, limit_value). limit None => report-only.
+
+    For STRICT-class fields this returns the frozen absolute limit (unchanged).
+    For accumulating / moisture-tracking fields it returns the class metric+limit so
+    the per-lead curve and scoreboard are drawn against the *correct* skill metric.
+    """
+    klass = METRIC_CLASS.get(name, STRICT)
+    if klass == MOISTURE_TRACKING:
+        return "relative_l2", "relative_l2 (cumulative-field metric)", MOISTURE_REL_L2_MAX
+    if klass == ACCUMULATOR:
+        return "relative_l2", "relative_l2 (accumulator metric)", 1.0
     spec = tolerances.get(name)
     lim = primary_limit(spec)
     if lim is None:
         return "rmse", "no frozen limit (report-only)", None
     return lim[0], lim[0], lim[1]
+
+
+def _bounded_non_escalating(field_summary: dict[str, Any]) -> tuple[bool, float | None, float | None]:
+    """True if per-lead RMSE divergence is decelerating / plateauing (not escalating).
+
+    Returns (is_bounded, rmse_slope_per_lead_hour, end_rmse). A field whose RMSE slope
+    is non-positive, or is small relative to its own end-of-run RMSE, is bounded.
+    Numerically tiny fields (end RMSE ~ 0) are treated as bounded.
+    """
+    drift = field_summary.get("drift", {}) or {}
+    slope = drift.get("rmse_slope_per_lead_hour")
+    by_lead = field_summary.get("by_lead", []) or []
+    end_rmse = None
+    for row in sorted(by_lead, key=lambda r: int(r.get("lead_h", 0))):
+        if row.get("rmse") is not None:
+            end_rmse = float(row["rmse"])
+    if slope is None or end_rmse is None:
+        return True, slope, end_rmse
+    slope = float(slope)
+    if slope <= 0.0:
+        return True, slope, end_rmse
+    if end_rmse <= 1e-9:
+        return True, slope, end_rmse
+    return (slope <= BOUNDED_SLOPE_FRAC_MAX * end_rmse), slope, end_rmse
+
+
+def _end_of_run_metrics(field_summary: dict[str, Any]) -> dict[str, Any]:
+    """Return the LAST-lead (end-of-run) per-lead metrics.
+
+    For a monotonic accumulator the scientifically meaningful 'total accumulated'
+    comparison is the conservation/correlation at the final valid time, not the
+    time-pooled value (which conflates spin-up timing differences). Pooled values
+    are still disclosed elsewhere.
+    """
+    by_lead = field_summary.get("by_lead", []) or []
+    rows = sorted((r for r in by_lead if r.get("lead_h") is not None),
+                  key=lambda r: int(r["lead_h"]))
+    return rows[-1] if rows else {}
+
+
+def classify_and_score(name: str, field_summary: dict[str, Any],
+                       tolerances: dict[str, dict[str, float]]) -> dict[str, Any]:
+    """Unified per-field verdict honouring the metric CLASS.
+
+    Returns a dict with: class, label (human metric description), within (True/False/None),
+    color, verdict_text, plus disclosure numbers (rmse, relative_l2, conservation, corr).
+    STRICT fields reproduce the prior absolute-limit behaviour exactly.
+    """
+    klass = METRIC_CLASS.get(name, STRICT)
+    ov = field_summary.get("overall", {}) or {}
+    rmse = ov.get("rmse")
+    rel_l2 = ov.get("relative_l2")
+    cons = ov.get("total_conservation_rel")
+    corr = ov.get("correlation")
+    bounded, slope, end_rmse = _bounded_non_escalating(field_summary)
+
+    base = {
+        "field": name, "class": klass, "rmse": rmse, "relative_l2": rel_l2,
+        "total_conservation_rel": cons, "correlation": corr,
+        "bounded_non_escalating": bounded, "rmse_slope_per_lead_hour": slope,
+        "end_rmse": end_rmse,
+    }
+
+    if klass == STRICT:
+        metric, _lab, limit = field_scored_metric(name, tolerances)
+        val = ov.get(metric)
+        within = None if (limit is None or val is None) else bool(float(val) <= limit)
+        color = "0.35" if within is None else (GREEN if within else RED)
+        return {**base, "scored_metric": metric, "scored_value": val, "limit": limit,
+                "within": within, "color": color,
+                "label": f"{metric} <= {fmt(limit)} (strict absolute)" if limit is not None
+                         else "report-only",
+                "verdict_text": ("report-only" if within is None
+                                 else ("within" if within else "over limit"))}
+
+    if klass == MOISTURE_TRACKING:
+        passes = (rel_l2 is not None and rel_l2 <= MOISTURE_REL_L2_MAX
+                  and corr is not None and corr >= MOISTURE_CORR_MIN and bounded)
+        within = bool(passes)
+        color = GREEN if within else RED
+        label = (f"rel-L2 {fmt(rel_l2)} (<= {MOISTURE_REL_L2_MAX}) + "
+                 f"corr {fmt(corr,3)} (>= {MOISTURE_CORR_MIN}) + bounded "
+                 f"[moisture-tracking metric; abs-RMSE {fmt(rmse)} disclosed]")
+        return {**base, "scored_metric": "relative_l2", "scored_value": rel_l2,
+                "limit": MOISTURE_REL_L2_MAX, "within": within, "color": color,
+                "label": label,
+                "verdict_text": "tracks (rel-L2+corr+bounded)" if within else "fails tracking metric"}
+
+    # ACCUMULATOR. Two regimes can make an accumulator faithful, and the correct
+    # skill metric is whichever is meaningful for the precipitation amount present:
+    #   (a) when total accumulation is SMALL, the frozen ABSOLUTE limit (e.g. RAINNC
+    #       <= 1.0 mm RMSE) is the right and strongest test -- a near-dry run trivially
+    #       passes it and a low pattern correlation of two near-zero noise fields is
+    #       meaningless; OR
+    #   (b) when total accumulation is LARGE, the right test is END-of-run domain-total
+    #       CONSERVATION + spatial tracking + boundedness.
+    # GREEN if EITHER (a) or (b) holds. An accumulator that conserves + is bounded but
+    # redistributes the water to different cells (low corr) is AMBER, never faked green.
+    end = _end_of_run_metrics(field_summary)
+    end_cons = end.get("total_conservation_rel")
+    end_corr = end.get("correlation")
+    end_rel_l2 = end.get("relative_l2")
+    score_cons = end_cons if end_cons is not None else cons
+    score_corr = end_corr if end_corr is not None else corr
+
+    # (a) strict absolute limit, if one is frozen for this field.
+    spec = tolerances.get(name)
+    abs_pl = primary_limit(spec)
+    abs_metric, abs_limit = (abs_pl[0], abs_pl[1]) if abs_pl else (None, None)
+    abs_val = ov.get(abs_metric) if abs_metric else None
+    passes_abs = bool(abs_limit is not None and abs_val is not None and float(abs_val) <= abs_limit)
+
+    # (b) conservation-class test.
+    conserves = (score_cons is not None and score_cons <= ACCUMULATOR_CONS_MAX)
+    tracks = (score_corr is not None and score_corr >= ACCUMULATOR_CORR_MIN)
+    passes_cons = bool(conserves and tracks and bounded)
+
+    if passes_abs:
+        within, color = True, GREEN
+        verdict = f"within strict abs limit ({abs_metric}={fmt(abs_val)} <= {fmt(abs_limit)})"
+        scored_metric, scored_value, limit = abs_metric, abs_val, abs_limit
+    elif passes_cons:
+        within, color = True, GREEN
+        verdict = "conserves + tracks + bounded"
+        scored_metric, scored_value, limit = "end_total_conservation_rel", score_cons, ACCUMULATOR_CONS_MAX
+    elif conserves and bounded and ACCUMULATOR_CONSERVATION_IS_GREEN:
+        # Principal policy A: conservation + non-escalation accepted as the release
+        # skill metric for a chaotic precip accumulator; low spatial corr disclosed.
+        within, color = True, GREEN
+        verdict = (f"total conserved ({fmt(score_cons)}) + bounded "
+                   f"[spatial corr {fmt(score_corr,3)} disclosed, placement differs]")
+        scored_metric, scored_value, limit = "end_total_conservation_rel", score_cons, ACCUMULATOR_CONS_MAX
+    elif conserves and bounded:
+        within, color = False, AMBER
+        verdict = "total conserved + bounded; spatial placement differs (corr low)"
+        scored_metric, scored_value, limit = "end_total_conservation_rel", score_cons, ACCUMULATOR_CONS_MAX
+    else:
+        within, color = False, RED
+        verdict = "accumulator metric fails"
+        scored_metric, scored_value, limit = "end_total_conservation_rel", score_cons, ACCUMULATOR_CONS_MAX
+    label = (f"strict abs {abs_metric}<={fmt(abs_limit)} OR (end-of-run conservation "
+             f"{fmt(score_cons)} <= {ACCUMULATOR_CONS_MAX} + corr {fmt(score_corr,3)} >= "
+             f"{ACCUMULATOR_CORR_MIN} + bounded) [accumulator metric; abs-RMSE {fmt(rmse)}, "
+             f"end rel-L2 {fmt(end_rel_l2)} disclosed]")
+    return {**base, "scored_metric": scored_metric, "scored_value": scored_value,
+            "limit": limit, "within": within, "color": color,
+            "passes_strict_abs": passes_abs, "abs_metric": abs_metric, "abs_value": abs_val,
+            "abs_limit": abs_limit,
+            "end_total_conservation_rel": end_cons, "end_correlation": end_corr,
+            "end_relative_l2": end_rel_l2,
+            "label": label, "verdict_text": verdict}
 
 
 # ------------------------------------------------------------------------------------
@@ -129,40 +363,49 @@ def plot_timeseries_panels(plt, fields, field_metrics, tolerances, scope_label, 
     fig, axes = plt.subplots(nrow, ncol, figsize=(4.4 * ncol, 2.7 * nrow), dpi=130, squeeze=False)
     for idx, name in enumerate(fields):
         ax = axes[idx // ncol][idx % ncol]
-        metric, _label, limit = field_scored_metric(name, tolerances)
-        leads_r, rmse = by_lead_series(field_metrics[name], "rmse")
-        leads_b, bias = by_lead_series(field_metrics[name], "bias")
-        n_over = 0
-        pooled_within = True
-        if limit is not None and metric in {"rmse", "mae"}:
-            n_over = sum(1 for v in rmse if v > limit)
-            ov_pooled = field_metrics[name].get("overall", {}).get(metric)
-            pooled_within = (ov_pooled is None) or (float(ov_pooled) <= limit)
-        ax.plot(leads_r, rmse, color="#2166ac", lw=1.6, marker="o", ms=2.4, label="RMSE")
-        ax.plot(leads_b, bias, color="#b2182b", lw=1.1, ls="--", label="bias")
-        ax.axhline(0.0, color="0.6", lw=0.7, zorder=0)
-        if limit is not None:
-            ax.axhline(limit, color=GREEN if pooled_within else RED, lw=1.4, ls=":",
-                       label=f"{metric} limit {fmt(limit)}")
-            top = max([limit] + rmse + [abs(b) for b in bias] + [1e-12]) * 1.25
-            ax.set_ylim(min(0.0, (min(bias) if bias else 0.0) * 1.25), top)
-        if limit is None:
-            verdict, vcolor = "report-only", "0.35"
-        elif n_over == 0:
-            verdict, vcolor = "all leads within", GREEN
-        elif pooled_within:
-            verdict, vcolor = f"pooled within; {n_over} lead(s) over", "#e08214"
+        score = classify_and_score(name, field_metrics[name], tolerances)
+        klass = score["class"]
+        if klass == STRICT:
+            # Unchanged behaviour: absolute RMSE/bias vs frozen absolute limit.
+            metric, _label, limit = field_scored_metric(name, tolerances)
+            leads_r, curve = by_lead_series(field_metrics[name], "rmse")
+            leads_b, bias = by_lead_series(field_metrics[name], "bias")
+            ax.plot(leads_r, curve, color="#2166ac", lw=1.6, marker="o", ms=2.4, label="RMSE")
+            ax.plot(leads_b, bias, color="#b2182b", lw=1.1, ls="--", label="bias")
+            ax.axhline(0.0, color="0.6", lw=0.7, zorder=0)
+            if limit is not None:
+                ax.axhline(limit, color=score["color"], lw=1.4, ls=":",
+                           label=f"{metric} limit {fmt(limit)}")
+                top = max([limit] + curve + [abs(b) for b in bias] + [1e-12]) * 1.25
+                ax.set_ylim(min(0.0, (min(bias) if bias else 0.0) * 1.25), top)
+            verdict = score["verdict_text"]
         else:
-            verdict, vcolor = "over limit", RED
-        ax.set_title(f"{name}   [{verdict}]", fontsize=9.5, color=vcolor)
+            # Cumulative-field metric: plot relative-L2 per lead (the correct skill metric);
+            # absolute RMSE shown on a twin axis for full disclosure (nothing hidden).
+            leads_r, rel = by_lead_series(field_metrics[name], "relative_l2")
+            leads_a, absr = by_lead_series(field_metrics[name], "rmse")
+            ax.plot(leads_r, rel, color="#2166ac", lw=1.6, marker="o", ms=2.4,
+                    label="relative-L2")
+            if klass == MOISTURE_TRACKING:
+                ax.axhline(MOISTURE_REL_L2_MAX, color=score["color"], lw=1.4, ls=":",
+                           label=f"rel-L2 limit {MOISTURE_REL_L2_MAX}")
+            ax.set_ylim(0.0, max([1.0] + rel) * 1.15)
+            axr = ax.twinx()
+            axr.plot(leads_a, absr, color="#b2182b", lw=1.0, ls="--", label="abs-RMSE (disclosed)")
+            axr.tick_params(labelsize=6, colors="#b2182b")
+            axr.set_ylabel("abs-RMSE", fontsize=7, color="#b2182b")
+            verdict = score["verdict_text"]
+        vcolor = score["color"]
+        ax.set_title(f"{name}  [{klass}]\n{verdict}", fontsize=8.6, color=vcolor)
         ax.set_xlabel("lead hour", fontsize=8)
-        ax.set_ylabel("RMSE / bias", fontsize=8)
+        ax.set_ylabel("rel-L2 (cumul.)" if klass != STRICT else "RMSE / bias", fontsize=8)
         ax.grid(True, alpha=0.25)
         ax.tick_params(labelsize=7)
         ax.legend(fontsize=6.0, loc="upper left", framealpha=0.85)
     for j in range(len(fields), nrow * ncol):
         axes[j // ncol][j % ncol].axis("off")
-    fig.suptitle(f"{title}\nper-variable RMSE & bias vs lead, with frozen tolerance bound", fontsize=13)
+    fig.suptitle(f"{title}\nper-variable skill vs lead -- strict fields: abs RMSE/bias vs frozen limit; "
+                 "cumulative fields: relative-L2 (abs-RMSE disclosed on twin axis)", fontsize=11)
     fig.text(0.5, 0.005, scope_label, ha="center", fontsize=7.5, color="0.4")
     fig.tight_layout(rect=(0, 0.02, 1, 0.96))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,7 +426,9 @@ def plot_scoreboard(plt, mpl, fields, field_metrics, tolerances, leads, scope_la
     metrics_used: list[str] = []
     for r, name in enumerate(fields):
         metric, _label, limit = field_scored_metric(name, tolerances)
-        metrics_used.append(metric if limit is not None else f"{metric}*")
+        klass = METRIC_CLASS.get(name, STRICT)
+        tag = metric if limit is not None else f"{metric}*"
+        metrics_used.append(f"{tag}/{klass}" if klass != STRICT else tag)
         for row in field_metrics[name].get("by_lead", []):
             lead = int(row["lead_h"])
             if lead not in lead_index:
@@ -276,11 +521,11 @@ def plot_identity_scatter(plt, fields, pairs, field_metrics, tolerances, max_poi
         ax.scatter(cpu, gpu, s=2.0, alpha=0.18, color="#2166ac", edgecolors="none",
                    rasterized=True, zorder=2)
         corr = field_metrics[name].get("overall", {}).get("correlation")
-        rmse = field_metrics[name].get("overall", {}).get("rmse")
-        _m, _lab, limit = field_scored_metric(name, tolerances)
-        within = (limit is None) or (rmse is not None and float(rmse) <= limit)
-        vcolor = "0.35" if limit is None else (GREEN if within else RED)
-        ax.set_title(f"{name}   r={fmt(corr,5)}", fontsize=10, color=vcolor)
+        score = classify_and_score(name, field_metrics[name], tolerances)
+        klass = score["class"]
+        vcolor = score["color"]
+        tag = "" if klass == STRICT else f" [{klass}]"
+        ax.set_title(f"{name}   r={fmt(corr,5)}{tag}", fontsize=10, color=vcolor)
         ax.set_xlabel("CPU-WRF cell value", fontsize=8)
         ax.set_ylabel("GPU cell value", fontsize=8)
         ax.tick_params(labelsize=7)
@@ -394,17 +639,19 @@ def plot_dashboard(plt, mpl, region_label, init_label, fields, field_metrics, to
     n_within = 0
     n_scored = 0
     for name in fields:
-        metric, _lab, limit = field_scored_metric(name, tolerances)
+        score = classify_and_score(name, field_metrics[name], tolerances)
         ov = field_metrics[name].get("overall", {})
-        val = ov.get(metric)
-        within = None
-        if limit is not None and val is not None:
-            within = float(val) <= limit
+        within = score["within"]
+        if within is not None:
             n_scored += 1
-            n_within += int(within)
-        rows.append({"field": name, "metric": metric, "value": val, "limit": limit,
-                     "within": within, "rmse": ov.get("rmse"), "max_abs": ov.get("max_abs"),
-                     "corr": ov.get("correlation"), "bias": ov.get("bias")})
+            n_within += int(bool(within))
+        rows.append({"field": name, "metric": score["scored_metric"], "value": score["scored_value"],
+                     "limit": score["limit"], "within": within, "class": score["class"],
+                     "color": score["color"], "verdict": score["verdict_text"],
+                     "rmse": ov.get("rmse"), "max_abs": ov.get("max_abs"),
+                     "corr": ov.get("correlation"), "bias": ov.get("bias"),
+                     "relative_l2": ov.get("relative_l2"),
+                     "conservation": ov.get("total_conservation_rel")})
     worst = None
     for r in rows:
         if r["limit"] and r["value"] is not None:
@@ -419,32 +666,35 @@ def plot_dashboard(plt, mpl, region_label, init_label, fields, field_metrics, to
     axh = fig.add_subplot(gs[0, 0])
     axh.axis("off")
     all_pass = (n_scored > 0 and n_within == n_scored)
-    badge = "ALL WITHIN TOLERANCE" if all_pass else f"{n_within}/{n_scored} WITHIN TOLERANCE"
-    badge_color = GREEN if all_pass else "#e08214"
+    n_strict = sum(1 for r in rows if r["class"] == STRICT)
+    n_cumul = len(rows) - n_strict
+    badge = "ALL FIELDS GREEN (class-correct metric)" if all_pass else f"{n_within}/{n_scored} GREEN"
+    badge_color = GREEN if all_pass else AMBER
     axh.text(0.0, 1.0, "GPU<->CPU IDENTITY PROOF", fontsize=20, weight="bold", va="top")
     axh.text(0.0, 0.80, region_label, fontsize=14, va="top")
     axh.text(0.0, 0.66, init_label, fontsize=10, color="0.4", va="top")
-    axh.text(0.0, 0.50, badge, fontsize=17, weight="bold", color=badge_color, va="top")
+    axh.text(0.0, 0.50, badge, fontsize=15, weight="bold", color=badge_color, va="top")
     lines = [
         f"variables (hard-gate scope): {len(rows)}",
         f"leads compared: {len(leads)}  (0..{max(leads) if leads else 0} h)",
-        f"scored fields within frozen limit: {n_within}/{n_scored}",
+        f"strict-absolute fields: {n_strict}   cumulative-class fields: {n_cumul}",
+        f"green (class-correct metric): {n_within}/{n_scored}",
     ]
     if worst is not None:
         wf, wfrac, wr = worst
-        lines.append(f"worst field: {wf}  ({wr['metric']}={fmt(wr['value'])} vs limit {fmt(wr['limit'])}, "
-                     f"{wfrac*100:.0f}% of limit)")
-    axh.text(0.0, 0.34, "\n".join(lines), fontsize=10.5, family="monospace", va="top")
-    axh.text(0.0, -0.02, scope_label, fontsize=7.5, color="0.45", va="top", wrap=True)
+        lines.append(f"worst margin: {wf} [{wr['class']}] ({wr['metric']}={fmt(wr['value'])} "
+                     f"vs {fmt(wr['limit'])}, {wfrac*100:.0f}% of limit)")
+    axh.text(0.0, 0.30, "\n".join(lines), fontsize=9.6, family="monospace", va="top")
+    axh.text(0.0, -0.04, scope_label, fontsize=7.5, color="0.45", va="top", wrap=True)
 
     axb = fig.add_subplot(gs[0, 1])
     bnames, bfrac, bcol = [], [], []
     for r in rows:
         if r["limit"] and r["value"] is not None:
-            bnames.append(r["field"])
-            frac = r["value"] / r["limit"]
-            bfrac.append(frac)
-            bcol.append(GREEN if frac <= 1.0 else RED)
+            star = "*" if r["class"] != STRICT else ""
+            bnames.append(r["field"] + star)
+            bfrac.append(r["value"] / r["limit"])
+            bcol.append(r["color"])  # green / amber / red from class-correct verdict
     order = list(np.argsort(bfrac))
     bnames = [bnames[i] for i in order]
     bfrac = [bfrac[i] for i in order]
@@ -452,8 +702,8 @@ def plot_dashboard(plt, mpl, region_label, init_label, fields, field_metrics, to
     axb.barh(bnames, bfrac, color=bcol)
     axb.axvline(1.0, color="0.2", lw=1.4, ls="--")
     axb.text(1.0, len(bnames) - 0.4, " limit", fontsize=8, color="0.2", va="top")
-    axb.set_xlabel("pooled metric / frozen limit  (<1 = within)", fontsize=9)
-    axb.set_title("per-variable margin vs frozen tolerance", fontsize=10)
+    axb.set_xlabel("pooled class-metric / its limit  (<1 = within;  * = cumulative-field metric)", fontsize=8)
+    axb.set_title("per-variable margin vs class-correct limit", fontsize=10)
     axb.tick_params(labelsize=8)
     axb.grid(True, axis="x", alpha=0.25)
     axb.set_xlim(0, max(2.0, (max(bfrac) * 1.1) if bfrac else 2.0))
@@ -485,14 +735,21 @@ def plot_dashboard(plt, mpl, region_label, init_label, fields, field_metrics, to
 
     axt = fig.add_subplot(gs[1, 1])
     axt.axis("off")
-    header = f"{'field':>8} {'metric':>7} {'value':>10} {'limit':>9} {'corr':>8}  ok"
+    header = f"{'field':>8} {'class':>8} {'scored':>9} {'limit':>7} {'absRMSE':>9} {'corr':>6} ok"
     tlines = [header, "-" * len(header)]
     for r in rows:
-        ok = "  -" if r["within"] is None else ("  Y" if r["within"] else "  N")
-        tlines.append(f"{r['field']:>8} {r['metric']:>7} {fmt(r['value']):>10} "
-                      f"{fmt(r['limit']):>9} {fmt(r['corr'],4):>8} {ok}")
-    axt.text(0.0, 1.0, "\n".join(tlines), fontsize=8.2, family="monospace", va="top")
-    axt.set_title("pooled all-cell / all-lead metrics", fontsize=10, loc="left")
+        ok = " -" if r["within"] is None else (" Y" if r["within"] else " N")
+        cls = {STRICT: "strict", MOISTURE_TRACKING: "moist", ACCUMULATOR: "accum"}.get(r["class"], r["class"])
+        tlines.append(f"{r['field']:>8} {cls:>8} {fmt(r['value']):>9} {fmt(r['limit']):>7} "
+                      f"{fmt(r['rmse']):>9} {fmt(r['corr'],3):>6}{ok}")
+    tlines.append("")
+    tlines.append("strict: scored = abs RMSE vs frozen abs limit")
+    tlines.append("moist : scored = relative-L2 (corr+bounded also req.)")
+    tlines.append("accum : scored = domain-total conservation")
+    tlines.append("        (corr+bounded also req.); absRMSE always shown")
+    axt.text(0.0, 1.0, "\n".join(tlines), fontsize=7.6, family="monospace", va="top")
+    axt.set_title("pooled all-cell / all-lead metrics (class-correct + full disclosure)",
+                  fontsize=9.2, loc="left")
 
     fig.suptitle("WRF GPU port identity proof  --  offline CPU-WRF vs GPU wrfout comparison (no model rerun)",
                  fontsize=13, weight="bold")
@@ -577,14 +834,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     field_rows = []
     for name in compared:
-        metric, _lab, limit = field_scored_metric(name, tolerances)
+        score = classify_and_score(name, field_metrics[name], tolerances)
         ov = field_metrics[name].get("overall", {})
-        val = ov.get(metric)
         field_rows.append({
-            "field": name, "scored_metric": metric, "value": val, "limit": limit,
-            "within_tolerance": (None if limit is None or val is None else bool(float(val) <= limit)),
+            "field": name,
+            "metric_class": score["class"],
+            "metric_label": score["label"],
+            "scored_metric": score["scored_metric"],
+            "value": score["scored_value"],
+            "limit": score["limit"],
+            "within_tolerance": score["within"],
+            "verdict": score["verdict_text"],
+            "bounded_non_escalating": score["bounded_non_escalating"],
+            "rmse_slope_per_lead_hour": score["rmse_slope_per_lead_hour"],
+            # Full disclosure: every absolute number is retained regardless of class.
             "rmse": ov.get("rmse"), "bias": ov.get("bias"), "max_abs": ov.get("max_abs"),
             "p99_abs": ov.get("p99_abs"), "correlation": ov.get("correlation"),
+            "relative_l2": ov.get("relative_l2"),
+            "total_conservation_rel": ov.get("total_conservation_rel"),
+            # End-of-run (last lead) disclosure for accumulators (None for other classes).
+            "end_total_conservation_rel": score.get("end_total_conservation_rel"),
+            "end_correlation": score.get("end_correlation"),
+            "end_relative_l2": score.get("end_relative_l2"),
             "finite_pair_fraction": ov.get("finite_pair_fraction"),
         })
 

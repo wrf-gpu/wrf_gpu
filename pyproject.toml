@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpuwrf"
-version = "0.23.4"
+version = "0.3.0"
 description = "A GPU-native WRF-compatible regional NWP model (JAX dynamical core + physics)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,6 +42,9 @@ gpuwrf = "gpuwrf.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"gpuwrf.physics" = ["surface_most_tables_v1.npz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "evals/agentos"]

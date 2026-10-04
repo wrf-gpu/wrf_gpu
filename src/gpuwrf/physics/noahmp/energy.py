@@ -45,6 +45,10 @@ from __future__ import annotations
 from typing import NamedTuple
 
 import jax.numpy as jnp
+from gpuwrf.kernels.phys_noahmp_columns import column_call, columns_enabled, in_column_kernel
+from jax import lax
+import os
+from gpuwrf.physics.noahmp.precision import real_dtype, real_scalar, real_tree
 
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.energy_radiation import TwoStreamParams, radiation_twostream
@@ -344,7 +348,25 @@ def sfcdif1(it, sfctmp, rhoair, h, qair, zlvl, zpd, z0m, z0h, ur,
     cm = VKC * VKC / (cmfm * cmfm)
     ch = VKC * VKC / (cmfm * chfh)
     fv = ur * jnp.sqrt(cm)
-    return cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2
+    result = (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2)
+    if (os.environ.get("GPUWRF_NOAHMP_NATIVE_REAL", "0") == "1"
+            and os.environ.get("GPUWRF_NOAHMP_ITERATION_BARRIER", "0") == "1"
+            and not in_column_kernel()):
+        result = lax.optimization_barrier(result)
+    return result
+
+
+def _history_firewall(values):
+    """Fusion firewall for the Noah land-history exports (A22/A23 class, b-diff BD74).
+
+    The history values leave the Python-unrolled _vege_flux/stomata iterations for new carry
+    accumulators; without a barrier XLA merges their loop-carry layout copies into the Noah
+    energy fusions (kInput transpose emitter). Values pass through unchanged."""
+    if (os.environ.get("GPUWRF_NOAHMP_NATIVE_REAL", "0") == "1"
+            and os.environ.get("GPUWRF_NOAHMP_ITERATION_BARRIER", "0") == "1"
+            and os.environ.get("GPUWRF_NOAHMP_HISTORY_BARRIER", "1") != "0"):
+        return lax.optimization_barrier(values)
+    return values
 
 
 # ----------------------------------------------------------------------------------
@@ -381,7 +403,7 @@ def ragrb(it, vaie, rhoair, hg, tah, zpd, z0mg, z0hg, hcan, uc, z0h, fv, cwp, fh
 # ----------------------------------------------------------------------------------
 # STOMATA (module_sf_noahmplsm.F:5005-5137) — Ball-Berry, opt_crs=1
 # ----------------------------------------------------------------------------------
-def stomata(apar, foln, tv, ei, ea, sfctmp, sfcprs, fveg, o2, co2, igs, rb, btran, p: EnergyParams):
+def stomata(apar, foln, tv, ei, ea, sfctmp, sfcprs, fveg, o2, co2, igs, rb, btran, p: EnergyParams, *, history=False):
     """Ball-Berry leaf stomatal resistance RS [s/m]. Vectorized."""
     apar_scale = apar / jnp.maximum(fveg, 1.0e-6)
     cf = sfcprs / (8.314 * sfctmp) * 1.0e06
@@ -419,7 +441,7 @@ def stomata(apar, foln, tv, ei, ea, sfctmp, sfcprs, fveg, o2, co2, igs, rb, btra
         ci = jnp.maximum(cs - psn * sfcprs * 1.65 * rs, 0.0)
     rs = rs * cf
     rs = jnp.where(apar_scale <= 0.0, rs0, rs)
-    return rs
+    return (rs, jnp.where(apar_scale > 0, psn, 0)) if history else rs
 
 
 # ==================================================================================
@@ -467,7 +489,7 @@ def _full_dz(land_state):
     first = NSNOW + isnow                           # concat index of ISNOW+1
     nl = NSNOW + NSOIL
     iz = jnp.arange(nl).reshape((-1,) + (1,) * isnow.ndim)
-    zprev = jnp.concatenate([jnp.zeros((1,) + z.shape[1:]), z[:-1]], axis=0)
+    zprev = jnp.concatenate([jnp.zeros((1,) + z.shape[1:], dtype=real_dtype()), z[:-1]], axis=0)
     dz_diff = zprev - z                             # ZSNSO(IZ-1)-ZSNSO(IZ)
     dz_first = -z                                   # -ZSNSO(IZ) for the top active
     is_first = iz == first[None, ...]
@@ -483,7 +505,7 @@ def _full_dz(land_state):
 def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
                zlvl, zpd, z0m, z0mg, hcan, ur, emv, emg, gammav, gammag, rsurf,
                rhsur, latheav, dt, o2air, co2air, foln, btran, fsno,
-               pahv, pahg):
+               pahv, pahg, *, history=False):
     """VEGE_FLUX (:3578-4170): TV / TAH-EAH / TG Newton-Raphson, vectorized.
 
     Newton loop1 uses WRF's finite-iteration semantics (:4075-4080): once
@@ -540,6 +562,7 @@ def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
     hg = jnp.zeros_like(tah)
     rssun = jnp.zeros_like(tah)
     rssha = jnp.zeros_like(tah)
+    psnsun = psnsha = jnp.zeros_like(tah)
     irc = shc = evc = tr = jnp.zeros_like(tah)
     cah = jnp.zeros_like(tah)
     canhs = jnp.zeros_like(tah)
@@ -552,26 +575,45 @@ def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
     liter = jnp.zeros_like(tah, dtype=bool)   # this sweep is the last
     active = jnp.ones_like(tah, dtype=bool)    # column still iterating
 
-    for it in range(1, NITERC + 1):
+    carry = (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+             rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+             canhs, liter, active)
+    hist = {}  # history only: PSNSUN/PSNSHA of the ITER==1 STOMATA call
+    carry = (carry, (jnp.zeros_like(tah),) if history else ())  # + CHLEAF = the last sweep's CVH (not frozen)
+
+    def sweep(it, carry):
+        # ``it``: Python int (unrolled XLA loop) or traced (column kernel sweeps 2..NITERC);
+        # sfcdif1/ragrb/stomata branch only on ``it == 1``.
+        (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+         rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+         canhs, liter, active) = carry[0]
+        first = isinstance(it, int) and it == 1
+        it_s = 1 if first else 2
         # frozen carries (restored where a column has stopped iterating)
         prev = (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
                 rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
                 canhs)
 
         cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2 = sfcdif1(
-            it, sfctmp, rhoair, h, qair, zlvl, zpd, z0m, z0h, ur,
+            it_s, sfctmp, rhoair, h, qair, zlvl, zpd, z0m, z0h, ur,
             moz, mozsgn, fm, fh, fm2, fh2, fv,
         )
         rahc = jnp.maximum(1.0, 1.0 / (ch * ur))
         rahg, rawg, rb, fhg = ragrb(
-            it, vaie, rhoair, hg, tah, zpd, z0mg, z0hg, hcan, uc, z0h, fv, p.cwpvt, fhg, p.dleaf
+            it_s, vaie, rhoair, hg, tah, zpd, z0mg, z0hg, hcan, uc, z0h, fv, p.cwpvt, fhg, p.dleaf
         )
         estv, destv = _es_dest(tv)
-        if it == 1:
-            rssun = stomata(parsun, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
-                            o2air, co2air, igs, rb, btran, p)
-            rssha = stomata(parsha, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
-                            o2air, co2air, igs, rb, btran, p)
+        if first:
+            if history:
+                rssun, hist["psnsun"] = stomata(parsun, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
+                                       o2air, co2air, igs, rb, btran, p, history=True)
+                rssha, hist["psnsha"] = stomata(parsha, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
+                                       o2air, co2air, igs, rb, btran, p, history=True)
+            else:
+                rssun = stomata(parsun, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
+                                o2air, co2air, igs, rb, btran, p)
+                rssha = stomata(parsha, foln, tv, estv, eah, sfctmp, sfcprs, fveg,
+                                o2air, co2air, igs, rb, btran, p)
 
         cah = 1.0 / rahc
         cvh = 2.0 * vaie / rb
@@ -633,6 +675,19 @@ def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
         (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
          rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
          canhs) = frozen
+        return ((cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+                 rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+                 canhs, liter, active), (cvh,) if history else ())
+
+    if in_column_kernel():  # one sweep body inside the Triton kernel (#14)
+        carry = lax.fori_loop(2, NITERC + 1, sweep, sweep(1, carry))
+    else:
+        for it in range(1, NITERC + 1):
+            carry = sweep(it, carry)
+    (cm, ch, fv, moz, mozsgn, fm, fh, fm2, fh2, fhg, rahg, rawg, rb,
+     rssun, rssha, cah, irc, shc, evc, tr, tah, eah, tv, h, hg, qsfc,
+     canhs, liter, active), last = carry
+    psnsun, psnsha = hist.get("psnsun", psnsun), hist.get("psnsha", psnsha)
 
     # under-canopy ground loop (loop2)
     air_g = -emg * (1.0 - emv) * lwdn - emg * emv * SB * tv ** 4
@@ -685,18 +740,27 @@ def _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
         tah,
         tah - (shg + shc / fveg_safe) / (rhoair * CPAIR) * (1.0 / cah2),
     )
+    # 2-m specific humidity over the VEGETATED tile (Q2V, :4153-4161): CQ2V = CAH2,
+    # canopy-air QSFC, final EVC/TR/EVG, LATHEAV; CAH2<1e-5 falls back to QSFC.
+    q2v = jnp.where(
+        cah2 < 1.0e-5,
+        qsfc,
+        qsfc - ((evc + tr) / fveg_safe + evg) / (latheav * rhoair) * (1.0 / cah2),
+    )
 
     return {
         "irc": irc, "shc": shc, "evc": evc, "tr": tr,
         "irg": irg, "shg": shg, "evg": evg, "ghv": gh,
         "tv": tv, "tg": tg, "tah": tah, "eah": eah,
         "cm": cm, "chv": cah, "qsfc": qsfc, "canhs": canhs,
-        "t2mv": t2mv,
+        "t2mv": t2mv, "q2v": q2v,
+        **({"chleaf": last[0], "chuc": 1.0 / rahg, "chv2": cah2, "rssun": rssun, "rssha": rssha,
+            "psnsun": psnsun, "psnsha": psnsha} if history else {}),
     }
 
 
 def gammag_of(land_state, forcing):
-    latheag = jnp.where(land_state.tg > TFRZ, HVAP, HSUB)
+    latheag = jnp.where(land_state.tg > TFRZ, real_scalar(HVAP), real_scalar(HSUB))
     return CPAIR * forcing.sfcprs / (0.622 * latheag)
 
 
@@ -791,9 +855,17 @@ def _bare_flux(land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
         tgb,
         tgb - shb / (rhoair * CPAIR) * (1.0 / ehb2),
     )
+    # 2-m specific humidity over the BARE tile (Q2B, :4465-4472): CQ2B = EHB2, bare
+    # QSFC at the final TGB, LATHEA = ENERGY's LATHEAG; EHB2<1e-5 falls back to QSFC.
+    lathea = jnp.where(land_state.tg > TFRZ, real_scalar(HVAP), real_scalar(HSUB))
+    q2b = jnp.where(
+        ehb2 < 1.0e-5,
+        qsfc,
+        qsfc - evb / (lathea * rhoair) * (1.0 / ehb2 + rsurf),
+    )
 
     return {"irb": irb, "shb": shb, "evb": evb, "ghb": ghb, "tgb": tgb,
-            "cm": cm, "ch": ehb, "qsfc": qsfc, "t2mb": t2mb}
+            "cm": cm, "ch": ehb, "qsfc": qsfc, "t2mb": t2mb, "q2b": q2b, "chb2": ehb2}
 
 
 # ==================================================================================
@@ -816,6 +888,7 @@ def noahmp_energy_canopy(
     pahg_kw: jnp.ndarray | float = 0.0,
     pahb_kw: jnp.ndarray | float = 0.0,
     isurban: int | None = None,
+    history: bool = False,
 ) -> tuple[NoahMPLandState, NoahMPEnergyFluxes, NoahMPEtFluxes]:
     """Canopy/ground surface-energy balance — THE HFX FIX.
 
@@ -831,6 +904,10 @@ def noahmp_energy_canopy(
     otherwise from the keyword fallbacks below (PAH=0 no-precip; carbon from the
     WRF block ``co2air=395e-6*SFCPRS``, ``o2air=0.209*SFCPRS``).
     """
+    land_state, forcing, static, rad, phen, params, rad_extras = real_tree(
+        (land_state, forcing, static, rad, phen, params, rad_extras))
+    o2air, co2air, foln, pahv_kw, pahg_kw, pahb_kw = real_tree(
+        (o2air, co2air, foln, pahv_kw, pahg_kw, pahb_kw))
     radd = {
         "sav": rad.sav, "sag": rad.sag, "parsun": rad.parsun, "parsha": rad.parsha,
         "laisun": rad_extras["laisun"], "laisha": rad_extras["laisha"],
@@ -895,7 +972,7 @@ def noahmp_energy_canopy(
         nroot_cell = jnp.clip(jnp.asarray(p.nroot_cell, dtype=jnp.int32), 0, nroot)
     root_depth = -zsoil[jnp.maximum(nroot_cell, 1) - 1]
     btran = jnp.zeros_like(fveg)
-    btrani = jnp.zeros((NSOIL,) + fveg.shape)
+    btrani = jnp.zeros((NSOIL,) + fveg.shape, dtype=real_dtype())
     for iz in range(nroot):
         active_root = (iz + 1) <= nroot_cell
         gx = (sh2o[iz] - p.smcwlt[iz]) / (p.smcref[iz] - p.smcwlt[iz])
@@ -924,17 +1001,28 @@ def noahmp_energy_canopy(
     rhsur = fsno + (1.0 - fsno) * jnp.exp(psi * GRAV / (RW * land_state.tg))
 
     # psychrometric constants (ENERGY :2210-2226)
-    latheav = jnp.where(land_state.tv > TFRZ, HVAP, HSUB)
+    latheav = jnp.where(land_state.tv > TFRZ, real_scalar(HVAP), real_scalar(HSUB))
     gammav = CPAIR * forcing.sfcprs / (0.622 * latheav)
-    latheag = jnp.where(land_state.tg > TFRZ, HVAP, HSUB)
+    latheag = jnp.where(land_state.tg > TFRZ, real_scalar(HVAP), real_scalar(HSUB))
     gammag = CPAIR * forcing.sfcprs / (0.622 * latheag)
 
-    vf = _vege_flux(land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
-                    zlvl, zpd, z0m, z0mg, hcan, ur, emv, emg, gammav, gammag,
-                    rsurf, rhsur, latheav, dt, o2, co2, foln_v, btran, fsno,
-                    pahv, pahg)
-    bf = _bare_flux(land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
-                    zpdg, z0mg, ur, emg, gammag, rsurf, rhsur, pahb)
+    vege_args = (land_state, forcing, radd, phen, p, df_top, stc_top, dz_top,
+                 zlvl, zpd, z0m, z0mg, hcan, ur, emv, emg, gammav, gammag,
+                 rsurf, rhsur, latheav, dt, o2, co2, foln_v, btran, fsno,
+                 pahv, pahg)
+    bare_args = (land_state, forcing, radd, p, df_top, stc_top, dz_top, zlvl,
+                 zpdg, z0mg, ur, emg, gammag, rsurf, rhsur, pahb)
+    if columns_enabled():  # GPUWRF_NOAHMP_COLUMN_KERNELS: each Newton loop = one column kernel (#14)
+        def canopy(va, ba):
+            bare = _bare_flux(*ba)
+            if not history:  # history-only outputs are not stored by the kernel
+                bare = {k: v for k, v in bare.items() if k != "chb2"}
+            return _vege_flux(*va, history=history), bare
+        vf, bf = column_call(canopy, (vege_args, bare_args), grid_shape=jnp.shape(land_state.tv),
+                             name="b_core_noah_canopy_flux")
+    else:
+        vf = _vege_flux(*vege_args, history=history)
+        bf = _bare_flux(*bare_args)
 
     # FVEG-weighted tile sum (ENERGY :2285-2325)
     use_veg = veg & (fveg > 0.0)
@@ -953,7 +1041,10 @@ def noahmp_energy_canopy(
     # bare/FVEG=0 (the ELSE branch). This is the LSM 2-m temperature the WRF
     # surface driver writes back as the land T2 (module_surface_driver.F:3470/3467),
     # OVERWRITING the surface-layer MYNN diagnostic over land.
-    t2mv = vf["t2mv"]
+    # ENERGY resets T2MV/Q2V to 0 (:2047-2048) and calls VEGE_FLUX only where VEG .AND. FVEG>0
+    # (:2237), so WRF emits 0 on every other column; the vectorised tile is undefined there
+    # (NaN on PROD d01 water).
+    t2mv = jnp.where(use_veg, vf["t2mv"], 0.0)
     t2mb = bf["t2mb"]
     t2 = jnp.where(use_veg, fveg * t2mv + (1.0 - fveg) * t2mb, t2mb)
     tv = jnp.where(use_veg, vf["tv"], land_state.tv)
@@ -990,10 +1081,21 @@ def noahmp_energy_canopy(
                   / (0.622 + 0.378 * forcing.qair)) / (RAIR * forcing.sfctmp)
     qsfc = jnp.where(urban, qfx / (rhoair_top * jnp.maximum(ch, MPE)) + forcing.qair, qsfc)
 
+    # Land Q2 as the WRF surface driver writes it (module_surface_driver.F:3466/3471):
+    # Q2MV/Q2MB = Q/(1-Q) (module_sf_noahmpdrv.F:1283-1284) blended by FVEG; FVEG=0
+    # (bare/urban, and ELAI+ESAI=0 :875) -> Q2MB. Urban: NOAHMP_SFLX resets
+    # Q2B to the urban QSFC = QFX/(RHOAIR*CH)+QAIR after ENERGY (:1061-1065).
+    q2v = jnp.where(use_veg, vf["q2v"], 0.0)  # ENERGY :2048 reset, as T2MV above
+    q2b = jnp.where(urban, qsfc, bf["q2b"])
+    q2mv = q2v / (1.0 - q2v)
+    q2mb = q2b / (1.0 - q2b)
+    q2 = jnp.where(use_veg, fveg * q2mv + (1.0 - fveg) * q2mb, q2mb)
+
     # semi-implicit STC update (TSNOSOI / Sprint S2). Fluxes above used the OLD
     # STC(1) as the ground BC, so this does not change this step's HFX/LH/SSOIL/
     # TRAD. Tolerate S2 unmerged (stub raises NotImplementedError).
     tslb_new = land_state.tslb
+    tsno_new = land_state.tsno
     try:
         from gpuwrf.physics.noahmp.soil_thermo import noahmp_soil_thermo
 
@@ -1004,12 +1106,20 @@ def noahmp_energy_canopy(
             dzsnso, land_state.isnow, dt,
         )
         tslb_new = stc_new[NSNOW:]
+        # TSNOSOI updates STC(ISNOW+1:NSOIL) incl. the active snow layers (:5258-5371);
+        # PHASECHANGE then melts the excess over TFRZ. Inactive snow layers keep their value.
+        snow_active = (jnp.arange(NSNOW).reshape((NSNOW,) + (1,) * land_state.isnow.ndim)
+                       >= NSNOW + land_state.isnow)
+        tsno_new = jnp.where(snow_active, stc_new[:NSNOW], land_state.tsno)
     except NotImplementedError:
         pass
 
     ls = land_state.replace(
-        tv=tv, tg=tg, tah=tah, eah=eah, tslb=tslb_new,
-        t_skin=trad, emiss=emissi, albedo=rad.albedo, znt=z0wrf,
+        tv=tv, tg=tg, tah=tah, eah=eah, tslb=tslb_new, tsno=tsno_new,
+        # The driver keeps the previous ALBEDO while NOAHMP_SFLX returns SALB = -999.9 (SWDOWN = 0)
+        # (module_sf_noahmpdrv.F:1230-1232).
+        t_skin=trad, emiss=emissi, znt=z0wrf,
+        albedo=jnp.where(rad.albedo > -999.0, rad.albedo, land_state.albedo.astype(rad.albedo.dtype)),
         qsfc=qsfc, cm=cm, ch=ch,
         tauss=rad_extras["tauss"], albold=rad_extras["albold"],
         lai=phen.lai, sai=phen.sai,
@@ -1017,7 +1127,19 @@ def noahmp_energy_canopy(
     ef = NoahMPEnergyFluxes(
         fsh=fsh, fcev=fcev, fgev=fgev, fctr=fctr, ssoil=ssoil, fira=fira,
         trad=trad, emissi=emissi, z0wrf=z0wrf, chv=chv, chb=chb, canhs=canhs,
-        t2mv=t2mv, t2mb=t2mb, t2=t2,
+        t2mv=t2mv, t2mb=t2mb, t2=t2, q2v=q2v, q2b=q2b, q2=q2,
+        history=(_history_firewall({
+            **{name.upper(): jnp.where(use_veg, vf[name], 0) for name in ("tr", "evc", "evg", "irc", "irg", "shc", "shg", "ghv",
+                                                   "chleaf", "chuc", "chv2", "rssun", "rssha")},
+            **{name.upper(): bf[name] for name in ("evb", "irb", "shb", "ghb", "chb2")},
+            "APAR": rad.parsun * rad_extras["laisun"] + rad.parsha * rad_extras["laisha"],
+            "PSN": jnp.where(use_veg,
+                vf["psnsun"] * rad_extras["laisun"] + vf["psnsha"] * rad_extras["laisha"], 0),
+            "RSSUN": jnp.where(use_veg, vf["rssun"], 0),
+            "RSSHA": jnp.where(use_veg, vf["rssha"], 0),
+            "TGV": jnp.where(use_veg, vf["tg"], bf["tgb"]), "TGB": bf["tgb"],
+            "PAH": pah, "PAHV": pahv, "PAHG": pahg, "PAHB": pahb,
+        }) if history else None),
     )
     et = NoahMPEtFluxes(
         ecan=ecan, etran=etran, edir=edir, qseva=qvap, btrani=btrani,

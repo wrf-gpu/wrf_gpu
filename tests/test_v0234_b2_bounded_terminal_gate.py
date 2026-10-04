@@ -77,7 +77,7 @@ def test_bounded_gate_respects_factor_boundary():
 
 
 @pytest.mark.slow
-def test_real_fixture_fused_vs_eager_is_within_recompile_floor():
+def test_real_fixture_fused_vs_eager_is_within_recompile_floor(monkeypatch):
     """Integration: on the corrected finite all-7 fixture, the real fused-vs-eager
     terminal difference is bounded by the model's own in-run recompile floor.
 
@@ -86,6 +86,12 @@ def test_real_fixture_fused_vs_eager_is_within_recompile_floor():
     fused program is never compiled)."""
     import jax
     import numpy as np
+
+    # Earlier imported probes deliberately request an eager identity path.
+    # This gate exercises the fused path and must select it explicitly.
+    monkeypatch.delenv("GPUWRF_BITWISE", raising=False)
+    monkeypatch.delenv("GPUWRF_NESTED_DEFUSE_COMPILE", raising=False)
+    monkeypatch.setenv("GPUWRF_NESTED_FUSE", "1")
 
     from scripts.v0234_event_aware_fusion_probe import (
         SYNTHETIC_LEAF_ALARM_STEP,
@@ -125,7 +131,7 @@ def test_real_fixture_fused_vs_eager_is_within_recompile_floor():
     # Matches the corrected probe: control/candidate on the fused-present runtime;
     # the eager floor reference toggles the fused pathway OFF (fused_cascade=None).
     runtime = _prepare_operational_domain_tree_runtime(tree, feedback_enabled=False)
-    runtime.fused_cascade("d02")  # compile fused (matches probe)
+    assert runtime.fused_cascade("d02") is not None  # compile the actual fused path
     control = run(runtime, 0)
     candidate = run(runtime, 1)
     floor_ref = run(dataclass_replace(runtime, fused_cascade=None), 0)

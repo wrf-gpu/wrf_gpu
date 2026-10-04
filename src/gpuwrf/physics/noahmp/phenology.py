@@ -53,6 +53,8 @@ from __future__ import annotations
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.physics.noahmp.precision import real_dtype, real_scalar, real_tree
+
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology
 
@@ -80,7 +82,7 @@ _TMIN_MODIS_1BASED = (
 def _gather_per_category(table_1based: tuple[float, ...], vegtyp: jax.Array) -> jax.Array:
     """Gather a 1-based per-category constant table to per-column (ny, nx)."""
 
-    arr = jnp.asarray(table_1based, dtype=jnp.float64)
+    arr = jnp.asarray(table_1based, dtype=real_dtype())
     idx = jnp.clip(vegtyp.astype(jnp.int32), 0, arr.shape[0] - 1)
     return arr[idx]
 
@@ -97,11 +99,12 @@ def noahmp_phenology_table(
     (the driver writes the returned LAI/SAI back into ``NoahMPLandState``).
     """
 
+    land_state, forcing, static = real_tree((land_state, forcing, static))
     p = static.parameters
 
-    snowh = jnp.asarray(land_state.snowh, dtype=jnp.float64)   # SNOWH [m]
-    tv = jnp.asarray(land_state.tv, dtype=jnp.float64)         # TV [K]
-    lat = jnp.asarray(static.lat, dtype=jnp.float64)           # LAT (deg; sign test)
+    snowh = jnp.asarray(land_state.snowh, dtype=real_dtype())   # SNOWH [m]
+    tv = jnp.asarray(land_state.tv, dtype=real_dtype())         # TV [K]
+    lat = jnp.asarray(static.lat, dtype=real_dtype())           # LAT (deg; sign test)
     vegtyp = jnp.asarray(static.ivgtyp, dtype=jnp.int32)       # VEGTYP (1-based)
 
     # Monthly LAI/SAI + canopy heights. The frozen S0b NoahMPParameters provides
@@ -109,10 +112,10 @@ def noahmp_phenology_table(
     # so gather by VEGTYP here. A caller that passes PRE-GATHERED tables
     # (laim shape (12, ny, nx); hvt shape (ny, nx)) — e.g. the unit oracle — is also
     # supported: detected by the leading axis being the 12-month axis / a non-1D map.
-    nveg_p1 = jnp.asarray(p.laim, dtype=jnp.float64).shape[0]
+    nveg_p1 = jnp.asarray(p.laim, dtype=real_dtype()).shape[0]
 
     def _gather_monthly(tbl):
-        a = jnp.asarray(tbl, dtype=jnp.float64)
+        a = jnp.asarray(tbl, dtype=real_dtype())
         if a.ndim == 2 and a.shape[0] == NMONTH and a.shape[1] != NMONTH:
             return a  # already (12, ...) pre-gathered (and not a (12,12) ambiguity)
         if a.ndim == 2 and a.shape[1] == NMONTH:
@@ -122,7 +125,7 @@ def noahmp_phenology_table(
         return a  # (12,) broadcastable
 
     def _gather_scalar(tbl):
-        a = jnp.asarray(tbl, dtype=jnp.float64)
+        a = jnp.asarray(tbl, dtype=real_dtype())
         if a.ndim == 1 and a.shape[0] == nveg_p1:
             idx = jnp.clip(vegtyp, 0, a.shape[0] - 1)
             return a[idx]                       # (ny, nx)
@@ -141,10 +144,10 @@ def noahmp_phenology_table(
     if shdmax_src is None:
         shdmax = jnp.zeros_like(tv)
     else:
-        shdmax = jnp.asarray(shdmax_src, dtype=jnp.float64)    # FVEG source (dveg=4)
+        shdmax = jnp.asarray(shdmax_src, dtype=real_dtype())    # FVEG source (dveg=4)
 
-    julian = jnp.asarray(forcing.julian, dtype=jnp.float64)    # day-of-year (fractional)
-    yearlen = jnp.asarray(forcing.yearlen, dtype=jnp.float64)  # days in year
+    julian = jnp.asarray(forcing.julian, dtype=real_dtype())    # day-of-year (fractional)
+    yearlen = jnp.asarray(forcing.yearlen, dtype=real_dtype())  # days in year
 
     # --- monthly table interpolation (module_sf_noahmplsm.F:1299-1316) ---------
     # Hemisphere day shift: SH shifted by half a year. WRF tests LAT (radians) but
@@ -159,7 +162,7 @@ def noahmp_phenology_table(
     # Fortran INT() truncates toward zero; T + 0.5 >= 0 here so floor == trunc.
     it1 = jnp.floor(t + 0.5).astype(jnp.int32)     # IT1
     it2 = it1 + 1                                  # IT2
-    wt1 = (it1.astype(jnp.float64) + 0.5) - t      # WT1
+    wt1 = (it1.astype(real_dtype()) + 0.5) - t      # WT1
     wt2 = 1.0 - wt1                                # WT2
     # Month wrap (IT1 < 1 -> 12 ; IT2 > 12 -> 1), then to 0-based rows.
     it1 = jnp.where(it1 < 1, 12, it1)
@@ -219,7 +222,7 @@ def noahmp_phenology_table(
 
     # --- growing-season index IGS (:1352-1356) --------------------------------
     tmin = _gather_per_category(_TMIN_MODIS_1BASED, vegtyp)
-    igs = jnp.where(tv > tmin, 1.0, 0.0)
+    igs = jnp.where(tv > tmin, real_scalar(1.0), real_scalar(0.0))
 
     return NoahMPPhenology(
         lai=lai,

@@ -1,0 +1,48 @@
+fixture_id: wn3_aux4_lower_boundary_first24h
+source: ALISIOS WN3 CPU-WRF 4-rank case histories, read-only server offload
+source_commit: unavailable in CPU rsl (WRF 4.7.1); pristine source hashes below
+scenario: 3 cases, 3 nests, first25 hourly frames, auxinput4 every21600s
+created_utc: 2026-10-02T11:28:07.396355+00:00
+generation_command: taskset -c 12,13,28,29 nice -n 10 env JAX_PLATFORMS=cpu PYTHONPATH=<snapshot>/src python <snapshot>/scripts/wn3_lower_boundary_gate.py --output <USER_HOME>/wrf_gpu2_lanes/wn3/W2a/lower_boundary_oracle.json
+license_notes: internal read-only ALISIOS reference; no bulk outputs committed
+variables:
+  - name: SST
+    units: K
+    shape: d01(70,120); d02(117,267); d03(93,111), unstaggered surface
+    dtype: float32 (WRF REAL)
+    absolute_tolerance: 0
+    relative_tolerance: 0
+  - name: TSK_over_water
+    units: K
+    shape: d01(70,120); d02(117,267); d03(93,111), unstaggered surface
+    dtype: float32 (WRF REAL)
+    absolute_tolerance: 0
+    relative_tolerance: 0
+  - name: SEAICE
+    units: 1
+    shape: d01(70,120); d02(117,267); d03(93,111), unstaggered surface
+    dtype: float32 (WRF REAL)
+    absolute_tolerance: 0
+    relative_tolerance: 0
+  - name: VEGFRA
+    units: percent
+    shape: d01(70,120); d02(117,267); d03(93,111), unstaggered surface
+    dtype: float32 (WRF REAL)
+    absolute_tolerance: 0
+    relative_tolerance: 0
+  - name: ALBBCK
+    units: 1
+    shape: d01(70,120); d02(117,267); d03(93,111), unstaggered surface
+    dtype: float32 (WRF REAL)
+    absolute_tolerance: 0
+    relative_tolerance: 0
+initial_frame_exception: ALBBCK land initialization precedes first aux4 read; compare aux4 ALBBCK starting frame1
+files:
+  W1_input_hashes: <USER_HOME>/wrf_gpu2_lanes/wn3/W1/inventory.json
+  per_frame_oracle_array_hashes: <USER_HOME>/wrf_gpu2_lanes/wn3/W2a/lower_boundary_oracle.json
+pristine_source_sha256:
+  Registry/Registry.EM: 2bcaf5871914ad7f4683f2bc0a5f8ada5b1199915f3263d1e4c5b1d3986bdff8
+  Registry/Registry.EM_COMMON: 6f3ee02175b76487c5c6c046ff2fb4c5d41980b86c0f06eb2e09e34dacc9623a
+  share/mediation_integrate.F: 7dc254b60c558d08354389d748c14fa1323f33448c1c6b26f7c91eff70ab9eef
+  frame/module_integrate.F: 10cb942dc9f98a7683a5ce52821bf1b95d0f9222ff57f5145fe9b8e848bb131c
+  phys/module_surface_driver.F: 79c21663f65c7e2183e7fe07076c464eb12ae0c1b942f030d81a54228e2f6e1e

@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from _historical_artifacts import require_historical
 
 ROOT = Path(__file__).resolve().parents[1]
 PARITY = ROOT / "proofs" / "v016" / "thompson_aero_savepoint_parity.py"
@@ -19,6 +20,7 @@ ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics_thompso
 
 
 def _load_parity_module():
+    require_historical(PARITY)
     spec = importlib.util.spec_from_file_location("thompson_aero_savepoint_parity", PARITY)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

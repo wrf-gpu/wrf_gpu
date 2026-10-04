@@ -31,7 +31,7 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
 > claim — **24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF — is NOT closed in
 > v0.13.0.** It is a hard dynamics/MYNN/`*_tendf` GPU problem with no cheap knob,
 > and it is the dominant carry-over (see KI-9 / KI-4 below and
-> [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md)).
+> [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md)).
 
 ## Headline features
 
@@ -120,7 +120,7 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
   (semantics-preserving, `py_compile`-clean); the Thompson table assets are vendored
   and pinned (`manifest/reproducibility_assets.json`); a new
   `scripts/verify_reproducibility.sh` is **GREEN 11/11 outsider-runnable** on
-  CPU-only. New docs: [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md). No `src`
+  CPU-only. New docs: [`docs/REPRODUCIBILITY.md`](../docs/REPRODUCIBILITY.md). No `src`
   changes.
 - **Community-standard validation suite.** A new `scripts/community_validation.sh`
   (CPU-only, like `verify_reproducibility.sh`) re-runs the community-standard tests an
@@ -128,7 +128,7 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
   density current + Skamarock/Bryan-Fritsch warm bubble vs WRF spec), closed-domain
   mass/energy conservation budgets, and bitwise `wrfrst` restart — all PASS, with an
   honest CPU-vs-GPU / corpus gap list. New docs:
-  [`docs/VALIDATION.md`](docs/VALIDATION.md).
+  [`docs/VALIDATION.md`](../docs/VALIDATION.md).
 - **Powered n=15 TOST — scoring path unblocked (rc=2 fix).** The GPU
   `daily_pipeline` / `run_one_case` `rc=2` that blocked the powered TOST campaign in
   v0.12.0 was root-caused (two conflated sources: a per-case `L2_D02_BLOCKED` and an
@@ -149,13 +149,13 @@ levers toward this gap (moisture flux-advection into RK3, MYJ+Janjic, clear-sky
 diagnostics) **off-by-default**, but **does not close it**. Closing it is a hard
 dycore-`ph'` / MYNN / `*_tendf` GPU effort with no cheap knob, and it remains the
 single most important carry-over (KI-9). Full numbers and framing:
-[`docs/equivalence-demo.md`](docs/equivalence-demo.md), tracked as **KI-9**.
+[`docs/equivalence-demo.md`](../docs/equivalence-demo.md), tracked as **KI-9**.
 
 ## Speedup (carried from v0.12.0; no new headline number)
 
 All numbers are one RTX 5090 vs 28-rank CPU-WRF on the same workstation, both
 fp64, same d02 3 km grid, per forecast-hour. Full reconciliation:
-[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md). v0.13.0 makes **no new shipped speedup
+[`docs/PERFORMANCE.md`](../docs/PERFORMANCE.md). v0.13.0 makes **no new shipped speedup
 claim**: the compile-speed autotune-cache *effect* stays gated/unadvertised until
 measured on the integrated GPU smoke, and real multi-GPU throughput is unmeasured.
 
@@ -165,7 +165,7 @@ measured on the integrated GPU smoke, and real multi-GPU throughput is unmeasure
 
 ## Known issues (carried + new)
 
-See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
+See [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md) for full detail.
 
 | ID | Summary | Severity |
 |---|---|---|
@@ -197,8 +197,8 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
 ## Deliberately deferred to v0.14+ (deliberate scope boundaries, not silent gaps)
 
 The next roadmap is **Tier 3 (the scheme long-tail toward v1.0.0) + the v0.13.0
-carry-overs**. See [`PROJECT_PLAN.md`](PROJECT_PLAN.md) and
-[`.agent/decisions/V0130-ROADMAP.md`](.agent/decisions/V0130-ROADMAP.md).
+carry-overs**. See [`PROJECT_PLAN.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.14.0/PROJECT_PLAN.md) and
+[`.agent/decisions/V0130-ROADMAP.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.14.0/.agent/decisions/V0130-ROADMAP.md).
 
 - **24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility
   gate for any "operational / replacement" claim; hard dycore/MYNN/`*_tendf` GPU work.

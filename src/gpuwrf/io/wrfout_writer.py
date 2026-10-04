@@ -9,7 +9,7 @@ import os
 import re
 import secrets
 from contextlib import contextmanager
-from dataclasses import dataclass, fields as dataclass_fields, is_dataclass
+from dataclasses import dataclass, fields as dataclass_fields, is_dataclass, replace as dataclass_replace
 from datetime import date, datetime
 from math import cos, pi
 from pathlib import Path
@@ -17,8 +17,9 @@ from types import SimpleNamespace
 from typing import Any, Iterator, Mapping
 
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
+from gpuwrf.io.wrfout_theta_convention import parse_use_theta_m, thm_source
 from gpuwrf.physics.surface_constants import CP_D, KARMAN, P0_PA, R_D_OVER_CP, XLV
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
@@ -772,6 +773,10 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         coordinates="XLONG XLAT XTIME",
     ),
     "CLDFRA": _spec("CLDFRA", XYZ, "XYZ", "CLOUD FRACTION", "", coordinates="XLONG XLAT XTIME"),
+    "QC_BL": _spec("QC_BL", XYZ, "XYZ", "CLOUD WATER MIXING RATIO IN PBL schemes", "kg kg-1", coordinates="XLONG XLAT XTIME"),
+    "CLDFRA_BL": _spec("CLDFRA_BL", XYZ, "XYZ", "CLOUD FRACTION pbl", "", coordinates="XLONG XLAT XTIME"),
+    "DTAUX3D": _spec("DTAUX3D", XYZ, "XYZ", "LOCAL U GWDO STRESS", "m s-1", coordinates="XLONG XLAT XTIME"),
+    "DTAUY3D": _spec("DTAUY3D", XYZ, "XYZ", "LOCAL V GWDO STRESS", "m s-1", coordinates="XLONG XLAT XTIME"),
     "QCLOUD": _spec(
         "QCLOUD",
         XYZ,
@@ -1331,6 +1336,15 @@ def _register_full_wrfout_generic_specs() -> None:
 
 _register_full_wrfout_generic_specs()
 
+# Generic full-stream placeholders had blank units for active land/AC fields.
+# These definitions are the real WRF inventory, independent of output values.
+from gpuwrf.io.land_history_metadata import LAND_HISTORY_METADATA
+for _land_name, (_land_description, _land_units) in LAND_HISTORY_METADATA.items():
+    if _land_name in WRFOUT_VARIABLE_SPECS:
+        WRFOUT_VARIABLE_SPECS[_land_name] = dataclass_replace(
+            WRFOUT_VARIABLE_SPECS[_land_name], description=_land_description, units=_land_units,
+        )
+
 
 def write_wrfout_netcdf(
     state: Any,
@@ -1446,6 +1460,10 @@ class PreparedWrfout:
     domain: str
     domain_authority: WrfoutDomainAuthority
     full_variable_set: bool = False
+
+    # Optional host-only restart journal; travels with asynchronous payloads.
+    restart_publication: Any = None
+    source_global_attrs: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -1725,6 +1743,7 @@ def prepare_wrfout_payload(
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
     include_mandatory_coords: bool = False,
     full_variable_set: bool = False,
+    source_global_attrs: Mapping[str, Any] | None = None,
 ) -> PreparedWrfout:
     """Materialize all wrfout fields to host numpy (the device->host boundary).
 
@@ -1784,6 +1803,29 @@ def prepare_wrfout_payload(
                 lead_hours=float(lead_hours),
                 requested_names=requested_names,
             )
+        # Explicit WRF land history wins over defaults and raw sibling-carry
+        # values (notably the initialized water tile). Host-only output work.
+        from gpuwrf.io.land_history import LAND_HISTORY_FIELDS
+        for name in LAND_HISTORY_FIELDS:
+            if diagnostics is None or diagnostics.get(name) is None:
+                continue
+            if requested_names is not None and name not in requested_names:
+                continue
+            spec = WRFOUT_VARIABLE_SPECS.get(name)
+            if spec is None:  # Internal budget leaves need not belong to the history stream.
+                continue
+            fields[name] = _coerce_array(name, diagnostics[name],
+                _shape_for_dimensions(spec.dimensions, dimensions), dtype=_numpy_dtype_for_spec(spec))
+        # These are held model diagnostics, including WRF's pre-solve t0 values.
+        # Apply them after the compatibility builder so a hydrometeor proxy or
+        # cold-start turbulence seed cannot replace the requested history leaf.
+        if diagnostics is not None:
+            for name in ("CLDFRA", "QC_BL", "CLDFRA_BL", "QKE", "DTAUX3D", "DTAUY3D"):
+                if (requested_names is None or name in requested_names) and name in diagnostics:
+                    fields[name] = _coerce_array(name, diagnostics[name], (nz, ny, nx))
+            for name in ("DUSFCG", "DVSFCG"):
+                if (requested_names is None or name in requested_names) and name in diagnostics:
+                    fields[name] = _coerce_array(name, diagnostics[name], (ny, nx))
     return PreparedWrfout(
         target=target,
         dimensions=dimensions,
@@ -1796,6 +1838,7 @@ def prepare_wrfout_payload(
         domain=domain,
         domain_authority=bound_authority,
         full_variable_set=bool(full_variable_set),
+        source_global_attrs=dict(source_global_attrs) if source_global_attrs is not None else None,
     )
 
 
@@ -1880,6 +1923,8 @@ def write_prepared_wrfout(
             _write_global_attrs(
                 dataset, prepared.grid, prepared.namelist, dimensions,
                 prepared.run_start_dt, prepared.valid_dt, bound_authority,
+                use_theta_m=parse_use_theta_m(_lookup(prepared.namelist, "use_theta_m", 1)),
+                source_global_attrs=prepared.source_global_attrs,
             )
             _write_times(dataset, prepared.valid_dt)
             # Write in the canonical operational order, but emit ONLY the fields
@@ -1890,6 +1935,8 @@ def write_prepared_wrfout(
             else:
                 _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
                 write_order = OPERATIONAL_WRFOUT_VARIABLES
+            write_order = (*write_order, *(name for name in ("QC_BL", "CLDFRA_BL")
+                                         if name in prepared.fields and name not in write_order))
             for name in write_order:
                 if name == "Times":
                     continue
@@ -1907,7 +1954,10 @@ def write_prepared_wrfout(
                 )
         with temporary.open("rb") as stream:
             os.fsync(stream.fileno())
-        _publish_wrfout_noreplace(temporary, target)
+        if prepared.restart_publication is None:
+            _publish_wrfout_noreplace(temporary, target)
+        else:
+            prepared.restart_publication(temporary, target)
     finally:
         temporary.unlink(missing_ok=True)
     return target
@@ -2047,6 +2097,8 @@ def _write_global_attrs(
     run_start: datetime,
     valid_time: datetime,
     domain_authority: WrfoutDomainAuthority | None = None,
+    use_theta_m: int | None = None,
+    source_global_attrs: Mapping[str, Any] | None = None,
 ) -> None:
     # ``None`` is retained only for the separate wrfrst compatibility writer,
     # which imports this common-attribute helper. Every wrfout entry point
@@ -2079,8 +2131,8 @@ def _write_global_attrs(
         "MOAD_CEN_LAT": np.float32(_lookup(namelist, "moad_cen_lat", lat_0)),
         "STAND_LON": np.float32(_lookup(namelist, "stand_lon", lon_0)),
         "GMT": np.float32(run_start.hour + run_start.minute / 60.0),
-        "JULYR": np.int32(valid_time.year),
-        "JULDAY": np.int32(valid_time.timetuple().tm_yday),
+        "JULYR": np.int32(run_start.year),
+        "JULDAY": np.int32(run_start.timetuple().tm_yday),
         "ISWATER": np.int32(_lookup(namelist, "iswater", 17)),
         "ISLAKE": np.int32(_lookup(namelist, "islake", 21)),
         "ISICE": np.int32(_lookup(namelist, "isice", 15)),
@@ -2088,7 +2140,28 @@ def _write_global_attrs(
         "ISOILWATER": np.int32(_lookup(namelist, "isoilwater", 14)),
         "Conventions": "WRF-ARW",
         "history": "Created by gpuwrf.io.wrfout_writer.write_wrfout_netcdf",
+        "PARENT_ID": np.int32(_lookup(namelist, "parent_id", 1)),
+        "I_PARENT_START": np.int32(_lookup(grid, "i_parent_start", _lookup(namelist, "i_parent_start", 1))),
+        "J_PARENT_START": np.int32(_lookup(grid, "j_parent_start", _lookup(namelist, "j_parent_start", 1))),
+        "PARENT_GRID_RATIO": np.int32(_lookup(grid, "parent_grid_ratio", _lookup(namelist, "parent_grid_ratio", 1))),
+        "BUCKET_MM": np.float32(_lookup(namelist, "bucket_mm", -1.0)),
+        "BUCKET_J": np.float32(_lookup(namelist, "bucket_j", -1.0)),
+        "DT": np.float32(_lookup(namelist, "dt_s", _lookup(namelist, "time_step", 0.0))),
+        "MMINLU": str(_lookup(namelist, "mminlu", "MODIFIED_IGBP_MODIS_NOAH")),
+        "NUM_LAND_CAT": np.int32(_lookup(namelist, "num_land_cat", 21)),
     }
+    if source_global_attrs is not None:
+        # WRF writes input geometry plus resolved history controls. Preserve those
+        # scalars instead of approximating projection/land-use metadata here.
+        # The authenticated GRID_ID and GPU writer provenance remain writer-owned.
+        attrs.update({name: value for name, value in source_global_attrs.items()
+                      if name not in {"GRID_ID", "TITLE", "START_DATE", "SIMULATION_START_DATE",
+                                      "WEST-EAST_GRID_DIMENSION", "SOUTH-NORTH_GRID_DIMENSION",
+                                      "BOTTOM-TOP_GRID_DIMENSION", "DX", "DY",
+                                      "Conventions", "history"}})
+    if use_theta_m is not None:
+        # WRF share/output_wrf.F:679 writes the integer global USE_THETA_M (wrfout only here; restart is M3R's).
+        attrs["USE_THETA_M"] = np.int32(parse_use_theta_m(use_theta_m))
     for name, value in attrs.items():
         dataset.setncattr(name, value)
     if domain_authority is not None:
@@ -2172,6 +2245,7 @@ def _build_subset_output_fields(
             perturbation_names=("p_perturbation", "P"),
             base_names=("pb", "p_base", "PB"),
             shape=shape_xyz,
+            base_source=diagnostics,
         )
     ph_pert = ph_base = None
     if need_geopotential:
@@ -2181,6 +2255,7 @@ def _build_subset_output_fields(
             perturbation_names=("ph_perturbation", "PH"),
             base_names=("phb", "ph_base", "PHB"),
             shape=shape_z,
+            base_source=diagnostics,
         )
     mu_pert = mu_base = None
     if need_mu:
@@ -2190,6 +2265,7 @@ def _build_subset_output_fields(
             perturbation_names=("mu_perturbation", "MU"),
             base_names=("mub", "mu_base", "MUB"),
             shape=shape_xy,
+            base_source=diagnostics,
         )
 
     if want("U") and u is not None:
@@ -2201,7 +2277,8 @@ def _build_subset_output_fields(
     if want("T") and theta_dry is not None:
         fields["T"] = theta_dry - P0_THETA_OFFSET_K
     if want("THM") and theta is not None:
-        fields["THM"] = theta - P0_THETA_OFFSET_K
+        # WRF THM follows the prognostic: theta_m (use_theta_m=1) or dry theta (0); T is dry for both.
+        fields["THM"] = thm_source(theta, theta_dry, parse_use_theta_m(_lookup(namelist, "use_theta_m", 1))) - P0_THETA_OFFSET_K
     if want("QVAPOR") and qv is not None:
         fields["QVAPOR"] = qv
     if want("QCLOUD") and qc is not None:
@@ -2460,6 +2537,7 @@ def _build_output_fields(
         perturbation_names=("p_perturbation", "P"),
         base_names=("pb", "p_base", "PB"),
         shape=shape_xyz,
+        base_source=diagnostics,
     )
     ph_pert, ph_base = _perturbation_base_pair(
         state,
@@ -2467,6 +2545,7 @@ def _build_output_fields(
         perturbation_names=("ph_perturbation", "PH"),
         base_names=("phb", "ph_base", "PHB"),
         shape=shape_z,
+        base_source=diagnostics,
     )
     mu_pert, mu_base = _perturbation_base_pair(
         state,
@@ -2474,6 +2553,7 @@ def _build_output_fields(
         perturbation_names=("mu_perturbation", "MU"),
         base_names=("mub", "mu_base", "MUB"),
         shape=shape_xy,
+        base_source=diagnostics,
     )
     # WRF-faithful surface-pressure fallback (used only when the operational M9
     # PSFC diagnostic is absent from ``state``). WRF's runtime PSFC is the MOIST
@@ -2563,6 +2643,11 @@ def _build_output_fields(
     lu_index = _field_array(state, ("LU_INDEX", "lu_index", "ivgtyp"), shape_xy, default=np.where(landmask > 0.5, 2.0, 17.0))
     hfx = _optional_field_array(state, ("HFX", "hfx"), shape_xy)
     lh = _optional_field_array(state, ("LH", "lh"), shape_xy)
+    if (hfx is None or lh is None) and isinstance(diagnostics, Mapping):
+        # Operational HFX/LH override the fallback below anyway; skip its re-solve.
+        if diagnostics.get("HFX") is not None and diagnostics.get("LH") is not None:
+            hfx = diagnostics["HFX"] if hfx is None else hfx
+            lh = diagnostics["LH"] if lh is None else lh
     if hfx is None or lh is None:
         surface_fluxes = _surface_flux_fallbacks(
             state=state,
@@ -2595,7 +2680,7 @@ def _build_output_fields(
         "V": v,
         "W": w,
         "T": theta_dry - P0_THETA_OFFSET_K,
-        "THM": theta - P0_THETA_OFFSET_K,
+        "THM": thm_source(theta, theta_dry, parse_use_theta_m(_lookup(namelist, "use_theta_m", 1))) - P0_THETA_OFFSET_K,
         "QVAPOR": qv,
         "P": p_pert,
         "PB": p_base,
@@ -2880,6 +2965,13 @@ def _full_source_value(
             value = _lookup(source, alias, None)
             if value is None:
                 continue
+            # MYNN copies EL only over kts:kte. Registry stores nz+1 levels;
+            # its unused top stays zero (CPU-WRF WN3 0227 and PROD D5).
+            # This is padding, not interpolation: retain every computed level.
+            if name == "EL_PBL" and np.asarray(value).shape == (shape[0] - 1, *shape[1:]):
+                padded = np.zeros(shape, dtype=dtype)
+                padded[:-1] = value
+                value = padded
             return _coerce_array(name, value, shape, dtype=dtype)
     return None
 
@@ -3360,10 +3452,17 @@ def _perturbation_base_pair(
     perturbation_names: tuple[str, ...],
     base_names: tuple[str, ...],
     shape: tuple[int, ...],
+    base_source: Any | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     total = _optional_field_array(state, total_names, shape)
     perturbation = _optional_field_array(state, perturbation_names, shape)
     base = _optional_field_array(state, base_names, shape)
+    if os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1" and base_source is not None:
+        # Native RK retains the resolved initial WRF REAL base. Recovering it
+        # from separately rounded totals and perturbations changes static fields.
+        resolved_base = _optional_field_array(base_source, base_names, shape)
+        if resolved_base is not None:
+            base = resolved_base
     zeros = np.zeros(shape, dtype=np.float32)
 
     if total is None and perturbation is None and base is None:

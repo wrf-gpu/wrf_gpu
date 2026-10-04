@@ -1,0 +1,231 @@
+{
+  "phase": "cached",
+  "start_utc": "2026-10-04T10:35:04.817818+00:00",
+  "end_utc": "2026-10-04T10:35:30.879503+00:00",
+  "rc": 0,
+  "status": "finished",
+  "forecast_hours": 24,
+  "complete_24h": true,
+  "device": {
+    "platform": "gpu",
+    "device": "cuda:0",
+    "device_kind": "NVIDIA GeForce RTX 5090",
+    "gpuwrf_path": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/source/src/gpuwrf/__init__.py",
+    "cli_rc": 0,
+    "effective_environment": {
+      "GPUWRF_XLA_AUTOTUNE_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/autotune",
+      "CUDA_CACHE_PATH": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/cuda",
+      "GPUWRF_JAX_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/jax",
+      "GPUWRF_WRF_ROOT": "<USER_HOME>/src/wrf_pristine/WRF",
+      "JAX_COMPILATION_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/jax",
+      "JAX_PLATFORMS": "cuda",
+      "GPUWRF_DYN_FP32": "1",
+      "GPUWRF_DYN_ADVECTION_FP32": "1",
+      "GPUWRF_DYN_DIFFUSION_FP32": "1",
+      "GPUWRF_DYN_RK_FP32": "1",
+      "GPUWRF_DYN_CARRY_FP32": "1",
+      "GPUWRF_DYN_REAL_ALL": "1",
+      "GPUWRF_CARRY_REAL_ALL": "1",
+      "GPUWRF_DYN_PD_FP32": "1",
+      "GPUWRF_ACOUSTIC_ALIAS": "1",
+      "GPUWRF_ACOUSTIC_W2PASS": "3",
+      "GPUWRF_ACOUSTIC_UV_MASKED": "1",
+      "GPUWRF_DYN_PD_SPECIES_LOOP": "1",
+      "GPUWRF_BOUNDARY_FP32": "1",
+      "GPUWRF_SPEC_RING_SELECT": "1",
+      "GPUWRF_DYN_GLUE_FUSED": "rhsph_uvn_pin",
+      "GPUWRF_NOAHMP_NATIVE_REAL": "1",
+      "GPUWRF_NOAHMP_ITERATION_BARRIER": "1",
+      "GPUWRF_NOAHMP_LAYER_SELECT": "1",
+      "GPUWRF_SFCLAY_NATIVE_REAL": "1",
+      "GPUWRF_GWDO_NATIVE_REAL": "1",
+      "GPUWRF_EDMF_FUSED_PLUME": "1",
+      "GPUWRF_MYNN_FP32_PLUME": "1",
+      "GPUWRF_MYNN_FP32_COLUMNS": "1",
+      "GPUWRF_MYNN_FP32_BOULAC": "0",
+      "GPUWRF_MYNN_CLOUDMIX": "1",
+      "GPUWRF_MYNN_PLUME_SUMS": "1",
+      "GPUWRF_MYNN_TRIDIAG_REAL": "1",
+      "GPUWRF_KF_RESIDENT_TABLES": "1",
+      "GPUWRF_KF_COLUMN_FP32": "1",
+      "GPUWRF_MCICA_JUMPAHEAD": "1",
+      "GPUWRF_MCICA_LEGACY_FP64": "0",
+      "GPUWRF_RRTMG_LW_FUSED_TRANSFER": "1",
+      "GPUWRF_RRTMG_SW_FUSED_QUADRATURE": "1",
+      "GPUWRF_RRTMG_COLUMN_TILE_COLS": "4096",
+      "GPUWRF_RRTMG_LW_BAND_SUMS": "1",
+      "GPUWRF_MCICA_KISS_KERNEL": "1",
+      "GPUWRF_RRTMG_SW_BAND_SUMS": "1",
+      "GPUWRF_THOMPSON_FP32": "0",
+      "GPUWRF_THOMPSON_NATIVE_REAL": "1",
+      "GPUWRF_THOMPSON_FULL_COLUMN": "1",
+      "GPUWRF_THOMPSON_COLUMN_SED": "1",
+      "GPUWRF_THOMPSON_SED_FP32": "1",
+      "GPUWRF_THOMPSON_SED_PREP_FUSED": "0",
+      "GPUWRF_THOMPSON_COLUMN_LAYOUT": "1",
+      "GPUWRF_THOMPSON_FULL_COLUMN_EARLY_EXIT": "1",
+      "GPUWRF_THOMPSON_IMPLICIT_SED": "0",
+      "GPUWRF_HISTORY_INSTEP_DIAG": "1",
+      "GPUWRF_CARRY_DONATE": "1",
+      "GPUWRF_CENSUS": "0",
+      "JAX_ENABLE_X64": "true",
+      "JAX_PALLAS_USE_MOSAIC_GPU": "false",
+      "XLA_FLAGS": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/autotune --xla_gpu_force_compilation_parallelism=8",
+      "GPUWRF_SCRATCH": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cached24h/scratch",
+      "GPUWRF_TMPDIR": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cached24h/scratch",
+      "XLA_PYTHON_CLIENT_ALLOCATOR": "cuda_async"
+    }
+  },
+  "wall_s": 26.06168508529663,
+  "last_file_wall_s": 24.892494201660156,
+  "frames": [
+    {
+      "file": "wrfout_d01_2023-01-15_00:00:00",
+      "bytes": 12296671,
+      "last_write_s": 11.22840142250061
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_01:00:00",
+      "bytes": 12296671,
+      "last_write_s": 11.776405096054077
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_02:00:00",
+      "bytes": 12296671,
+      "last_write_s": 12.30940866470337
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_03:00:00",
+      "bytes": 12296671,
+      "last_write_s": 12.852412462234497
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_04:00:00",
+      "bytes": 12296671,
+      "last_write_s": 13.405416250228882
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_05:00:00",
+      "bytes": 12296671,
+      "last_write_s": 13.96041989326477
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_06:00:00",
+      "bytes": 12296671,
+      "last_write_s": 14.52242374420166
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_07:00:00",
+      "bytes": 12296671,
+      "last_write_s": 15.122427940368652
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_08:00:00",
+      "bytes": 12296671,
+      "last_write_s": 15.655431509017944
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_09:00:00",
+      "bytes": 12296671,
+      "last_write_s": 16.236435413360596
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_10:00:00",
+      "bytes": 12296671,
+      "last_write_s": 16.80143928527832
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_11:00:00",
+      "bytes": 12296671,
+      "last_write_s": 17.377443075180054
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_12:00:00",
+      "bytes": 12296671,
+      "last_write_s": 17.957447052001953
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_13:00:00",
+      "bytes": 12296671,
+      "last_write_s": 18.543451070785522
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_14:00:00",
+      "bytes": 12296671,
+      "last_write_s": 19.17958950996399
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_15:00:00",
+      "bytes": 12296671,
+      "last_write_s": 19.772459268569946
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_16:00:00",
+      "bytes": 12296671,
+      "last_write_s": 20.35546326637268
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_17:00:00",
+      "bytes": 12296671,
+      "last_write_s": 20.89846706390381
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_18:00:00",
+      "bytes": 12296671,
+      "last_write_s": 21.496471166610718
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_19:00:00",
+      "bytes": 12296671,
+      "last_write_s": 22.04747486114502
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_20:00:00",
+      "bytes": 12296671,
+      "last_write_s": 22.638478755950928
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_21:00:00",
+      "bytes": 12296671,
+      "last_write_s": 23.1954824924469
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_22:00:00",
+      "bytes": 12296671,
+      "last_write_s": 23.7824866771698
+    },
+    {
+      "file": "wrfout_d01_2023-01-15_23:00:00",
+      "bytes": 12296671,
+      "last_write_s": 24.330490350723267
+    },
+    {
+      "file": "wrfout_d01_2023-01-16_00:00:00",
+      "bytes": 12296671,
+      "last_write_s": 24.892494201660156
+    }
+  ],
+  "cli_args": [
+    "run",
+    "--input-dir",
+    "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/source/examples/switzerland_d01",
+    "--output-dir",
+    "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cached24h/wrfout",
+    "--proof-dir",
+    "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cached24h/proofs",
+    "--scratch-dir",
+    "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cached24h/scratch",
+    "--domain",
+    "d01",
+    "--hours",
+    "24"
+  ],
+  "git_head": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+  "src_tree": "7a353f10ac1fc49f111a8f3504f12e12a7a16643",
+  "inputs_sha256": {
+    "namelist.input": "98eb3e0457b53a510931401ad1575e980a716da4588f8cbca4be95fd92846039",
+    "wrfinput_d01": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781",
+    "wrfbdy_d01": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230"
+  },
+  "timing_method": "CLI process creation through original file writes; power samples cover the CLI process"
+}

@@ -9,8 +9,12 @@
 # (used only to separate fp32-roundoff from algorithm divergence).
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GF="${GF:-<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran}"
-cd "$HERE"
+GF="${GF:-${FC:-<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran}}"
+ORACLE_CPUS="${ORACLE_CPUS:-8,9,12,13,24,25,28,29}"  # never ALISIOS cores 0-7/16-23
+OUT_DIR="${OUT_DIR:-$HERE}"
+mkdir -p "$OUT_DIR"
+cp "$HERE/module_model_constants.f90" "$HERE/module_sf_mynn_pristine.f90" "$HERE/mynn_oracle_driver.f90" "$OUT_DIR/"
+cd "$OUT_DIR"
 FLAGS="-ffree-line-length-none -O2"
 OUT=mynn_oracle
 if [ "${DOUBLE:-0}" = "1" ]; then
@@ -18,7 +22,7 @@ if [ "${DOUBLE:-0}" = "1" ]; then
   OUT=mynn_oracle_r8
 fi
 rm -f *.o *.mod "$OUT"
-taskset -c 0-3 "$GF" -c $FLAGS module_model_constants.f90 -o mmc.o
-taskset -c 0-3 "$GF" -c $FLAGS module_sf_mynn_pristine.f90 -o msm.o
-taskset -c 0-3 "$GF" $FLAGS mynn_oracle_driver.f90 mmc.o msm.o -o "$OUT"
+taskset -c "$ORACLE_CPUS" nice -n 19 "$GF" -c $FLAGS module_model_constants.f90 -o mmc.o
+taskset -c "$ORACLE_CPUS" nice -n 19 "$GF" -c $FLAGS module_sf_mynn_pristine.f90 -o msm.o
+taskset -c "$ORACLE_CPUS" nice -n 19 "$GF" $FLAGS mynn_oracle_driver.f90 mmc.o msm.o -o "$OUT"
 echo "built $OUT"

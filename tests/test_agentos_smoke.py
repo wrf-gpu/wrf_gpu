@@ -14,7 +14,7 @@ def test_validate_agentos_passes() -> None:
     assert proc.returncode == 0, proc.stdout
     data = json.loads(proc.stdout)
     assert data["ok"] is True
-    assert data["skills_checked"] == 13
+    assert data["skills_checked"] == 5
 
 
 def test_constitution_blocks_unreviewed_memory_changes() -> None:

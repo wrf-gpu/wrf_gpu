@@ -29,17 +29,29 @@ from gpuwrf.runtime import compile_cache as cc
 from gpuwrf.runtime import domain_tree as dt
 
 from tests import _parallel_compile_workers as W
+from tests._jax_cache_isolation import private_jax_cache
 
 
 @pytest.fixture(autouse=True)
 def _isolate_cache(monkeypatch, tmp_path):
     """Point the cache at a private tmp dir + engage the lock for each test."""
     cache_dir = tmp_path / "jit"
-    monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(cache_dir))
+    import jax
+
+    saved_enabled = jax.config.jax_enable_compilation_cache
+    # Collection-time cache-off settings in unrelated modules otherwise leak
+    # into spawned workers and make the write/warm-hit assertions meaningless.
+    monkeypatch.setenv("JAX_ENABLE_COMPILATION_CACHE", "true")
+    jax.config.update("jax_enable_compilation_cache", True)
     monkeypatch.setenv("GPUWRF_JAX_CACHE_LOCK", "1")
-    monkeypatch.delenv("GPUWRF_JAX_CACHE", raising=False)
-    cc.configure_compilation_cache()
-    yield cache_dir
+    saved_status = dict(cc.CACHE_STATUS)
+    try:
+        with private_jax_cache(monkeypatch, cache_dir):
+            yield cache_dir
+    finally:
+        cc.CACHE_STATUS.clear()
+        cc.CACHE_STATUS.update(saved_status)
+        jax.config.update("jax_enable_compilation_cache", saved_enabled)
 
 
 def _spawn_compile(cache_dir, whichs):

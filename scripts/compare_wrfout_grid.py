@@ -7,6 +7,7 @@ JAX, CUDA, or any model code.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import math
 import os
@@ -622,21 +623,20 @@ def broadcast_horizontal_mask(mask2d: np.ndarray, target_shape: tuple[int, ...])
     return np.broadcast_to(mask2d.reshape((1,) * (len(target_shape) - 2) + mask2d.shape), target_shape)
 
 
-def make_inventory(pairs: list[dict[str, Any]]) -> dict[str, Any]:
+def make_inventory(frames: list[tuple[dict[str, Any], Dataset, Dataset]]) -> dict[str, Any]:
     cpu_union: set[str] = set()
     gpu_union: set[str] = set()
     first_meta: dict[str, dict[str, Any]] = {}
     first_seen: dict[str, str] = {}
-    for pair in pairs:
-        with Dataset(pair["cpu_file"], "r") as cds, Dataset(pair["gpu_file"], "r") as gds:
-            cpu_names = set(cds.variables)
-            gpu_names = set(gds.variables)
-            cpu_union.update(cpu_names)
-            gpu_union.update(gpu_names)
-            for name in sorted(cpu_names & gpu_names):
-                if name not in first_meta:
-                    first_meta[name] = {"cpu": var_metadata(cds, name), "gpu": var_metadata(gds, name)}
-                    first_seen[name] = pair["valid_time_utc"]
+    for pair, cds, gds in frames:
+        cpu_names = set(cds.variables)
+        gpu_names = set(gds.variables)
+        cpu_union.update(cpu_names)
+        gpu_union.update(gpu_names)
+        for name in sorted(cpu_names & gpu_names):
+            if name not in first_meta:
+                first_meta[name] = {"cpu": var_metadata(cds, name), "gpu": var_metadata(gds, name)}
+                first_seen[name] = pair["valid_time_utc"]
     return {
         "cpu_variable_count": len(cpu_union),
         "gpu_variable_count": len(gpu_union),
@@ -682,17 +682,16 @@ def update_worst_cell(current: dict[str, Any] | None, diff: np.ndarray, gpu: np.
     }
 
 
-def compare_time_metadata(name: str, pairs: list[dict[str, Any]]) -> dict[str, Any]:
+def compare_time_metadata(name: str, frames: list[tuple[dict[str, Any], Dataset, Dataset]]) -> dict[str, Any]:
     checks = []
     all_equal = True
-    for pair in pairs:
-        with Dataset(pair["cpu_file"], "r") as cds, Dataset(pair["gpu_file"], "r") as gds:
-            if name not in cds.variables or name not in gds.variables:
-                checks.append({"lead_h": pair["lead_h"], "status": "MISSING"})
-                all_equal = False
-                continue
-            cpu = read_string_var(cds, name)
-            gpu = read_string_var(gds, name)
+    for pair, cds, gds in frames:
+        if name not in cds.variables or name not in gds.variables:
+            checks.append({"lead_h": pair["lead_h"], "status": "MISSING"})
+            all_equal = False
+            continue
+        cpu = read_string_var(cds, name)
+        gpu = read_string_var(gds, name)
         equal = cpu == gpu
         all_equal = all_equal and equal
         checks.append({"lead_h": pair["lead_h"], "status": "OK", "cpu": cpu, "gpu": gpu, "equal": bool(equal)})
@@ -701,7 +700,7 @@ def compare_time_metadata(name: str, pairs: list[dict[str, Any]]) -> dict[str, A
 
 def compare_variable(
     name: str,
-    pairs: list[dict[str, Any]],
+    frames: list[tuple[dict[str, Any], Dataset, Dataset]],
     metadata: dict[str, Any],
     tolerance_spec: dict[str, float] | None,
     spatial_masks: dict[str, dict[str, dict[str, np.ndarray]]],
@@ -723,25 +722,24 @@ def compare_variable(
     dims_tuple: tuple[str, ...] | None = None
     shape_tuple: tuple[int, ...] | None = None
 
-    for pair in pairs:
+    for pair, cds, gds in frames:
         lead_h = int(pair["lead_h"])
-        with Dataset(pair["cpu_file"], "r") as cds, Dataset(pair["gpu_file"], "r") as gds:
-            if name not in cds.variables or name not in gds.variables:
-                missing_leads.append({"lead_h": lead_h, "reason": "missing_in_one_paired_file"})
-                continue
-            cpu_var = cds.variables[name]
-            gpu_var = gds.variables[name]
-            cpu_meta = var_metadata(cds, name)
-            gpu_meta = var_metadata(gds, name)
-            ok, reason = compatible_metadata(cpu_meta, gpu_meta)
-            if not ok:
-                incompatible_leads.append({"lead_h": lead_h, "reason": reason, "cpu": cpu_meta, "gpu": gpu_meta})
-                continue
-            cpu = read_var(cds, name)
-            gpu = read_var(gds, name)
-            if not is_numeric_dtype(cpu_var.dtype) or not is_numeric_dtype(gpu_var.dtype):
-                incompatible_leads.append({"lead_h": lead_h, "reason": "non_numeric", "cpu": cpu_meta, "gpu": gpu_meta})
-                continue
+        if name not in cds.variables or name not in gds.variables:
+            missing_leads.append({"lead_h": lead_h, "reason": "missing_in_one_paired_file"})
+            continue
+        cpu_var = cds.variables[name]
+        gpu_var = gds.variables[name]
+        cpu_meta = var_metadata(cds, name)
+        gpu_meta = var_metadata(gds, name)
+        ok, reason = compatible_metadata(cpu_meta, gpu_meta)
+        if not ok:
+            incompatible_leads.append({"lead_h": lead_h, "reason": reason, "cpu": cpu_meta, "gpu": gpu_meta})
+            continue
+        cpu = read_var(cds, name)
+        gpu = read_var(gds, name)
+        if not is_numeric_dtype(cpu_var.dtype) or not is_numeric_dtype(gpu_var.dtype):
+            incompatible_leads.append({"lead_h": lead_h, "reason": "non_numeric", "cpu": cpu_meta, "gpu": gpu_meta})
+            continue
 
         if first_cpu_array is None:
             first_cpu_array = np.array(cpu, copy=True)
@@ -1033,43 +1031,56 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
     start = time.perf_counter()
     tolerances, tolerance_meta = load_tolerances(args.tolerance_json)
     pairs, pairing = build_pairs(args.cpu_dir, args.gpu_dir, args.domain, args.init, args.min_lead, args.max_lead)
-    inventory = make_inventory(pairs)
-    spatial_masks: dict[str, dict[str, dict[str, np.ndarray]]] = {}
-    split_counts: dict[str, Any] = {}
-    split_warnings: list[str] = []
-    if not args.no_spatial_splits:
-        spatial_masks, split_counts, split_warnings = build_spatial_masks(Path(pairs[0]["cpu_file"]), args.boundary_width)
 
-    field_summaries: dict[str, Any] = {}
-    non_numeric: list[dict[str, Any]] = []
-    incompatible: list[dict[str, Any]] = []
-    common_names = inventory["common"]
-    if args.vars:
-        requested = set(args.vars)
-        common_names = [name for name in common_names if name in requested]
+    # E69: open each wrfout once and keep handles across fields (was: reopen per variable×frame).
+    # Every open goes through the context-manager protocol (ExitStack.enter_context), so a caller that
+    # substitutes `Dataset` with any context-manager factory (scripts/wn3_fast_compare.py held handles)
+    # gets exactly the dataset its __enter__ returns, and __exit__ (close or no-op) runs once at the end.
+    with contextlib.ExitStack() as stack:
+        frames: list[tuple[dict[str, Any], Dataset, Dataset]] = []
+        for pair in pairs:
+            cds = stack.enter_context(Dataset(pair["cpu_file"], "r"))
+            gds = stack.enter_context(Dataset(pair["gpu_file"], "r"))
+            frames.append((pair, cds, gds))
 
-    for i, name in enumerate(common_names, start=1):
-        meta = inventory["first_metadata"][name]
-        if name == "Times":
-            field_summaries[name] = {
-                **compare_time_metadata(name, pairs),
-                "metadata": meta,
-                "compared_lead_count": len(pairs),
-            }
-            continue
-        ok, reason = compatible_metadata(meta["cpu"], meta["gpu"])
-        if not ok:
-            item = {"field": name, "reason": reason, "cpu": meta["cpu"], "gpu": meta["gpu"]}
-            if reason == "non_numeric":
-                non_numeric.append(item)
-            else:
-                incompatible.append(item)
-            continue
-        field_summaries[name] = compare_variable(name, pairs, meta, tolerances.get(name), spatial_masks)
-        if args.progress and (i % args.progress == 0 or i == len(common_names)):
-            print(f"compared {i}/{len(common_names)} fields: {name}", file=sys.stderr, flush=True)
+        inventory = make_inventory(frames)
+        spatial_masks: dict[str, dict[str, dict[str, np.ndarray]]] = {}
+        split_counts: dict[str, Any] = {}
+        split_warnings: list[str] = []
+        if not args.no_spatial_splits:
+            spatial_masks, split_counts, split_warnings = build_spatial_masks(Path(pairs[0]["cpu_file"]), args.boundary_width)
 
-    summaries = build_summaries(field_summaries, inventory, non_numeric, incompatible, bool(tolerances))
+        field_summaries: dict[str, Any] = {}
+        non_numeric: list[dict[str, Any]] = []
+        incompatible: list[dict[str, Any]] = []
+        common_names = inventory["common"]
+        if args.vars:
+            requested = set(args.vars)
+            common_names = [name for name in common_names if name in requested]
+
+        for i, name in enumerate(common_names, start=1):
+            meta = inventory["first_metadata"][name]
+            if name == "Times":
+                field_summaries[name] = {
+                    **compare_time_metadata(name, frames),
+                    "metadata": meta,
+                    "compared_lead_count": len(pairs),
+                }
+                continue
+            ok, reason = compatible_metadata(meta["cpu"], meta["gpu"])
+            if not ok:
+                item = {"field": name, "reason": reason, "cpu": meta["cpu"], "gpu": meta["gpu"]}
+                if reason == "non_numeric":
+                    non_numeric.append(item)
+                else:
+                    incompatible.append(item)
+                continue
+            field_summaries[name] = compare_variable(name, frames, meta, tolerances.get(name), spatial_masks)
+            if args.progress and (i % args.progress == 0 or i == len(common_names)):
+                print(f"compared {i}/{len(common_names)} fields: {name}", file=sys.stderr, flush=True)
+
+        summaries = build_summaries(field_summaries, inventory, non_numeric, incompatible, bool(tolerances))
+
     elapsed = time.perf_counter() - start
     report = {
         "schema": "wrfout-grid-comparison-v1",

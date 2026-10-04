@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import numpy as np
 
 from scripts import v0234_nested_boundary_spatial_causal as spatial
@@ -51,6 +53,7 @@ def test_metrics_and_regression_classifier_distinguish_propagated_interior() -> 
 
 
 def test_real_authenticated_spatial_proof_matches_frozen_rmse() -> None:
+    require_historical(*(row["path"] for row in spatial.INPUTS.values()))
     proof = spatial.build_proof()
     assert proof["causal_verdict"]["spatial_class"] == "propagated_interior_after_boundary_operator_change"
     assert proof["causal_verdict"]["boundary_local_rejected"] is True

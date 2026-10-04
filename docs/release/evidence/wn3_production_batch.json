@@ -1,0 +1,137 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r3/parallel_run.json",
+ "content": {
+  "schema": "gpuwrf-parallel-cases-v1",
+  "start_utc": "2026-10-04T10:35:37Z",
+  "argv": [
+   "~/wrf_gpu2_lanes/wn3/W9/source/scripts/parallel_cases.py",
+   "--out-root",
+   "~/wrf_gpu2_lanes/wn3/W9/finalb_r3",
+   "--gpu-log-interval",
+   "1",
+   "--compress",
+   "--compress-cpus",
+   "8,9,24,25",
+   "~/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260502_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260614_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260220_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260608_18z_a1",
+   "~/wrf_gpu2_lanes/wn3/cases/20260120_18z_a1",
+   "--",
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "72"
+  ],
+  "cli_args": [
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "72"
+  ],
+  "vram_total_bytes": 33664532480,
+  "vram_free_bytes_at_start": 30293360640,
+  "vram_capacity_bytes": 30293360640,
+  "cpu_affinity": [
+   10,
+   11,
+   12,
+   13,
+   26,
+   27,
+   28,
+   29
+  ],
+  "events": [
+   {
+    "t_s": 0.0,
+    "start": "20260227_18z_a1",
+    "running": 1
+   },
+   {
+    "t_s": 0.0,
+    "start": "20260502_18z_a1",
+    "running": 2
+   },
+   {
+    "t_s": 0.0,
+    "start": "20260614_18z_a1",
+    "running": 3
+   },
+   {
+    "t_s": 1296.8,
+    "start": "20260220_18z_a1",
+    "running": 3
+   },
+   {
+    "t_s": 1303.9,
+    "start": "20260608_18z_a1",
+    "running": 2
+   },
+   {
+    "t_s": 1303.9,
+    "start": "20260120_18z_a1",
+    "running": 3
+   }
+  ],
+  "gpu_lock": {
+   "required": true,
+   "policy": "dev GPU lock infrastructure present (/tmp/wrf_gpu2_gpu.lock)",
+   "held": true
+  },
+  "end_utc": "2026-10-04T11:20:51Z",
+  "wall_s": 2713.348,
+  "peak_concurrency": 3,
+  "stop_reason": null,
+  "cases": {
+   "20260614_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1296.789,
+    "vram_peak_mib": 4780,
+    "vmhwm_kb": 6248212
+   },
+   "20260502_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1302.87,
+    "vram_peak_mib": 4844,
+    "vmhwm_kb": 6169832
+   },
+   "20260227_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1303.892,
+    "vram_peak_mib": 4972,
+    "vmhwm_kb": 6169200
+   },
+   "20260608_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1321.811,
+    "vram_peak_mib": 4492,
+    "vmhwm_kb": 6155508
+   },
+   "20260220_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1343.981,
+    "vram_peak_mib": 4556,
+    "vmhwm_kb": 6145392
+   },
+   "20260120_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 1343.971,
+    "vram_peak_mib": 4620,
+    "vmhwm_kb": 6137040
+   }
+  },
+  "case_hours": 432,
+  "wall_s_per_case_hour": 6.281,
+  "compress_rc": 0
+ }
+}

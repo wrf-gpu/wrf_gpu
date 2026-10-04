@@ -6,6 +6,8 @@ exercised in a subprocess so module mutation cannot leak between tests.
 
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import hashlib
 import json
 import os
@@ -33,19 +35,33 @@ def _sha256(path: Path) -> str:
 
 
 def _profile_subprocess(code: str) -> dict:
-    environment = dict(os.environ)
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("GPUWRF_")}
     environment.update({
         "PYTHONPATH": str(REPO),
         "GPUWRF_FIRST_INTERVAL_MOMENTUM": "1",
         "GPUWRF_NESTED_BUNDLE_APPROVED_SHA": BUNDLE_SHA,
     })
+    # These archival profiles admit a narrowly pinned model delta. On a newer
+    # tree, rejection is the required result; it must occur before runtime load.
+    admission = """
+import json, sys
+try:
+    from scripts import v0234_nested_frozen_wrf_boundary_window
+except RuntimeError as exc:
+    if getattr(exc, 'code', None) != 'BASELINE_STATIC_AUDIT':
+        raise
+    assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)
+    print(json.dumps({'rejected_current_model_drift': True}))
+    sys.exit(0)
+"""
     completed = subprocess.run(
-        ["<USER_HOME>/miniconda3/bin/python", "-c", code],
+        [sys.executable, "-c", admission + code],
         cwd=REPO,
         env=environment,
         check=True,
         capture_output=True,
         text=True,
+        timeout=30,
     )
     return json.loads(completed.stdout)
 
@@ -83,6 +99,11 @@ print(json.dumps({
 }))
 """
     payload = _profile_subprocess(code)
+    if payload.get("rejected_current_model_drift"):
+        assert subprocess.check_output([
+            "git", "-C", str(REPO), "diff", "--name-only", BUNDLE_SHA, "HEAD", "--", "src/gpuwrf",
+        ], text=True).strip()
+        return
     assert payload["namespace"] == profile.NAMESPACE
     assert payload["label"] == profile.LOCK_LABEL
     assert payload["known"] is False
@@ -112,6 +133,7 @@ def test_launcher_has_one_canonical_lock_and_no_cache_or_gpu_query() -> None:
 
 
 def test_retained_pin_and_production_hlo_authenticate() -> None:
+    require_historical(profile.RETAINED_PIN, profile.RETAINED_PRODUCTION_HLO)
     assert _sha256(profile.RETAINED_PIN) == profile.RETAINED_PIN_SHA256
     assert (
         _sha256(profile.RETAINED_PRODUCTION_HLO)
@@ -126,7 +148,13 @@ def test_retained_pin_and_production_hlo_authenticate() -> None:
 def test_model_capture_is_diagnostic_only_and_production_untouched() -> None:
     import ast
 
-    source = (REPO / profile.MODEL_FILE).read_text()
+    # Authenticate the source of the diagnostic arm, whose signed identity
+    # predates the option-B implementation now present in HEAD.
+    source_bytes = subprocess.check_output([
+        "git", "-C", str(REPO), "show",
+        f"e65ce784bec85ea4f000e94ba572420c595ecb68:{profile.MODEL_FILE}",
+    ])
+    source = source_bytes.decode()
     tree = ast.parse(source)
     functions = {node.name: node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
 
@@ -160,7 +188,7 @@ def test_model_capture_is_diagnostic_only_and_production_untouched() -> None:
     wrapper_node = functions["_physics_boundary_step"]
     wrapper_text = ast.get_source_segment(source, wrapper_node)
     assert "capture_first_interval" not in wrapper_text
-    model_sha256 = _sha256(REPO / profile.MODEL_FILE)
+    model_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if "def _physics_boundary_step_with_first_interval_ladder" in source:
         from scripts import v0234_dycore_suboperator_kimi_gpu_ladder as ladder_profile
 

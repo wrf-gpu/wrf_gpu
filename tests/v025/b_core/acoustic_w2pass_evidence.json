@@ -1,0 +1,273 @@
+{
+ "change": "A1 GPUWRF_ACOUSTIC_W2PASS (advance_w in 2 level passes, ring keep-mask in final stores) + A2 GPUWRF_ACOUSTIC_MASS_BLOCK (mass kernel level loops in trips of 4, loads before stores); both default 0",
+ "off_identity": {
+  "d01": {
+   "identical_raw": true,
+   "identical": true,
+   "len": [
+    173034,
+    173034
+   ],
+   "ring": true
+  },
+  "d02": {
+   "identical_raw": true,
+   "identical": true,
+   "len": [
+    173802,
+    173802
+   ],
+   "ring": true
+  }
+ },
+ "cpu_interpret_d01": {
+  "w2pass_vs_14pass": {
+   "w": 0.005859375,
+   "ph": 4.76837158203125e-06,
+   "t_2ave": 0.0
+  },
+  "mass_block_vs_base_bitwise_leaves": "67/67"
+ },
+ "d7_pristine_oracle": {
+  "d01 flags 0": {
+   "passed": true,
+   "guard_events": 0,
+   "worst_vs_tier_p": [
+    {
+     "ratio": 0.3912,
+     "metric": "max",
+     "stage": 2,
+     "step": "3",
+     "field": "p"
+    },
+    {
+     "ratio": 0.3854,
+     "metric": "rms",
+     "stage": 0,
+     "step": "1",
+     "field": "p"
+    },
+    {
+     "ratio": 0.3842,
+     "metric": "max",
+     "stage": 2,
+     "step": "3",
+     "field": "pm1"
+    }
+   ]
+  },
+  "d01 W2PASS=1 MASS_BLOCK=1": {
+   "passed": true,
+   "guard_events": 0,
+   "worst_vs_tier_p": [
+    {
+     "ratio": 0.3858,
+     "metric": "rms",
+     "stage": 0,
+     "step": "1",
+     "field": "p"
+    },
+    {
+     "ratio": 0.3757,
+     "metric": "rms",
+     "stage": 0,
+     "step": "1",
+     "field": "pm1"
+    },
+    {
+     "ratio": 0.3542,
+     "metric": "max",
+     "stage": 0,
+     "step": "1",
+     "field": "p"
+    }
+   ]
+  },
+  "d02 flags 0": {
+   "passed": true,
+   "guard_events": 0,
+   "worst_vs_tier_p": [
+    {
+     "ratio": 0.4789,
+     "metric": "max",
+     "stage": 2,
+     "step": "3",
+     "field": "u"
+    },
+    {
+     "ratio": 0.4241,
+     "metric": "rms",
+     "stage": 2,
+     "step": "4",
+     "field": "u"
+    },
+    {
+     "ratio": 0.418,
+     "metric": "max",
+     "stage": 2,
+     "step": "4",
+     "field": "u"
+    }
+   ]
+  },
+  "d02 W2PASS=1 MASS_BLOCK=1": {
+   "passed": true,
+   "guard_events": 0,
+   "worst_vs_tier_p": [
+    {
+     "ratio": 0.4236,
+     "metric": "max",
+     "stage": 2,
+     "step": "4",
+     "field": "u"
+    },
+    {
+     "ratio": 0.4181,
+     "metric": "max",
+     "stage": 2,
+     "step": "3",
+     "field": "v"
+    },
+    {
+     "ratio": 0.4115,
+     "metric": "rms",
+     "stage": 2,
+     "step": "4",
+     "field": "u"
+    }
+   ]
+  }
+ },
+ "oracle_cmd": "tests/v025/b_core/verify_pristine.py --domain dXX --interpret --wrf-stages --payload evolving (CPU, JAX_PLATFORMS=cpu)",
+ "test": "tests/v025/b_core/test_acoustic_w2pass.py (mutants: no keep-mask FAIL, no back-substitution FAIL)",
+ "gpu": {
+  "source": "phase2b/BC49_w2pass/gpu_w2pass.json",
+  "device": "cuda:0",
+  "platform": "gpu",
+  "note": "host wall per dispatch (batch 32, median of 21), 3 interleaved rounds over all configs",
+  "rows": {
+   "d01": {
+    "shape": [
+     44,
+     70,
+     120
+    ],
+    "median_ms": {
+     "w:base": 0.2799,
+     "substep:base": 0.3137,
+     "w:w2": 0.1967,
+     "substep:w2": 0.244,
+     "substep:mb": 0.2655,
+     "substep:w2mb": 0.1893
+    },
+    "rounds_ms": {
+     "w:base": [
+      0.279,
+      0.2802,
+      0.2799
+     ],
+     "substep:base": [
+      0.3137,
+      0.3118,
+      0.3143
+     ],
+     "w:w2": [
+      0.1967,
+      0.1962,
+      0.1968
+     ],
+     "substep:w2": [
+      0.2459,
+      0.2438,
+      0.244
+     ],
+     "substep:mb": [
+      0.2658,
+      0.2652,
+      0.2655
+     ],
+     "substep:w2mb": [
+      0.1899,
+      0.1888,
+      0.1893
+     ]
+    },
+    "leaves_differing_vs_base": {
+     "w:w2": 0,
+     "substep:w2": 0,
+     "substep:mb": 0,
+     "substep:w2mb": 0
+    }
+   },
+   "d02": {
+    "shape": [
+     44,
+     117,
+     267
+    ],
+    "median_ms": {
+     "w:base": 0.5039,
+     "substep:base": 0.606,
+     "w:w2": 0.4156,
+     "substep:w2": 0.5124,
+     "substep:mb": 0.5518,
+     "substep:w2mb": 0.4593
+    },
+    "rounds_ms": {
+     "w:base": [
+      0.5039,
+      0.5017,
+      0.5062
+     ],
+     "substep:base": [
+      0.6089,
+      0.6056,
+      0.606
+     ],
+     "w:w2": [
+      0.4156,
+      0.4147,
+      0.4184
+     ],
+     "substep:w2": [
+      0.5124,
+      0.5115,
+      0.5191
+     ],
+     "substep:mb": [
+      0.5492,
+      0.5518,
+      0.5555
+     ],
+     "substep:w2mb": [
+      0.4572,
+      0.4593,
+      0.4726
+     ]
+    },
+    "leaves_differing_vs_base": {
+     "w:w2": 0,
+     "substep:w2": 0,
+     "substep:mb": 0,
+     "substep:w2mb": 0
+    }
+   }
+  },
+  "summary": "GPU BITWISE (0 differing leaves) for w2, mb, w2mb on d01+d02; substep d01 .314->.189 ms (-40 %), d02 .606->.459 ms (-24 %)"
+ },
+ "oracle_rule": "BC21 corrected protocol (C13), unchanged: per field frozen limit + 2x pristine fp-contract on/off sensitivity; 0 guard events",
+ "cubin_cpu": {
+  "scope": "CPU-only TTIR->PTX->ptxas-blackwell (Triton 3.6 bundled), sm_120a, num_warps 4, num_stages 3; no GPU",
+  "rows": {
+   "d01_b_core_mass_fp32_w0m0": "Used 48 registers, used 0 barriers | 0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d01_b_core_w_fp32_w0m0": "Used 64 registers, used 0 barriers, 32 bytes cumulative stack size | 32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d01_b_core_mass_fp32_w1m1": "Used 128 registers, used 0 barriers | 0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d01_b_core_w_fp32_w1m1": "Used 62 registers, used 0 barriers, 32 bytes cumulative stack size | 32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d02_b_core_mass_fp32_w0m0": "Used 48 registers, used 0 barriers | 0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d02_b_core_w_fp32_w0m0": "Used 64 registers, used 0 barriers, 32 bytes cumulative stack size | 32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d02_b_core_mass_fp32_w1m1": "Used 128 registers, used 0 barriers | 0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+   "d02_b_core_w_fp32_w1m1": "Used 62 registers, used 0 barriers, 32 bytes cumulative stack size | 32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads"
+  },
+  "pip_ptxas_13_2_prescreen": "all 8 PTX (d01/d02 x w/mass x flags 0/1) assemble rc 0, same registers (Triton-3.6 PTX, not the XLA-embedded path)"
+ }
+}

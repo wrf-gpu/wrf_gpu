@@ -1,0 +1,39 @@
+{
+  "plot_commit": "07922ae116f673683d7abffaffec68a438f3ab8c",
+  "args": [
+    "<USER_HOME>/miniconda3/bin/python3",
+    "<USER_HOME>/wrf_gpu2_lanes/release-docs/FINALb/plot_tools/field_maps.py",
+    "--cpu-dir",
+    "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+    "--gpu-dir",
+    "<USER_HOME>/wrf_gpu2_lanes/integrate/FINALb/bench/finalb_r2_162h/extra162h/run/wrfout",
+    "--domain",
+    "d02",
+    "--init",
+    "2026-07-26T00:00:00",
+    "--lead",
+    "162",
+    "--title",
+    "Canary 3 km at +162 h: original CPU-WRF and GPU",
+    "--footer",
+    "FINAL-b dead7d004; older WN2 PROD input path, numerical illustration. Original CPU-WRF D5; identical inputs."
+  ],
+  "source_model_commit": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+  "r2_model_rc": 0,
+  "frame_count": 324,
+  "cpu_frame": {
+    "file": "wrfout_d02_2026-08-01_18:00:00",
+    "bytes": 41591333,
+    "sha256": "1c67734f55002aa3fda10658edbbdafc43a6d33cff4353fdd38d5129800b7987"
+  },
+  "gpu_frame": {
+    "file": "wrfout_d02_2026-08-01_18:00:00",
+    "bytes": 185197771,
+    "sha256": "933d3fc5ad2934214cc776b0af33427f3b6b036ce09065eda1138eb8b31eefc3"
+  },
+  "figures": {
+    "maps_prod_d02.png": "8cc853007f8bf564cd84ad7c2a4940ce4def76e8e50760db84c7855dbcadeeae",
+    "maps_prod_d02_dark.png": "9867f3f897472e65ecd6e297346c3e8c56af3a9b2cdff05e2fc85d8072aca01b"
+  },
+  "visual_check": "both themes generated; corrected light image reviewed, footer clear of axes; all-cell RMSE and percentile color scaling stated"
+}

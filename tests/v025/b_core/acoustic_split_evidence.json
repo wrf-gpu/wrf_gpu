@@ -1,0 +1,156 @@
+{
+ "change": {
+  "GPUWRF_ACOUSTIC_UV_MASKED=1": "uv kernel dpn branches load p only on the selecting lanes (bottom k=0, top k=nz, middle)",
+  "GPUWRF_ACOUSTIC_W2PASS=3": "A1c split w phase: P1 (flat over (nz+1) x cols: final t_2ave + rhs), P2 (flat: wupd = w_surface | explicit interior update | w_top), R (column: Thomas forward on wupd + back substitution/damp3/ph finish = the 2-pass code, fused_vertical_implicit._advance_w_kernel_recur)"
+ },
+ "off_identity_cpu": {
+  "d01": {
+   "identical_raw": true,
+   "identical": true,
+   "len": [
+    173034,
+    173034
+   ],
+   "ring": true
+  },
+  "d02": {
+   "identical_raw": true,
+   "identical": true,
+   "len": [
+    173802,
+    173802
+   ],
+   "ring": true
+  }
+ },
+ "cpu": "UV_MASKED bitwise 67/67 d01+d02; split vs W2PASS=1 ulp-level on XLA:CPU (contraction), 3 pallas_calls; tests + mutants (wrong bottom mask; no Thomas coupling) FAIL",
+ "d7_pristine_split_mb_uvm": "PASS d01 .386 / d02 .476 of Tier-P, guards 0 (<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC53_wsplit)",
+ "cubin_cpu": "P1 44 / P2 42 / R 40 regs, uv masked 42 regs, 0 spill; compile 0.8-2.4 s",
+ "gpu": {
+  "device": "cuda:0",
+  "platform": "gpu",
+  "source": "BC52 snap (lane/b-core = main a5a8e0ac6 + uncommitted UV_MASKED + A1c W2PASS=3 split)",
+  "note": "device-bound: 16 substeps in one jitted fori_loop per dispatch, ms per substep, median of 15 x 3 interleaved rounds",
+  "median_ms_per_substep": {
+   "d01": {
+    "base": 0.14566268873750232,
+    "uvm": 0.14330893827718683,
+    "split": 0.12365193833829835,
+    "splituvm": 0.11749318582587875
+   },
+   "d02": {
+    "base": 0.3846440631605219,
+    "uvm": 0.3782746243814472,
+    "split": 0.3480363120615948,
+    "splituvm": 0.3442213128437288
+   }
+  },
+  "bitwise_vs_base": "66/66 leaves exact for uvm, split, splituvm; single substep and 16-substep loop; d01 + d02",
+  "nsys_us_per_substep": {
+   "d01:base": {
+    "total": 99.07,
+    "per_kernel": {
+     "b_core_uv_fp32": 13.86,
+     "b_core_mass_fp32": 16.95,
+     "other": 1.64,
+     "b_core_w_fp32": 62.62,
+     "b_core_pressure_fp32": 4.0
+    }
+   },
+   "d01:uvm": {
+    "total": 96.37,
+    "per_kernel": {
+     "b_core_uv_fp32": 11.85,
+     "b_core_mass_fp32": 16.97,
+     "other": 1.65,
+     "b_core_w_fp32": 61.91,
+     "b_core_pressure_fp32": 3.98
+    }
+   },
+   "d01:split": {
+    "total": 78.35,
+    "per_kernel": {
+     "b_core_uv_fp32": 13.85,
+     "b_core_mass_fp32": 17.02,
+     "other": 1.64,
+     "b_core_w_p1_fp32": 5.46,
+     "b_core_w_p2_fp32": 6.28,
+     "b_core_w_fp32": 30.16,
+     "b_core_pressure_fp32": 3.95
+    }
+   },
+   "d01:splituvm": {
+    "total": 76.61,
+    "per_kernel": {
+     "b_core_uv_fp32": 11.91,
+     "b_core_mass_fp32": 17.01,
+     "other": 1.71,
+     "b_core_w_p1_fp32": 5.45,
+     "b_core_w_p2_fp32": 6.29,
+     "b_core_w_fp32": 30.23,
+     "b_core_pressure_fp32": 4.01
+    }
+   },
+   "d02:base": {
+    "total": 271.22,
+    "per_kernel": {
+     "b_core_uv_fp32": 54.8,
+     "b_core_mass_fp32": 50.63,
+     "other": 2.94,
+     "b_core_w_fp32": 148.76,
+     "b_core_pressure_fp32": 14.08
+    }
+   },
+   "d02:uvm": {
+    "total": 267.2,
+    "per_kernel": {
+     "b_core_uv_fp32": 47.17,
+     "b_core_mass_fp32": 52.81,
+     "other": 2.98,
+     "b_core_w_fp32": 150.42,
+     "b_core_pressure_fp32": 13.81
+    }
+   },
+   "d02:split": {
+    "total": 234.36,
+    "per_kernel": {
+     "b_core_uv_fp32": 55.09,
+     "b_core_mass_fp32": 50.71,
+     "other": 2.95,
+     "b_core_w_p1_fp32": 19.48,
+     "b_core_w_p2_fp32": 24.21,
+     "b_core_w_fp32": 66.16,
+     "b_core_pressure_fp32": 15.75
+    }
+   },
+   "d02:splituvm": {
+    "total": 230.3,
+    "per_kernel": {
+     "b_core_uv_fp32": 47.01,
+     "b_core_mass_fp32": 53.18,
+     "other": 3.06,
+     "b_core_w_p1_fp32": 19.5,
+     "b_core_w_p2_fp32": 24.49,
+     "b_core_w_fp32": 66.4,
+     "b_core_pressure_fp32": 16.66
+    }
+   }
+  }
+ },
+ "summary": {
+  "d02_total_us_per_substep": {
+   "base": 271.22,
+   "uvm": 267.2,
+   "split": 234.36,
+   "splituvm": 230.3
+  },
+  "d01_total_us_per_substep": {
+   "base": 99.07,
+   "uvm": 96.37,
+   "split": 78.35,
+   "splituvm": 76.61
+  },
+  "per_root_estimate_ms_splituvm": 1.017,
+  "per_root_basis": "[I] 7 acoustic substeps per own step (WRF 1/2/4), 1 d01 + 3 d02 own steps per root; base = A1+A2 (W2PASS=1, MASS_BLOCK=1)"
+ }
+}

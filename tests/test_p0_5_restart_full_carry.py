@@ -7,6 +7,7 @@ State.zeros, which hard-requires a GPU), and the carry via
 
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from pathlib import Path
 import pickle
 
@@ -19,9 +20,9 @@ from gpuwrf.contracts.noahmp_state import NoahMPLandState
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State, _state_field_shapes
 from gpuwrf.io import restart as restart_mod
-from gpuwrf.io.restart import read_restart, read_restart_metadata, write_restart
+from gpuwrf.io.restart import UNSUPPORTED_CARRY_FIELDS, read_restart, read_restart_metadata, write_restart
 from gpuwrf.runtime.operational_mode import OperationalNamelist
-from gpuwrf.runtime.operational_state import initial_operational_carry
+from gpuwrf.runtime.operational_state import OperationalCarry, initial_operational_carry
 
 
 def _state(grid: GridSpec) -> State:
@@ -145,3 +146,56 @@ def test_bad_format_rejected(tmp_path: Path) -> None:
         pickle.dump({"format": "not-a-restart"}, handle)
     with pytest.raises(ValueError):
         read_restart(path)
+
+
+# --- v0.25 M3R restart-gate repair: exact dtypes, optional leaves, carry inventory ---
+
+
+def test_restore_keeps_force_fp64_dtypes_and_optional_scalar_boundary_leaves(tmp_path: Path) -> None:
+    """``force_fp64`` runs carry fp64 boundary/number leaves; the reader must return
+    the STORED dtype (verbatim pytree rebuild), not re-canonicalise them back to the
+    fp32-gated matrix through ``State.__init__``. Optional scalar wrfbdy leaves
+    round-trip present-as-present and absent-as-``None``."""
+
+    grid = GridSpec.canary_3km_template()
+    base = _state(grid)
+    assert np.asarray(base.u_bdy).dtype == np.float32
+    qc_bdy = jnp.asarray(np.arange(int(np.prod(base.qv_bdy.shape)), dtype=np.float64).reshape(base.qv_bdy.shape))
+    forced = base.replace(
+        _cast=False,
+        u_bdy=jnp.asarray(base.u_bdy, dtype=jnp.float64),
+        Nc=jnp.asarray(base.Nc, dtype=jnp.float64),
+        qc_bdy=qc_bdy,
+    )
+    carry = initial_operational_carry(forced)
+    path = tmp_path / "forced.wrfrst"
+    write_restart(carry, _namelist(grid), grid, 5, path)
+    restored, _, _, _ = read_restart(path)
+
+    assert restored.state.active_field_names() == forced.active_field_names()
+    for field in forced.active_field_names():
+        assert _equal(getattr(forced, field), getattr(restored.state, field)), field
+    for field in ("u_bdy", "Nc", "qc_bdy"):
+        assert np.asarray(getattr(restored.state, field)).dtype == np.float64, field
+    assert np.asarray(restored.state.lu_index).dtype == np.int32
+    for field in ("qr_bdy", "qi_bdy", "qs_bdy", "qg_bdy", "Ni_bdy", "Nr_bdy", "qh", "nwfa"):
+        assert getattr(restored.state, field) is None, field
+
+
+def test_v2_carry_inventory_includes_cadence_memory(tmp_path: Path) -> None:
+    """v2 serializes every current carry group, including persistent KF state."""
+    carry_fields = {field.name for field in dataclass_fields(OperationalCarry)}
+    covered = {"state", "noahmp_land", "noahmp_rad", *restart_mod._CARRY_SCRATCH_FIELDS,
+               *restart_mod._V1_UNSUPPORTED_CARRY_FIELDS}
+    assert covered == carry_fields
+    assert UNSUPPORTED_CARRY_FIELDS == ()
+    grid = GridSpec.canary_3km_template()
+    carry = initial_operational_carry(_state(grid)).replace(
+        cumulus_carry=(jnp.zeros((grid.nz, grid.ny, grid.nx)), jnp.full((grid.ny, grid.nx), 54, dtype=jnp.int32))
+    )
+    path = tmp_path / "supported.wrfrst"
+    write_restart(carry, _namelist(grid), grid, 1, path)
+    restored, _, _, step = read_restart(path)
+    assert step == 1
+    for left, right in zip(carry.cumulus_carry, restored.cumulus_carry, strict=True):
+        assert _equal(left, right)

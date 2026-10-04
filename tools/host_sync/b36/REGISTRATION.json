@@ -1,0 +1,40 @@
+{
+  "id": "B36",
+  "registered_utc": "2026-10-02T18:52:00Z",
+  "owner": "host-sync",
+  "scope": [
+    "nesting/boundary_construction.py",
+    "integration/nested_pipeline.py child allocation only",
+    "coupling/boundary_apply.py scalar consumer only if pristine caller proof requires it"
+  ],
+  "producer_dispatch_commit_preserved": "27256db29",
+  "priority": "after27256review",
+  "spec": {
+    "mp_physics": 8,
+    "species": [
+      "qc",
+      "qr",
+      "qi",
+      "qs",
+      "qg",
+      "Ni",
+      "Nr"
+    ],
+    "forcedown": "WRF Registry f/d flags; couple current child + parent to half-level drymass before bdy_interp/SINT; two-time value/target records",
+    "consumer": "solve_em2345-2379 and2892-2935 RK1 relax_bdy_scalar followed spec_bdy_scalar; rk_update_scalar specified-ring advection exclusion; no extra poststep overwrite",
+    "relaxation": "SOURCE calls relaxation for nests. Check actual spec_zone/relax_zone; do not zero it by assumption. No sponge for nested lbc_fcx_gcx."
+  },
+  "gates": {
+    "oracle": {
+      "inputs": "actualPROD d02 parent/child and actualWN3d03 parent/child columns, all7 active species/corners and three child times per parentinterval; record inputSHAs/sourceSHA/callerconfig",
+      "producer": "unchanged source-literal independent WRF SINT+bdy_interp/coupling, existing rtol2e-7 atol2e-7; REAL32 fieldSINT byte equality when matching source dtype",
+      "consumer": "unchanged extracted pristine Fortran REAL4 relax_bdy_scalar + spec_bdytend q + solve_em mapping, existing b-diff bounds RMS<=2e-5*max(1,rmsref),MAX<=2e-4*max(1,maxref); NumPy source literal stricter existing rtol2e-7 atol2e-7 also",
+      "mutation": "removing allocatedrecords or parentforcing must fail active-column oracle; no absentleafzero passes"
+    },
+    "restart": "all7 new records present and dtype/shape/bytes preserved through operational carry restart; no loop None->array structure change",
+    "D6": "default path PROD6h against realCPU-WRF, every frozen D6 bound unchanged includingRAINNC/QVAPOR/staticfields; no worse than LW6t per field receipt",
+    "S1": "same-source flags/input matched exclusive warm root/fullbenchmark before/after, compile separate, cost measured not assumedtiny"
+  },
+  "gpu_schedule": "short components first underlock<=900, manager-scheduled cold<=3600 only aftergreenCPUproof and queue grant; PROD6h+D6/S1 in nextmergewave, no use of old cache as same-source baseline",
+  "caches": "CPU disabled; oracle build <USER_HOME>/wrf_gpu2_lanes/host-sync/B36/oracle; allownGPU caches declared atarmregistration thenexactcleanup"
+}

@@ -36,6 +36,20 @@ from gpuwrf.runtime import domain_tree as dt
 from gpuwrf.runtime import xla_autotune as at
 
 
+@pytest.fixture(autouse=True)
+def _cache_on_for_artifact_tests(monkeypatch, tmp_path):
+    """Artifact tests explicitly exercise enabled caches, never ambient dirs."""
+    saved_status = dict(cc.CACHE_STATUS)
+    monkeypatch.setenv("GPUWRF_JAX_CACHE", "1")
+    monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(tmp_path / "jit"))
+    monkeypatch.delenv("JAX_COMPILATION_CACHE_DIR", raising=False)
+    try:
+        yield
+    finally:
+        cc.CACHE_STATUS.clear()
+        cc.CACHE_STATUS.update(saved_status)
+
+
 # --------------------------------------------------------------------------- #
 # Deliverable 1: prewarmed cache as a version-keyed release artifact
 # --------------------------------------------------------------------------- #

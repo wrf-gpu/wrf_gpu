@@ -1,5 +1,3 @@
-# Claude Local Instructions
+# Claude local instructions
 
-Read `../PROJECT_CONSTITUTION.md`, then `../AGENTS.md`, then the active sprint contract and relevant local skill under `../.agent/skills`.
-
-Do not use the old global `wrf-gpu-port` skill for this repository.
+End users running a forecast: follow [`AI_OPERATOR.md`](../AI_OPERATOR.md) / [`.claude/skills/run-wrf-gpu`](skills/run-wrf-gpu/SKILL.md).

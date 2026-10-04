@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.contracts.grid import GridSpec
-from gpuwrf.contracts.precision import DEFAULT_DTYPES
+from gpuwrf.contracts.precision import DEFAULT_DTYPES, MYNN_DIAGNOSTIC_LEAVES, GWDO_DIAGNOSTIC_LEAVES
 from gpuwrf.contracts.state import (
     CONDITIONAL_STATE_LEAVES,
     SCALAR_BOUNDARY_OPTIONAL_LEAVES,
@@ -75,27 +75,34 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     # authoritative consolidated count (53 + 3 + 4 + 4 + 2 + 1 = 67), minus the 3
     # legacy p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 optional
     # scalar boundary leaves = 71.
-    assert len(State.__slots__) == 71
-    assert State.__slots__[-21:-7] == (
+    # +5 B39 REAL-locked MYNN surface-layer carry leaves appended at the end = 76.
+    assert MYNN_DIAGNOSTIC_LEAVES == ("el_pbl", "maxmf", "maxwidth", "ztop_plume")
+    assert GWDO_DIAGNOSTIC_LEAVES == ("dtaux3d", "dtauy3d", "dusfcg", "dvsfcg")
+    legacy_order = State.__slots__[:-8]
+    assert len(State.__slots__) == 84 and len(legacy_order) == 76
+    assert State.__slots__[-8:] == (*MYNN_DIAGNOSTIC_LEAVES, *GWDO_DIAGNOSTIC_LEAVES)
+    assert legacy_order[-5:] == ("mol", "hfx", "qfx", "qsfc", "pblh")
+    assert legacy_order[-26:-12] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
     )
-    assert State.__slots__[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
+    assert legacy_order[-12:-5] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
     assert restored_grid == grid
     assert restored_namelist.grid == restored_grid
     assert restored_namelist.dt_s == namelist.dt_s
     assert restored_namelist.acoustic_substeps == namelist.acoustic_substeps
 
-    assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES)
+    assert state.active_field_names() == tuple(name for name in State.__slots__
+        if name not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES))
     assert restored_state.active_field_names() == state.active_field_names()
-    assert len(state.active_field_names()) == 57  # v0.20 S1: -3 legacy p/ph/mu aliases
+    assert len(state.active_field_names()) == 66  # Frozen62 +4 requiredMYNN, inactiveGWDO absent.
     for field in state.active_field_names():
         original = np.asarray(getattr(state, field))
         restored = np.asarray(getattr(restored_state, field))
         assert restored.dtype == original.dtype, field
         assert restored.shape == original.shape, field
         assert np.array_equal(restored, original), field
-    for field in CONDITIONAL_STATE_LEAVES:
+    for field in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES):
         assert getattr(restored_state, field) is None, field
 
     leaves = jax.tree_util.tree_leaves(restored_state)
@@ -142,7 +149,7 @@ def test_checkpoint_roundtrip_preserves_hail_conditional_state(tmp_path: Path) -
 
     assert restored_step == 23
     assert state.active_field_names() == restored_state.active_field_names()
-    assert len(restored_state.active_field_names()) == 62  # v0.20 S1: 57 base + 5 hail
+    assert len(restored_state.active_field_names()) == 71  # Frozen67 hail +4 requiredMYNN.
     for field in ("qh", "Nh", "qvolg", "qvolh", "hail_acc"):
         assert getattr(restored_state, field) is not None, field
     for field in ("nwfa", "nifa"):

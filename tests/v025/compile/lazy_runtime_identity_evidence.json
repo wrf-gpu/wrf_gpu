@@ -1,0 +1,108 @@
+{
+  "experiment": "CP36b",
+  "startup_commit": "d6a412695",
+  "base_snapshot": "611053f9c",
+  "lazy_snapshot": "8dd32d4ee",
+  "GPU_asserted_both": true,
+  "normalization": "none",
+  "result": {
+    "checks": {
+      "source_fingerprint": true,
+      "target_fingerprint": true,
+      "inputs": {
+        "d01": true,
+        "d02": true
+      },
+      "HLO": {
+        "d01": true,
+        "d02": true
+      },
+      "cheap_keys": {
+        "d01": true,
+        "d02": true
+      }
+    },
+    "rows": [
+      {
+        "platform": "gpu",
+        "source": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3/source/src/gpuwrf/__init__.py",
+        "source_fingerprint": "b38cddb8657bb101a7e0e7d104072bfc1e7557e94c15a12dd9fc50cf143ac5f3",
+        "target_fingerprint": {
+          "jaxlib_version": "0.10.0",
+          "jax_version": "0.10.0",
+          "device_kind": "NVIDIA GeForce RTX 5090",
+          "platform": "gpu",
+          "compute_capability": "12.0",
+          "cuda_driver": "PJRT C API\ncuda 13000",
+          "x64": true,
+          "xla_flags": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/integrate/LW3/autotune --xla_gpu_force_compilation_parallelism=2"
+        },
+        "rows": [
+          {
+            "domain": "d01",
+            "input_carry_sha256": "657576fc4a72d0b08825d190f04a4c6edc9c4188c0eac5851912d8187041e2df",
+            "cheap_key": "ed6b99f33b574b76d32f5060fef0c5d559909e6d31fd5e47ee6701da386af6c2",
+            "lower_hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "lower_seconds": 15.612147268024273,
+            "n_steps": 1,
+            "cadence": 33,
+            "sound_steps": null
+          },
+          {
+            "domain": "d02",
+            "input_carry_sha256": "2eeabb135a639a642db4622ec15dfa2ddb7dd50a43a51025b40ba240f890a097",
+            "cheap_key": "3b47e4c20f4887ddbafd7737c56b4ae340c167d446b2413eace39dc4e4bebeb0",
+            "lower_hlo": "863a878be27e02dabab78da8d799c29fccb994d1eb788f595ae1bb54bf5b29c9",
+            "lower_seconds": 13.652031982986955,
+            "n_steps": 3,
+            "cadence": 100,
+            "sound_steps": null
+          }
+        ],
+        "process_seconds": 36.34447789401747,
+        "scope": "same actualPRODcommon input lower/key ONLY; zero forecast/advance/backendcompile of domain"
+      },
+      {
+        "platform": "gpu",
+        "source": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/source/src/gpuwrf/__init__.py",
+        "source_fingerprint": "b38cddb8657bb101a7e0e7d104072bfc1e7557e94c15a12dd9fc50cf143ac5f3",
+        "target_fingerprint": {
+          "jaxlib_version": "0.10.0",
+          "jax_version": "0.10.0",
+          "device_kind": "NVIDIA GeForce RTX 5090",
+          "platform": "gpu",
+          "compute_capability": "12.0",
+          "cuda_driver": "PJRT C API\ncuda 13000",
+          "x64": true,
+          "xla_flags": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/integrate/LW3/autotune --xla_gpu_force_compilation_parallelism=2"
+        },
+        "rows": [
+          {
+            "domain": "d01",
+            "input_carry_sha256": "657576fc4a72d0b08825d190f04a4c6edc9c4188c0eac5851912d8187041e2df",
+            "cheap_key": "ed6b99f33b574b76d32f5060fef0c5d559909e6d31fd5e47ee6701da386af6c2",
+            "lower_hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "lower_seconds": 15.275957039993955,
+            "n_steps": 1,
+            "cadence": 33,
+            "sound_steps": null
+          },
+          {
+            "domain": "d02",
+            "input_carry_sha256": "2eeabb135a639a642db4622ec15dfa2ddb7dd50a43a51025b40ba240f890a097",
+            "cheap_key": "3b47e4c20f4887ddbafd7737c56b4ae340c167d446b2413eace39dc4e4bebeb0",
+            "lower_hlo": "863a878be27e02dabab78da8d799c29fccb994d1eb788f595ae1bb54bf5b29c9",
+            "lower_seconds": 13.251101695001125,
+            "n_steps": 3,
+            "cadence": 100,
+            "sound_steps": null
+          }
+        ],
+        "process_seconds": 38.73227916099131,
+        "scope": "same actualPRODcommon input lower/key ONLY; zero forecast/advance/backendcompile of domain"
+      }
+    ],
+    "scope": "Actual samePROD cachedinput lower+metadata-key only; no domain compile/step; same full preset flags; source only lazypublicexports"
+  },
+  "artifact": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/keys/comparison.json"
+}

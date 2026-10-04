@@ -306,6 +306,62 @@ _LW_BUFFER_TPROF = (
 )
 
 
+# Pytree layout of :class:`RRTMGLWColumnState`, a partition of ``__slots__``.
+#
+# v0.25 I2: the CLWRF SSP245 greenhouse-gas scalars moved from the STATIC aux to
+# DYNAMIC children.  They are plain multiplicative gas amounts in the radiative
+# transfer -- they set no array shape -- but as aux they were `jax.jit` compile
+# constants, and the coupler advances them with the forecast clock, so every
+# wrfout output time minted a NEW LW executable
+# (`.agent/sprints/2026-08-28-v0250-i1-identity-fused-truth/M9_RETRACE_PROOF.json`).
+# ``top_pressure_pa`` STAYS static: WRF `rrtmg_lwinit` uses the grid p_top to set
+# NLAYERS, so it is shape metadata and must keep specializing the program.
+_LW_ARRAY_FIELDS: tuple[str, ...] = (
+    "T",
+    "p",
+    "qv",
+    "qc",
+    "qi",
+    "qs",
+    "qg",
+    "cloud_fraction",
+    "surface_temperature",
+    "surface_emissivity",
+    "dz",
+    "rho",
+    "pressure_interfaces",
+    "temperature_interfaces",
+    "ozone_vmr",
+)
+_LW_GAS_FIELDS: tuple[str, ...] = (
+    "co2_vmr",
+    "n2o_vmr",
+    "ch4_vmr",
+    "cfc11_vmr",
+    "cfc12_vmr",
+)
+_LW_STATIC_FIELDS: tuple[str, ...] = ("top_pressure_pa",)
+_LW_CHILD_FIELDS: tuple[str, ...] = _LW_ARRAY_FIELDS + _LW_GAS_FIELDS
+# Non-array scalars, in the historical aux order, for equality and hashing.
+_LW_SCALAR_FIELDS: tuple[str, ...] = _LW_STATIC_FIELDS + _LW_GAS_FIELDS
+
+
+def _resolved_gas_scalar(value):
+    """Coerce and validate host gases; preserve JAX tracer leaves.
+
+    The greenhouse-gas scalars are dynamic pytree children, so ``tree_unflatten``
+    hands them back as JAX tracers inside ``jax.jit``.  A tracer cannot be read on
+    the host, so it is passed through untouched -- it was already validated when
+    the state was first constructed. Concrete inputs keep historical ``float``
+    coercion and the finite/positive check that follows it."""
+
+    if value is None:
+        return None
+    if isinstance(value, jax.core.Tracer):
+        return value
+    return float(value)
+
+
 @jax.tree_util.register_pytree_node_class
 class RRTMGLWColumnState:
     """Pytree for independent longwave radiation columns on mass levels."""
@@ -409,9 +465,12 @@ class RRTMGLWColumnState:
             value is None for value in gases
         ):
             raise ValueError("LW greenhouse-gas VMR metadata must be all supplied or all None")
-        resolved_gases = tuple(None if value is None else float(value) for value in gases)
-        if not all(value is None for value in resolved_gases) and any(
-            not np.isfinite(value) or value <= 0.0 for value in resolved_gases
+        resolved_gases = tuple(_resolved_gas_scalar(value) for value in gases)
+        concrete_gases = [
+            value for value in resolved_gases if isinstance(value, float)
+        ]
+        if concrete_gases and any(
+            not np.isfinite(value) or value <= 0.0 for value in concrete_gases
         ):
             raise ValueError("LW greenhouse-gas VMR metadata must be finite and positive")
         (
@@ -430,28 +489,24 @@ class RRTMGLWColumnState:
         return type(self)(**values)
 
     def tree_flatten(self):
-        """Presents arrays as leaves and the shape-setting model top as static."""
+        """Presents arrays AND gas scalars as leaves; the model top stays static."""
 
-        children = tuple(getattr(self, name) for name in self.__slots__[:15])
-        static = tuple(getattr(self, name) for name in self.__slots__[15:])
+        children = tuple(getattr(self, name) for name in _LW_CHILD_FIELDS)
+        static = tuple(getattr(self, name) for name in _LW_STATIC_FIELDS)
         return children, static
 
     @classmethod
     def tree_unflatten(cls, aux, children):
         """Rebuilds the state after JAX transforms."""
 
-        return cls(
-            *children[:12],
-            top_pressure_pa=aux[0],
-            pressure_interfaces=children[12],
-            temperature_interfaces=children[13],
-            ozone_vmr=children[14],
-            co2_vmr=aux[1],
-            n2o_vmr=aux[2],
-            ch4_vmr=aux[3],
-            cfc11_vmr=aux[4],
-            cfc12_vmr=aux[5],
-        )
+        fields = dict(zip(_LW_CHILD_FIELDS, children, strict=True))
+        fields.update(zip(_LW_STATIC_FIELDS, aux, strict=True))
+        # Lowering rebuilds trees with abstract placeholders as well as arrays.
+        # Preserve those leaves; public construction owns conversion/validation.
+        state = object.__new__(cls)
+        for name, value in fields.items():
+            setattr(state, name, value)
+        return state
 
     def __eq__(self, other: object) -> bool:
         """Implements array-aware equality outside JIT for tests."""
@@ -468,13 +523,13 @@ class RRTMGLWColumnState:
                 and np.array_equal(np.asarray(left), np.asarray(right))
             )
 
-        return tuple(getattr(self, name) for name in self.__slots__[15:]) == tuple(
-            getattr(other, name) for name in self.__slots__[15:]
+        return tuple(getattr(self, name) for name in _LW_SCALAR_FIELDS) == tuple(
+            getattr(other, name) for name in _LW_SCALAR_FIELDS
         ) and all(
             leaf_equal(left, right)
             for left, right in zip(
-                (getattr(self, name) for name in self.__slots__[:15]),
-                (getattr(other, name) for name in self.__slots__[:15]),
+                (getattr(self, name) for name in _LW_ARRAY_FIELDS),
+                (getattr(other, name) for name in _LW_ARRAY_FIELDS),
                 strict=True,
             )
         )
@@ -490,9 +545,21 @@ class RRTMGLWColumnState:
             host = np.asarray(leaf)
             parts.append((tuple(host.shape), str(host.dtype), host.tobytes()))
         parts.append(
-            tuple((name, getattr(self, name)) for name in self.__slots__[15:])
+            tuple((name, getattr(self, name)) for name in _LW_SCALAR_FIELDS)
         )
         return hash(tuple(parts))
+
+
+# The pytree field groups above must stay an exact partition of ``__slots__``:
+# a field added to the class but left out of both groups would silently vanish
+# from the flattened state (a wrong-result hole), and one listed twice would be
+# passed twice to the constructor.
+if tuple(sorted(_LW_CHILD_FIELDS + _LW_STATIC_FIELDS)) != tuple(
+    sorted(RRTMGLWColumnState.__slots__)
+):  # pragma: no cover - import-time structural guard
+    raise RuntimeError(
+        "RRTMGLWColumnState pytree field groups are out of sync with __slots__"
+    )
 
 
 class RRTMGLWColumnResult(NamedTuple):
@@ -714,17 +781,65 @@ _LW_COLUMN_TILE_COLS = max(
         _env_int("GPUWRF_RRTMG_COLUMN_TILE_COLS", 1024),
     ),
 )
+# BP49: with the WRF-REAL radiation entries on (both fast flags, ``_real_entry``)
+# a 4096-column tile is byte-identical to 1024 and cuts the band x tile launches
+# ~4x (PROD d02 radiation call 210 -> 120 ms wall) for ~0.45 GiB more temps.
+# An explicit tile env var always wins; the f64 path keeps 1024.
+_LW_COLUMN_TILE_COLS_EXPLICIT = (
+    "GPUWRF_RRTMG_LW_COLUMN_TILE_COLS" in os.environ or "GPUWRF_RRTMG_COLUMN_TILE_COLS" in os.environ
+)
+_REAL_DEFAULT_COLUMN_TILE_COLS = 4096
+
+
+def _default_lw_column_tile_cols() -> int:
+    """Trace-time default tile width (explicit env > REAL-path 4096 > 1024)."""
+
+    if _LW_COLUMN_TILE_COLS_EXPLICIT or not _real_entry():
+        return _LW_COLUMN_TILE_COLS
+    return _REAL_DEFAULT_COLUMN_TILE_COLS
 # Opt-in v0.20 S4 capability lever: keep the LW McICA/cloud optical-depth
 # substrate in fp32.  The surrounding gas optics and band-summed flux
 # accumulation remain on their existing dtypes, so default fp64/oracle behavior
 # is unchanged unless the proof/runtime explicitly enables this knob.
 _LW_CLOUD_OPTICS_FP32 = _env_bool("GPUWRF_RRTMG_LW_CLOUD_OPTICS_FP32", False)
+_MCICA_JUMPAHEAD = _env_bool("GPUWRF_MCICA_JUMPAHEAD", False)
+_FUSED_TRANSFER = _env_bool("GPUWRF_RRTMG_LW_FUSED_TRANSFER", False)
+
+
+def _lw_band_sums_enabled():
+    """BP57 (trace time): fused LW transfer emits g-summed fluxes and builds the
+    McICA cloud optical depth in-kernel (GPUWRF_RRTMG_LW_BAND_SUMS=1, default off)."""
+
+    return os.environ.get("GPUWRF_RRTMG_LW_BAND_SUMS", "0") == "1"
+
+
+def _canonical_float():
+    """Trace-time float dtype: float64 on the default path, explicit REAL (float32)
+    inside the WRF-REAL entries' ``jax.enable_x64(False)`` scope (review A1: no
+    implicit float64 truncation / trace-time UserWarnings)."""
+
+    return jax.dtypes.canonicalize_dtype(jnp.float64)
+
+
+def _real_entry() -> bool:
+    """WRF-REAL solver entry (state/tables REAL32) only when BOTH radiation fast flags
+    are on, i.e. exactly when the coupler's shared preparation is REAL too
+    (physics_couplers._rrtmg_real_enabled; review-rrtmg32 A2). A single-flag
+    config keeps the f64 entry around the fused kernel instead of mixing an f64
+    coupler with a REAL solver."""
+
+    from gpuwrf.physics import rrtmg_sw
+
+    return bool(_FUSED_TRANSFER and rrtmg_sw._FUSED_QUADRATURE)
+# Same public flag gates the inherited clear-up correction in the retained
+# recurrence, including reference arms that disable only kernel dispatch.
+_CLEAR_SKY_COLUMN_CLOUD = _FUSED_TRANSFER
 
 
 def _leaves(state: RRTMGLWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
-    return (getattr(state, name) for name in RRTMGLWColumnState.__slots__[:15])
+    return (getattr(state, name) for name in _LW_ARRAY_FIELDS)
 
 
 def _trunc_int(value):
@@ -1017,7 +1132,7 @@ def _column_count(leading_shape: tuple[int, ...]) -> int:
 def _effective_lw_column_tile_cols(ncol: int, column_tile_cols: int | None = None) -> int:
     """Return the bounded LW tile width for a flattened column batch."""
 
-    cap = _LW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    cap = _default_lw_column_tile_cols() if column_tile_cols is None else int(column_tile_cols)
     return min(max(int(cap), 1), int(ncol))
 
 
@@ -1516,9 +1631,9 @@ def _lw_o3_vmr_for_state(
 def _lw_diffusivity(pwvcm):
     """Returns RRTMG LW band diffusivity secants."""
 
-    a0 = jnp.asarray(LW_DIFFUSIVITY_A0, dtype=jnp.float64)
-    a1 = jnp.asarray(LW_DIFFUSIVITY_A1, dtype=jnp.float64)
-    a2 = jnp.asarray(LW_DIFFUSIVITY_A2, dtype=jnp.float64)
+    a0 = jnp.asarray(LW_DIFFUSIVITY_A0, dtype=_canonical_float())
+    a1 = jnp.asarray(LW_DIFFUSIVITY_A1, dtype=_canonical_float())
+    a2 = jnp.asarray(LW_DIFFUSIVITY_A2, dtype=_canonical_float())
     secdiff = a0 + a1 * jnp.exp(a2 * pwvcm[..., None])
     variable = jnp.asarray([False, True, True, False, True, True, True, True, True, False, False, False, False, False, False, False])
     return jnp.where(variable, jnp.clip(secdiff, 1.50, 1.80), 1.66)
@@ -1529,7 +1644,7 @@ def _interp_lw_planck(values, tables: RRTMGTableBundle):
 
     bounded = jnp.clip(values, 160.0, 340.0)
     ind = jnp.clip((bounded - 159.0).astype(jnp.int32), 1, 180)
-    frac = bounded - 159.0 - ind.astype(jnp.float64)
+    frac = bounded - 159.0 - ind.astype(_canonical_float())
     low = jnp.take(tables.lw_totplnk, ind - 1, axis=0)
     high = jnp.take(tables.lw_totplnk, ind, axis=0)
     return low + frac[..., None] * (high - low)
@@ -1585,8 +1700,8 @@ def _lw_setcoef(
     tref1 = jnp.take(tables.lw_tref, jp1 - 1, axis=0)
     jt = jnp.clip(_trunc_int(3.0 + (t_k - tref0) / 15.0), 1, 4)
     jt1 = jnp.clip(_trunc_int(3.0 + (t_k - tref1) / 15.0), 1, 4)
-    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(jnp.float64)
-    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
+    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(_canonical_float())
+    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(_canonical_float())
 
     wkl_h2o = coldry * h2ovmr
     wbroad = coldry * jnp.maximum(
@@ -1601,18 +1716,18 @@ def _lw_setcoef(
     upper_for_factor = (t_k - 188.0) / 36.0
     indfor_lower = jnp.minimum(2, jnp.maximum(1, _trunc_int(lower_for_factor)))
     indfor = jnp.where(lower, indfor_lower, 3)
-    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(jnp.float64), upper_for_factor - 1.0)
+    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(_canonical_float()), upper_for_factor - 1.0)
 
     selffac = water * forfac
     self_factor = (t_k - 188.0) / 7.2
     indself = jnp.minimum(9, jnp.maximum(1, _trunc_int(self_factor) - 7))
-    selffrac = self_factor - (indself + 7).astype(jnp.float64)
+    selffrac = self_factor - (indself + 7).astype(_canonical_float())
 
     scaleminor = pavel / t_k
     scaleminorn2 = scaleminor * (wbroad / jnp.maximum(coldry + wkl_h2o, 1.0e-300))
     minor_factor = (t_k - 180.8) / 7.2
     indminor = jnp.minimum(18, jnp.maximum(1, _trunc_int(minor_factor)))
-    minorfrac = minor_factor - indminor.astype(jnp.float64)
+    minorfrac = minor_factor - indminor.astype(_canonical_float())
 
     chi = nt.chi_mls
     j0 = jp - 1
@@ -1629,7 +1744,7 @@ def _lw_setcoef(
     colch4 = 1.0e-20 * coldry * ch4_vmr
     colo2 = 1.0e-20 * coldry * O2_VMR
     colbrd = 1.0e-20 * wbroad
-    wx = coldry[..., None] * jnp.asarray(cfc_vmr, dtype=jnp.float64) * 1.0e-20
+    wx = coldry[..., None] * jnp.asarray(cfc_vmr, dtype=_canonical_float()) * 1.0e-20
 
     compfp = 1.0 - fp
     fac10 = compfp * ft
@@ -2020,7 +2135,7 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
             chi_ratio(1, 2, 11),
             chi_ratio(3, 2, 13),
         )
-        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=jnp.float64)
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=_canonical_float())
         low_tau = jnp.where(coef.lower_mask[..., None], low, 0.0)
         high_tau = jnp.where(coef.lower_mask[..., None], 0.0, low * high_factor)
         tau = low_tau + high_tau
@@ -2068,10 +2183,10 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
 
         adjcolco2_u = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 2.0, 0.79)
         high = c.colo3[..., None] * _interp_four_rows_lw(absb_r4, upper_idx0, upper_idx1, nspb, c) + adjcolco2_u[..., None] * _minor2(nt.kb_mco2[band].astype(jnp.float32), c)
-        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=jnp.float64)
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=_canonical_float())
         high = high * high_factor.astype(jnp.float32)
-        tau = jnp.where(c.lower_mask[..., None], low, high).astype(jnp.float64)
-        frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(jnp.float64)
+        tau = jnp.where(c.lower_mask[..., None], low, high).astype(_canonical_float())
+        frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(_canonical_float())
     elif band == 7:
         adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.65)
         low = (
@@ -2220,7 +2335,7 @@ def _lw_tfn_factor(odepth):
     tau = jnp.maximum(odepth, 0.0)
     tblind = tau / (LW_BPADE + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
-    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
+    tfn = idx.astype(_canonical_float()) / float(LW_NTBL)
     tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
     exp_tbl = jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS)
     table_factor = jnp.where(
@@ -2281,7 +2396,7 @@ def _lw_global_to_band(values: jnp.ndarray) -> jnp.ndarray:
 
 def _kiss_uint_to_float(value):
     signed = lax.bitcast_convert_type(value, jnp.int32)
-    return signed.astype(jnp.float64) * 2.328306e-10 + 0.5
+    return signed.astype(_canonical_float()) * 2.328306e-10 + 0.5
 
 
 def _kiss_step(seed1, seed2, seed3, seed4):
@@ -2302,12 +2417,19 @@ def _kiss_step(seed1, seed2, seed3, seed4):
     return seed1, seed2, seed3, seed4, _kiss_uint_to_float(kiss)
 
 
-def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=jnp.float64):
+def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=None):
     """Builds the WRF random-overlap McICA mask for the LW fixture path.
 
     The WRF harness uses `icld=1`, `irng=0`, and `permuteseed=150`, so this
     ports only the random-overlap KISS path from module_ra_rrtmg_lw.F:2402-2438.
     """
+    if output_dtype is None:
+        output_dtype = _canonical_float()
+
+    if _MCICA_JUMPAHEAD:
+        from gpuwrf.kernels.rad_mcica import lw_cloud_mask
+
+        return lw_cloud_mask(p_layer_pa, cloud_fraction, output_dtype=output_dtype)
 
     p_seed = p_layer_pa.astype(jnp.float32) * jnp.float32(0.01)
     p_seed = p_seed * jnp.float32(100.0)
@@ -2329,10 +2451,12 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=jnp.
     return (cdf >= (1.0 - cldf[..., :, None])).astype(output_dtype)
 
 
-def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
-    """Ports the WRF LW `mcica_subcol_lw` random mask plus `cldprmc` optical depth."""
+def _lw_cloud_global(state, p_ext, layer_mass_ext):
+    """WRF LW `mcica_subcol_lw` mask (global g order) and in-cloud water paths.
 
-    del tables
+    Returns ``(cldf_global (..., nlay, 140), clw_path, ciw_path, csw_path)``.
+    """
+
     cloud_dtype = jnp.float32 if _LW_CLOUD_OPTICS_FP32 else None
     buffer_layers = p_ext.shape[-1] - state.p.shape[-1]
 
@@ -2358,8 +2482,16 @@ def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
     cldf_global = _lw_mcica_random_cloud_mask(
         p_ext,
         cloud_ext,
-        output_dtype=(cloud_dtype or jnp.float64),
+        output_dtype=(cloud_dtype or _canonical_float()),
     )
+    return cldf_global, clw_path, ciw_path, csw_path
+
+
+def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
+    """Ports the WRF LW `mcica_subcol_lw` random mask plus `cldprmc` optical depth."""
+
+    del tables
+    cldf_global, clw_path, ciw_path, csw_path = _lw_cloud_global(state, p_ext, layer_mass_ext)
     clw_global = jnp.where(cldf_global > 0.5, clw_path[..., :, None], 0.0)
     ciw_global = jnp.where(cldf_global > 0.5, ciw_path[..., :, None], 0.0)
     csw_global = jnp.where(cldf_global > 0.5, csw_path[..., :, None], 0.0)
@@ -2381,7 +2513,7 @@ def _lw_lookup_terms(tau):
 
     tblind = tau / (LW_BPADE + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
-    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
+    tfn = idx.astype(_canonical_float()) / float(LW_NTBL)
     tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
     tau_tbl = jnp.where(idx == 0, 0.0, tau_tbl)
     exp_tbl = jnp.where(idx == LW_NTBL, LW_EXP_EPS, jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS))
@@ -2509,6 +2641,13 @@ def _lw_rtrnmc_band_fluxes(
     otherwise both are ``None``).
     """
 
+    if _FUSED_TRANSFER:
+        from gpuwrf.kernels.rad_lw_transfer import lw_band_fluxes
+
+        return lw_band_fluxes(state, tau_b, frac_b, cldf_b, taucmc_b,
+            sec_raw, scale, valid, plank_b, planklev_b, plankbnd_b,
+            cloud_layer, with_clear_sky)
+
     zcd = None
     zcu = None
     tau_b = tau_b
@@ -2598,7 +2737,7 @@ def _lw_rtrnmc_band_fluxes(
             terms["clear"]["bbugas"],
         )
 
-    (radld, radclrd_final, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
+    (radld, radclrd_final, iclddn_final), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
     (
         zfd_scan,
         atrans_scan,
@@ -2656,11 +2795,11 @@ def _lw_rtrnmc_band_fluxes(
         zcd = jnp.moveaxis(zcd_layer0, 0, -2)
         # Clear-sky UP sweep (WRF `rtrnmc` :3436-3467).  Surface boundary uses
         # the CLEAR down radiance at the surface (`radclrd_final`); the stream
-        # follows the all-sky `radlu` while no cloud is above (iclddn=0) and
+        # follows all-sky `radlu` in entirely cloud-free columns (iclddn=0) and
         # diverges with the clear-sky gas source/transmittance once iclddn=1.
         radclru0 = frac_b[..., 0, :] * plankbnd_b[..., None] + (1.0 - state.surface_emissivity[..., None]) * radclrd_final
-        # The clear stream follows the all-sky up radiance `radlu` while no
-        # cloud is above (iclddn=0); the carry recomputes that all-sky `radlu`
+        # The clear stream follows the all-sky up radiance `radlu` when the
+        # entire column is cloud-free (iclddn=0); the carry recomputes that all-sky `radlu`
         # recurrence (identical formula to `up_body`) so no external radiance
         # series is needed.
         up_clear_xs = (
@@ -2700,11 +2839,14 @@ def _lw_rtrnmc_band_fluxes(
             )
             rad_clear_allsky = radlu_l + (bbugas_l - radlu_l) * atrans_l
             radlu_new = jnp.where(is_cloud, rad_cloud, rad_clear_allsky)
-            # WRF :3461-3467 — clear stream = all-sky up while no cloud above
-            # (iclddn=0); once a cloud is above, propagate with clear-sky gas
+            # WRF :3461-3467 — clear stream = all-sky up in cloud-free columns
+            # (final iclddn=0); otherwise, propagate with clear-sky gas
             # source + clear-sky transmittance.
             radclru_diverged = radclru_l + (bbugas_clr_l - radclru_l) * atrans_clr_l
-            radclru_new = jnp.where(iclddn_l[..., None], radclru_diverged, radlu_new)
+            # WRF rtrnmc uses the final whole-column downward cloud flag at
+            # every upward level. Keep legacy behavior when the flag is off.
+            upward_cloud = iclddn_final if _CLEAR_SKY_COLUMN_CLOUD else iclddn_l
+            radclru_new = jnp.where(upward_cloud[..., None], radclru_diverged, radlu_new)
             return (radlu_new, radclru_new), radclru_new * scale * valid
 
         _, zcu_scan = lax.scan(up_clear_body, (radlu, radclru0), up_clear_xs)
@@ -2825,7 +2967,8 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     return tfn_all, zfd_all, zfu_all, plansum
 
 
-def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, build_taumol: bool = True):
+def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, build_taumol: bool = True,
+                    cloud_global: bool = False):
     """Builds LW gas/source state up to the `rtrnmc` transfer entry.
 
     Shared by the operational flux path (`_lw_solver_fluxes`) and the WRF
@@ -2895,7 +3038,12 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
         ch4_vmr=ch4_vmr,
         cfc_vmr=cfc_vmr,
     )
-    cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
+    if cloud_global:
+        # BP57: the band-sum transfer kernel builds cldfmc/taucmc per g-point
+        # itself from the global McICA mask and the in-cloud water paths.
+        cldfmc, taucmc = _lw_cloud_global(state, p_ext, layer_mass_ext), None
+    else:
+        cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
     planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
     if not build_taumol:
         # Chunked flux path: do NOT materialise the full `(..., nlay, 16, 16)`
@@ -2986,11 +3134,16 @@ def _lw_solver_fluxes_chunked(
     (proofs/v013).
     """
 
+    band_sums = _FUSED_TRANSFER and _lw_band_sums_enabled()
     state, coef, secdiff, planklay, planklev, plankbnd, cldfmc, taucmc, original_layers, layer_mass = _lw_solver_base(
-        state, tables, build_taumol=False
+        state, tables, build_taumol=False, cloud_global=band_sums
     )
     nt = _native_lw_tables()
-    cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
+    if band_sums:
+        cldf_global, clw_path, ciw_path, csw_path = cldfmc
+        cloud_layer = jnp.any(cldf_global > 0.5, axis=-1)
+    else:
+        cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
     scale_band = tables.lw_delwave * (jnp.pi * 1.0e4)
     nlay = int(planklay.shape[-2])
 
@@ -3002,9 +3155,27 @@ def _lw_solver_fluxes_chunked(
     ]
 
     flux_shape = planklay.shape[:-2] + (nlay + 1,)
-    zero_flux = jnp.zeros(flux_shape, dtype=jnp.float64)
+    zero_flux = jnp.zeros(flux_shape, dtype=_canonical_float())
     n_acc = 4 if with_clear_sky else 2
     init = tuple(zero_flux for _ in range(n_acc))
+
+    if band_sums:
+        from gpuwrf.kernels.rad_lw_transfer import pack_lw_cloud
+
+        # Band-invariant: mask compare + kernel packing once per call, not per band.
+        packed_cloud = pack_lw_cloud(cldf_global > 0.5, clw_path, ciw_path, csw_path)
+
+    def body_sums(carry, band):
+        from gpuwrf.kernels.rad_lw_transfer import lw_band_flux_sums
+
+        tau_b, frac_b = lax.switch(band, taumol_branches)
+        parts = lw_band_flux_sums(
+            state, tau_b, frac_b, packed_cloud, band,
+            jnp.take(secdiff, band, axis=-1), scale_band[band], tables.lw_gpoint_mask[band],
+            jnp.take(planklay, band, axis=-1), jnp.take(planklev, band, axis=-1),
+            jnp.take(plankbnd, band, axis=-1), cloud_layer, with_clear_sky,
+            gpoint_counts=_LW_GPOINT_COUNTS, cloud=_native_lw_cloud_tables())
+        return tuple(acc + part for acc, part in zip(carry, parts[:n_acc])), None
 
     def body(carry, band):
         tau_b, frac_b = lax.switch(band, taumol_branches)
@@ -3032,7 +3203,7 @@ def _lw_solver_fluxes_chunked(
             parts = (down_part, up_part)
         return tuple(acc + part for acc, part in zip(carry, parts)), None
 
-    accumulated, _ = lax.scan(body, init, jnp.arange(16, dtype=jnp.int32))
+    accumulated, _ = lax.scan(body_sums if band_sums else body, init, jnp.arange(16, dtype=jnp.int32))
     if with_clear_sky:
         flux_down_model, flux_up_model, clear_down, clear_up = accumulated
         return state, flux_down_model, flux_up_model, original_layers, layer_mass, clear_down, clear_up
@@ -3144,7 +3315,7 @@ def _longwave_column_tiled_impl(
 ) -> RRTMGLWColumnResult | RRTMGLWM9FluxResult:
     """Runs the LW solve over fixed-size flattened column tiles."""
 
-    configured_tile_cols = _LW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    configured_tile_cols = _default_lw_column_tile_cols() if column_tile_cols is None else int(column_tile_cols)
     if not _LW_COLUMN_TILING or configured_tile_cols <= 0:
         return _longwave_impl(state, tables, debug, with_clear_sky, m9_flux_only)
 
@@ -3154,7 +3325,7 @@ def _longwave_column_tiled_impl(
     n_tiles = (ncol + tile_cols - 1) // tile_cols
     padded_ncol = n_tiles * tile_cols
     nlayers = state.p.shape[-1]
-    out_dtype = jnp.result_type(state.p.dtype, jnp.float64)
+    out_dtype = jnp.result_type(state.p.dtype, _canonical_float())
 
     flat_state = _flatten_lw_state(state, leading_shape, ncol)
     padded_state = _pad_lw_state(flat_state, ncol, padded_ncol)
@@ -3194,6 +3365,13 @@ def compute_rrtmg_lw_intermediates(
     return intermediate
 
 
+def _lw_floating_dtype(tree, dtype):
+    """Change radiation floating leaves, retaining masks and integer indices."""
+    return jax.tree.map(lambda value: value.astype(dtype)
+        if hasattr(value, "dtype") and jnp.issubdtype(value.dtype, jnp.floating)
+        else value, tree)
+
+
 @partial(jax.jit, static_argnames=("debug", "with_clear_sky", "column_tile_cols"))
 def solve_rrtmg_lw_column(
     state: RRTMGLWColumnState,
@@ -3211,6 +3389,17 @@ def solve_rrtmg_lw_column(
     all-sky flux outputs are byte-identical regardless of this flag.
     """
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        # Pristine WRF parkind is kind(1.0), REAL*4. Retain the call's output
+        # interface dtype while state, coefficient tables and solver arithmetic
+        # use WRF REAL behind the existing fast flag.
+        with jax.enable_x64(False):
+            result = _longwave_column_tiled_impl(
+                _lw_floating_dtype(state, jnp.float32), _lw_floating_dtype(tables, jnp.float32),
+                debug, with_clear_sky, column_tile_cols,
+            )
+        return _lw_floating_dtype(result, output_dtype)
     return _longwave_column_tiled_impl(
         state,
         tables,
@@ -3230,6 +3419,14 @@ def solve_rrtmg_lw_m9_flux_slices(
 ) -> RRTMGLWM9FluxResult:
     """Computes only the LW surface/TOA flux slices consumed by M9 wrfout."""
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        with jax.enable_x64(False):
+            result = _longwave_column_tiled_impl(
+                _lw_floating_dtype(state, jnp.float32), _lw_floating_dtype(tables, jnp.float32),
+                debug, False, column_tile_cols, m9_flux_only=True,
+            )
+        return _lw_floating_dtype(result, output_dtype)
     return _longwave_column_tiled_impl(
         state,
         tables,
@@ -3247,4 +3444,10 @@ def solve_rrtmg_lw_column_debug_stripped(
 ) -> RRTMGLWColumnResult:
     """Hand-stripped sibling used for the HLO debug identity proof."""
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        with jax.enable_x64(False):
+            result = _longwave_impl(_lw_floating_dtype(state, jnp.float32),
+                                    _lw_floating_dtype(tables, jnp.float32), False)
+        return _lw_floating_dtype(result, output_dtype)
     return _longwave_impl(state, tables, False)

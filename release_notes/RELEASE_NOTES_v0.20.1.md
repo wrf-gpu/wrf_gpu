@@ -54,7 +54,7 @@ re-lowers the fused nest.
 > #114 as "instant warm" — it removes the per-date *recompile*, not the per-process
 > module load/link.
 
-*[Validated by an internal cross-date acceptance gate; CPU treedef tests:
+*[Gate driver: `scripts/gate_n114_n122.py`; CPU treedef tests:
 `tests/test_operational_namelist_cache_key.py` (9/9). The cold/warm cache_delta
 verdict is recorded in the v0.20.1 release-prep acceptance matrix (release-prep
 tree). Code: branch `worker/opus/v0201-nest-prep`, merged into
@@ -136,7 +136,7 @@ as a documented limitation** — read both before drawing any conclusion.
    > mitigated and remains an open limitation.
 
    *[Bit-identity: `proofs/v013/rrtmg_column_tile.json` (`max_abs = 0.0`). CPU
-   smoke: a CPU-class RRTMG transient smoke (recorded internally). Reproducer:
+   smoke: `proofs/v020/oom_hardening/rrtmg_transient_cpu_smoke.json`. Reproducer:
    `scripts/rrtmg_transient_reproducer.py`. The GPU A/B largest-alloc numbers
    (0.432 → 0.271 GiB, `cuda_async`) are recorded in the v0.20.1 release-prep
    acceptance matrix (#123 mode-1 disposition). Commit `b1c44524`.]*
@@ -226,7 +226,7 @@ across-date single-domain compile cache (#91), and the fp64-default byte-identit
 
 ## Known issues / scope boundaries
 
-Full detail in [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md).
+Full detail in [`KNOWN_ISSUES.md`](../KNOWN_ISSUES.md).
 
 | ID | Summary | Severity |
 |---|---|---|

@@ -68,6 +68,7 @@ import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.precision import force_fp64_island
+from gpuwrf.kernels.dyn_real_fp32 import dyn_island, enabled as dyn_real_enabled
 
 GRAVITY_M_S2 = 9.81  # WRF ``g`` (share/module_model_constants.F).
 
@@ -98,8 +99,14 @@ def _horizontal_advection_specified_order6(
     msfux: jax.Array,
     msfvy: jax.Array,
     msfty: jax.Array,
+    phb_split: jax.Array | None = None,
 ) -> jax.Array:
     """WRF ``rhs_ph`` order<=6 horizontal phi advection, specified BCs.
+
+    ``phb_split`` (GPUWRF_DYN_REAL_ALL): ``ph_total`` is then the perturbation
+    and the stencils difference ph and phb separately, as WRF writes them
+    (8.*(ph(j+1)-ph(j-1))-...+8.*(phb(j+1)-phb(j-1))-...); in REAL the summed
+    total would round every point at ulp(phb) before differencing.
 
     Source: ``module_big_step_utilities_em.F:1768-2072``.  Returns the
     horizontal-advection CONTRIBUTION (to be subtracted from ``ph_tend``) on
@@ -134,10 +141,20 @@ def _horizontal_advection_specified_order6(
     d1_y = pad_y[:, 4:-2, :] - pad_y[:, 2:-4, :]  # a[j+1]-a[j-1]
     d2_y = pad_y[:, 5:-1, :] - pad_y[:, 1:-5, :]  # a[j+2]-a[j-2]
     d3_y = pad_y[:, 6:, :] - pad_y[:, :-6, :]  # a[j+3]-a[j-3]
-    sten6_y = (45.0 * d1_y - 9.0 * d2_y + d3_y) / 60.0
-    sten4_y = (8.0 * d1_y - d2_y) / 12.0
-    dn_y = pad_y[:, 4:-2, :] - pad_y[:, 3:-3, :]  # a[j+1]-a[j]
-    ds_y = pad_y[:, 3:-3, :] - pad_y[:, 2:-4, :]  # a[j]-a[j-1]
+    if phb_split is None:
+        sten6_y = (45.0 * d1_y - 9.0 * d2_y + d3_y) / 60.0
+        sten4_y = (8.0 * d1_y - d2_y) / 12.0
+        dn_y = pad_y[:, 4:-2, :] - pad_y[:, 3:-3, :]  # a[j+1]-a[j]
+        ds_y = pad_y[:, 3:-3, :] - pad_y[:, 2:-4, :]  # a[j]-a[j-1]
+    else:
+        pb_y = jnp.pad(phb_split[1:nz], ((0, 0), (3, 3), (0, 0)))
+        b1_y = pb_y[:, 4:-2, :] - pb_y[:, 2:-4, :]
+        b2_y = pb_y[:, 5:-1, :] - pb_y[:, 1:-5, :]
+        b3_y = pb_y[:, 6:, :] - pb_y[:, :-6, :]
+        sten6_y = (45.0 * d1_y - 9.0 * d2_y + d3_y + 45.0 * b1_y - 9.0 * b2_y + b3_y) / 60.0
+        sten4_y = (8.0 * d1_y - d2_y + 8.0 * b1_y - b2_y) / 12.0
+        dn_y = (pb_y[:, 4:-2, :] - pb_y[:, 3:-3, :]) + pad_y[:, 4:-2, :] - pad_y[:, 3:-3, :]
+        ds_y = (pb_y[:, 3:-3, :] - pb_y[:, 2:-4, :]) + pad_y[:, 3:-3, :] - pad_y[:, 2:-4, :]
 
     jj = jnp.arange(ny)[None, :, None]
     six_y = (jj >= 3) & (jj <= ny - 4)
@@ -157,9 +174,18 @@ def _horizontal_advection_specified_order6(
     d1_x = pad_x[:, :, 4:-2] - pad_x[:, :, 2:-4]
     d2_x = pad_x[:, :, 5:-1] - pad_x[:, :, 1:-5]
     d3_x = pad_x[:, :, 6:] - pad_x[:, :, :-6]
-    sten6_x = (45.0 * d1_x - 9.0 * d2_x + d3_x) / 60.0
-    de_x = pad_x[:, :, 4:-2] - pad_x[:, :, 3:-3]
-    dw_x = pad_x[:, :, 3:-3] - pad_x[:, :, 2:-4]
+    if phb_split is None:
+        sten6_x = (45.0 * d1_x - 9.0 * d2_x + d3_x) / 60.0
+        de_x = pad_x[:, :, 4:-2] - pad_x[:, :, 3:-3]
+        dw_x = pad_x[:, :, 3:-3] - pad_x[:, :, 2:-4]
+    else:
+        pb_x = jnp.pad(phb_split[1:nz], ((0, 0), (0, 0), (3, 3)))
+        b1_x = pb_x[:, :, 4:-2] - pb_x[:, :, 2:-4]
+        b2_x = pb_x[:, :, 5:-1] - pb_x[:, :, 1:-5]
+        b3_x = pb_x[:, :, 6:] - pb_x[:, :, :-6]
+        sten6_x = (45.0 * d1_x - 9.0 * d2_x + d3_x + 45.0 * b1_x - 9.0 * b2_x + b3_x) / 60.0
+        de_x = (pb_x[:, :, 4:-2] - pb_x[:, :, 3:-3]) + pad_x[:, :, 4:-2] - pad_x[:, :, 3:-3]
+        dw_x = (pb_x[:, :, 3:-3] - pb_x[:, :, 2:-4]) + pad_x[:, :, 3:-3] - pad_x[:, :, 2:-4]
 
     ii = jnp.arange(nx)[None, None, :]
     six_x = (ii >= 3) & (ii <= nx - 4)
@@ -170,6 +196,14 @@ def _horizontal_advection_specified_order6(
 
     msfty_b = msfty[None, :, :]
     return 0.25 * float(rdy) / msfty_b * adv_y + 0.25 * float(rdx) / msfty_b * adv_x
+
+
+def _rhs_ph_fused(order, specified, non_hydrostatic, gw, top_lid, *arrays) -> bool:
+    """GPUWRF_DYN_GLUE_FUSED part 'rhsph': the PROD branch as one REAL stencil."""
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    return ("rhsph" in glue_parts() and dyn_real_enabled() and int(order) >= 4 and bool(specified)
+            and bool(non_hydrostatic) and bool(gw) and bool(top_lid)
+            and all(a is not None and a.dtype == jnp.float32 for a in arrays))
 
 
 def rhs_ph_wrf(
@@ -227,9 +261,14 @@ def rhs_ph_wrf(
     # VRAM cost (transient only). For fp64_default these inputs are ALREADY fp64,
     # so force_fp64_island returns them UNCHANGED (Python identity, no convert HLO)
     # -> fp64_default stays bit-identical.
-    u, v, ww, ph, phb, w, mut, muu, muv = force_fp64_island(
+    u, v, ww, ph, phb, w, mut, muu, muv = dyn_island()(
         u, v, ww, ph, phb, w, mut, muu, muv
     )
+    if _rhs_ph_fused(advective_order, specified, non_hydrostatic, include_vertical_gw, top_lid,
+                     u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy):
+        from gpuwrf.kernels.dyn_rhsph_fp32 import rhs_ph_fp32
+        return rhs_ph_fp32(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy,
+                           float(rdx), float(rdy), float(gravity), interpret=jax.default_backend() == "cpu")
 
     nz = int(ph.shape[0]) - 1  # mass levels; faces 0..nz.
     g = float(gravity)
@@ -247,7 +286,12 @@ def rhs_ph_wrf(
     # JAX mass-level index m=0..nz-1 corresponds to WRF k=m+1; wdwn at WRF face
     # k (2..kte) -> JAX face index k-1 = m for m=1..nz-1.  We store wdwn on the
     # mass-level grid (nz,) indexed so that wdwn_m[m] = WRF wdwn(i, m+1).
-    dphi_mass = ph_total[1:, :, :] - ph_total[:-1, :, :]  # (nz, ny, nx) phi(k)-phi(k-1)
+    real_split = dyn_real_enabled()
+    if real_split:
+        # S2-DYN REAL: WRF's literal (ph(k)-ph(k-1)+phb(k)-phb(k-1)), no rounded total.
+        dphi_mass = ((ph[1:, :, :] - ph[:-1, :, :]) + phb[1:, :, :]) - phb[:-1, :, :]
+    else:
+        dphi_mass = ph_total[1:, :, :] - ph_total[:-1, :, :]  # (nz, ny, nx) phi(k)-phi(k-1)
     ww_destag = 0.5 * (ww[1:, :, :] + ww[:-1, :, :])  # (nz, ny, nx) face-avg per mass level
     wdwn_mass = ww_destag * rdnw[:, None, None] * dphi_mass  # (nz, ny, nx)
     # WRF: ph_tend(k) -= fnm(k)*wdwn(k+1)+fnp(k)*wdwn(k) for faces k=2..kte-1.
@@ -287,7 +331,7 @@ def rhs_ph_wrf(
         adv = _horizontal_advection_specified_order6(
             u=u,
             v=v,
-            ph_total=ph_total,
+            ph_total=ph if real_split else ph_total,
             muu=muu,
             muv=muv,
             c1f=c1f,
@@ -297,6 +341,7 @@ def rhs_ph_wrf(
             msfux=msfux,
             msfvy=msfvy,
             msfty=msfty,
+            phb_split=phb if real_split else None,
         )
         ph_tend = ph_tend.at[1:nz, :, :].add(-adv)
         if not bool(top_lid) and nz >= 3:

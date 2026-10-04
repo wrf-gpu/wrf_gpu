@@ -347,7 +347,7 @@ guard replacements: 0. Proof: `proofs/v0110/conservation_budgets_closed.json`.
 ## Deferred to v0.14+ (deliberate scope boundaries, not silent gaps)
 
 The next roadmap is **Tier 3 (the scheme long-tail toward v1.0.0) + these carry-overs**. See
-[`../PROJECT_PLAN.md`](../PROJECT_PLAN.md) and `.agent/decisions/V0130-ROADMAP.md`.
+`../PROJECT_PLAN.md` and `.agent/decisions/V0130-ROADMAP.md`.
 
 - **24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility gate for any
   "operational / replacement" claim. Hard dynamics-`ph'` / MYNN / `*_tendf` GPU work, no cheap knob.

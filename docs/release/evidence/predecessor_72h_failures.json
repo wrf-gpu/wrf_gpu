@@ -1,0 +1,1968 @@
+{
+  "source_commit": "1fece48dabe6805a624f86d169c036cd39f267a5",
+  "scope": "FINAL-a predecessor only; all hourly numerical failures, not pooled pass/fail",
+  "utc": "2026-10-04T09:43:22.625757+00:00",
+  "reports": [
+    {
+      "case": "20260120_18z_a1",
+      "domain": "d01",
+      "report_sha256": "01944bf7464ab97b941e974672168eb3aa20dd135e55df2d1d61e71862eb445b",
+      "failures": []
+    },
+    {
+      "case": "20260120_18z_a1",
+      "domain": "d02",
+      "report_sha256": "53f95134cf02dacfd6ec6673efee52bf000e9dec18ca9f8a9026fb9fc2632588",
+      "failures": []
+    },
+    {
+      "case": "20260120_18z_a1",
+      "domain": "d03",
+      "report_sha256": "d60c72730850fa242a04e41ab8d6078901888699d155e746fa4efea7c8c9170f",
+      "failures": [
+        {
+          "field": "U10",
+          "overall_pass": true,
+          "rows": [
+            {
+              "lead_h": 58,
+              "rmse": 1.575513836336756,
+              "bias": 0.7143974411353334,
+              "max_abs": 6.801747180521488,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.575513836336756
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.575513836336756
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "20260220_18z_a1",
+      "domain": "d01",
+      "report_sha256": "5d19245b8b90f639908e8353b5dc7748af5af26f1f929c4e92f078bfbf08edb2",
+      "failures": []
+    },
+    {
+      "case": "20260220_18z_a1",
+      "domain": "d02",
+      "report_sha256": "3c553bec9874bc1bccc0a2eae2ce63b91a32e864ba142d81578fc6dbf0945334",
+      "failures": []
+    },
+    {
+      "case": "20260220_18z_a1",
+      "domain": "d03",
+      "report_sha256": "9dd3e4be88dd68d77217ab44de0d125e010d0561032d252c1369ec81f733f555",
+      "failures": []
+    },
+    {
+      "case": "20260227_18z_a1",
+      "domain": "d01",
+      "report_sha256": "ba507fb04e1d16530822ddb2d09184a1eb3f8b44801e08b66863d1b2a71bc244",
+      "failures": []
+    },
+    {
+      "case": "20260227_18z_a1",
+      "domain": "d02",
+      "report_sha256": "c993f1976e6c7ca9b339ec404487b6e242de0dcfa2ac378788d2625be30e16a7",
+      "failures": []
+    },
+    {
+      "case": "20260227_18z_a1",
+      "domain": "d03",
+      "report_sha256": "7b617e8f2f89f920dd0c3e8c0bb723f5701cef4ed694daf56a3ecc08ab50b891",
+      "failures": [
+        {
+          "field": "RAINNC",
+          "overall_pass": true,
+          "rows": [
+            {
+              "lead_h": 67,
+              "rmse": 1.087802060856118,
+              "bias": 0.06037368933517114,
+              "max_abs": 6.822972536087036,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 1.087802060856118
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 1.087802060856118
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 68,
+              "rmse": 1.2456485946021616,
+              "bias": 0.09688089251296599,
+              "max_abs": 6.822972536087036,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 1.2456485946021616
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 1.2456485946021616
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 69,
+              "rmse": 1.4376308996294138,
+              "bias": 0.13316632215244273,
+              "max_abs": 14.701286673545837,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 1.4376308996294138
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 1.4376308996294138
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 70,
+              "rmse": 2.046041596651549,
+              "bias": 0.25004419680317636,
+              "max_abs": 14.70513665676117,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 2.046041596651549
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 2.046041596651549
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 71,
+              "rmse": 2.249959648672861,
+              "bias": 0.4093887945661239,
+              "max_abs": 14.70513665676117,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 2.249959648672861
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 2.249959648672861
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 72,
+              "rmse": 2.3328028441935422,
+              "bias": 0.4603583630586695,
+              "max_abs": 14.990578651428223,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.0,
+                    "pass": false,
+                    "value": 2.3328028441935422
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.0,
+                    "metric": "rmse",
+                    "value": 2.3328028441935422
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.0
+                },
+                "supplied": true
+              }
+            }
+          ]
+        },
+        {
+          "field": "U10",
+          "overall_pass": true,
+          "rows": [
+            {
+              "lead_h": 41,
+              "rmse": 1.5951712450485203,
+              "bias": -0.1950549389705258,
+              "max_abs": 14.537116527557373,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.5951712450485203
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.5951712450485203
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 49,
+              "rmse": 1.5893034177811471,
+              "bias": 0.5836983563770647,
+              "max_abs": 8.124701738357544,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.5893034177811471
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.5893034177811471
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 50,
+              "rmse": 1.6107908658046703,
+              "bias": 0.40374372851299795,
+              "max_abs": 9.060318946838379,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.6107908658046703
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.6107908658046703
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 54,
+              "rmse": 1.8166146208408285,
+              "bias": 0.21747558821921573,
+              "max_abs": 7.826045513153076,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.8166146208408285
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.8166146208408285
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 55,
+              "rmse": 2.372370920941976,
+              "bias": 0.8415387079193014,
+              "max_abs": 10.241224765777588,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.372370920941976
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.372370920941976
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 56,
+              "rmse": 2.9228162868331307,
+              "bias": 1.2083169231334174,
+              "max_abs": 11.835752487182617,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.9228162868331307
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.9228162868331307
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 57,
+              "rmse": 3.1906150138355804,
+              "bias": 1.299236456585087,
+              "max_abs": 11.734788417816162,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.1906150138355804
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.1906150138355804
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 58,
+              "rmse": 3.510424352625262,
+              "bias": 1.3308550482318573,
+              "max_abs": 12.348987102508545,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.510424352625262
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.510424352625262
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 59,
+              "rmse": 3.0444100318869607,
+              "bias": 1.0055556509684156,
+              "max_abs": 13.011061668395996,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.0444100318869607
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.0444100318869607
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 60,
+              "rmse": 2.4675731142715462,
+              "bias": 0.6654017813461723,
+              "max_abs": 10.489203929901123,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.4675731142715462
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.4675731142715462
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 61,
+              "rmse": 2.0823171517134136,
+              "bias": 0.3629851622347124,
+              "max_abs": 8.221399784088135,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.0823171517134136
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.0823171517134136
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 62,
+              "rmse": 1.8294142819116082,
+              "bias": -0.21264007812982125,
+              "max_abs": 8.367249876260757,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.8294142819116082
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.8294142819116082
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 63,
+              "rmse": 2.106130653770951,
+              "bias": -1.0651396323007727,
+              "max_abs": 8.380130290985107,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.106130653770951
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.106130653770951
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 64,
+              "rmse": 3.100404499536602,
+              "bias": -1.5641636409084378,
+              "max_abs": 12.488087177276611,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.100404499536602
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.100404499536602
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 65,
+              "rmse": 3.6746314988955153,
+              "bias": -1.6998442482009963,
+              "max_abs": 15.154377460479736,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.6746314988955153
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.6746314988955153
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 66,
+              "rmse": 3.636621862811268,
+              "bias": -1.3362920969011773,
+              "max_abs": 16.75311303138733,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.636621862811268
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.636621862811268
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 67,
+              "rmse": 3.1028604860598215,
+              "bias": -0.4206200356982908,
+              "max_abs": 16.655131578445435,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.1028604860598215
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.1028604860598215
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 68,
+              "rmse": 2.3323726073885074,
+              "bias": 0.47985405289249183,
+              "max_abs": 9.82754373550415,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.3323726073885074
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.3323726073885074
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 69,
+              "rmse": 2.2808128953186557,
+              "bias": 0.9830186392787306,
+              "max_abs": 9.580314874649048,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.2808128953186557
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.2808128953186557
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 70,
+              "rmse": 2.1988328859794657,
+              "bias": 0.833466646934184,
+              "max_abs": 8.534629583358765,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.1988328859794657
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.1988328859794657
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            }
+          ]
+        },
+        {
+          "field": "V",
+          "overall_pass": true,
+          "rows": [
+            {
+              "lead_h": 67,
+              "rmse": 1.8976507467407966,
+              "bias": -0.2561412440014321,
+              "max_abs": 17.980615854263306,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.8,
+                    "pass": false,
+                    "value": 1.8976507467407966
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.8,
+                    "metric": "rmse",
+                    "value": 1.8976507467407966
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.8
+                },
+                "supplied": true
+              }
+            }
+          ]
+        },
+        {
+          "field": "V10",
+          "overall_pass": false,
+          "rows": [
+            {
+              "lead_h": 44,
+              "rmse": 1.5483812300546311,
+              "bias": 0.10165878399332927,
+              "max_abs": 12.278058528900146,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.5483812300546311
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.5483812300546311
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 49,
+              "rmse": 1.908506435020414,
+              "bias": -0.026963033369632336,
+              "max_abs": 12.746898174285889,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.908506435020414
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.908506435020414
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 50,
+              "rmse": 2.261998580186998,
+              "bias": 0.15666191062453316,
+              "max_abs": 14.108489513397217,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.261998580186998
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.261998580186998
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 51,
+              "rmse": 1.594962440384934,
+              "bias": 0.39581005806243413,
+              "max_abs": 6.565261602401733,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.594962440384934
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.594962440384934
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 52,
+              "rmse": 1.6205684554933155,
+              "bias": 0.48783404611357606,
+              "max_abs": 10.17543649673462,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.6205684554933155
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.6205684554933155
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 53,
+              "rmse": 1.9954993647172996,
+              "bias": 0.40991060278994684,
+              "max_abs": 11.8997483253479,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.9954993647172996
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.9954993647172996
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 54,
+              "rmse": 2.166249128935766,
+              "bias": 0.2848744003996998,
+              "max_abs": 12.474169254302979,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.166249128935766
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.166249128935766
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 55,
+              "rmse": 1.8784973148752067,
+              "bias": 0.3410995356070527,
+              "max_abs": 9.345358848571777,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.8784973148752067
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.8784973148752067
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 56,
+              "rmse": 1.837122192502817,
+              "bias": 0.539806378234779,
+              "max_abs": 11.122453689575195,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.837122192502817
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.837122192502817
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 57,
+              "rmse": 2.711041558705803,
+              "bias": 0.5367910483802666,
+              "max_abs": 10.808621317148209,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.711041558705803
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.711041558705803
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 58,
+              "rmse": 3.411323465529367,
+              "bias": 0.5347699551958541,
+              "max_abs": 12.174125790596008,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.411323465529367
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.411323465529367
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 59,
+              "rmse": 3.4813862737337873,
+              "bias": 0.5607263960645943,
+              "max_abs": 11.284337759017944,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.4813862737337873
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.4813862737337873
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 60,
+              "rmse": 3.355097886775399,
+              "bias": 0.5501209877344084,
+              "max_abs": 9.884963631629944,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.355097886775399
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.355097886775399
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 61,
+              "rmse": 2.9540621228023536,
+              "bias": 0.4890297616980084,
+              "max_abs": 10.38231086730957,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.9540621228023536
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.9540621228023536
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 62,
+              "rmse": 2.2677662882411367,
+              "bias": 0.26144360727103905,
+              "max_abs": 9.721339024603367,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.2677662882411367
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.2677662882411367
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 63,
+              "rmse": 2.10275624632336,
+              "bias": -0.43690284039514904,
+              "max_abs": 13.924739122390747,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.10275624632336
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.10275624632336
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 64,
+              "rmse": 2.1853992625202197,
+              "bias": -0.7622099023364803,
+              "max_abs": 11.681980609893799,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.1853992625202197
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.1853992625202197
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 65,
+              "rmse": 2.6643064911290057,
+              "bias": -0.8500128967746567,
+              "max_abs": 14.188556671142578,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.6643064911290057
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.6643064911290057
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 66,
+              "rmse": 3.2603769495522097,
+              "bias": -0.566702147448899,
+              "max_abs": 15.704224586486816,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.2603769495522097
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.2603769495522097
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 67,
+              "rmse": 3.7111864159309467,
+              "bias": -0.4409215350887529,
+              "max_abs": 15.191102027893066,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.7111864159309467
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.7111864159309467
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 68,
+              "rmse": 3.174620561922381,
+              "bias": -0.1889353581498795,
+              "max_abs": 12.377955883741379,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 3.174620561922381
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 3.174620561922381
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 69,
+              "rmse": 2.6218059682293062,
+              "bias": 0.60940343475391,
+              "max_abs": 15.076026160269976,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.6218059682293062
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.6218059682293062
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 70,
+              "rmse": 2.104962954746049,
+              "bias": 0.5998018906674499,
+              "max_abs": 12.419177532196045,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.104962954746049
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.104962954746049
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 71,
+              "rmse": 2.277727123402639,
+              "bias": 0.5178990894465431,
+              "max_abs": 11.187604427337646,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 2.277727123402639
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 2.277727123402639
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 72,
+              "rmse": 1.5428930366559026,
+              "bias": 0.2640208680127031,
+              "max_abs": 10.53494381904602,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 1.5,
+                    "pass": false,
+                    "value": 1.5428930366559026
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 1.5,
+                    "metric": "rmse",
+                    "value": 1.5428930366559026
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 1.5
+                },
+                "supplied": true
+              }
+            }
+          ]
+        },
+        {
+          "field": "W",
+          "overall_pass": true,
+          "rows": [
+            {
+              "lead_h": 69,
+              "rmse": 0.3605337110115733,
+              "bias": -6.951688865531159e-05,
+              "max_abs": 7.365193843841553,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 0.3,
+                    "pass": false,
+                    "value": 0.3605337110115733
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 0.3,
+                    "metric": "rmse",
+                    "value": 0.3605337110115733
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 0.3
+                },
+                "supplied": true
+              }
+            },
+            {
+              "lead_h": 70,
+              "rmse": 0.30877713621633157,
+              "bias": -0.0011087057756707678,
+              "max_abs": 5.966273069381714,
+              "tolerance_result": {
+                "checks": {
+                  "finite_pair_fraction_min": {
+                    "limit": 1.0,
+                    "pass": true,
+                    "value": 1.0
+                  },
+                  "rmse": {
+                    "limit": 0.3,
+                    "pass": false,
+                    "value": 0.30877713621633157
+                  }
+                },
+                "failures": [
+                  {
+                    "limit": 0.3,
+                    "metric": "rmse",
+                    "value": 0.30877713621633157
+                  }
+                ],
+                "pass": false,
+                "spec": {
+                  "finite_pair_fraction_min": 1.0,
+                  "rmse": 0.3
+                },
+                "supplied": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "20260502_18z_a1",
+      "domain": "d01",
+      "report_sha256": "9e53a3c855b8ce564bfc2e30b918c04afb241de759ad81125dafb258b8bab324",
+      "failures": []
+    },
+    {
+      "case": "20260502_18z_a1",
+      "domain": "d02",
+      "report_sha256": "b27fbf541ede39d3f6dd042e969b1ed58bf3967c063cee45abbf4bd0691c2279",
+      "failures": []
+    },
+    {
+      "case": "20260502_18z_a1",
+      "domain": "d03",
+      "report_sha256": "a079fcd02d7b64346c6f0ce502778f45ac7498814c40df6e15067bcaacd9950d",
+      "failures": []
+    },
+    {
+      "case": "20260608_18z_a1",
+      "domain": "d01",
+      "report_sha256": "39ce62925773346221bfe16897b8234b375bf8a98c6ae678f3a14e81a89c5f34",
+      "failures": []
+    },
+    {
+      "case": "20260608_18z_a1",
+      "domain": "d02",
+      "report_sha256": "fea6b77c0442d680d7d7edf5802d2da450a756e8adb2077a104a616bf005cca5",
+      "failures": []
+    },
+    {
+      "case": "20260608_18z_a1",
+      "domain": "d03",
+      "report_sha256": "7c15a7fa0fff3b0775f46a952a5f83e774c4d0ac7092a804d21235bda885663e",
+      "failures": []
+    },
+    {
+      "case": "20260614_18z_a1",
+      "domain": "d01",
+      "report_sha256": "5ce5f249f2d89b0f122b8aa664f4dac62e6ce38d88b4a9dfcf17f4e12f751334",
+      "failures": []
+    },
+    {
+      "case": "20260614_18z_a1",
+      "domain": "d02",
+      "report_sha256": "9242b94a8e27dd702385a7ae39be3b3256dd3bea65d79dacfd587789535da932",
+      "failures": []
+    },
+    {
+      "case": "20260614_18z_a1",
+      "domain": "d03",
+      "report_sha256": "4b4215a6ff65bb6a19fd923b4ffa95b39c24c443bffb9bbf08579995f45eb0c1",
+      "failures": []
+    }
+  ]
+}

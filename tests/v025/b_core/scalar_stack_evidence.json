@@ -1,0 +1,62 @@
+{
+ "change": "native REAL specified plain scalar stencil: all species in ONE launch with the species loop inside each program (kernels/dyn_flux_fp32.advect_scalar_flux_fp32_stacked; flux_advection plain branch replaces the vmap stacking of S3/BC46)",
+ "gpu": {
+  "source": "phase2b/BC48_stackloop/probe.json (asserted RTX 5090, one lock, 7 interleaved rounds x 100 calls, 8 species, real PROD velocities)",
+  "device": "cuda:0",
+  "rows": [
+   {
+    "domain": "d01",
+    "shape": [
+     44,
+     70,
+     120
+    ],
+    "species": 8,
+    "bitwise_vs_per_species": {
+     "per_species": true,
+     "vmap_stacked": true,
+     "loop_stacked": true
+    },
+    "median_ms": {
+     "per_species": 0.052821560529991984,
+     "vmap_stacked": 0.03329241997562349,
+     "loop_stacked": 0.02611227973829955
+    },
+    "min_ms": {
+     "per_species": 0.05259977013338357,
+     "vmap_stacked": 0.033186429645866156,
+     "loop_stacked": 0.025949680129997432
+    }
+   },
+   {
+    "domain": "d02",
+    "shape": [
+     44,
+     117,
+     267
+    ],
+    "species": 8,
+    "bitwise_vs_per_species": {
+     "per_species": true,
+     "vmap_stacked": true,
+     "loop_stacked": true
+    },
+    "median_ms": {
+     "per_species": 0.20672632032074034,
+     "vmap_stacked": 0.15268145012669265,
+     "loop_stacked": 0.11629840009845793
+    },
+    "min_ms": {
+     "per_species": 0.20209979033097625,
+     "vmap_stacked": 0.13795404986012727,
+     "loop_stacked": 0.10457951982971281
+    }
+   }
+  ]
+ },
+ "cpu": {
+  "test": "tests/v025/b_core/test_root_scalar_stacking.py 5/5 (merged==split==per-species bitwise, native 0/1, RK1/RK3; trace: theta 3 single + 2 stacked launches)",
+  "mutant": "wiring returns species 0 for all -> test_merged_and_stacked_equal_per_species[1-1] FAILS"
+ },
+ "ptxas_prescreen_cpu": "TTIR->PTX (Triton 3.6) + pip ptxas 13.2 sm_120a: single 82 regs, stacked 147 regs, 0 spill/stack, rc 0 on d01+d02 (not the XLA-embedded path)"
+}

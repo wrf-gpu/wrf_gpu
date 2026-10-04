@@ -34,16 +34,14 @@ from gpuwrf.runtime import aot_executable as aotx
 from gpuwrf.runtime import aot_precompile as aot
 from gpuwrf.runtime import compile_cache as cc
 from gpuwrf.runtime import domain_tree as dt
+from tests._jax_cache_isolation import private_jax_cache
 
 
 @pytest.fixture(autouse=True)
 def _isolate_cache(monkeypatch, tmp_path):
     """Point the cache at a private tmp dir for each test (AOT dir lives under it)."""
-    cache_dir = tmp_path / "jit"
-    monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(cache_dir))
-    monkeypatch.delenv("GPUWRF_JAX_CACHE", raising=False)
-    cc.configure_compilation_cache()
-    yield cache_dir
+    with private_jax_cache(monkeypatch, tmp_path / "jit") as cache_dir:
+        yield cache_dir
 
 
 def _compile_dropping_graph(n_dead: int = 7):
@@ -249,8 +247,11 @@ def test_aot_verify_gate_default_off(monkeypatch):
 
 
 def test_env_help_documents_aot_knob():
-    assert "GPUWRF_NESTED_AOT" in dt.nested_defuse_env_help()
-    assert "GPUWRF_FUSED_CASCADE_LOW_EFFORT" in dt.nested_defuse_env_help()
+    help_text = dt.nested_defuse_env_help()
+    assert "GPUWRF_NESTED_AOT" in help_text
+    # P7b 68730ac1b added this knob; 58cdbc3f5 deliberately removed it to
+    # restore Gate-2 default identity. Its old tests survived that rollback.
+    assert "GPUWRF_FUSED_CASCADE_LOW_EFFORT" not in help_text
 
 
 def test_nested_aot_report_shape():
@@ -553,40 +554,8 @@ def test_fused_cheap_key_folds_edge_geometry():
     assert changed_count != base
 
 
-def _fused_low_effort_config_values():
-    return {
-        name: getattr(jax.config, name)
-        for name, _value in dt._FUSED_CASCADE_LOW_EFFORT_CONFIG
-    }
-
-
-def test_fused_low_effort_context_default_off_is_inert(monkeypatch):
-    """Default fused cold compiles use the ambient JAX compile config."""
-
-    monkeypatch.delenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", raising=False)
-    before = _fused_low_effort_config_values()
-    with dt._fused_cascade_low_effort_compile_context() as applied:
-        assert applied == ()
-        assert _fused_low_effort_config_values() == before
-    assert _fused_low_effort_config_values() == before
-
-
-def test_fused_low_effort_context_changes_exec_env_hash(monkeypatch):
-    """The opt-in compile profile is folded into the AOT executable key."""
-
-    from gpuwrf.runtime import aot_cheap_key as ck
-
-    monkeypatch.setenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", "1")
-    before = _fused_low_effort_config_values()
-    baseline_hash = ck.exec_env_hash()
-    with dt._fused_cascade_low_effort_compile_context() as applied:
-        applied_values = dict(applied)
-        assert applied_values == dict(dt._FUSED_CASCADE_LOW_EFFORT_CONFIG)
-        assert _fused_low_effort_config_values() == applied_values
-        assert ck.exec_env_hash() != baseline_hash
-    assert _fused_low_effort_config_values() == before
-
-
+# Low-effort context tests from 68730ac1b were retired with the deliberate
+# Gate-2 identity rollback 58cdbc3f5; keep coverage of the retained fused path.
 def test_fused_cascade_uses_loaded_aot_blob(monkeypatch):
     """Fused AOT warm path calls the loaded fused/<parent> executable."""
     monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
@@ -773,83 +742,14 @@ def test_fused_cheap_miss_reuses_same_hlo_alias_before_compile(
     assert second_status["loaded"] is True, second_status
     assert second_status["source"] == "aot_blob", second_status
     assert second_status["address"] == "hlo", second_status
+    assert second_status["cheap_key_alias"]["aliased"] is True, second_status
 
-
-def test_fused_cascade_low_effort_wraps_cold_compile(monkeypatch):
-    """Opt-in low effort is active while the fused miss compiles and serializes."""
-
-    monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
-    monkeypatch.setenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", "1")
-    monkeypatch.delenv("GPUWRF_AOT_VERIFY", raising=False)
-    before_config = _fused_low_effort_config_values()
-    parent_nl = _aot_namelist()
-    child_nl = _aot_namelist()
-    parent = _FusedCarry(jnp.asarray([1.0], dtype=jnp.float64))
-    child = _FusedCarry(jnp.asarray([2.0], dtype=jnp.float64))
-
-    def fake_advance(carry, namelist, start, clock_base, *, n_steps, cadence):
-        del namelist, clock_base, n_steps, cadence
-        return carry.replace(state=carry.state + jnp.asarray(start, dtype=carry.state.dtype))
-
-    def fake_force(child_state, parent_state, weights, *, bdy_width):
-        del weights, bdy_width
-        return child_state + parent_state
-
-    monkeypatch.setattr(dt, "_advance_chunk", fake_advance)
-    monkeypatch.setattr(dt, "build_child_boundary_package", fake_force)
-    monkeypatch.setattr(
-        aot,
-        "load_domain_blob",
-        lambda name, *args, **kwargs: (
-            None,
-            {
-                "name": name,
-                "loaded": False,
-                "source": "fallback:missing",
-                "cheap_key": kwargs.get("cheap_key"),
-            },
-        ),
-    )
-    captured = {}
-
-    def fake_serialize(name, compiled, cache_dir, **kwargs):
-        del compiled, cache_dir
-        captured.update(
-            {
-                "name": name,
-                "compile_config": _fused_low_effort_config_values(),
-                **kwargs,
-            }
-        )
-        return {
-            "aot_written": True,
-            "aot_blob_bytes": 123,
-            "aot_path": "/tmp/fused-low-effort.xlaexec",
-            "hlo_sha256": kwargs.get("hlo_sha256"),
-            "cheap_key": kwargs.get("cheap_key"),
-        }
-
-    monkeypatch.setattr(aot, "_serialize_domain_blob", fake_serialize)
-    program = dt._build_fused_cascade_program(
-        parent_name="d02",
-        parent_namelist=parent_nl,
-        parent_cadence=7,
-        child_names=("d03",),
-        child_namelists=(child_nl,),
-        child_weights=(jnp.asarray([1.0], dtype=jnp.float64),),
-        child_bdy_widths=(5,),
-        child_ratios=(1,),
-        child_cadences=(7,),
-    )
-
-    out_parent, out_children = program(parent, (child,), 4, (12,))
-    assert captured["name"] == "fused/d02"
-    assert captured["compile_config"] == dict(dt._FUSED_CASCADE_LOW_EFFORT_CONFIG)
-    assert captured["cheap_key"]
-    assert captured["hlo_sha256"]
-    assert np.asarray(out_parent.state).shape == (1,)
-    assert len(out_children) == 1
-    assert _fused_low_effort_config_values() == before_config
+    third = build()  # next process: the second key now resolves unlowered
+    third_parent, _ = third(parent, (child,), 4, (12,))
+    assert serializes["n"] == 1
+    assert np.array_equal(np.asarray(third_parent.state), np.asarray(first_parent.state))
+    third_status = dt.nested_aot_report()["domains"]["fused/d02"]
+    assert third_status["address"] == "cheap_key", third_status
 
 
 def test_fused_cascade_cached_calls_are_keyed_by_aval_signature(monkeypatch, capsys):
@@ -1070,6 +970,92 @@ def test_eager_cheap_miss_reuses_same_hlo_alias_before_compile(
     assert status["source"] == "aot_memory_cache", status
     assert status["cached"] is True, status
     assert status["cheap_key"] == alternate_key, status
+
+
+def test_eager_exact_hlo_hit_backfills_cheap_key_for_next_process(
+    monkeypatch, _isolate_cache
+):
+    """After a same-HLO hit, a fresh process loads the new cheap key unlowered."""
+    from gpuwrf.runtime import aot_cheap_key as ck
+
+    monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
+    advance_like = _make_aot_advance_like()
+    namelist = _aot_namelist()
+    carry = _aot_carry(1)
+    hlo, captured = _lower_compile_serialize_variant(
+        "d01", carry, namelist, _isolate_cache, advance_like
+    )
+    alternate_key = "backfill" + "0" * 56
+    assert alternate_key != captured["cheap_key"]
+    monkeypatch.setattr(ck, "cheap_key", lambda *args, **kwargs: alternate_key)
+    lowerings = {"n": 0}
+
+    class CountingAdvance:
+        def __call__(self, *args, **kwargs):
+            return advance_like(*args, **kwargs)
+
+        def lower(self, *args, **kwargs):
+            lowerings["n"] += 1
+            return advance_like.lower(*args, **kwargs)
+
+    monkeypatch.setattr(dt, "_advance_chunk_fori", CountingAdvance())
+    first = dt._operational_advance_factory(_fake_tree(namelist))
+    first("d01", carry, start_step=2, n_steps=5)
+    alias = dt.nested_aot_report()["domains"]["d01"]["cheap_key_alias"]
+    assert lowerings["n"] == 1 and alias["aliased"] is True, alias
+
+    cheap_blob, cheap_meta = aot._aot_blob_paths(
+        "d01", str(_isolate_cache), cheap_key=alternate_key
+    )
+    hlo_blob, _ = aot._aot_blob_paths("d01", str(_isolate_cache), hlo_sha256=hlo)
+    with open(cheap_meta, "rb") as fh:
+        meta = pickle.load(fh)
+    assert meta.cheap_key == alternate_key and meta.hlo_sha256 == hlo
+    assert cheap_blob.read_bytes() == hlo_blob.read_bytes()
+    if alias["alias_mode"] == "hardlink":
+        assert cheap_blob.stat().st_ino == hlo_blob.stat().st_ino
+
+    # A fresh runtime models the next process: no in-memory memo survives.
+    second = dt._operational_advance_factory(_fake_tree(namelist))
+    out = second("d01", carry, start_step=3, n_steps=5)
+    assert np.array_equal(np.asarray(out["state"]), np.asarray(carry["state"]))
+    assert lowerings["n"] == 1, "next process still lowered after the backfill"
+    status = dt.nested_aot_report()["domains"]["d01"]
+    assert status["loaded"] is True and status["address"] == "cheap_key", status
+
+
+def test_cheap_key_alias_guards_collision_and_missing_blob(_isolate_cache):
+    """The alias never overwrites another HLO's key and fails open when absent."""
+    from gpuwrf.runtime import aot_cheap_key as ck
+
+    first = jax.jit(lambda x: x * 2 + 1).lower(jnp.arange(4.0))
+    second = jax.jit(lambda x: x * 3 + 1).lower(jnp.arange(4.0))
+    cache = str(_isolate_cache)
+    hlo_a = aotx.hlo_sha256_from_lowered(first)
+    hlo_b = aotx.hlo_sha256_from_lowered(second)
+    for lowered, key in ((first, "keya" + "0" * 60), (second, "keyb" + "0" * 60)):
+        status = aot._serialize_domain_blob(
+            "d01", lowered.compile(), cache, lowered=lowered,
+            cheap_key=key, key_schema=ck.KEY_SCHEMA,
+        )
+        assert status["aot_addresses"] == ["hlo", "cheap_key"], status
+
+    assert aot.alias_cheap_key_to_hlo("d01", "keya" + "0" * 60, hlo_a, cache)[
+        "reason"] == "already-present"
+    missing = aot.alias_cheap_key_to_hlo("d01", "keyc" + "0" * 60, "f" * 64, cache)
+    assert missing["aliased"] is False and missing["reason"].startswith("error:")
+    assert not aot._aot_blob_paths("d01", cache, cheap_key="keyc" + "0" * 60)[1].exists()
+
+    collision = aot.alias_cheap_key_to_hlo("d01", "keyb" + "0" * 60, hlo_a, cache)
+    assert collision["reason"] == "quarantined-collision", collision
+    assert aot.cheap_key_is_quarantined("d01", "keyb" + "0" * 60, cache)
+    call, status = aot.load_domain_blob(
+        "d01", cache, cheap_key="keyb" + "0" * 60, return_status=True
+    )
+    assert call is None and status["source"] == "fallback:cheap-key-quarantined"
+    assert aot._aot_blob_paths("d01", cache, hlo_sha256=hlo_b)[0].is_file()
+    assert aot.alias_cheap_key_to_hlo("d01", "keyb" + "0" * 60, hlo_b, cache)[
+        "reason"] == "quarantined"
 
 
 def test_advance_falls_back_when_aot_call_raises(monkeypatch):

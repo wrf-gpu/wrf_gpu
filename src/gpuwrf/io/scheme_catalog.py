@@ -29,14 +29,15 @@ Every option resolves to exactly one :class:`SupportStatus`:
                                but whose effect is a documented CONSERVATIVE
                                approximation rather than a wrong-scheme
                                substitution: the cumulus/PBL cadence keys
-                               (``cudt``/``bldt``) ask the port to sub-step those
+                               (``bldt``) ask the port to sub-step those
                                physics every N minutes, but the GPU port calls
                                them EVERY dynamics step (more frequent than
                                requested). Selecting a positive cadence does NOT
                                fail closed -- the run PROCEEDS and a WARNING names
                                the approximation. This mirrors the operational
                                pipeline, which already runs cumulus/PBL every
-                               step regardless of ``cudt``/``bldt``. It is NEVER
+                               step regardless of ``bldt``. KF uses WRF STEPCU
+                               from ``cudt``. It is NEVER
                                used for a genuine wrong-substitution (a different
                                scheme / unimplemented advection variant): those
                                stay ``RECOGNIZED_FAIL_CLOSED``.
@@ -905,12 +906,6 @@ OUT_OF_SCOPE_FEATURES: tuple[OutOfScopeFeature, ...] = (
         "Set sf_ocean_physics=0; SST is read from the input as a lower boundary.",
     ),
     OutOfScopeFeature(
-        "sst_update", "Time-varying lower-boundary SST update",
-        "Time-varying SST/lower-boundary auxinput updates (sst_update) are not "
-        "wired in this single-input forecast path.",
-        "Set sst_update=0; SST is fixed from the initial condition.",
-    ),
-    OutOfScopeFeature(
         "stoch_force_opt", "Stochastic physics forcing (generic)",
         "Stochastic physics forcing is out of scope (deterministic port).",
         "Set stoch_force_opt=0.",
@@ -987,7 +982,7 @@ _OUT_OF_SCOPE_FEATURE_BY_KEY: Mapping[str, OutOfScopeFeature] = {
 #     mixscalars=1 / mixqt=0 / edmf_dd=0 (physics/mynn_edmf.py:7-13),          #
 #     mixlength 1|2 (physics/mynn_constants.py);                               #
 #   * radt honoured as the radiation cadence (radiation_cadence_steps;         #
-#     nested_pipeline.py:61); bldt/cudt unread -> PBL/cumulus run every step,  #
+#     nested_pipeline.py:61); bldt unread -> PBL runs every step; KF cudt uses STEPCU,  #
 #     so only the every-step value 0 is faithful.                             #
 # Slope/topo radiation (slope_rad=1 / topo_shading=1) ARE implemented (RRTMG   #
 # SW slope-radiation + topographic-shadow path, coupling.physics_couplers.     #
@@ -1233,21 +1228,10 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
     RecognizedControl(
         "cudt", "cumulus-cadence",
         frozenset({0}),
-        "recognized; the port calls the cumulus scheme EVERY dynamics step "
-        "(cudt=0 semantics). A nonzero cumulus sub-stepping interval (cudt>0) "
-        "is not implemented.",
-        "Set cudt=0 (call cumulus every step), or accept the every-step approximation.",
+        "Kain-Fritsch uses WRF STEPCU=max(1,NINT(cudt*60/dt)); "
+        "calls on step 1 and STEPCU multiples, retaining tendencies between calls.",
+        "Use a finite nonnegative cudt interval in minutes.",
         integer=False,
-        approximated=True,
-        approximation_note=(
-            lambda v: (
-                f"cudt={v} cadence not honored; the GPU port runs the cumulus "
-                f"scheme EVERY dynamics step -- more frequently than the requested "
-                f"{v}-minute sub-stepping interval, a conservative approximation "
-                f"(more up-to-date convective tendencies, never a different "
-                f"scheme). The run proceeds. Set cudt=0 to request this exactly."
-            )
-        ),
     ),
 )
 
@@ -1256,7 +1240,7 @@ RECOGNIZED_CONTROL_KEYS: frozenset[str] = frozenset(
 )
 # Cadence controls whose unwired (positive) values are a non-raising,
 # conservative approximation (run-every-step) rather than a fail-closed
-# rejection: cudt / bldt. A naive user pointing the standalone CLI at a real
+# rejection: bldt. A naive user pointing the standalone CLI at a real
 # WRF namelist (cudt=5, bldt=0) must RUN, not be rejected.
 APPROXIMATED_CONTROL_KEYS: frozenset[str] = frozenset(
     c.key.lower() for c in _RECOGNIZED_CONTROLS if c.approximated
@@ -1269,10 +1253,17 @@ _RECOGNIZED_CONTROL_BY_KEY: Mapping[str, RecognizedControl] = {
 # and topo_shading=1 ARE wired (RRTMG SW slope-radiation + topographic-shadow);
 # slope_rad=2 (the WRF "slope + shadow" combined flag) is NOT separately wired.
 _IMPLEMENTED_CONTROLS: Mapping[str, frozenset[int]] = {
+    "sst_update": frozenset({0, 1}),
     "slope_rad": frozenset({0, 1}),
     "topo_shading": frozenset({0, 1}),
 }
 _IMPLEMENTED_CONTROL_REASON: Mapping[str, tuple[str, str, str]] = {
+    "sst_update": (
+        "Time-varying lower-boundary SST update",
+        "The standalone nested path wires sst_update=1 from NetCDF auxinput4 "
+        "for ice-free prescribed SST; values other than 0/1 are not wired.",
+        "Use sst_update=0 or 1 with io_form_auxinput4=2 and a positive interval.",
+    ),
     # key: (label, unwired-reason, alternative)
     "slope_rad": (
         "slope-radiation",
@@ -1333,6 +1324,17 @@ def classify_control(key: str, value: object) -> SchemeSupport | None:
     control = _RECOGNIZED_CONTROL_BY_KEY.get(lkey)
     if control is None:
         return None
+
+    if lkey == "cudt":
+        import math
+        numeric = _coerce_number(value)
+        wired = numeric is not None and math.isfinite(numeric) and numeric >= 0
+        return SchemeSupport(
+            key=lkey, code=_coerce_int_or_bool(value),
+            status=SupportStatus.IMPLEMENTED if wired else SupportStatus.RECOGNIZED_FAIL_CLOSED,
+            reason=control.reason_for(value), alternative=control.alternative,
+            wrf_name=control.label,
+        )
 
     # radt: any positive interval is honoured as the radiation cadence.
     if lkey == "radt":

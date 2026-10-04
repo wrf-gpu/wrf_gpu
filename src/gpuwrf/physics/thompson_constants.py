@@ -156,6 +156,17 @@ T1_QG_QC = PI * 0.25 * AV_G_MP8 * CGG9
 # Mass-weighted graupel fall speed for the Stokes number (vtg of line 2421):
 # vtg = rhof*av_g*Gamma(bv_g+mu_g+4)/Gamma(mu_g+4) * ilamg**bv_g.
 CGG6_OVER_CGG3 = math.gamma(BV_G_MP8 + MU_G + 4.0) / math.gamma(MU_G + 4.0)
+# WRF mp8/mp28 graupel: thompson_init without ng (physics_init :4521) replaces av_g/bv_g(idx_bg1) by
+# av_g_old/bv_g_old (:459-464) BEFORE cge/cgg are built (:758); AV_G_MP8/BV_G_MP8 are the hail-aware
+# (mp38) table entry. Native REAL uses these (thompson_column._graupel_constants).
+AV_G_OLD = 442.0
+BV_G_OLD = 0.89
+CGE9_OLD = BV_G_OLD + 3.0 + MU_G
+CGE11_OLD = 0.5 * (BV_G_OLD + 5.0 + 2.0 * MU_G_MP8)
+CGG6_OVER_CGG3_OLD = math.gamma(BV_G_OLD + MU_G + 4.0) / math.gamma(MU_G + 4.0)
+T1_QG_QC_OLD = PI * 0.25 * AV_G_OLD * math.gamma(CGE9_OLD)
+T2_SUBL_QG_OLD = 0.28 * SC3 * math.sqrt(AV_G_OLD) * math.gamma(CGE11_OLD)
+T2_MELT_QG_OLD = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_OLD) * math.gamma(CGE11_OLD)
 RHO_W_RIME = 1000.0  # liquid water density in the graupel Stokes number
 # t_Efsw snow-bin geometry (WRF lines 862-872): nbs=100 log bins from D0s=300um
 # to 2 cm, Ds(n) = sqrt(xDx(n)*xDx(n+1)); the lookup uses Ds(1)/Ds(nbs).

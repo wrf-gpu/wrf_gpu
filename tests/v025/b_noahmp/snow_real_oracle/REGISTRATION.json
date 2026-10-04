@@ -1,0 +1,14 @@
+{
+ "utc": "2026-10-03T00:45:30Z",
+ "lane": "b-noahmp (agent b-thompson, claude-opus-5-5)",
+ "subject": "Noah-MP snow on the native REAL path (GPUWRF_NOAHMP_NATIVE_REAL=1) vs pristine WRF snow routines at WRF's own REAL kind 4",
+ "oracle": "proofs/noahmp/oracle/snow_oracle.f90 + snow_routines.inc (verbatim module_sf_noahmplsm.F SNOWWATER/SNOWFALL/COMPACT/COMBINE/DIVIDE/COMBO/SNOWH2O/SNOW_AGE/SNOWALB_CLASS), gfortran -O2 WITHOUT -fdefault-real-8 (R4, as WRF builds it); R8 build reproduces the frozen fp64 fixture byte-exactly",
+ "inputs": "the 14 frozen scenarios; port receives the R4 PRE state",
+ "rule": {
+   "ISNOW": "exact",
+   "continuous fields (snowh, sneqv, tauss, albold, sh2o0, snice, snliq, tsno, zsnso), per scenario and layer": "|port - WRF_R4| <= max(1.5 * |WRF_R4 - WRF_R8|, 4 * ulp_f32(max(|WRF_R4|, |WRF_R8|)))",
+   "SWE conservation (multilayer)": "|sum(snice+snliq) - sneqv| <= 1.5 * WRF_R4 residual + 4 ulp_f32(sneqv)"
+ },
+ "rationale": "same principle as the registered NP05 water gate (<= 1.5x pristine WRF REAL error); the 4-ulp floor covers compiler association/FMA differences where R4 and R8 agree",
+ "not_claimed": "energy/phenology coupling, multi-step drift, GPU execution"
+}

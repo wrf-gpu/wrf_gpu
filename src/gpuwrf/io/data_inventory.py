@@ -10,7 +10,7 @@ import re
 from typing import Any, Iterable
 
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.io.gen2_accessor import GEN2_READ_ONLY_ROOT
 

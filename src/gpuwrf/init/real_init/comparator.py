@@ -52,7 +52,7 @@ from gpuwrf.init.real_init.types import (
 )
 
 try:  # netCDF4 is a hard dep of the corpus oracle path; import lazily-friendly.
-    from netCDF4 import Dataset
+    from gpuwrf.io.netcdf_lock import Dataset
 except Exception as _exc:  # pragma: no cover - exercised only without netCDF4
     Dataset = None  # type: ignore[assignment]
     _NETCDF_IMPORT_ERROR = _exc

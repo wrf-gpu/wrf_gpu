@@ -1,4 +1,43 @@
-# Known Issues — v0.23.4
+# Known issues — v0.3
+
+The validated cases and exact numerical/operational limits are described in
+[the validation report](docs/release/VALIDATION.md). The remaining items below are
+explicit limitations, with fixes planned for v0.3.1 where noted.
+
+- **Three-nest memory allocation:** C-auto memory plan for 2-domain nests;
+  3-nest currently runs with demand allocation (known issue, fix in v0.3.1).
+  The plan writer counts compiled programs as domains, but WN3 has d01 plus a
+  fused d02/d03 executable, so no C-auto plan is written. The launcher still
+  measures memory for admission. v0.3.0 throughput reports this shipped path;
+  allocator-fix measurements belong to v0.3.1.
+- **Noah ground precipitation diagnostics:** `QSNOWXY` and `QRAINXY` currently
+  contain column sums of atmospheric `QSNOW`/`QRAIN` mixing ratios. They are proxies,
+  with different quantity and units from Noah-MP's ground snowfall/rainfall rates
+  in mm/s. Exporting the actual `PRECIP_HEAT` ground rates is planned for v0.3.1.
+- **Very thin snow films:** the port omits the WRF `NOAHMP_SFLX` end-of-step reset
+  (`SNOWH <= 1e-6 m` or `SNEQV <= 1e-6 mm`). Sub-1e-5 mm films can remain after
+  canopy-ice unloading. The reset and an exact-zero oracle check are planned for
+  v0.3.1; the numerical scale does not make this a timing-only difference.
+- **Glacier evolution:** glacier-landuse cells run through ordinary Noah-MP SFLX;
+  the dedicated `NOAHMP_GLACIER` runtime is unported. Correct initialization and
+  whole-domain D6 bounds do not establish glacier-runtime fidelity.
+- **Output fill conventions and initial statics:** some inactive carbon/water
+  fields use zero where CPU-WRF writes its missing-value sentinel; WA/WT, ZWT and GRAIN
+  also have initialization output differences. These are disclosed separately from
+  physical tolerance passes; writer parity is planned for v0.3.1.
+- **Extended-lead divergence:** the release gate is the 24 h window. Some 1 km
+  wind/rain fields exceed those limits later in 72 h runs; every affected frame is
+  disclosed in the validation report. These comparisons are separate from station
+  verification.
+- **Hardware and parallelism:** tested on RTX 5090 with CUDA 13 (sm_120). Other
+  recent NVIDIA GPUs are untested. Execution is single-GPU; MPI and multi-GPU
+  forecasts are unsupported. Independent forecasts can share one card.
+
+## Historical v0.23.4 record
+
+The following sections describe that previous candidate, not the current v0.3
+capabilities. Release-specific current behavior is governed by the reports above.
+
 
 ## v0.23.4 carried limitations
 

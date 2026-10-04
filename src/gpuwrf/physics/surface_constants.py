@@ -17,17 +17,23 @@ from __future__ import annotations
 
 # --- thermodynamic / model constants (WRF module_model_constants.F) ---
 # Passed into sfclayrev as cp, g, rovcp, r, xlv, p1000mb (sf_sfclayrev.F90:78-105).
-CP_D = 1004.0          # cp
+# B39b: exact WRF share/module_model_constants.F values (r_d=287, r_v=461.6,
+# cp=7*r_d/2, rcp=r_d/cp, EP_1=R_v/R_d-1, EP_2=R_d/R_v). surface_driver passes
+# cp, rcp, ep_1, ep_2 as ARGUMENTS to SFCLAY_mynn (module_surface_driver.F:2432-2439);
+# the former rounded values (cp 1004.0, ep1 0.608, ep2 0.622) failed the pristine
+# module_sf_mynn.F oracle on real PROD columns.
+R_D = 287.0            # r (gas_constant)
+R_V = 461.6            # r_v
+CP_D = 7.0 * R_D / 2.0  # cp = 1004.5
 G = 9.81               # g (WRF uses 9.81, not 9.80665, in physics)
 KARMAN = 0.4           # karman
 P0_PA = 100000.0       # p1000mb
-R_D = 287.0            # r (gas_constant)
-R_D_OVER_CP = R_D / CP_D  # rovcp
+R_D_OVER_CP = R_D / CP_D  # rovcp = rcp
 XLV = 2.5e6            # xlv latent heat of vaporization
 
-# Virtual-temperature coefficients (WRF ep_1 = R_v/R_d - 1 = 0.608, ep_2 = R_d/R_v).
-EP1 = 0.608            # ep1 (passed as ep_1)
-EP2 = 0.622            # ep2 = R_d/R_v
+# Virtual-temperature coefficients (WRF EP_1 = R_v/R_d - 1, EP_2 = R_d/R_v).
+EP1 = R_V / R_D - 1.0  # ep1 (passed as ep_1) = 0.6083624
+EP2 = R_D / R_V        # ep2 = 0.6217504
 P608 = EP1             # alias used in virtual-temperature forms
 
 # --- saturation-vapor-pressure constants (WRF SVP1/SVP2/SVP3/SVPT0) ---
@@ -90,6 +96,7 @@ __all__ = [
     "P608",
     "PRT",
     "R_D",
+    "R_V",
     "R_D_OVER_CP",
     "SALINITY_FACTOR",
     "SFCLAYREV_TABLE_DZOL",

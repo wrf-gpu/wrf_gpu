@@ -1,0 +1,147 @@
+{
+  "experiment": "CP33gpu",
+  "gate": "R3 freshprocessstart -> both cached PROD executables loaded/callable <=60s; imports/wrappers included, input/init/firststep excluded",
+  "status": "PASS with explicit savedXLAflags; default-configuration joint import measurement pending",
+  "compiled_program": "immutable2933 IT08 conditional-only PROD54/18 currentcadence4 legacyphysicsOFF",
+  "merged_loader_enablers": "main ba13336fd",
+  "source_loader": "611053f9c",
+  "preserves": "All native/PTX/ABI/options bytes, HLO/cheapkeys/targetfingerprint guards; published-byte integrity hash reflects metadata compaction",
+  "rows": [
+    {
+      "arm": "rich",
+      "variant": "rich",
+      "returncode": 0,
+      "whole_child_wall_s": 101.09640265497728,
+      "result": {
+        "scope": "fresh processstart -> both actual cached PROD executables loaded/callable; includes Python/JAX+product imports+bench wrappers; excludes model init/input/firststep",
+        "variant": "rich",
+        "compiled_program_revision": "2933b06ca IT08 conditional-only OFFphysics",
+        "loader_revision": "611053f9c",
+        "explicit_saved_flags": true,
+        "timings": {
+          "jax_import": 0.66824273,
+          "package_import": 8.409758679,
+          "wrappers_cli_ready": 8.797623161,
+          "backend_asserted": 8.797655761
+        },
+        "platform": "gpu",
+        "device_kind": "NVIDIA GeForce RTX 5090",
+        "rows": [
+          {
+            "domain": "d01",
+            "read_decode_integrity_seconds": 1.1386781610000014,
+            "deserialize_wrapper_seconds": 59.638196041,
+            "callable": true,
+            "hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "blob_bytes": 235583388,
+            "ready_from_process_s": 69.576483867
+          },
+          {
+            "domain": "d02",
+            "read_decode_integrity_seconds": 0.33718951600000935,
+            "deserialize_wrapper_seconds": 27.648630788999995,
+            "callable": true,
+            "hlo": "649cc9c9780799c218639656a7601c04ead1012f5d3e1be497aa7ecc1677cc8f",
+            "blob_bytes": 209721667,
+            "ready_from_process_s": 97.586910515
+          }
+        ],
+        "ready_from_process_s": 97.586920735,
+        "gate_seconds": 60,
+        "gate_pass": false,
+        "imports_compile_events": []
+      }
+    },
+    {
+      "arm": "compact1",
+      "variant": "compact",
+      "returncode": 0,
+      "whole_child_wall_s": 42.15712033698219,
+      "result": {
+        "scope": "fresh processstart -> both actual cached PROD executables loaded/callable; includes Python/JAX+product imports+bench wrappers; excludes model init/input/firststep",
+        "variant": "compact",
+        "compiled_program_revision": "2933b06ca IT08 conditional-only OFFphysics",
+        "loader_revision": "611053f9c",
+        "explicit_saved_flags": true,
+        "timings": {
+          "jax_import": 0.691360692,
+          "package_import": 8.892337237,
+          "wrappers_cli_ready": 8.98974713,
+          "backend_asserted": 8.98977874
+        },
+        "platform": "gpu",
+        "device_kind": "NVIDIA GeForce RTX 5090",
+        "rows": [
+          {
+            "domain": "d01",
+            "read_decode_integrity_seconds": 0.283620449999999,
+            "deserialize_wrapper_seconds": 19.793206649000002,
+            "callable": true,
+            "hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "blob_bytes": 213816095,
+            "ready_from_process_s": 29.073645409
+          },
+          {
+            "domain": "d02",
+            "read_decode_integrity_seconds": 0.6165675159999999,
+            "deserialize_wrapper_seconds": 9.798354725000003,
+            "callable": true,
+            "hlo": "649cc9c9780799c218639656a7601c04ead1012f5d3e1be497aa7ecc1677cc8f",
+            "blob_bytes": 197177246,
+            "ready_from_process_s": 39.51994492
+          }
+        ],
+        "ready_from_process_s": 39.544518892,
+        "gate_seconds": 60,
+        "gate_pass": true,
+        "imports_compile_events": []
+      }
+    },
+    {
+      "arm": "compact2",
+      "variant": "compact",
+      "returncode": 0,
+      "whole_child_wall_s": 43.65049793000799,
+      "result": {
+        "scope": "fresh processstart -> both actual cached PROD executables loaded/callable; includes Python/JAX+product imports+bench wrappers; excludes model init/input/firststep",
+        "variant": "compact",
+        "compiled_program_revision": "2933b06ca IT08 conditional-only OFFphysics",
+        "loader_revision": "611053f9c",
+        "explicit_saved_flags": true,
+        "timings": {
+          "jax_import": 0.566721437,
+          "package_import": 9.287860463,
+          "wrappers_cli_ready": 9.362599897,
+          "backend_asserted": 9.362623017
+        },
+        "platform": "gpu",
+        "device_kind": "NVIDIA GeForce RTX 5090",
+        "rows": [
+          {
+            "domain": "d01",
+            "read_decode_integrity_seconds": 0.33399243400000067,
+            "deserialize_wrapper_seconds": 20.304627138,
+            "callable": true,
+            "hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "blob_bytes": 213816095,
+            "ready_from_process_s": 30.0056106
+          },
+          {
+            "domain": "d02",
+            "read_decode_integrity_seconds": 0.5398335479999972,
+            "deserialize_wrapper_seconds": 8.940382264,
+            "callable": true,
+            "hlo": "649cc9c9780799c218639656a7601c04ead1012f5d3e1be497aa7ecc1677cc8f",
+            "blob_bytes": 197177246,
+            "ready_from_process_s": 39.504374082
+          }
+        ],
+        "ready_from_process_s": 39.504383582,
+        "gate_seconds": 60,
+        "gate_pass": true,
+        "imports_compile_events": []
+      }
+    }
+  ],
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_cond"
+}

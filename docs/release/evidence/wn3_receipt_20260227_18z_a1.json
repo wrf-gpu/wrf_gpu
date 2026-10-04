@@ -1,0 +1,162 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/20260227_18z_a1",
+ "schema": "gpuwrf-parallel-case-v1",
+ "tag": null,
+ "name": "20260227_18z_a1",
+ "rc": 0,
+ "start_utc": "2026-10-04T11:33:22Z",
+ "end_utc": "2026-10-04T11:36:30Z",
+ "wall_s": 188.14,
+ "cli_summary": {
+  "effective_hours": 6,
+  "effective_max_dom": 3,
+  "all_domains_finite": true,
+  "all_outputs_present": true
+ },
+ "t0_wall_utc": null,
+ "segments": null,
+ "outputs": [
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_00:00:00",
+   "t_published_s": 51.287,
+   "bytes": 9312310
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_00:00:00",
+   "t_published_s": 52.288,
+   "bytes": 25876640
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_00:00:00",
+   "t_published_s": 52.288,
+   "bytes": 10024486
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_01:00:00",
+   "t_published_s": 73.375,
+   "bytes": 15280143
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_01:00:00",
+   "t_published_s": 74.376,
+   "bytes": 40501031
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_01:00:18",
+   "t_published_s": 75.377,
+   "bytes": 13218942
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_02:00:00",
+   "t_published_s": 95.486,
+   "bytes": 15524736
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_02:00:00",
+   "t_published_s": 96.511,
+   "bytes": 40974441
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_02:00:36",
+   "t_published_s": 97.512,
+   "bytes": 13315465
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_03:00:00",
+   "t_published_s": 117.635,
+   "bytes": 15595683
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_03:00:00",
+   "t_published_s": 119.637,
+   "bytes": 13365319
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_03:00:00",
+   "t_published_s": 119.637,
+   "bytes": 41167592
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_04:00:00",
+   "t_published_s": 140.771,
+   "bytes": 15563570
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_04:00:18",
+   "t_published_s": 141.812,
+   "bytes": 13400501
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_04:00:00",
+   "t_published_s": 141.812,
+   "bytes": 41226532
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_05:00:00",
+   "t_published_s": 162.951,
+   "bytes": 62510443
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_05:00:00",
+   "t_published_s": 163.952,
+   "bytes": 185197771
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_05:00:36",
+   "t_published_s": 164.953,
+   "bytes": 51231263
+  },
+  {
+   "d": "d01",
+   "file": "wrfout_d01_2026-02-28_06:00:00",
+   "t_published_s": 184.116,
+   "bytes": 51231263
+  },
+  {
+   "d": "d02",
+   "file": "wrfout_d02_2026-02-28_06:00:00",
+   "t_published_s": 184.116,
+   "bytes": 185197771
+  },
+  {
+   "d": "d03",
+   "file": "wrfout_d03_2026-02-28_06:00:00",
+   "t_published_s": 184.116,
+   "bytes": 62510443
+  }
+ ],
+ "errors": null,
+ "omp_num_threads": null,
+ "git_head": null,
+ "src_tree": null,
+ "device": null,
+ "end_reason": null,
+ "host_vmhwm_kb": null,
+ "vmhwm_kb": 6164656,
+ "vram_peak_mib": 4524,
+ "env": {
+  "GPUWRF_CENSUS": "0",
+  "GPUWRF_GPU_ARM_CPUS": "10,11,12,13,26,27,28,29",
+  "GPUWRF_MIN_FREE_VRAM_GIB": "5.34",
+  "GPUWRF_WRF_ROOT": "<DATA_ROOT>/wrf_gpu2/v025/tenerife_b4/wrf_root",
+  "OMP_NUM_THREADS": "4"
+ }
+}

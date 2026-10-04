@@ -75,13 +75,16 @@ from gpuwrf.coupling.physics_couplers import (
     _add_a2c_u_increment,
     _add_a2c_v_increment,
     _column_dz_from_state,
+    _dry_theta_view,
     _output_dtype,
     _rho_from_state,
     _surface_column_view,
     _temperature_from_theta,
+    _theta_m_tendency_from_dry,
     _u_mass,
     _v_mass,
     _w_mass,
+    _wrf_phy_prep_rho_from_state,
 )
 from gpuwrf.physics.microphysics_goddard import goddard_physics_tendency
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
@@ -638,7 +641,8 @@ def gfs_sfclay_adapter(state: State, dt: float, grid=None) -> State:
 
 # --- Cumulus adapter (cu_physics) ---------------------------------------------
 
-def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None):
+def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None,
+               stepcu=5, cudt=0.0, held_tendencies=None, return_tendencies=False):
     """cu=1 Kain-Fritsch cumulus scan adapter.
 
     Returns ``(next_state, w0avg_next, nca_next)``. KF is a per-column kernel; the
@@ -649,17 +653,29 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None):
     rates); ``RAINCV`` (mm/step) accumulates into ``rainc_acc``.
     """
 
+    from gpuwrf.physics.cumulus_kf import kf_carry_dtype
+
+    real = kf_carry_dtype()  # BP55: WRF REAL on the native KF path, legacy f64 otherwise
     dx = float(grid.projection.dx_m) if grid is not None else 3000.0
     nz, ny, nx = state.theta.shape
-    rho = _rho_from_state(state)
-    T = _temperature_from_theta(state.theta, state.p)
-    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    # P0/F1: WRF cumulus_driver passes KF the phy_prep TOTAL density rho = (1+qv)/alt
+    # (module_big_step_utilities_em.F:4856; module_cumulus_driver.F KF_ETA_CPS RHO=rho).  Grid-backed callers
+    # rebuild alt exactly as MYNN does; analytic callers without metrics use the same total density from the
+    # equation of state (dry EOS density times 1+qv).
+    if getattr(grid, "metrics", None) is not None:
+        rho = _wrf_phy_prep_rho_from_state(state, grid.metrics, output_dtype=real)
+    else:
+        rho = _rho_from_state(state) * (1.0 + jnp.asarray(state.qv, real))
+    theta_dry = _dry_theta_view(state)   # P0: KF works on WRF phy_prep dry theta / t_phy
+    T = _temperature_from_theta(theta_dry, state.p)
+    interface_z = state.ph.astype(real) / GRAVITY_M_S2
     dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
     w_mass = _w_mass(state)
 
     # Reshape to (ncol, nz) with ncol = ny*nx and vmap the per-column KF step.
     def _cols(field3d):
-        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+        cols = jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+        return cols if real == jnp.float64 else cols.astype(real)
 
     T_c = _cols(T)
     qv_c = _cols(state.qv)
@@ -669,53 +685,78 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None):
     u_c = _cols(_u_mass(state))
     v_c = _cols(_v_mass(state))
     w_c = _cols(w_mass)
-    w0avg_c = jnp.asarray(w0avg, jnp.float64).reshape(ny * nx, nz)
-    nca_c = jnp.asarray(nca, jnp.float64).reshape(ny * nx)
+    w0avg_c = _cols(jnp.asarray(w0avg, real))
+    nca_c = jnp.asarray(nca, real).reshape(ny * nx)
 
     def _one(T0, QV0, P0, DZQ, RHOE, w0a, U0, V0, w_col, nca0):
         res = step_kf_column(
             T0, QV0, P0, DZQ, RHOE, w0a, U0, V0, float(dt), dx,
-            w=w_col, nca=nca0,
+            w=w_col, nca=nca0, stepcu=stepcu, cudt=cudt,
         )
         st = res.tendency.state_tendencies
         cc = res.carry.cumulus
         return (
             st["theta"], st["qv"], st["qc"], st["qr"], st["qi"], st["qs"],
             res.tendency.accumulator_increments["rainc_acc"],
+            res.diagnostics.cumulus["pratec"],
             cc["w0avg"], cc["nca"],
         )
 
-    (rth, rqv, rqc, rqr, rqi, rqs, raincv, w0avg_next_c, nca_next_c) = jax.vmap(_one)(
+    (rth, rqv, rqc, rqr, rqi, rqs, raincv, pratec, w0avg_next_c, nca_next_c) = jax.vmap(_one)(
         T_c, qv_c, p_c, dz_c, rho_c, w0avg_c, u_c, v_c, w_c, nca_c
     )
 
     def _back(field2d):  # (ncol, nz) -> (nz, ny, nx)
         return jnp.moveaxis(field2d.reshape(ny, nx, nz), -1, 0)
 
+    rates = tuple(_back(rate) for rate in (rth, rqv, rqc, rqr, rqi, rqs))
+    rain_rate = pratec.reshape(ny, nx)
+    if held_tendencies is not None:
+        # KF_eta leaves existing tendencies/PRATEC untouched for active clouds.
+        active = jnp.asarray(nca) >= 0.5 * float(dt)
+        rates = tuple(jnp.where(active[None], old, new)
+                      for old, new in zip(held_tendencies[:6], rates, strict=True))
+        rain_rate = jnp.where(active, held_tendencies[6], rain_rate)
+    w0avg_next = jnp.moveaxis(w0avg_next_c.reshape(ny, nx, nz), -1, 0)
+    nca_next = nca_next_c.reshape(ny, nx)
+    if return_tendencies:
+        return rates + (rain_rate,), w0avg_next, nca_next
+    rth, rqv, rqc, rqr, rqi, rqs = rates
     dt_f = float(dt)
+    rain_increment = raincv.reshape(ny, nx) if held_tendencies is None else dt_f * rain_rate
+    # P0: RTHCUTEN/RQVCUTEN are DRY-theta / vapour tendencies; WRF conv_t_tendf_to_moist turns them into the
+    # theta_m tendency at the OLD state, which this direct step-entry update applies over dt (no dt^2 cross term).
+    qv_next = (state.qv + dt_f * rqv).astype(_output_dtype(state, "qv"))
+    theta_dtype = jnp.asarray(state.theta).dtype
+    theta_next = (
+        jnp.asarray(state.theta, theta_dtype)
+        + dt_f * _theta_m_tendency_from_dry(rth, rqv, state.theta, state.qv, theta_dtype)
+    ).astype(_output_dtype(state, "theta"))
     next_state = state.replace(
-        theta=(state.theta + dt_f * _back(rth)).astype(_output_dtype(state, "theta")),
-        qv=(state.qv + dt_f * _back(rqv)).astype(_output_dtype(state, "qv")),
-        qc=(state.qc + dt_f * _back(rqc)).astype(_output_dtype(state, "qc")),
-        qr=(state.qr + dt_f * _back(rqr)).astype(_output_dtype(state, "qr")),
-        qi=(state.qi + dt_f * _back(rqi)).astype(_output_dtype(state, "qi")),
-        qs=(state.qs + dt_f * _back(rqs)).astype(_output_dtype(state, "qs")),
+        theta=theta_next,
+        qv=qv_next,
+        qc=(state.qc + dt_f * rqc).astype(_output_dtype(state, "qc")),
+        qr=(state.qr + dt_f * rqr).astype(_output_dtype(state, "qr")),
+        qi=(state.qi + dt_f * rqi).astype(_output_dtype(state, "qi")),
+        qs=(state.qs + dt_f * rqs).astype(_output_dtype(state, "qs")),
         rainc_acc=(
-            jnp.asarray(state.rainc_acc, jnp.float64) + raincv.reshape(ny, nx)
+            jnp.asarray(state.rainc_acc, jnp.float64) + rain_increment
         ).astype(_output_dtype(state, "rainc_acc")),
     )
-    w0avg_next = w0avg_next_c.reshape(ny, nx, nz)
-    w0avg_next = jnp.moveaxis(w0avg_next, -1, 0)  # (nz, ny, nx) carry layout
-    nca_next = nca_next_c.reshape(ny, nx)
     return next_state, w0avg_next, nca_next
 
 
 def initial_kf_carry(state: State):
-    """Seed the KF ``(w0avg, nca)`` carry: zero w-mean, nca=-100 (no active cloud)."""
+    """Seed the KF ``(w0avg, nca)`` carry: zero w-mean, nca=-100 (no active cloud).
 
+    WRF W0AVG/NCA are REAL: float32 on the native KF path (BP55), legacy f64 otherwise."""
+
+    from gpuwrf.physics.cumulus_kf import kf_carry_dtype
+
+    real = kf_carry_dtype()
     nz, ny, nx = state.theta.shape
-    w0avg = jnp.zeros((nz, ny, nx), dtype=jnp.float64)
-    nca = jnp.full((ny, nx), -100.0, dtype=jnp.float64)
+    w0avg = jnp.zeros((nz, ny, nx), dtype=real)
+    nca = jnp.full((ny, nx), -100.0, dtype=real)
     return (w0avg, nca)
 
 

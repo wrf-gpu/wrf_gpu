@@ -1,0 +1,19 @@
+fixture_id: b-kf-real-p0-day-night
+source: <USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_kfeta.F
+source_commit: pristine-sha256-e6376c2d85c45470f49d545b25d513b5ec111bf36b87beebc740bf42825c6e5f
+scenario: PROD d01 120x70x44 20260726_00z and12z fresh CPS mean dt54 dx9000
+created_utc: 2026-10-02T04:51:51.844690+00:00
+variables:
+  - {name: RTHCUTEN, units: K/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RQVCUTEN, units: kg/kg/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RQCCUTEN, units: kg/kg/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RQRCUTEN, units: kg/kg/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RQICUTEN, units: kg/kg/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RQSCUTEN, units: kg/kg/s, shape: [8400,44], dtype: float32, absolute_tolerance: 1e-9, relative_tolerance: 0.002}
+  - {name: RAINCV, units: mm/step, shape: [8400], dtype: float32, absolute_tolerance: 0.0001, relative_tolerance: 0.003}
+  - {name: ISHALL, units: category, shape: [8400], dtype: float32, absolute_tolerance: 0, relative_tolerance: 0}
+  - {name: CUTOP_CUBOT, units: level, shape: [8400], dtype: float32, absolute_tolerance: 0.5, relative_tolerance: 0}
+files:
+  - {path: <USER_HOME>/wrf_gpu2_lanes/b-kf/real_oracle/day_outputs.bin, sha256: 99e372f670abb1758e55617c1ea35b1d167c0bab28bde339b71a2b4fe909ed52}
+  - {path: <USER_HOME>/wrf_gpu2_lanes/b-kf/real_oracle/night_outputs.bin, sha256: b41ec2b1951883d53b99e83c13b08bf746c9a5e2e48b57be0d18b5d9f8e7a5af}
+license_notes: Pristine WRF source remains outside git; real ALISIOS values stay in lane artifacts.
