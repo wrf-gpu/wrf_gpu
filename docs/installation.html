@@ -183,7 +183,7 @@ this path was verified end-to-end on a clean machine.</p>
 git clone --depth 1 --no-checkout \
     https://github.com/wrf-gpu/wrf_gpu.git wrf_gpu &amp;&amp; cd wrf_gpu
 git sparse-checkout init --cone
-# In cone mode the root files (pyproject.toml, README.md, LICENSE_NOTES.md) come
+# In cone mode the root files (pyproject.toml, README.md, LICENSE, ...) come
 # automatically; add the source package and the vendored runtime data tables
 # (the Thompson/RRTMG tables are loaded at import -- `src` alone is not enough):
 git sparse-checkout set src data/fixtures

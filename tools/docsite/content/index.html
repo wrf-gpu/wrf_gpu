@@ -2,7 +2,7 @@
   <img src="_assets/logo.svg" alt="wrf_gpu logo — a smiling storm cloud whose lightning is a GPU circuit, built by a Claude-clay and a GPT-green robot">
   <div>
     <h1 style="margin-bottom:.2rem;">wrf_gpu User's Guide</h1>
-    <p class="hero-tag">A GPU-native, WRF-compatible regional weather model · v0.3.0</p>
+    <p class="hero-tag">A WRF-compatible regional weather model, rewritten for GPU hardware · v0.3.0</p>
   </div>
 </div>
 
@@ -17,32 +17,29 @@ of the six 72&nbsp;h cases; every affected frame is listed in the <a href="https
   single-GPU. Previous public release: v0.23.4.</p>
 </div>
 
-<p class="lead">wrf_gpu runs a standalone WRF&nbsp;v4 ARW forecast end-to-end on a single GPU.
-It reads a standard WRF <code>namelist.input</code>, initializes from WRF real-data
-artifacts (<code>wrfinput_*</code> and <code>wrfbdy_d01</code>; no CPU-WRF
-<code>wrfout</code> dependency), integrates a nonhydrostatic split-explicit ARW dynamical
-core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</p>
+<p class="lead">wrf_gpu rewrites WRF v4’s ARW dynamics and physics in JAX/XLA/Pallas so WRF-class regional
+forecasts can run efficiently on GPU hardware. It reads standard WRF inputs, writes WRF history, and is
+validated against the original Fortran CPU-WRF. This is an independent implementation, not WRF itself, and
+is not affiliated with UCAR/NCAR.</p>
 
 <div class="wrf-credit">
   <strong>Built on the shoulders of WRF.</strong> This project is an independent,
-  <strong>AI-written re-implementation</strong> of the same physics solver, GPU-optimized and
-  <strong>validated cell-for-cell against WRF as the result oracle</strong>. It is <em>not</em> a
-  port of the WRF Fortran source and is <strong>not affiliated with or endorsed by
-  UCAR/NCAR</strong>. The Weather Research and Forecasting (WRF) model is developed and
+  <strong>AI-written re-implementation</strong> of the WRF model in JAX, GPU-optimized and
+  <strong>validated against the original Fortran CPU-WRF</strong>. It is <strong>not affiliated with or
+  endorsed by UCAR/NCAR</strong>; files derived from third-party code keep their upstream terms. The Weather Research and Forecasting (WRF) model is developed and
   maintained by <a href="https://www.mmm.ucar.edu/models/wrf">NCAR/UCAR and the WRF community</a>;
   please cite and credit them. See <a href="credits.html">Credits, License &amp; Citation</a>.
 </div>
 
 <div class="admon honest">
   <div class="admon-title">Read this first — what this software is</div>
-  <p>wrf_gpu is a <strong>transparent research artifact</strong>: a clean JAX rewrite whose
-  sealed Switzerland identity fixture proves its dynamics/thermodynamics fields
-  <strong>cell-for-cell identical to CPU-WRF v4</strong> over 72&nbsp;h. It is honest about its
-  edges — that result is not universal control/configuration parity, and the broader
-  24–72&nbsp;h forecast-<em>skill</em>
-  equivalence is an <strong>open credibility gate, not yet claimed closed</strong>. Priority order,
-  in every design decision: <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>.
-  There is no masking, clamping, or <code>nan_to_num</code> anywhere on the result path.</p>
+  <p>wrf_gpu is a <strong>transparent research artifact</strong>: a JAX rewrite validated against the
+  original Fortran CPU-WRF on a <strong>supported subset</strong> of WRF options. The v0.3.0 release gate
+  covers six three-domain Tenerife cases over 24&nbsp;h with 0 failures against frozen per-variable limits;
+  agreement is bounded, not bitwise, and beyond 24&nbsp;h some 1&nbsp;km fields exceed those limits (see
+  <a href="validation.html">Validation</a> and <a href="limitations.html">Boundaries</a>). Broader
+  forecast-<em>skill</em> equivalence is an <strong>open gate, not claimed closed</strong>. Priority order, in
+  every design decision: <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>.</p>
 </div>
 
 <div class="admon note">

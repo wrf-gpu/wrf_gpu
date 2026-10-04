@@ -8,7 +8,8 @@ version = "0.3.0"
 description = "A GPU-native WRF-compatible regional NWP model (JAX dynamical core + physics)"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE_NOTES.md" }
+license = { file = "LICENSE" }
+classifiers = ["License :: OSI Approved :: MIT License"]
 # Core runtime deps actually imported on the operational path
 # (import gpuwrf -> daily_pipeline -> operational_mode -> io/validation).
 # Backend-specific GPU/Triton deps (cupy, torch, triton) and the CUDA jaxlib are
@@ -39,6 +40,9 @@ triton = ["torch>=2.1", "triton>=2.1"]
 
 [project.scripts]
 gpuwrf = "gpuwrf.cli:main"
+
+[tool.setuptools]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

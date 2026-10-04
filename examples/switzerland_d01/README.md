@@ -21,7 +21,10 @@ Physics menu: `mp_physics=8` (Thompson), `ra_lw/sw=4` (RRTMG), `sf_surface=4`
 The fields are derived from **NCEP GFS** analysis (US Government, public domain)
 through the standard WPS / `real.exe` preprocessing chain (`TITLE = OUTPUT FROM
 REAL_EM V4.7.1 PREPROCESSOR`, `SIMULATION_INITIALIZATION_TYPE = REAL-DATA CASE`).
-GFS products are public domain, so these derived inputs are freely redistributable.
+GFS products are public domain. Static terrain, land-use and soil fields derive
+from WPS geography datasets and retain their providers' terms; the GFS
+public-domain status does not cover those datasets. See
+[THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
 
 ## Run it
 

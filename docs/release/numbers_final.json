@@ -39,7 +39,7 @@
   "B200_FIT": "30",
   "TREE": "dead7d004",
   "CPU_ENERGY_METHOD": "uses approximately200W on twelve cores (maintainer measurement); GPU host CPU energy is outside the board-power comparison",
-  "LICENSE_LINE": "See [LICENSE_NOTES.md](LICENSE_NOTES.md) for attribution and licensing information.",
+  "LICENSE_LINE": "wrf_gpu's own code is released under the [MIT License](LICENSE). Some files keep upstream terms: AER's RRTMG/RRTM code and data may not be sold; NCAR MMM physics translations carry NCAR's BSD 3-Clause notice; WRF-derived material carries the UCAR public-domain notice. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). wrf_gpu is not affiliated with UCAR/NCAR; WRF\u00ae is a registered trademark of UCAR.",
   "V030_WN3_GAIN": "1.4",
   "EXTENDED_LEAD_DISCLOSURE": "Beyond 24 h, the complete six-case predecessor (`1fece48da`) exceeds limits on the 1 km domain: 0227 U10/V10 from +41 h, V at +67 h, W at +69\u201370 h and RAINNC at +67\u201372 h; 0120 U10 at +58 h. The scored v0.3.0 0227 case agrees with that displaced wake/convection pattern. [Exact hours and signed biases](docs/release/VALIDATION.md) preserve every failure.",
   "DATE": "2026-10-04",
