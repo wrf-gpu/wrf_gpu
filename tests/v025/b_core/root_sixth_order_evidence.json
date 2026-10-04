@@ -1,0 +1,111 @@
+{
+ "schema": "wrf_gpu2.b_core.root_sixth_order_evidence.v1",
+ "finding": "BC44: specified ROOT used the released per-stage periodic sixth-order diffusion (wraps opposite-boundary values into rings 0-2) and had no moist/number scalar sixth-order; WRF treats specified exactly like nested (module_big_step_utilities_em.F:6334) with RK1-frozen u/v/w/theta (module_em.F:882-919) and scalar (:1423) forms",
+ "truth": "pristine serial WRF (<USER_HOME>/src/wrf_pristine/WRF/main/wrf.exe) d01-only (PROD feedback=0), same wrfinput/wrfbdy sha 1024ddb7/296cef91, history every 54 s step, 10 steps",
+ "ours": "product d01 own-steps on CPU (default flags) from integrate common_inputs.pkl; clean A/B: base = git archive of lane HEAD, fix = HEAD + BC44 opmode diff only",
+ "ablation": "diff_6th_opt=0 in BOTH models removes the step-1 boundary excess (theta ring-1 0.0003 vs 0.0006 interior), localising the cause before the fix",
+ "gate": {
+  "metrics": {
+   "base": {
+    "1": {
+     "U_face1": [
+      0.01610565036650649,
+      0.015761532546755844
+     ],
+     "V_face1": [
+      0.010255710355942197,
+      0.00781323371346974
+     ],
+     "U_int": 0.0037867174956427727,
+     "V_int": 0.0037683621292010938,
+     "th_cell1": 0.017159375401219815,
+     "th_int": 0.0006540227082993314,
+     "qv_rings12": 9.192651633589078e-07,
+     "qv_int": 3.577209759244746e-06
+    },
+    "10": {
+     "U_face1": [
+      0.08169475228308377,
+      0.11229884006310902
+     ],
+     "V_face1": [
+      0.07851646077870415,
+      0.061262827968712436
+     ],
+     "U_int": 0.01857484726225867,
+     "V_int": 0.023043419207259278,
+     "th_cell1": 0.052047811278669504,
+     "th_int": 0.008016753518296551,
+     "qv_rings12": 6.65422105234091e-06,
+     "qv_int": 1.898400287995198e-05
+    }
+   },
+   "fix": {
+    "1": {
+     "U_face1": [
+      0.004222406510529895,
+      0.006250058461258566
+     ],
+     "V_face1": [
+      0.004704786461153283,
+      0.0033648401891926832
+     ],
+     "U_int": 0.003798977700603467,
+     "V_int": 0.003765246071647253,
+     "th_cell1": 0.0004181704002033826,
+     "th_int": 0.0006056532728472048,
+     "qv_rings12": 9.177830626483295e-07,
+     "qv_int": 6.183803891654247e-07
+    },
+    "10": {
+     "U_face1": [
+      0.03901988502694857,
+      0.08398943226982515
+     ],
+     "V_face1": [
+      0.04845584716564144,
+      0.03935275721978698
+     ],
+     "U_int": 0.018284767753385816,
+     "V_int": 0.022730161612788822,
+     "th_cell1": 0.006160272053362483,
+     "th_int": 0.007981144702167833,
+     "qv_rings12": 3.5110617467308887e-06,
+     "qv_int": 4.184040415382087e-06
+    }
+   }
+  },
+  "criteria": {
+   "step1_theta_cell1_le_2x_int": true,
+   "step1_UV_face1_le_2x_int": true,
+   "step10_UV_face1_below_base": true,
+   "interior_not_worse_10pct": true,
+   "qv_rings12_step10_not_worse": true,
+   "deletion_base_fails_step1": true
+  },
+  "passed": true,
+  "registration": {
+   "gate": "BC44 root (specified) sixth-order diffusion: RK1-frozen WRF form for theta/u/v/w + moist/number scalar sc_tend, like nested children",
+   "truth": "pristine serial WRF d01-only run (feedback=0 PROD, same wrfinput/wrfbdy sha), history every step, 10 steps",
+   "ours": "product d01 own-steps on CPU from integrate common_inputs.pkl (default flags), same 10 steps",
+   "pass": [
+    "step 1: theta cell-1 RMSE (W/E/S/N mean) <= 2x deep-interior RMSE (baseline 0.0130 vs 0.0007 = 18x)",
+    "step 1: U face-1 and V face-1 RMSE <= 2x interior (baseline U 0.0161/0.0158 vs 0.0038, V 0.0103/0.0078 vs 0.0038)",
+    "step 10: U/V face-1 RMSE below baseline on all four sides",
+    "step 1 and 10: interior U/V/theta RMSE not worse than baseline by more than 10 %",
+    "qv near-boundary (cells 1-2) RMSE at step 10 not worse than baseline"
+   ],
+   "deletion": "baseline run (pre-fix tree) is the deletion arm and must fail the step-1 criteria (it does: 18x / 4x)",
+   "registered_before_run": true
+  }
+ },
+ "registration_sha256": "ff02a0e6c507abc16cbeb69230d377583596bb408842e3132c9edd030072e8cf",
+ "bonus": "interior qv error vs pristine drops 3.58e-6 -> 6.18e-7 (step 1) and 1.90e-5 -> 4.18e-6 (step 10): root scalar sixth-order was missing",
+ "residual": "one east surface face at a 0->14 m terrain step on ring 0 (j=47): WRF -4.34 vs ours -2.86 m/s by step 10; candidate ring-0 w zero_grad semantics (physical vs WRF work copy) under separate investigation",
+ "artifacts": {
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC44_relax/gate_result.json": "adf8ba4ae2b57d6a705c915b6085b1c88bb26d9edc3c08c01e82bc15b59db29e",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC44_relax/ours/run_d01.py": "8210885d4abfa6a39d17aa3fae755d8ce74fe8c9bdb1046b4463718792caa10f",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC44_relax/compare.py": "f888ad0d2e24b27a56e9abfe01053a3a4cad7503596291e7b7c0a1f0a5316c3f",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC44_relax/pristine_d01/namelist.input": "834377b597bffce86442f991a8369f31c1cd18431d1ba09ffa2ced7dcce6f4db"
+ }
+}

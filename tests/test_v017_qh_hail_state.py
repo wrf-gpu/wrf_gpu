@@ -23,6 +23,8 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.contracts.grid import GridSpec
+from gpuwrf.contracts import precision as precision_contract
+from gpuwrf.contracts.precision import SURFACE_LAYER_CARRY_LEAVES
 from gpuwrf.contracts.precision import (
     DEFAULT_DTYPES,
     FP32_GATED,
@@ -40,6 +42,11 @@ from gpuwrf.contracts.state import (
 
 
 HAIL_LEAVES = ("qh", "Nh", "qvolg", "qvolh")
+# The producer declaration selects the additive contract; base trees remain valid.
+MYNN_HISTORY_LEAVES = getattr(precision_contract, "MYNN_DIAGNOSTIC_LEAVES", ())
+assert MYNN_HISTORY_LEAVES in ((), ("el_pbl", "maxmf", "maxwidth", "ztop_plume"))
+GWDO_HISTORY_LEAVES = getattr(precision_contract, "GWDO_DIAGNOSTIC_LEAVES", ())
+assert GWDO_HISTORY_LEAVES in ((), ("dtaux3d", "dtauy3d", "dusfcg", "dvsfcg"))
 
 
 def _full_state(grid: GridSpec) -> State:
@@ -53,29 +60,19 @@ def _full_state(grid: GridSpec) -> State:
 
 
 def test_hail_leaves_appended_at_end_append_only() -> None:
-    # v0.18 trunk consolidated additive tail (set-UNION of every lane): 53
-    # original + 3 v0.6.0 (Nc/Nn/rainc_acc) + 4 v0.15 MYNN + 4 v0.17 hail
-    # substrate (qh/Nh/qvolg/qvolh) + 2 v0.16 aerosol-aware Thompson (nwfa/nifa)
-    # + 1 v0.17 hail surface accumulator (hail_acc) = 67, minus the 3 legacy
-    # p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 v0.22 optional
-    # standalone wrfbdy scalar leaves = 71.
-    assert len(State.__slots__) == 71
-    # The four 3-D hail substrate leaves sit just before the v0.16 aerosol leaves
-    # and hail_acc, followed only by the v0.22 optional wrfbdy scalar leaves.
-    assert State.__slots__[-14:-10] == HAIL_LEAVES
-    assert STATE_FIELD_ORDER[-14:-10] == HAIL_LEAVES
-    assert State.__slots__[-10:-7] == ("nwfa", "nifa", "hail_acc")
-    assert STATE_FIELD_ORDER[-10:-7] == ("nwfa", "nifa", "hail_acc")
-    assert State.__slots__[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
-    assert STATE_FIELD_ORDER[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
-    # Every leaf BEFORE the hail block keeps its exact position (append-only):
-    # the prefix up to the v0.15 cldfra_bl is unchanged.
-    assert State.__slots__[-15] == "cldfra_bl"
-    # STATE_FIELD_ORDER (precision/storage order) and __slots__ (pytree order)
-    # are deliberately distinct orderings in the middle, but they cover the SAME
-    # leaf set and BOTH end with the hail/aerosol tail + optional wrfbdy scalars.
+    # Frozen substrate: 71 leaves through optional wrfbdy scalars, then B39's
+    # five REAL surface leaves, then declared MYNN and optional GWDO outputs.
+    expected_tail = (HAIL_LEAVES + ("nwfa", "nifa", "hail_acc")
+                     + SCALAR_BOUNDARY_OPTIONAL_LEAVES
+                     + SURFACE_LAYER_CARRY_LEAVES + MYNN_HISTORY_LEAVES + GWDO_HISTORY_LEAVES)
+    assert len(State.__slots__) == 76 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES)
+    assert State.__slots__[57:] == expected_tail
+    assert STATE_FIELD_ORDER[57:] == expected_tail
+    assert State.__slots__[56] == "cldfra_bl"
+    # Precision/storage and pytree orders differ in the middle, but have the
+    # same full leaf set and the same strictly ordered additive tail.
     assert set(STATE_FIELD_ORDER) == set(State.__slots__)
-    assert len(STATE_FIELD_ORDER) == len(State.__slots__) == 71
+    assert len(STATE_FIELD_ORDER) == len(State.__slots__)
 
 
 def test_hail_leaves_precision_fp32_gated() -> None:
@@ -94,13 +91,13 @@ def test_hail_leaves_absent_by_default_and_materialized_for_hail_mp() -> None:
         for k, v in shapes.items()
     }
     state = State(**fields)
-    assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES)
-    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) == 57
-    for leaf in CONDITIONAL_STATE_LEAVES:
+    assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES and name not in GWDO_HISTORY_LEAVES)
+    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) - len(GWDO_HISTORY_LEAVES) == 62 + len(MYNN_HISTORY_LEAVES)
+    for leaf in CONDITIONAL_STATE_LEAVES + GWDO_HISTORY_LEAVES:
         assert getattr(state, leaf) is None, leaf
 
     hail_state = state.ensure_conditional_leaves(mp_physics=24)
-    assert hail_state.active_field_names()[-5:] == HAIL_CONDITIONAL_LEAVES
+    assert hail_state.active_field_names()[-(10 + len(MYNN_HISTORY_LEAVES)):-(5 + len(MYNN_HISTORY_LEAVES))] == HAIL_CONDITIONAL_LEAVES
     for leaf in AEROSOL_CONDITIONAL_LEAVES:
         assert getattr(hail_state, leaf) is None, leaf
     for leaf in HAIL_LEAVES:
@@ -110,22 +107,35 @@ def test_hail_leaves_absent_by_default_and_materialized_for_hail_mp() -> None:
         assert arr.dtype == DEFAULT_DTYPES.dtype_for(leaf), leaf
     assert hail_state.hail_acc.shape == (ny, nx)
     assert float(np.asarray(hail_state.hail_acc).sum()) == 0.0
-    assert len(jax.tree_util.tree_leaves(hail_state)) == 62  # v0.20 S1: 57 base + 5 hail
+    assert len(jax.tree_util.tree_leaves(hail_state)) == 67 + len(MYNN_HISTORY_LEAVES)  # base + five hail
 
 
 def test_flatten_unflatten_identity_and_treedef_stable() -> None:
     grid = GridSpec.canary_3km_template()
     state = _full_state(grid)
     leaves, treedef = jax.tree_util.tree_flatten(state)
-    assert len(leaves) == 64  # 57 base + 7 materialized hail/aerosol leaves
+    assert len(leaves) == 69 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES)  # base + seven hail/aerosol
+    for name in MYNN_HISTORY_LEAVES:
+        expected_shape = (grid.nz, grid.ny, grid.nx) if name == "el_pbl" else (grid.ny, grid.nx)
+        assert _state_field_shapes(grid, include_all_conditional=True)[name] == expected_shape, name
+        assert getattr(state, name).shape == expected_shape, name
+        assert getattr(state, name).dtype == jnp.float32, name
+    for name in GWDO_HISTORY_LEAVES:
+        expected_shape = ((grid.nz, grid.ny, grid.nx) if name in ("dtaux3d", "dtauy3d")
+                          else (grid.ny, grid.nx))
+        assert _state_field_shapes(grid, include_all_conditional=True)[name] == expected_shape, name
+        assert getattr(state, name).shape == expected_shape, name
+        assert getattr(state, name).dtype == jnp.float32, name
     # The hail substrate leaves sit before the v0.16 aerosol leaves + hail_acc.
-    assert State.__slots__[-14:-10] == HAIL_LEAVES
+    assert State.__slots__[57:61] == HAIL_LEAVES
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
     # Round-trip is the structural identity for every leaf, hail included.
     for leaf in State.__slots__:
         a = np.asarray(getattr(state, leaf))
         b = np.asarray(getattr(rebuilt, leaf))
         assert a.shape == b.shape, leaf
+        assert a.dtype == b.dtype, leaf
+        assert a.tobytes() == b.tobytes(), leaf
         assert np.array_equal(a, b), leaf
     # Treedef is stable across a second flatten (carry-in == carry-out).
     leaves2, treedef2 = jax.tree_util.tree_flatten(rebuilt)
@@ -139,8 +149,10 @@ def test_unflatten_does_not_recanonicalise_hail_leaves() -> None:
     grid = GridSpec.canary_3km_template()
     state = _full_state(grid)
     _, treedef = jax.tree_util.tree_flatten(state)
-    sentinel = jax.tree_util.tree_unflatten(treedef, [object()] * 64)
+    sentinel = jax.tree_util.tree_unflatten(treedef, [object()] * (69 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES)))
     assert sentinel.qvolh.__class__ is object  # verbatim, not coerced
+    for name in MYNN_HISTORY_LEAVES + GWDO_HISTORY_LEAVES:
+        assert getattr(sentinel, name).__class__ is object, name
 
 
 def test_state_with_hail_inert_byte_identical_to_zero_hail() -> None:

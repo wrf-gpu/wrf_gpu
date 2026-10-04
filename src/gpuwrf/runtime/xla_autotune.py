@@ -84,7 +84,8 @@ This is HARD-SAFE by construction REGARDLESS of the default:
    jaxlib could fatally abort on an unknown ``--xla_gpu_*`` flag).
 2. **Flag validation against the actual build (no blind inject).** Every
    candidate ``--xla_gpu_*`` flag is first PROBED in an isolated child process
-   that tries to initialise the GPU backend with only that flag set. If the
+   that runs the shared XLA flag parser through a CPU backend with only that flag
+   set, without allocating a CUDA context. If the
    child aborts / errors / the flag is unknown, the flag is dropped. The probe
    runs in a SUBPROCESS so an XLA fatal-abort kills only the child, never this
    process. Only flags the build provably accepts are injected. This is what
@@ -95,9 +96,9 @@ This is HARD-SAFE by construction REGARDLESS of the default:
 
 PLATFORM GUARD
 --------------
-These are GPU-plugin flags (``--xla_gpu_*``). They are valid only when a CUDA
-backend is loaded; on a CPU-only jaxlib build XLA logs ``unknown flag`` and (in
-some builds) can abort init. We therefore inject them ONLY when (a) the operator
+These flags affect GPU compilation (``--xla_gpu_*``). The installed CUDA build
+also accepts them through its CPU flag parser; a different build may reject them
+and abort init. We therefore inject them ONLY when (a) the operator
 opted in AND (b) a CUDA backend is the likely target, detected WITHOUT
 importing/initialising JAX in THIS process (importing jax here would lock the
 flags in before we set them) AND (c) the per-flag subprocess probe confirms the
@@ -115,6 +116,8 @@ import sys
 from pathlib import Path
 
 __all__ = [
+    "COMMAND_BUFFER_STATUS",
+    "configure_command_buffers",
     "AUTOTUNE_STATUS",
     "PARALLEL_COMPILE_STATUS",
     "configure_autotune_cache",
@@ -129,8 +132,7 @@ __all__ = [
 _DISABLE_VALUES = {"0", "false", "off", "no"}
 _FORCE_VALUES = {"1", "true", "on", "yes", "force"}
 
-# Per-flag probe timeout (seconds). Initialising a GPU backend in a cold child
-# is fast; cap it so a wedged probe can never stall import.
+# Per-flag CPU parser probe timeout; a wedged child cannot stall import indefinitely.
 _PROBE_TIMEOUT_S = 30.0
 
 # Record of what was configured, for audit / proof scripts.
@@ -319,8 +321,9 @@ def _parse_existing_flags(xla_flags: str) -> set[str]:
     return names
 
 
-# Child program: set XLA_FLAGS to ONLY the candidate flag, then force the GPU
-# backend to initialise (which is what parses --xla_gpu_* flags). Exit 0 iff the
+# Child program: set XLA_FLAGS to ONLY the candidate flag, then initialise the
+# CPU backend to run XLA's shared flag parser without creating a CUDA context.
+# The installed build accepts its GPU flags through this parser too. Exit 0 iff the
 # build accepted the flag. Any unknown-flag abort makes the child exit non-zero
 # (or be killed by the abort), so the parent treats it as unsupported. This
 # isolates the fatal-abort failure mode to the child process.
@@ -329,12 +332,13 @@ import os, sys
 # The parent passes the single candidate flag via _GPUWRF_PROBE_FLAG; set it as
 # the ONLY XLA flag so a parse error is unambiguously about this flag.
 os.environ["XLA_FLAGS"] = os.environ.get("_GPUWRF_PROBE_FLAG", "")
-# Force the GPU/CUDA backend: that is the code path that parses --xla_gpu_*.
-os.environ["JAX_PLATFORMS"] = "cuda"
+# GPU flag support is a parser check, independent of device availability.
+os.environ["JAX_PLATFORMS"] = "cpu"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 try:
     import jax
-    # Initialise the backend; this triggers XLA flag parsing for the GPU plugin.
-    _ = jax.devices()
+    # Initialise the CPU backend; this triggers the shared XLA flag parser.
+    assert all(device.platform == "cpu" for device in jax.devices())
 except SystemExit:
     raise
 except BaseException as exc:  # noqa: BLE001 - any failure => unsupported
@@ -348,9 +352,9 @@ def probe_flag_supported(flag: str, timeout_s: float = _PROBE_TIMEOUT_S) -> tupl
     """Probe whether the installed XLA/jaxlib build accepts ``flag``.
 
     Runs a short child process that sets ``XLA_FLAGS`` to ONLY ``flag`` and then
-    initialises the CUDA backend (the code path that parses ``--xla_gpu_*``
-    flags). Returns ``(ok, detail)``. ``ok`` is True iff the child exited 0
-    (flag accepted + backend initialised). The probe is fully isolated: an XLA
+    initialises the CPU backend (which runs the shared XLA flag parser for GPU
+    flags too). Returns ``(ok, detail)``. ``ok`` is True iff the child exited 0
+    (flag accepted + CPU backend initialised). The probe is fully isolated: an XLA
     fatal-abort kills only the child, never the caller, and the function never
     raises.
 
@@ -358,13 +362,8 @@ def probe_flag_supported(flag: str, timeout_s: float = _PROBE_TIMEOUT_S) -> tupl
     """
     env = dict(os.environ)
     env["_GPUWRF_PROBE_FLAG"] = flag
-    # Make sure the child is not itself short-circuited to CPU by an inherited
-    # pin; the child sets JAX_PLATFORMS=cuda explicitly, but clear conflicting
-    # vars so the pin actually takes.
+    # Clear conflicting legacy pins; the child always pins CPU and hides CUDA.
     env.pop("JAX_PLATFORM_NAME", None)
-    # Do not let the child inherit a CPU pin from the parent env.
-    if env.get("JAX_PLATFORMS", "").strip().lower().startswith(("cpu", "tpu")):
-        env["JAX_PLATFORMS"] = "cuda"
     try:
         proc = subprocess.run(
             [sys.executable, "-c", _PROBE_CHILD],
@@ -383,6 +382,49 @@ def probe_flag_supported(flag: str, timeout_s: float = _PROBE_TIMEOUT_S) -> tupl
     tail = (proc.stderr or proc.stdout or "").strip().splitlines()
     detail = tail[-1] if tail else f"rc={proc.returncode}"
     return False, f"rejected:rc={proc.returncode}:{detail[:200]}"
+
+
+COMMAND_BUFFER_STATUS: dict[str, object] = {}
+
+
+def configure_command_buffers(default_on: bool = False) -> dict[str, object]:
+    """Share CUDA conditional capture flags between launches and profilers.
+
+    Add to the installed capture set; never replace operator-set flag values.
+    CPU pins and unsupported builds remain unchanged. Call before backend init.
+    """
+    status = COMMAND_BUFFER_STATUS
+    status.clear()
+    status.update(enabled=False, injected_flags=[], reason=None)
+    mode = os.environ.get("GPUWRF_XLA_CONDITIONAL_GRAPHS", "1" if default_on else "0")
+    if mode.strip().lower() in _DISABLE_VALUES:
+        status["reason"] = "disabled"
+        return status
+    gpu, reason = _gpu_is_target()
+    status["reason"] = reason
+    if not gpu:
+        return status
+    raw = os.environ.get("XLA_FLAGS", "")
+    existing = _parse_existing_flags(raw)
+    candidates = (
+        "--xla_gpu_enable_command_buffer=+CONDITIONAL",
+        "--xla_enable_command_buffers_during_profiling=true",
+    )
+    missing = [flag for flag in candidates if flag[2:].split("=", 1)[0] not in existing]
+    validate = os.environ.get("GPUWRF_XLA_AUTOTUNE_PROBE", "1").strip().lower() not in _DISABLE_VALUES
+    if missing and validate:
+        ok, detail = probe_flag_supported(" ".join(missing))
+        status["probed"] = detail
+        if not ok:
+            status["reason"] = "unsupported-flags"
+            return status
+    if missing:
+        os.environ["XLA_FLAGS"] = " ".join([raw, *missing]).strip()
+    status["injected_flags"] = missing
+    capture = next((token.split("=", 1)[1] for token in os.environ.get("XLA_FLAGS", "").split()
+                    if token.startswith("--xla_gpu_enable_command_buffer=")), "")
+    status["enabled"] = any(token.removeprefix("+") == "CONDITIONAL" for token in capture.split(","))
+    return status
 
 
 def configure_autotune_cache(default_on: bool = False) -> dict[str, object]:

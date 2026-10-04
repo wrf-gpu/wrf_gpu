@@ -42,19 +42,16 @@ def restore_global_cache_dir():
     cache dir gone and its warm-hit/entry-count assertions break. This fixture
     restores both so cache-mutating tests are self-contained."""
     saved_status = dict(cc.CACHE_STATUS)
-    saved_dir = cc.resolve_cache_dir()
+    saved_dir = jax.config.jax_compilation_cache_dir
     try:
         yield
     finally:
         cc.CACHE_STATUS.clear()
         cc.CACHE_STATUS.update(saved_status)
-        if saved_dir is not None:
-            try:
-                from jax import config as _jc
+        from jax._src import compilation_cache as jcc
 
-                _jc.update("jax_compilation_cache_dir", str(saved_dir))
-            except Exception:
-                pass
+        jcc.reset_cache()
+        jax.config.update("jax_compilation_cache_dir", saved_dir)
 
 
 # --------------------------------------------------------------------------- #
@@ -221,24 +218,30 @@ def test_compile_cache_surfaces_parallel_status(monkeypatch, tmp_path, restore_g
     """The central import hook (configure_compilation_cache -> configure_parallel_compile)
     must surface the parallel-compile status under CACHE_STATUS['parallel_compile']."""
     monkeypatch.setenv("JAX_PLATFORMS", "cpu")
+    monkeypatch.setenv("GPUWRF_JAX_CACHE", "1")
+    monkeypatch.delenv("JAX_COMPILATION_CACHE_DIR", raising=False)
     monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(tmp_path / "jit"))
     status = cc.configure_compilation_cache()
     assert "parallel_compile" in status
     assert isinstance(status["parallel_compile"], dict)
 
 
-def test_compile_cache_does_not_inject_parallel_flag_by_default(monkeypatch, tmp_path, restore_global_cache_dir):
-    """In-process analogue of the import-inertness guard for the parallel knob: the
-    hook must NOT mutate XLA_FLAGS in the default case even with a GPU detected and
-    no platform pin."""
-    monkeypatch.delenv("GPUWRF_XLA_PARALLEL_COMPILE", raising=False)
+def test_compile_cache_respects_parallel_opt_out(monkeypatch, tmp_path, restore_global_cache_dir):
+    """B2 enables parallel compile by default; explicit opt-outs prevent injection."""
+    monkeypatch.setenv("GPUWRF_JAX_CACHE", "1")
+    monkeypatch.delenv("JAX_COMPILATION_CACHE_DIR", raising=False)
+    monkeypatch.setenv("GPUWRF_XLA_PARALLEL_COMPILE", "0")
+    monkeypatch.setenv("GPUWRF_XLA_AUTOTUNE_CACHE", "0")
+    monkeypatch.setattr(cc, "_cuda_tag", lambda: "cuda_sm120")
     monkeypatch.delenv("GPUWRF_XLA_COMPILE_PARALLELISM", raising=False)
     monkeypatch.delenv("JAX_PLATFORMS", raising=False)
     monkeypatch.delenv("JAX_PLATFORM_NAME", raising=False)
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0")  # GPU "present"
     monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(tmp_path / "jit"))
     before = os.environ.get("XLA_FLAGS", "")
-    cc.configure_compilation_cache()
+    status = cc.configure_compilation_cache()
+    assert status["enabled"] is True
+    assert status["parallel_compile"]["opted_in"] is False
     assert os.environ.get("XLA_FLAGS", "") == before
 
 

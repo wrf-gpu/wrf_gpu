@@ -51,8 +51,11 @@ def test_profile_top_level_is_runtime_import_free():
     assert not {
         name.split(".")[0] for name in imports
     } & {"jax", "gpuwrf", "numpy", "netCDF4"}
-    assert "jax" not in sys.modules
-    assert not any(name.startswith("gpuwrf") for name in sys.modules)
+    code = (
+        "import sys; from scripts import v0234_s1_diff6_gpu_arm_profile; "
+        "assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)"
+    )
+    subprocess.run([sys.executable, "-c", code], cwd=REPO, check=True, timeout=30)
 
 
 def test_authorization_absent_blocks_before_any_runtime_import(tmp_path, monkeypatch):
@@ -60,8 +63,20 @@ def test_authorization_absent_blocks_before_any_runtime_import(tmp_path, monkeyp
     monkeypatch.setattr(arm, "AUTHORIZATION_PATH", path)
     with pytest.raises(ValueError, match="absent"):
         arm.validate_authorization(path, expected_head=arm.CANDIDATE_HEAD)
-    assert "jax" not in sys.modules
-    assert not any(name.startswith("gpuwrf") for name in sys.modules)
+    code = f"""
+import sys
+from pathlib import Path
+from scripts import v0234_s1_diff6_gpu_arm_profile as arm
+arm.AUTHORIZATION_PATH = Path({str(path)!r})
+try:
+    arm.validate_authorization(Path({str(path)!r}), expected_head=arm.CANDIDATE_HEAD)
+except ValueError as exc:
+    assert 'absent' in str(exc)
+else:
+    raise AssertionError('missing authority accepted')
+assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)
+"""
+    subprocess.run([sys.executable, "-c", code], cwd=REPO, check=True, timeout=30)
 
 
 def test_authorization_exact_valid_and_self_hashed(tmp_path, monkeypatch):

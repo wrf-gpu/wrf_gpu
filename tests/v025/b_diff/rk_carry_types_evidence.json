@@ -1,0 +1,159 @@
+{
+  "platform": "cpu",
+  "mode": "full-root abstract trace, no compilation/execution",
+  "source": "<USER_HOME>/wrf_gpu2_lanes/b-diff/RKABI-source",
+  "runtime_source_sha256": "89f96ce1ae49002bee5de689fb61bb317110819e2021cbc2e6df6e47a7e517da",
+  "resolved_flags": {
+    "GPUWRF_DYN_FP32": "1",
+    "GPUWRF_DYN_RK_FP32": "1",
+    "GPUWRF_DYN_DIFFUSION_FP32": "1",
+    "GPUWRF_DYN_ADVECTION_FP32": "1",
+    "GPUWRF_NOAHMP_NATIVE_REAL": "1",
+    "GPUWRF_NOAHMP_ITERATION_BARRIER": "1",
+    "GPUWRF_MCICA_JUMPAHEAD": "1",
+    "GPUWRF_RRTMG_LW_FUSED_TRANSFER": "1",
+    "GPUWRF_RRTMG_SW_FUSED_QUADRATURE": "1",
+    "GPUWRF_MYNN_FP32_COLUMNS": "1",
+    "GPUWRF_MYNN_CLOUDMIX": "1",
+    "GPUWRF_EDMF_FUSED_PLUME": "1",
+    "GPUWRF_MYNN_FP32_PLUME": "1",
+    "GPUWRF_KF_RESIDENT_TABLES": "1",
+    "GPUWRF_KF_COLUMN_FP32": "1"
+  },
+  "rows": [
+    {
+      "domain": "d01",
+      "carry_leaves": 137,
+      "all_avals_exact": true,
+      "scratch": {
+        "t_2ave": {
+          "shape": [
+            44,
+            70,
+            120
+          ],
+          "dtype": "float64"
+        },
+        "ww": {
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "dtype": "float64"
+        },
+        "u_save": {
+          "shape": [
+            44,
+            70,
+            121
+          ],
+          "dtype": "float64"
+        },
+        "v_save": {
+          "shape": [
+            44,
+            71,
+            120
+          ],
+          "dtype": "float64"
+        },
+        "w_save": {
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "dtype": "float64"
+        },
+        "t_save": {
+          "shape": [
+            44,
+            70,
+            120
+          ],
+          "dtype": "float64"
+        },
+        "ww_save": {
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "dtype": "float64"
+        }
+      },
+      "deletion_rejected": true,
+      "deletion_error": "while_loop body function carry input and carry output must have equal types, but they differ:\n\n  * the input carry component loop_carry[2][<flat index 1>] has type float64[44,70,120] but the corresponding output carry component has type float32[44,70,120], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 2>] has type float64[45,70,120] but the corresponding output carry component has type float32[45,70,120], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 7>] has type float64[44,70,121] but the corresponding output carry component has type float32[44,70,121], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 8>] has type float64[44,71,120] but the corresponding output carry component has type float32[44,71,120], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 9>] has type float64[45,70,120] but the corresponding output carry component has type float32[45,70,120], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 10>] has type float64[44,70,120] but the corresponding output carry component has type float32[44,70,120], so the dtypes do not match;\n  * the input carry component loop_carry[2][<flat index 13>] has type float64[45,70,120] but the corresponding output carry component has type float32[45,70,120], so the dtypes do not match.\n\nRevise the function so that all output types match the corresponding input types."
+    },
+    {
+      "domain": "d02",
+      "carry_leaves": 121,
+      "all_avals_exact": true,
+      "scratch": {
+        "t_2ave": {
+          "shape": [
+            44,
+            117,
+            267
+          ],
+          "dtype": "float64"
+        },
+        "ww": {
+          "shape": [
+            45,
+            117,
+            267
+          ],
+          "dtype": "float64"
+        },
+        "u_save": {
+          "shape": [
+            44,
+            117,
+            268
+          ],
+          "dtype": "float64"
+        },
+        "v_save": {
+          "shape": [
+            44,
+            118,
+            267
+          ],
+          "dtype": "float64"
+        },
+        "w_save": {
+          "shape": [
+            45,
+            117,
+            267
+          ],
+          "dtype": "float64"
+        },
+        "t_save": {
+          "shape": [
+            44,
+            117,
+            267
+          ],
+          "dtype": "float64"
+        },
+        "ww_save": {
+          "shape": [
+            45,
+            117,
+            267
+          ],
+          "dtype": "float64"
+        }
+      },
+      "deletion_rejected": true,
+      "deletion_error": "while_loop body function carry input and carry output must have equal types, but they differ:\n\n  * the input carry component loop_carry[2][<flat index 1>] has type float64[44,117,267] but the corresponding output carry component has type float32[44,117,267], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 2>] has type float64[45,117,267] but the corresponding output carry component has type float32[45,117,267], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 7>] has type float64[44,117,268] but the corresponding output carry component has type float32[44,117,268], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 8>] has type float64[44,118,267] but the corresponding output carry component has type float32[44,118,267], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 9>] has type float64[45,117,267] but the corresponding output carry component has type float32[45,117,267], so the dtypes do not match;\n\n  * the input carry component loop_carry[2][<flat index 10>] has type float64[44,117,267] but the corresponding output carry component has type float32[44,117,267], so the dtypes do not match;\n  * the input carry component loop_carry[2][<flat index 13>] has type float64[45,117,267] but the corresponding output carry component has type float32[45,117,267], so the dtypes do not match.\n\nRevise the function so that all output types match the corresponding input types."
+    }
+  ],
+  "passed": true,
+  "source_commit": "a6a761e24",
+  "driver_commit": "3a7565f5b",
+  "followup_assertion": "same observed errors independently rescored: while_loopcarry +exactly7float32output mismatches eachdomain"
+}

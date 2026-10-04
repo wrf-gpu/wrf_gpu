@@ -1,0 +1,12 @@
+{
+ "schema": "p0_gate2_tolerances/1",
+ "level_mask": "warm_T_in_gt_275K",
+ "fields": {
+  "T":          {"atol": 0.03,   "rtol": 0.0},
+  "qv":         {"atol": 1.5e-5, "rtol": 0.0},
+  "qc":         {"atol": 1.5e-5, "rtol": 0.0},
+  "dT":         {"atol": 0.03,   "rtol": 0.0},
+  "dtheta_dry": {"atol": 0.03,   "rtol": 0.0},
+  "theta_m":    {"atol": 0.04,   "rtol": 0.0}
+ }
+}

@@ -5,7 +5,7 @@ This file exists so future agents do NOT waste tokens re-investigating already-c
 
 ## ✅ v0.4.0 CLOSE (2026-06-03) — 4 WRF-faithful dycore fixes consolidated; standalone wind bias is a DOCUMENTED forecast-skill item, NOT a fidelity bug
 
-See [`.agent/decisions/V0.4.0-CLOSE.md`](../../.agent/decisions/V0.4.0-CLOSE.md) and the proof
+See [`.agent/decisions/V0.4.0-CLOSE.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.14.0/.agent/decisions/V0.4.0-CLOSE.md) and the proof
 object [`proofs/v040/v040_close_proof.json`](../v040/v040_close_proof.json).
 
 Four WRF-faithful dycore fixes were consolidated onto the v0.6.0 integration trunk (`350a7c6`),
@@ -26,7 +26,7 @@ standalone forecast (+1.2 m/s 20260429 / +0.75 m/s 20260521; T2 correct, stable/
 debug rounds it is **ruled out vs unmodified WRF against every faithful ported operator and scheme**
 (incl. a decisive, independent CPU-WRF Kain-Fritsch cu0-vs-cu1 oracle) — it is **dynamical, not a
 fidelity bug**. Expand-dates falsification is DATA_BLOCKED (purged met_em). Carried as
-[`.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md`](../../.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md).
+[`.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.14.0/.agent/tasks/V0.4.0-WIND-BIAS-CARRYOVER.md).
 **Do NOT** re-investigate the ruled-out angles, loosen tolerances, add a wind clamp, or claim the
 bias is fixed.
 
@@ -34,7 +34,7 @@ bias is fixed.
 
 For v0.1.0, the dycore is validated at two levels, both traceable to
 [`proofs/PROOF_TABLE.md`](../PROOF_TABLE.md) and the binding contract
-[`publish/VERIFICATION.md`](../../publish/VERIFICATION.md):
+[`publish/VERIFICATION.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.12.0/publish/VERIFICATION.md):
 
 - **Idealized gates PASS (proof rows 1/2):** Skamarock warm bubble **6/6** and Straka density
   current **6/6** vs the published references + pristine WRF v4.7.1 ground truth. The OPEN-RESIDUAL

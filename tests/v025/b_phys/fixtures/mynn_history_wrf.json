@@ -1,0 +1,12 @@
+{
+  "source": "pristine WRF module_bl_mynnedmf.o, existing real d03 daytime fixture",
+  "driver_sha256": "48a8d80919a12a94a154083110d489598d51068b0709b55fe14f4a615fbc1596",
+  "expected": {
+    "maxmf": -0.0545959696,
+    "ztop_plume": 201.082428,
+    "maxwidth": 510.655579
+  },
+  "tolerance": 0.05,
+  "cache": "NONE",
+  "work": "fixture column_d03_12z.json, DMP_mf dt/config native; no forecast"
+}

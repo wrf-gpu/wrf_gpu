@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from _historical_artifacts import require_historical
 
 from gpuwrf.io.proof_schemas import (
     AIFSIngestManifest,
@@ -58,8 +59,7 @@ def test_station_source_manifest_validates_and_keeps_access_statuses_honest():
     assert statuses["aemet_conventional_canary"] == "PARTIAL"
     assert statuses["grafcan_sitcan"] == "PARTIAL"
     assert data["binding_policy"]["operational_claim_rule"].startswith("M7 cannot claim operational validation")
-    for artifact_path in data["artifact_paths"]:
-        assert Path(artifact_path).exists(), artifact_path
+    require_historical(*data["artifact_paths"])
 
 
 def test_registry_validates_new_manifest_filenames():

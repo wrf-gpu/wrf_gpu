@@ -104,6 +104,24 @@ def _edmf_level_unroll() -> int:
 
     return max(1, int(os.environ.get("GPUWRF_MYNN_EDMF_LEVEL_UNROLL", "1")))
 
+def _fused_plume_enabled() -> bool:
+    """Fused-plume collapse gate (v0.25 M2 family-#2, sprint ``m2-pbl-batch``).
+
+    Default OFF: the XLA reference path below is byte-identical to the
+    pre-v0.25 lowering.  Setting ``GPUWRF_EDMF_FUSED_PLUME=1`` replaces ONLY
+    the per-plume vertical integration (``_dmp_scan`` -- the 42-level x
+    16-iteration sequential nest measured as ``loop_multiply_fusion_32``,
+    672 launches/step @ 11.2 us = 52.2% of device time, W2/W2.1) with ONE
+    Pallas kernel (``gpuwrf.kernels.fused_edmf_plume``).  Setup/assembly and
+    the numerics contract are unchanged; the CPU gate is the pre-registered
+    envelope in ``tests/v025/test_m2_pbl_batch_fused_edmf.py``.  Ownership
+    note: this file is shared (imported by physics_couplers/scheme_catalog);
+    the exact diff of this gate + the ``_dmp_*`` extraction is recorded in the
+    sprint ``PATCH_PROPOSALS.md`` for manager review/revert.
+    """
+    return os.environ.get("GPUWRF_EDMF_FUSED_PLUME", "0") == "1"
+
+
 # ---- WRF model constants (module_model_constants.F) ----
 R_D = 287.0
 CP = 7.0 * R_D / 2.0
@@ -218,30 +236,20 @@ def _wrf_first_level_plume_survival(first_level_w):
     return jnp.all(first_level_w > 0.0)
 
 
-def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
-                          p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-                          pblh, ts, xland, psig_shcu, *, dx, dt):
-    """Port of DMP_mf for ONE column. All inputs are 1-D arrays length nz
-    (interfaces zw length nz+1). Returns dict of solver arrays.
+def _dmp_setup(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+               flt, fltv, flq, psig_shcu, *, dx):
+    """DMP_mf per-column activation/widths block (F90:5855-6123).
 
-    Mirrors module_bl_mynnedmf.F:DMP_mf for the operational config
-    (momentum_opt=1, tke_opt=0, env_subs=.false., no chem). Carries qt1=sqw,
-    qv1=sqv, qc1=sqc (specific contents).
-
-    The full WRF `DMP_mf` argument list is preserved so the JAX call mirrors the
-    Fortran interface; under this config several args are intentionally unused:
-    ``tk``/``exner`` (only WRF diagnostics), ``qke``/``ust`` (TKE-MF path off),
-    ``flqv`` (only separate vapor bookkeeping; ``flq`` drives the plume excess),
-    and ``dt`` (only env_subs subsidence, which is off). They are
-    accepted-and-ignored rather than dropped.
+    v0.25 M2 family-#2 (pblbatch): verbatim extraction of the former
+    `_single_column_dmp_mf` pre-scan section so the plume-rise block can be
+    swapped for a fused kernel (``kernels/fused_edmf_plume.py``) without
+    touching the numerics.  Pure code motion: identical ops in identical
+    order.
     """
-    del tk, qke, exner, ust, flqv, dt  # WRF-interface args unused in this config
-    nz = th.shape[-1]
+    nz = thl.shape[-1]
     is_water = (xland - 1.5) >= 0.0
     qv1 = sqv  # WRF names: qv1==sqv, qt1==sqw, qc1==sqc inside DMP_mf
     qt1 = sqw
-    del sqc  # qc1 unused: surface updraft UPQC(1,ip)=0, plume qc from condensation_edmf
-
     # ---- activation: maxw / Psig_w (lines 5855-5879) ----
     zagl_mid = zw[:-1] + 0.5 * dz  # length nz
     below = zagl_mid <= (pblh + 500.0)
@@ -346,13 +354,39 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     rhoz_mid = (rho[:-1] * dz[1:] + rho[1:] * dz[:-1]) / (dz[1:] + dz[:-1])  # len nz-1, idx k -> interface above level k
     rhoz = jnp.concatenate([rhoz_mid, rho[-1:]])  # length nz: rhoz[k] valid for k=0..nz-1
 
+    l_per_plume = minwidth + dl * ip.astype(jnp.float64)  # length NUP
+
+    return {
+        "psig_w": psig_w, "fltv2": fltv2, "active": active,
+        "maxwidth": jnp.where(maxwidth > minwidth, maxwidth, 0.0),
+        "zw": zw,
+        "rhoz_mid": rhoz_mid, "qt1": qt1,
+        "l_per_plume": l_per_plume,
+        "upa0": upa0, "upw0": upw0, "upthl0": upthl0, "upqt0": upqt0,
+        "upu0": upu0, "upv0": upv0, "upqc0": upqc0,
+    }
+
+
+def _dmp_scan(s, thl, thv, p, dz, zw, u, v, pblh):
+    """DMP_mf per-plume vertical integration (F90:6128-6330) + veto/full_up.
+
+    v0.25 M2 family-#2 (pblbatch): verbatim extraction of the former
+    `_single_column_dmp_mf` scan section.  This is the 42-level x 16-iteration
+    sequential nest that produces 672 device dispatches/step under XLA
+    (W2/W2.1: loop_multiply_fusion_32); the fused path replaces exactly this
+    function when GPUWRF_EDMF_FUSED_PLUME=1.
+    """
+    nz = thl.shape[-1]
+    qt1 = s["qt1"]
+    active = s["active"]
+    l_per_plume = s["l_per_plume"]
+    upa0, upw0, upthl0 = s["upa0"], s["upw0"], s["upthl0"]
+    upqt0, upu0, upv0, upqc0 = s["upqt0"], s["upu0"], s["upv0"], s["upqc0"]
     # ---- per-plume vertical integration (lines 6128-6330) ----
     # We scan k from 1..nz-2 (WRF: kts+1..kte-1, 0-based 1..nz-2), carrying the
     # updraft state. State per plume: (w, thl, qt, qc, thv, u, v, area, alive, ktop_flag)
     # Outputs accumulated on interfaces: UPA(k), UPW(k), UPQT(k), UPQC(k), UPTHL(k), UPTHV(k)
     # for k in 1..nz-2 (the surface interface k=0 carries upw0 etc.)
-
-    l_per_plume = minwidth + dl * ip.astype(jnp.float64)  # length NUP
 
     def plume_scan(l, a0, w0, thl0, qt0, qc0, u0, v0):
         # carry: w_prev, thl_prev, qt_prev, qc_prev, u_prev, v_prev, area_prev, alive
@@ -461,7 +495,19 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     UPTHL = full_up(upthl0, ETHL_s)
     UPU = full_up(upu0, EU_s)
     UPV = full_up(upv0, EV_s)
+    return UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV, active
 
+
+def _dmp_assemble(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
+                  UPU, UPV):
+    """DMP_mf s_aw*/diagnostics assembly (F90:6363-6491).
+
+    v0.25 M2 family-#2 (pblbatch): verbatim extraction of the former
+    `_single_column_dmp_mf` post-scan section.
+    """
+    nz = dz.shape[-1]
+    psig_w = s["psig_w"]
+    rhoz_mid = s["rhoz_mid"]
     # ---- assemble s_aw* (lines 6363-6382): s_aw1(k+1) += rhoz(k)*UPA(K)*UPW(K)*Psig_w
     # for K=kts..kte-1 (0-based 0..nz-2). rhoz_dmp(K) is the interface ABOVE level K.
     rhoz_dmp = jnp.concatenate([rhoz_mid, rho[-1:]])  # length nz; [K]=interface above level K
@@ -533,6 +579,8 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     edmf_qt_inner = jnp.where(active, edmf_qt_inner, 0.0)
     edmf_thl_inner = jnp.where(active, edmf_thl_inner, 0.0)
 
+    # WRF :6742 gives dry-plume MAXMF a negative sign.
+    maxmf = jnp.where(active & (jnp.max(edmf_qc_inner) < 1e-8), -maxmf, maxmf)
     return {
         "s_aw": s_aw,
         "s_awqv": s_awqv,
@@ -546,9 +594,50 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         "edmf_qt": edmf_qt_inner,
         "edmf_thl": edmf_thl_inner,
         "maxmf": maxmf,
+        "maxwidth": s["maxwidth"],
+        "ztop_plume": _plume_top_height(s, jnp.any(UPW > 0.0, axis=0)),
         "active": active.astype(jnp.float64),
         "psig_w": psig_w,
     }
+
+def _plume_top_height(setup, live_levels):
+    """WRF :6321/:6356-6361: tallest live plume -> its W-interface height.
+
+    DMP reports this before the NUP2 flux-veto/limiter, so use setup activation
+    and the unscaled plume arrays/sums rather than the held s_aw flux.
+    """
+    return jnp.where(setup["active"],
+                     jnp.max(jnp.where(live_levels, setup["zw"][..., :-1], 0.0), axis=-1),
+                     0.0)
+
+
+def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
+                          p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
+                          pblh, ts, xland, psig_shcu, *, dx, dt):
+    """Port of DMP_mf for ONE column. All inputs are 1-D arrays length nz
+    (interfaces zw length nz+1). Returns dict of solver arrays.
+
+    Mirrors module_bl_mynnedmf.F:DMP_mf for the operational config
+    (momentum_opt=1, tke_opt=0, env_subs=.false., no chem). Carries qt1=sqw,
+    qv1=sqv, qc1=sqc (specific contents).
+
+    The full WRF `DMP_mf` argument list is preserved so the JAX call mirrors the
+    Fortran interface; under this config several args are intentionally unused:
+    ``tk``/``exner`` (only WRF diagnostics), ``qke``/``ust`` (TKE-MF path off),
+    ``flqv`` (only separate vapor bookkeeping; ``flq`` drives the plume excess),
+    and ``dt`` (only env_subs subsidence, which is off). They are
+    accepted-and-ignored rather than dropped.
+    """
+    del tk, qke, exner, ust, flqv, dt  # WRF-interface args unused in this config
+    del sqc  # qc1 unused: surface updraft UPQC(1,ip)=0, plume qc from condensation_edmf
+    s = _dmp_setup(
+        sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+        flt, fltv, flq, psig_shcu, dx=dx,
+    )
+    UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV, active = _dmp_scan(
+        s, thl, thv, p, dz, zw, u, v, pblh)
+    return _dmp_assemble(s, rho, thv, dz, fltv, active,
+                         UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV)
 
 
 def dmp_mf_columns(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
@@ -562,6 +651,13 @@ def dmp_mf_columns(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     B = th.shape[0]
     if psig_shcu is None:
         psig_shcu = jnp.ones((B,))
+
+    if _fused_plume_enabled():
+        from gpuwrf.kernels.fused_edmf_plume import dmp_mf_columns_fused
+        return dmp_mf_columns_fused(
+            sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
+            p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
+            pblh, ts, dx, xland, dt, psig_shcu=psig_shcu)
 
     return jax.vmap(
         lambda *a: _single_column_dmp_mf(*a[:-1], dx=dx, dt=dt, psig_shcu=a[-1])

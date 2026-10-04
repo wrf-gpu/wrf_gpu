@@ -19,6 +19,8 @@ from gpuwrf._x64_config import configure_jax_x64
 from dataclasses import dataclass
 from typing import Any, NamedTuple
 
+import os
+
 import jax
 from jax import config
 import jax.numpy as jnp
@@ -156,6 +158,11 @@ class AcousticCoreState:
     msfvx_inv: jax.Array
     msftx: jax.Array
     msfty: jax.Array
+    # Option-B fp32 carry: authoritative perturbation dry-mass work. Keeping
+    # it explicitly avoids recovering a sub-Pa delta by subtracting two ~1e5
+    # Pa totals. None leaves the released fp64 recurrence unchanged.
+    mu_work: jax.Array | None = None
+    mu_work_spec_target: jax.Array | None = None
     coef_mut: jax.Array | None = None
     u_tend: jax.Array | None = None
     v_tend: jax.Array | None = None
@@ -404,6 +411,12 @@ def _pin_spec_ring_wrf_owned(
 ) -> jax.Array:
     """Pin a WRF spec ring exactly once, with S/N owning the corners."""
 
+    if os.environ.get("GPUWRF_SPEC_RING_SELECT", "0") == "1":
+        # Every row/column write below copies the SAME target, so their union is
+        # the full width-spec_zone ring: one masked select, bit-identical, one
+        # fused kernel instead of four dynamic-update-slices per spec row.
+        from gpuwrf.kernels.ring_select import select_ring
+        return select_ring(field, target, int(spec_zone))
     out = field
     y_len = int(field.shape[-2])
     x_len = int(field.shape[-1])
@@ -1255,7 +1268,20 @@ def acoustic_substep_core(
             gravity=GRAVITY_M_S2,
         )
 
-    w_solved, ph_next, t_2ave_next = advance_w_wrf(
+    # ADR-038/M2 seam (env-gated, default OFF): the fused Pallas implicit solve
+    # (gpuwrf.kernels.fused_vertical_implicit) replaced this family in the device
+    # bake-off with bitwise-exact, deterministic kernels, 2.049x module speedup and
+    # ~133x launch reduction (verdict: <DATA_ROOT>/wrf_gpu2/v025/m2/bakeoff_20260918_rerun/
+    # m2_bakeoff_verdict_device_final.json, PASS on the pre-registered bars). The call
+    # below keeps identical kwargs; the fused impl appends interpret=False.
+    _fused_vertical = os.environ.get("GPUWRF_FUSED_VERTICAL", "0") == "1"
+    if _fused_vertical:
+        from gpuwrf.kernels.fused_vertical_implicit import advance_w_pallas as _advance_w_impl
+        _impl_kwargs = {"interpret": False}
+    else:
+        _advance_w_impl = advance_w_wrf
+        _impl_kwargs = {}
+    w_solved, ph_next, t_2ave_next = _advance_w_impl(
         w=state_for_w.w,
         rw_tend=rw_tend,
         ww=ww_new,
@@ -1330,6 +1356,7 @@ def acoustic_substep_core(
         w_damping=int(cfg.w_damping),
         w_alpha=float(cfg.w_alpha),
         w_crit_cfl=float(cfg.w_crit_cfl),
+        **_impl_kwargs,
     )
 
     # --- 3b. NESTED ph' spec-zone boundary update (WRF spec_bdyupdate_ph) ---

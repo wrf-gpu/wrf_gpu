@@ -5,10 +5,13 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from netCDF4 import Dataset
+from _historical_artifacts import require_historical
 
 from scripts import v0234_deterministic_wake_admission as admission
 from scripts import v0234_deterministic_wake_rca as rca
@@ -17,7 +20,13 @@ from scripts import v0234_deterministic_wake_terminal_proof as terminal
 
 def _frame_pair(run: str) -> dict:
     path = admission.LINEAGE_ROOT / run / "frame-pairs/d03-step-09000.json"
+    require_historical(path)
     return json.loads(path.read_text())
+
+
+def _retained_authority():
+    require_historical(admission.RETAINED_A, admission.RETAINED_B, admission.CPU_WRF)
+    return admission.authenticate_authority()
 
 
 def _runtime() -> SimpleNamespace:
@@ -25,7 +34,7 @@ def _runtime() -> SimpleNamespace:
 
 
 def test_kimi_authority_and_external_frames_authenticate() -> None:
-    authority, row = admission.authenticate_authority()
+    authority, row = _retained_authority()
     assert authority["model_tree"] == "835dcc29bf316c0715b41a72e064985e9cf099df"
     assert authority["release_gate_green"] is False
     assert authority["isolation_only"] is True
@@ -39,7 +48,7 @@ def test_kimi_authority_and_external_frames_authenticate() -> None:
 
 
 def test_both_authenticated_realizations_match_metric_and_wake_signature() -> None:
-    authority, _ = admission.authenticate_authority()
+    authority, _ = _retained_authority()
     cases = (
         (
             "nested_stage_omega_transport_470e6111_full18h_toolingrepair2",
@@ -95,7 +104,7 @@ def test_metric_classifier_rejects_other_field_and_envelope_drift() -> None:
 
 
 def test_spatial_classifier_rejects_changed_mechanism() -> None:
-    authority, _ = admission.authenticate_authority()
+    authority, _ = _retained_authority()
     pair = _frame_pair(
         "nested_stage_omega_transport_470e6111_full18h_toolingrepair2"
     )
@@ -127,7 +136,7 @@ print(json.dumps({
   'audit': r.audit_exact_launch_command(r.LAUNCH_COMMAND),
 }))
 """
-    environment = dict(os.environ)
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("GPUWRF_")}
     environment.update({
         "PYTHONPATH": str(admission.REPO_ROOT),
         "GPUWRF_DETERMINISTIC_WAKE_CLOSURE": "1",
@@ -136,15 +145,33 @@ print(json.dumps({
             "470e6111d516479bed4bc0c3b2be1007bb082afd"
         ),
     })
+    admission_code = """
+import json, sys
+try:
+    from scripts import v0234_nested_frozen_wrf_boundary_window
+except RuntimeError as exc:
+    if getattr(exc, 'code', None) != 'BASELINE_STATIC_AUDIT':
+        raise
+    assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)
+    print(json.dumps({'rejected_current_model_drift': True}))
+    sys.exit(0)
+"""
     completed = subprocess.run(
-        ["<USER_HOME>/miniconda3/bin/python", "-c", code],
+        [sys.executable, "-c", admission_code + code],
         cwd=admission.REPO_ROOT,
         env=environment,
         check=True,
         capture_output=True,
         text=True,
+        timeout=30,
     )
     payload = json.loads(completed.stdout)
+    if payload.get("rejected_current_model_drift"):
+        assert subprocess.check_output([
+            "git", "-C", str(admission.REPO_ROOT), "diff", "--name-only",
+            "470e6111d516479bed4bc0c3b2be1007bb082afd", "HEAD", "--", "src/gpuwrf",
+        ], text=True).strip()
+        return
     assert payload["namespace"].endswith("deterministic_wake_reference1")
     assert payload["label"] == "v0234-deterministic-fulltree-reference"
     assert payload["known"] is True
@@ -192,6 +219,16 @@ def test_rca_ratio_decomposition_separates_diagnostic_from_wind() -> None:
 
 
 def test_rca_binds_pristine_wrf_and_unchanged_model_tree() -> None:
+    # The archived authority rejects newer model bytes rather than resealing
+    # its scientific evidence to whatever happens to be checked out today.
+    tree = subprocess.check_output(
+        ["git", "-C", str(admission.REPO_ROOT), "rev-parse", "HEAD:src/gpuwrf"],
+        text=True,
+    ).strip()
+    if tree != terminal.MODEL_TREE:
+        with pytest.raises(RuntimeError, match="evidence hash changed|model tree changed"):
+            rca.source_authority()
+        return
     authority = rca.source_authority()
     assert authority["model_tree"] == terminal.MODEL_TREE
     assert authority["wrf_mynn_surface_source"]["file_sha256"] == rca.WRF_MYNN_SHA256

@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.4</span>
+          <span class="brand-sub">User's Guide · v0.3.0</span>
         </span>
       </a>
       <div class="search-box">
@@ -160,13 +160,11 @@ pass <code>--namelist</code> to point elsewhere.</p>
 
 <h2 id="restart">Restart files<a class="headerlink" href="#restart" aria-label="Permalink">¶</a></h2>
 
-<p>wrf_gpu supports the standard <strong>WRF restart</strong> mechanism — restart is
-bit-identity-validated, and the nested per-domain-subcycling path supports it too.
-Restart output cadence follows the usual namelist keys (<code>restart</code>,
-<code>restart_interval</code>). A restart file carries the WRF-faithful model state
-— including the 1&nbsp;km inner-nest <code>qke</code> cold-start seed that the native
-init and the WRF-restart path both provide — so a restarted forecast resumes
-consistently.</p>
+<p>The repository contains complete-state/carry serializer foundations, but the current
+NetCDF boundary schema still has failing structural roundtrip tests. The public run
+path does <strong>not</strong> yet accept a restart as initialization or emit checkpoints from
+<code>restart</code>/<code>restart_interval</code>. Operational crash recovery is a
+release gate, not a currently supported input mode.</p>
 
 <h2 id="output">What comes out<a class="headerlink" href="#output" aria-label="Permalink">¶</a></h2>
 

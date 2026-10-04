@@ -14,7 +14,7 @@ import numpy as np
 import yaml
 
 try:
-    from netCDF4 import Dataset
+    from gpuwrf.io.netcdf_lock import Dataset
 except ImportError as exc:  # pragma: no cover - exercised only in missing-dep envs
     raise RuntimeError("netCDF4 is required to extract WRF NetCDF-4 fixture slices") from exc
 

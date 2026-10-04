@@ -1,0 +1,23 @@
+{
+ "source": "PROD day d02 (b-thompson columns_p0/day_d02.npz, CPU-WRF history 2026-07-26_12)",
+ "picked": [
+  0,
+  1,
+  2,
+  3,
+  20967,
+  21501,
+  23366,
+  20700,
+  6,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24
+ ],
+ "layout": "0-3 rain, 4-7 cloud-only with the largest qc (autoconversion active), 8-15 dry with adversarial sub-R1 species/large numbers; column 13 carries snow 2e-4 kg/kg at levels 25-29",
+ "dt": 18.0
+}

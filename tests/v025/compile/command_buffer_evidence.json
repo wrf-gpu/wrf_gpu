@@ -1,0 +1,176 @@
+{
+  "scope": "same-input d01 whole-step regression/node trace, older6302source0fcc acoustic10; not timing on currentcadence main",
+  "gate": {
+    "1": {
+      "equal_leaves": 130,
+      "total_leaves": 130,
+      "baseline_s": 0.40912107698386535,
+      "conditional_s": 0.4246437810070347,
+      "finite": true
+    },
+    "33": {
+      "equal_leaves": 130,
+      "total_leaves": 130,
+      "baseline_s": 3.6386701509763952,
+      "conditional_s": 3.493348560994491,
+      "finite": true
+    }
+  },
+  "source": "0fcc944a86e6dbd2cce06d0198d7b944affc06e7",
+  "hlo": "adc3743d4582c73505dab968c65e5a1278496f41002c4a6682fc8d569ddcb250",
+  "input_and_hlo_equal": true,
+  "flags": {
+    "baseline": "--xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/autotune_cache --xla_gpu_force_compilation_parallelism=8 --xla_enable_command_buffers_during_profiling=true",
+    "conditional": "--xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/autotune_cache --xla_gpu_force_compilation_parallelism=8 --xla_enable_command_buffers_during_profiling=true --xla_gpu_enable_command_buffer=+CONDITIONAL"
+  },
+  "compile_s": {
+    "baseline": 537.674969508982,
+    "conditional": 424.13860192897846
+  },
+  "node_counts": {
+    "baseline": {
+      "baseline.1": {
+        "counts_total": {
+          "KERNEL": 242830,
+          "MEMCPY": 59985,
+          "MEMSET": 0
+        },
+        "ops_per_step": 60563.0,
+        "gpu_kernel_s_per_step": 0.3285173052,
+        "copies": [
+          {
+            "kind": "Host-to-Device",
+            "count": 10,
+            "per_step": 2.0,
+            "bytes": 80,
+            "gpu_s": 4.416000000000001e-06
+          },
+          {
+            "kind": "Device-to-Host",
+            "count": 100,
+            "per_step": 20.0,
+            "bytes": 100,
+            "gpu_s": 0.000141919
+          },
+          {
+            "kind": "Device-to-Device",
+            "count": 59875,
+            "per_step": 11975.0,
+            "bytes": 108883645400,
+            "gpu_s": 0.08917327
+          }
+        ],
+        "reps": 5,
+        "graph_node_trace": true
+      },
+      "baseline.2": {
+        "counts_total": {
+          "KERNEL": 8368555,
+          "MEMCPY": 75155,
+          "MEMSET": 0
+        },
+        "ops_per_step": 1688742.0,
+        "gpu_kernel_s_per_step": 2.0872611940000003,
+        "copies": [
+          {
+            "kind": "Host-to-Device",
+            "count": 10,
+            "per_step": 2.0,
+            "bytes": 80,
+            "gpu_s": 4.544e-06
+          },
+          {
+            "kind": "Device-to-Host",
+            "count": 2800,
+            "per_step": 560.0,
+            "bytes": 10900,
+            "gpu_s": 0.002923328
+          },
+          {
+            "kind": "Device-to-Device",
+            "count": 72345,
+            "per_step": 14469.0,
+            "bytes": 163154809960,
+            "gpu_s": 0.12652732
+          }
+        ],
+        "reps": 5,
+        "graph_node_trace": true
+      }
+    },
+    "conditional": {
+      "conditional.1": {
+        "counts_total": {
+          "KERNEL": 242835,
+          "MEMCPY": 59980,
+          "MEMSET": 0
+        },
+        "ops_per_step": 60563.0,
+        "gpu_kernel_s_per_step": 0.3301912222,
+        "copies": [
+          {
+            "kind": "Host-to-Device",
+            "count": 10,
+            "per_step": 2.0,
+            "bytes": 80,
+            "gpu_s": 8.928e-06
+          },
+          {
+            "kind": "Device-to-Host",
+            "count": 95,
+            "per_step": 19.0,
+            "bytes": 95,
+            "gpu_s": 0.000143201
+          },
+          {
+            "kind": "Device-to-Device",
+            "count": 59875,
+            "per_step": 11975.0,
+            "bytes": 108883645400,
+            "gpu_s": 0.090232327
+          }
+        ],
+        "reps": 5,
+        "graph_node_trace": true
+      },
+      "conditional.2": {
+        "counts_total": {
+          "KERNEL": 8373965,
+          "MEMCPY": 72445,
+          "MEMSET": 0
+        },
+        "ops_per_step": 1689282.0,
+        "gpu_kernel_s_per_step": 2.088574008,
+        "copies": [
+          {
+            "kind": "Host-to-Device",
+            "count": 10,
+            "per_step": 2.0,
+            "bytes": 80,
+            "gpu_s": 4.800000000000001e-06
+          },
+          {
+            "kind": "Device-to-Host",
+            "count": 95,
+            "per_step": 19.0,
+            "bytes": 95,
+            "gpu_s": 0.00012921700000000002
+          },
+          {
+            "kind": "Device-to-Device",
+            "count": 72340,
+            "per_step": 14468.0,
+            "bytes": 163140025960,
+            "gpu_s": 0.127818504
+          }
+        ],
+        "reps": 5,
+        "graph_node_trace": true
+      }
+    }
+  },
+  "cpu_gates": "98 compile/cache policy tests PASS;6postdefault-on policy tests PASS",
+  "limitations": "19DtoH remain;2HtoD control inputs at dispatch boundary;ordinary timingregression/no whole-wallgain claim;transferenabler 541radiationpredicates removed;notindependentWRFfidelity",
+  "artifact_root": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/conditional",
+  "cache_root": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/conditional/cache"
+}

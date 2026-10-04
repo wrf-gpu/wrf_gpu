@@ -60,7 +60,7 @@ def compare_wrfout_dimensions(
     Returns a JSON-serializable payload with an overall ``status`` of
     ``"PASS"``/``"FAIL"`` (or ``"NO_OUTPUT"`` when nothing was generated).
     """
-    from netCDF4 import Dataset  # deferred: only needed when comparing
+    from gpuwrf.io.netcdf_lock import Dataset  # deferred: only needed when comparing
 
     compare_dir = Path(compare_dir)
     files: list[dict[str, Any]] = []
@@ -225,6 +225,19 @@ def build_parser() -> argparse.ArgumentParser:
         "lead-zero wrfout before the first numerical advance. Default off.",
     )
     run.add_argument(
+        "--aot-prefetch",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Nested runs: load cached executables during initialization. "
+        "Use --no-aot-prefetch to load them at first dispatch.",
+    )
+    run.add_argument("--checkpoint-dir", type=Path, default=None, help="Directory for verified rotating nested restart generations.")
+    run.add_argument("--checkpoint-interval-steps", type=int, default=0, help="Checkpoint cadence in root-domain steps (required with --checkpoint-dir).")
+    run.add_argument("--checkpoint-max-bytes", type=int, default=8 * 1024**3, help="Maximum retained checkpoint bytes (default 8 GiB).")
+    run.add_argument("--checkpoint-max-generations", type=int, default=2, help="Maximum retained generations; at least 2 are needed to publish safe successors (default 2).")
+    run.add_argument("--checkpoint-reserve-bytes", type=int, default=10 * 1024**3, help="Minimum free filesystem bytes after a checkpoint (default 10 GiB).")
+    run.add_argument("--resume-checkpoint", type=Path, default=None, help="Verified generation to resume in the same nested output stream.")
+    run.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate the namelist, detect the input mode, resolve "
@@ -301,16 +314,13 @@ def _fail(message: str, *, code: int = 2) -> int:
 
 def _namelist_max_dom(namelist: Path) -> int:
     """Read ``&domains max_dom`` from a WRF namelist (cheap; pre-JAX). Defaults to 1."""
-    from gpuwrf.io.gen2_accessor import parse_namelist
+    import re
 
-    parsed = parse_namelist(namelist)
-    raw = parsed.get("domains", {}).get("max_dom", 1)
-    if isinstance(raw, (list, tuple)):
-        raw = raw[0] if raw else 1
-    try:
-        return max(1, int(raw))
-    except (TypeError, ValueError):
-        return 1
+    # Keep allocator bootstrap genuinely before backend initialization. The
+    # full input accessor imports contracts containing device-array constants.
+    text = namelist.read_text(encoding="utf-8", errors="replace")
+    match = re.search(r"(?mi)^\s*max_dom\s*=\s*(\d+)", text)
+    return max(1, int(match.group(1))) if match else 1
 
 
 def _namelist_forecast_hours(namelist: Path) -> int | None:
@@ -702,17 +712,20 @@ def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
     if _effective_max_dom(args) <= 1:
         return
     allocator = _resolve_nested_allocator()
-    if allocator is None:
-        return  # operator already chose an allocator -- honour it, do not re-exec.
+    from gpuwrf.runtime.gpu_allocator import configure_cli_pool
+
+    new_env = dict(os.environ)
+    changed = configure_cli_pool(args, new_env)
+    if allocator is None and not changed:
+        return  # explicit operator policy already applies.
     if os.environ.get("_GPUWRF_NESTED_ALLOC_REEXEC") == "1":
-        return  # already re-exec'd once; avoid an exec loop.
+        return  # session recreated above; chosen defaults survived the re-exec.
     orig = list(getattr(sys, "orig_argv", []) or [])
     if not orig:
         # No faithful argv to re-exec; fall back to a best-effort in-process set.
-        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", allocator)
+        os.environ.update(new_env)
         return
-    new_env = dict(os.environ)
-    new_env["XLA_PYTHON_CLIENT_ALLOCATOR"] = allocator
+    allocator = new_env["XLA_PYTHON_CLIENT_ALLOCATOR"]
     new_env["_GPUWRF_NESTED_ALLOC_REEXEC"] = "1"
     print(
         f"gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR={allocator} "
@@ -801,11 +814,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     except Exception as exc:  # parsing / IO problems should also fail cleanly
         return _fail(f"could not validate namelist {namelist}: {type(exc).__name__}: {exc}")
 
-    # Non-fatal approximation warnings (the run PROCEEDS). The cumulus/PBL
-    # cadence keys (cudt/bldt > 0) are not honored verbatim -- the GPU port runs
-    # those physics every dynamics step, a conservative approximation -- so a real
-    # WRF namelist (e.g. cudt=5) is accepted with a named warning rather than
-    # rejected, mirroring what the operational pipeline already does.
+    # Non-fatal approximation warnings (the run PROCEEDS). PBL bldt remains
+    # approximated by every-step calls. KF cudt uses WRF STEPCU; the nested
+    # payload reports each domain's applied cadence, including inactive nests.
     for _warning in collect_namelist_warnings(namelist):
         print(f"gpuwrf: warning: {_warning}", file=sys.stderr)
 
@@ -829,6 +840,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
         maxdom_source = "default"
     if max_dom < 1:
         return _fail(f"--max-dom must be >= 1, got {max_dom}")
+    if max_dom == 1 and (getattr(args, "checkpoint_dir", None) is not None or getattr(args, "resume_checkpoint", None) is not None):
+        return _fail("checkpoint/resume currently requires the live nested driver (--max-dom > 1)")
     if bool(getattr(args, "emit_initial_history", False)) and max_dom <= 1:
         return _fail("--emit-initial-history requires a nested run (--max-dom > 1)")
 
@@ -904,6 +917,11 @@ def _cmd_run(args: argparse.Namespace) -> int:
         },
     }
 
+    native_single = (
+        max_dom == 1 and effective_domain == "d01"
+        and _detect_init_mode_light(input_dir, effective_domain, max_dom) == "standalone_native_init"
+    )
+
     # --- DRY RUN: print the effective plan as JSON and exit WITHOUT importing
     # the heavy JAX/GPU forecast pipeline or allocating a GPU. -----------------
     if dry_run:
@@ -923,7 +941,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
             "wrf_root_preflight": wrf_root_note,
             **run_metadata,
         }
-        if bool(getattr(args, "emit_initial_history", False)):
+        if max_dom > 1 or native_single:
+            plan["aot_prefetch"] = bool(getattr(args, "aot_prefetch", True))
+        if native_single or bool(getattr(args, "emit_initial_history", False)):
             plan["emit_initial_history"] = True
         print(json.dumps(plan, indent=2, sort_keys=True, default=str))
         return 0
@@ -942,12 +962,10 @@ def _cmd_run(args: argparse.Namespace) -> int:
         except GpuPreflightError as exc:
             return _fail(str(exc), code=75)
 
-    # --- Nested (max_dom > 1): STANDALONE LIVE-NESTED driver. -----------------
-    # The parent advances, builds each child's lateral boundary LIVE, and recurses
-    # to the child; the child IC comes from wrfinput_d0N and only wrfbdy_d01 forces
-    # the root -- NO CPU-WRF wrfout dependency. max_dom == 1 keeps the single-domain
-    # standalone/replay path below.
-    if max_dom > 1:
+    # Native single-root and nested forecasts share namelist binding, resident
+    # land/AC carry and authenticated WRF history. CPU-WRF replay stays on the
+    # compatibility daily driver below.
+    if max_dom > 1 or native_single:
         import os
         import shutil
 
@@ -966,6 +984,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
             os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", _alloc)
         cleanup_scratch = args.scratch_dir is None and not os.environ.get("GPUWRF_KEEP_SCRATCH")
         print(
+            (f"gpuwrf: init mode = standalone_native_init; domain={effective_domain}; "
+             f"hours={effective_hours}; scratch={scratch_dir}") if native_single else
             f"gpuwrf: init mode = standalone_native_init_nested -- STANDALONE "
             f"LIVE-NESTED (d01..d{max_dom:02d}; parent feeds each child LBC live; "
             f"no CPU-WRF wrfout); hours={effective_hours}; scratch={scratch_dir}",
@@ -990,7 +1010,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
             max_dom=int(max_dom),
             scratch_dir=scratch_dir,
             feedback=bool(getattr(args, "feedback", False)),
-            emit_initial_history=bool(getattr(args, "emit_initial_history", False)),
+            emit_initial_history=native_single or bool(getattr(args, "emit_initial_history", False)),
+            aot_prefetch=bool(getattr(args, "aot_prefetch", True)),
+            checkpoint_dir=getattr(args, "checkpoint_dir", None),
+            checkpoint_interval_steps=getattr(args, "checkpoint_interval_steps", 0),
+            checkpoint_max_bytes=getattr(args, "checkpoint_max_bytes", 8 * 1024**3),
+            checkpoint_max_generations=getattr(args, "checkpoint_max_generations", 2),
+            checkpoint_reserve_bytes=getattr(args, "checkpoint_reserve_bytes", 10 * 1024**3),
+            resume_checkpoint=getattr(args, "resume_checkpoint", None),
         )
         if nested_config.feedback:
             print(
@@ -1000,7 +1027,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
             )
         try:
             payload = execute_nested_pipeline(nested_config)
+            if str(payload.get("verdict")) == "PIPELINE_GREEN":
+                from gpuwrf.runtime.gpu_allocator import finish_cli_pool
+
+                finish_cli_pool()
         except Exception as exc:  # noqa: BLE001 - report cleanly, no traceback
+            from gpuwrf.runtime.gpu_allocator import failed_cli_pool
+
+            failed_cli_pool(exc)
             if cleanup_scratch:
                 shutil.rmtree(scratch_dir, ignore_errors=True)
             return _fail(

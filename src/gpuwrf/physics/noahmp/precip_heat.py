@@ -30,6 +30,8 @@ from gpuwrf._x64_config import configure_jax_x64
 from typing import NamedTuple
 
 import jax.numpy as jnp
+
+from gpuwrf.physics.noahmp.precision import real_dtype, real_tree
 from jax import config
 
 configure_jax_x64()
@@ -68,9 +70,9 @@ def _atm_partition(forcing):
 
     PRCP = PRCPCONV + PRCPNONC (PRCPSHCV = 0 in scope). All [mm/s].
     """
-    sfctmp = jnp.asarray(forcing.sfctmp, dtype=jnp.float64)
-    prcpconv = jnp.asarray(forcing.prcpconv, dtype=jnp.float64)
-    prcpnonc = jnp.asarray(forcing.prcpnonc, dtype=jnp.float64)
+    sfctmp = jnp.asarray(forcing.sfctmp, dtype=real_dtype())
+    prcpconv = jnp.asarray(forcing.prcpconv, dtype=real_dtype())
+    prcpnonc = jnp.asarray(forcing.prcpnonc, dtype=real_dtype())
 
     prcp = prcpconv + prcpnonc
     # QPRECC/QPRECL (opt_snf != 4): 10%/90% convective/large-scale split (:1169-1170).
@@ -123,18 +125,19 @@ def noahmp_precip_heat(
     precip-advected heat; default-0 collapses to the no-precip case exactly.
     """
 
-    elai = jnp.asarray(phen.elai, dtype=jnp.float64)
-    esai = jnp.asarray(phen.esai, dtype=jnp.float64)
-    fveg = jnp.asarray(phen.fveg, dtype=jnp.float64)
-    tv = jnp.asarray(land_state.tv, dtype=jnp.float64)
-    tg = jnp.asarray(land_state.tg, dtype=jnp.float64)
-    sfctmp = jnp.asarray(forcing.sfctmp, dtype=jnp.float64)
-    uu = jnp.asarray(forcing.uu, dtype=jnp.float64)
-    vv = jnp.asarray(forcing.vv, dtype=jnp.float64)
-    canliq = jnp.asarray(land_state.canliq, dtype=jnp.float64)
-    canice = jnp.asarray(land_state.canice, dtype=jnp.float64)
-    ch2op = jnp.broadcast_to(jnp.asarray(ch2op, dtype=jnp.float64), fveg.shape)
-    dt_a = jnp.asarray(dt, dtype=jnp.float64)
+    land_state, forcing, phen = real_tree((land_state, forcing, phen))
+    elai = jnp.asarray(phen.elai, dtype=real_dtype())
+    esai = jnp.asarray(phen.esai, dtype=real_dtype())
+    fveg = jnp.asarray(phen.fveg, dtype=real_dtype())
+    tv = jnp.asarray(land_state.tv, dtype=real_dtype())
+    tg = jnp.asarray(land_state.tg, dtype=real_dtype())
+    sfctmp = jnp.asarray(forcing.sfctmp, dtype=real_dtype())
+    uu = jnp.asarray(forcing.uu, dtype=real_dtype())
+    vv = jnp.asarray(forcing.vv, dtype=real_dtype())
+    canliq = jnp.asarray(land_state.canliq, dtype=real_dtype())
+    canice = jnp.asarray(land_state.canice, dtype=real_dtype())
+    ch2op = jnp.broadcast_to(jnp.asarray(ch2op, dtype=real_dtype()), fveg.shape)
+    dt_a = jnp.asarray(dt, dtype=real_dtype())
 
     _prcp, rain, snow, fp, fpice, bdfall = _atm_partition(forcing)
 

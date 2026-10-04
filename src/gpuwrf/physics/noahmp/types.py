@@ -119,6 +119,10 @@ class NoahMPEnergyFluxes(NamedTuple):
     t2mv: "jax.Array | None" = None   # 2-m air temp over vegetated tile [K]
     t2mb: "jax.Array | None" = None   # 2-m air temp over bare tile [K]
     t2: "jax.Array | None" = None     # FVEG-combined land 2-m air temp [K] -> T2
+    q2v: "jax.Array | None" = None    # 2-m specific humidity over vegetated tile (Q2V) [kg/kg]
+    q2b: "jax.Array | None" = None    # 2-m specific humidity over bare tile (Q2B) [kg/kg]
+    q2: "jax.Array | None" = None     # land 2-m MIXING RATIO as WRF writes Q2 [kg/kg] -> Q2
+    history: object = None  # optional tile outputs retained for WRF history
 
 
 class NoahMPEtFluxes(NamedTuple):

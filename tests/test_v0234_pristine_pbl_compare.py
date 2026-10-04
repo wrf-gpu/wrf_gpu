@@ -3,10 +3,12 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
 import pytest
+from _historical_artifacts import require_historical
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/v0234_pristine_pbl_compare.py"
@@ -57,20 +59,36 @@ def _small_shapes(monkeypatch):
 
 
 def test_import_is_backend_dark_and_comparator_is_exactly_hash_bound() -> None:
-    assert not any(name == "jax" or name.startswith(("jax.", "gpuwrf.")) for name in sys.modules)
+    code = (
+        "import importlib.util, sys; "
+        f"spec = importlib.util.spec_from_file_location('compare', {str(SCRIPT)!r}); "
+        "module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); "
+        "assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True, timeout=30)
+    require_historical(compare.COMPARATOR)
     assert compare.comparator_authority()["sha256"] == compare.COMPARATOR_SHA256
 
 
 def test_partial_reference_is_hold_and_never_dispatches(monkeypatch, tmp_path: Path) -> None:
+    require_historical(compare.COMPARATOR)
     manifest, archive = _case(tmp_path, compare.reference.AVAILABLE, False)
-
-    def forbidden(*_args, **_kwargs):
-        raise AssertionError("subprocess dispatch forbidden")
-
-    monkeypatch.setattr(compare.subprocess, "run", forbidden)
-    result = compare.admission(manifest, archive, partial_expected=True)
-    assert result["verdict"] == "REFERENCE_BUNDLE_REQUIRED_HOLD_5_OF_28"
-    assert result["dispatch_ready"] is False
+    # admission intentionally refuses a process that already imported JAX.
+    code = f"""
+import importlib.util
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('compare', {str(SCRIPT)!r})
+compare = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(compare)
+compare.reference.EXPECTED_SHAPES = {{name: (2, 3) for name in compare.reference.REQUIRED}}
+def forbidden(*_args, **_kwargs):
+    raise AssertionError('subprocess dispatch forbidden')
+compare.subprocess.run = forbidden
+result = compare.admission(Path({str(manifest)!r}), Path({str(archive)!r}), partial_expected=True)
+assert result['verdict'] == 'REFERENCE_BUNDLE_REQUIRED_HOLD_5_OF_28'
+assert result['dispatch_ready'] is False
+"""
+    subprocess.run([sys.executable, "-c", code], check=True, timeout=30)
 
 
 def test_complete_reference_builds_exact_legacy_schema_adapters(monkeypatch, tmp_path: Path) -> None:

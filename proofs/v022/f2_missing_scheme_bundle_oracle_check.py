@@ -28,7 +28,7 @@ os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_PLATFORMS", "cpu")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-WRF_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", "<DATA_ROOT>/src/wrf_pristine/WRF"))
+WRF_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", "<USER_HOME>/src/wrf_pristine/WRF"))
 REGISTRY = WRF_ROOT / "Registry" / "Registry.EM_COMMON"
 
 DEFAULT_OUTPUT = REPO_ROOT / "proofs" / "v022" / "f2_missing_scheme_bundle_oracle_check.json"

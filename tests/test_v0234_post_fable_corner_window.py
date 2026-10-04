@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import inspect
 
 from scripts import v0234_final_holistic_late_window_corner_discriminator as arm_s
@@ -14,6 +16,7 @@ def _stats_for(step: int) -> dict[str, float | int]:
 
 
 def test_retained_cpu_prefixes_authenticate_at_all_three_checkpoints() -> None:
+    require_historical(*(row["path"] for row in arm_s.CPU_PREFIX_LOGS.values()))
     proof = arm_s._authenticate_cpu_prefixes()
     assert set(proof["references"]) == {9016, 9042, 9075}
     assert proof["logs"]["first16"]["last_step"] == 9016

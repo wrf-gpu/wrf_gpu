@@ -116,6 +116,7 @@ def _make_writer(*, async_writer, output_pipeline=None):
     writer._merge_output_diagnostics = _merge_output_diagnostics
     writer.writer_diagnostics = {}
     writer.writer_static_latlon_metadata = {}
+    writer.census_io_ledger = None
     writer._async_writer = async_writer
     writer._output_pipeline = output_pipeline
     writer._variable_subset = None  # full byte-identical default output

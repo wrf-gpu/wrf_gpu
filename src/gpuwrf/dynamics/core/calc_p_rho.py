@@ -18,6 +18,7 @@ import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.precision import force_fp64_island
+from gpuwrf.kernels.dyn_real_fp32 import dyn_island
 from gpuwrf.dynamics.core.small_step_prep import SmallStepPrepState
 
 # WRF EM default external/internal divergence damping coefficient
@@ -81,7 +82,7 @@ def _calc_al_p(
     # mass/geopotential/theta terms. Force the bracket inputs to fp64 IN-OPERATOR
     # so a future fp32 storage downcast cannot contaminate the EOS cancellation.
     # No-op (bit-identical) on the fp64_default path: every input is already fp64.
-    mu_work, muts_total, ph_work, theta_work, theta_1, c2a, alt, c1h, c2h, rdnw = force_fp64_island(
+    mu_work, muts_total, ph_work, theta_work, theta_1, c2a, alt, c1h, c2h, rdnw = dyn_island()(
         mu_work, muts_total, ph_work, theta_work, theta_1, c2a, alt, c1h, c2h, rdnw
     )
 

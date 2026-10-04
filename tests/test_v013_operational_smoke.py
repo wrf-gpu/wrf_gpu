@@ -81,6 +81,8 @@ from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     UnsupportedSchemeSelection,
     _SCAN_WIRED_OPTIONS,
+    _apply_post_rk_microphysics,
+    _microphysics_wrf_order_enabled,
     _physics_step_forcing,
     _resolve_operational_suite,
 )
@@ -313,6 +315,10 @@ def test_microphysics_operational_runs_and_mutates(mp: int) -> None:
     carry = initial_operational_carry(state)
     forcing = _physics_step_forcing(carry, nml, 0.0, run_radiation=False)
     after = forcing.state
+    if _microphysics_wrf_order_enabled():
+        # WRF order (solve_em.F:3809): MP is the post-RK call, never entry physics.
+        assert not _changed(after.qv, state.qv), f"mp={mp} still ran in entry physics"
+        after = _apply_post_rk_microphysics(after, nml)
     assert _all_finite(after), f"mp={mp} produced a non-finite field"
     # microphysics condenses/evaporates -> moisture must change (not a no-op).
     assert _changed(after.qv, state.qv), f"mp={mp} did not mutate qv (silent no-op)"

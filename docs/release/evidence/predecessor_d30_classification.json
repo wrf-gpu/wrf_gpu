@@ -1,0 +1,76 @@
+{
+  "case": "WN3 0227 final_r3 72 h (W7), d03 vs CPU-WRF, read-only CPU analysis by fid-q2",
+  "classification": "NOT a coherent model bias: (1) h40-h63 Tenerife lee-wake eddy-phase divergence over open sea in weak northerly flow (no rain); (2) h66-h72 precipitating-system arrival: convective placement/timing divergence",
+  "evidence": {
+    "growth": "d03 U10 rms .36 (h24) -> 1.28 (h40) -> 2.47 (h60) -> 3.64 (h66) -> 2.20 (h70) -> 1.12 (h72): non-monotonic; domain-mean bias flips sign (+0.67 h60, -1.34 h66, +0.83 h70, -0.14 h72)",
+    "inherited_from_parent": "d02 restricted to the d03 footprint: U10 2.53/3.51, V10 3.48/2.98 m/s at h60/h66 (same as d03); d02 whole-domain 1.3-1.4; d01 <=0.4",
+    "location_h44_h63": "70-93 % of error energy over sea >5 km offshore; per-cell error in the lee half 9-26x the windward half; maxima 12-14 m/s at points S/SW of Tenerife; no rain anywhere before h66",
+    "coherence": "offshore signed speed diff pooled h44-63 mean -0.11 vs rms 1.91 m/s (mean/rms -0.06); GPU-faster fraction 0.31-0.54; corr(dSpeed_h, dSpeed_h+3) -0.46..+0.54 (patterns do not persist)",
+    "phase_tests": "GPU(h) vs CPU(h-1/h+1) not systematically closer (no lead/lag); best 2-6 km shift reduces rms only 10-15 % at h57-67; >10 km scales carry 25-58 % of error variance",
+    "rain": "h66-72: 9-28 % of error energy within 5 km of rain cells (area 7-52 %); d03 acc rain 72 h GPU 3.08 vs CPU 2.62 mm (d02 0.41 vs 0.45)",
+    "cpu_reference": "pinned R32-01 twin screen 72 h (wn3 PRERUN_FINAL): d03 48-72 wind Tenerife land/coast/high median |dV| = 0.50-0.73 sigma_T (CPU lag reproducibility proxy, 3 clusters, low support); 24-48 0.25-0.33 sigma_T; Medano lee 1.15-1.33 sigma_T; d02 same pattern"
+  },
+  "model_commit": "1fece48dabe6805a624f86d169c036cd39f267a5",
+  "scope": "FINAL-a predecessor analysis only; repeat census on FINAL-b",
+  "manager_acceptance_utc": "2026-10-04T09:46:51Z",
+  "late_fields": {
+    "W": {
+      "leads": [
+        69,
+        70
+      ],
+      "rmse_m_s": [
+        0.36,
+        0.31
+      ],
+      "abs_bias_over_rmse_max": 0.01,
+      "correlation_range": [
+        0.76,
+        0.92
+      ]
+    },
+    "V": {
+      "rmse_range_m_s": [
+        1.27,
+        1.89
+      ],
+      "bias_over_rmse_range": [
+        -0.17,
+        0.13
+      ],
+      "correlation_range": [
+        0.98,
+        0.99
+      ]
+    },
+    "RAINNC": {
+      "leads": [
+        67,
+        72
+      ],
+      "rmse_range_mm": [
+        1.09,
+        2.33
+      ],
+      "bias_range_mm": [
+        0.06,
+        0.46
+      ],
+      "bias_over_rmse_max": 0.2,
+      "pattern_correlation_range": [
+        0.57,
+        0.89
+      ],
+      "centroid_difference_km_max": 2.4,
+      "domain_mean_event_ratio_gpu_cpu": 1.18,
+      "other_cases_domain_relative_difference": {
+        "0227d02": -0.1,
+        "0120d02": -0.11,
+        "0120d03": -0.08,
+        "0614d02": 0.07,
+        "0614d03": -0.09
+      }
+    }
+  },
+  "late_fields_source": "fid-q2 MAILBOX2026-10-04T09:46:31Z; D30/late_fields.py (read-only actual originalCPU/GPU histories)"
+}

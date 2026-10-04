@@ -1,0 +1,345 @@
+{
+  "schema": "wrf_gpu2.b_core.fused_scalar_evidence.v1",
+  "candidate_commit": "832064ee94074f30f3d1659761d2d77b83fcb28e",
+  "scope": "Entire pristine advect_scalar h5/v3 specified/nested tendency on caller supplied REAL inputs; source numerical routine unchanged. Component enabler, no forecast/coupling or S1 claim.",
+  "source_hashes": {
+    "src/gpuwrf/kernels/dyn_flux_fp32.py": "bff94d5800da97156c5a2850892bb27f290e4d64f1dbca511739289ff628531c",
+    "tests/v025/b_core/bench_scalar_flux.py": "367d008df1c49319cc4d5207a15c4b411b8cde35435784e1b5394d9b45fc08cf"
+  },
+  "artifacts": {
+    "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/gpu.json": "2b13bcb624ccd18c94b7b5b71abc6948eedff24db3b6dd607f15a03ef26d820f",
+    "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/profile_summary.json": "995835a10fb293fa175ec383d56e50a511780d54e4d8e260b5144092866ce248",
+    "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/cpu.json": "b837d0da15db1abc85211cfcb2f72174d745a3813781985d9848fe286f9fcfa7",
+    "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/cpu_lowering.json": "ee9843f1c6edb0608e1a458bcfabc0214d2e70bd38976f25a58c6f538fb80bb0",
+    "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/lower_fused_cpu.py": "93091b4adffb371757270c71976d76cf09ac0208e673a4a1f3895b38055fc0a4"
+  },
+  "oracle_artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC30/oracles/{off,fast}; hashes in scalar_evidence.json",
+  "verdict": "4/4 assertedGPU initialfrozen+TierP PASS,0misses,allfinite;4CPUinitialPASS;CPU-only Tritonlowering2/2PASS",
+  "selection": "fused both domains:4.967/16.659us vs matchedJAX32 7.478/58.658us;1kernel vs2;0copies/memsets;64regs/0localmemory;0optimizedHLO64tokens. Relative64 BC30 49.492/167.923us measured separately, not A/A.",
+  "guard": "QUIET checked before setup/export and atactual GPU launcher entry; NSys/app exited beforeGPU lease returned",
+  "ncu": "manager deferred to principal driver grant",
+  "records": [
+    {
+      "domain": "d01",
+      "mode": "jax32",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "errors": {
+        "rms": 0.00042929209248443716,
+        "max_abs": 0.00533294677734375,
+        "frozen_rms_limit": 0.002106791688855944,
+        "frozen_max_limit": 0.82814296875,
+        "compiler_rms": 0.0004575756384131176,
+        "compiler_max": 0.007998943328857422,
+        "tier_p_rms_limit": 0.003021942965682179,
+        "tier_p_max_limit": 0.8441408554077149,
+        "finite": true,
+        "frozen_passed": true,
+        "passed": true
+      },
+      "backend": "gpu",
+      "device": "NVIDIA GeForce RTX 5090",
+      "f64_tokens": 0,
+      "hlo_sha256": "fcc8f67f22b7553139a3bf26f5189229bacdd20ac9f46d73c6f47c4c30bbb6f1",
+      "median_s": 3.659931280708406e-05,
+      "database": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.1.sqlite",
+      "database_sha256": "9a42fc09fbd5bf0bf0dbe96291b6e60f01787f61823d2b7a4029be247a85cbcb",
+      "calls": 352,
+      "marker": [],
+      "attribution": "single repeated capture in fixed source loop order",
+      "kernels_per_call": 2.0,
+      "kernel_us_per_call": 7.478210227272727,
+      "memcpy": {},
+      "memsets_per_call": 0.0,
+      "device_ops_per_call": 2.0,
+      "device_sum_us_per_call": 7.478210227272727,
+      "device_union_us_per_call": 7.473755681818182,
+      "kernels": [
+        {
+          "count": 352,
+          "ns": 1736968,
+          "registers": [
+            46
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "loop_subtract_fusion",
+          "count_per_call": 1.0,
+          "us_per_call": 4.934568181818182
+        },
+        {
+          "count": 352,
+          "ns": 895362,
+          "registers": [
+            40
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "loop_multiply_fusion",
+          "count_per_call": 1.0,
+          "us_per_call": 2.5436420454545456
+        }
+      ],
+      "scope": "complete XYZ scalar tendency",
+      "report": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.1.nsys-rep",
+      "report_sha256": "baf3d6945dbb294986d63fd1bc3a76821cb18e96d7bd88e41f45d6a1e261ceff",
+      "device_batches_us": [
+        7.5188749999999995,
+        7.466906249999999,
+        7.48078125,
+        7.479968749999999,
+        7.4499375,
+        7.4879999999999995,
+        7.4659375,
+        7.4839375,
+        7.4999375,
+        7.462,
+        7.46403125
+      ],
+      "device_batch_ci95_us": [
+        7.467812215909091,
+        7.489747230113637
+      ]
+    },
+    {
+      "domain": "d01",
+      "mode": "fused32",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "errors": {
+        "rms": 0.00042929209248443716,
+        "max_abs": 0.00533294677734375,
+        "frozen_rms_limit": 0.002106791688855944,
+        "frozen_max_limit": 0.82814296875,
+        "compiler_rms": 0.0004575756384131176,
+        "compiler_max": 0.007998943328857422,
+        "tier_p_rms_limit": 0.003021942965682179,
+        "tier_p_max_limit": 0.8441408554077149,
+        "finite": true,
+        "frozen_passed": true,
+        "passed": true
+      },
+      "backend": "gpu",
+      "device": "NVIDIA GeForce RTX 5090",
+      "f64_tokens": 0,
+      "hlo_sha256": "4c9e4a4a7a09dfe00df73da9ad0827b38c37e700e482a57204ca5f8bae2e2591",
+      "median_s": 3.006831229868112e-05,
+      "database": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.2.sqlite",
+      "database_sha256": "3a277ecd23541dd8c7303b5a91724ba86b194c6e67c4d795d49533e54bcce9b8",
+      "calls": 352,
+      "marker": [],
+      "attribution": "single repeated capture in fixed source loop order",
+      "kernels_per_call": 1.0,
+      "kernel_us_per_call": 4.967392045454545,
+      "memcpy": {},
+      "memsets_per_call": 0.0,
+      "device_ops_per_call": 1.0,
+      "device_sum_us_per_call": 4.967392045454545,
+      "device_union_us_per_call": 4.967392045454545,
+      "kernels": [
+        {
+          "count": 352,
+          "ns": 1748522,
+          "registers": [
+            64
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "b_core_scalar_flux_fp32",
+          "count_per_call": 1.0,
+          "us_per_call": 4.967392045454545
+        }
+      ],
+      "scope": "complete XYZ scalar tendency",
+      "report": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.2.nsys-rep",
+      "report_sha256": "32aa7781270e6ba95093dbf65b222319ecb76c47343281c69947e47ecf957bd3",
+      "device_batches_us": [
+        4.96703125,
+        4.97403125,
+        4.968,
+        4.968999999999999,
+        4.97103125,
+        4.962,
+        4.9560625,
+        4.971,
+        4.972031250000001,
+        4.978093749999999,
+        4.9530312499999996
+      ],
+      "device_batch_ci95_us": [
+        4.963028409090909,
+        4.971400568181818
+      ]
+    },
+    {
+      "domain": "d02",
+      "mode": "jax32",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "errors": {
+        "rms": 0.001275633487313289,
+        "max_abs": 0.01601409912109375,
+        "frozen_rms_limit": 0.0018192724327064994,
+        "frozen_max_limit": 1.0709640625,
+        "compiler_rms": 0.0013415232494255061,
+        "compiler_max": 0.02399754524230957,
+        "tier_p_rms_limit": 0.004502318931557512,
+        "tier_p_max_limit": 1.1189591529846192,
+        "finite": true,
+        "frozen_passed": true,
+        "passed": true
+      },
+      "backend": "gpu",
+      "device": "NVIDIA GeForce RTX 5090",
+      "f64_tokens": 0,
+      "hlo_sha256": "b53a754404adffded2aec0151844e365dd665ca2cfd2b973c37e06f2d723d3ed",
+      "median_s": 6.51575937808957e-05,
+      "database": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.3.sqlite",
+      "database_sha256": "59711bf2d36efc43fcb6230bcddd8c27504fa4031bbe358140226feb4ff3dc7f",
+      "calls": 352,
+      "marker": [],
+      "attribution": "single repeated capture in fixed source loop order",
+      "kernels_per_call": 2.0,
+      "kernel_us_per_call": 58.658491477272726,
+      "memcpy": {},
+      "memsets_per_call": 0.0,
+      "device_ops_per_call": 2.0,
+      "device_sum_us_per_call": 58.658491477272726,
+      "device_union_us_per_call": 58.658491477272726,
+      "kernels": [
+        {
+          "count": 352,
+          "ns": 14811521,
+          "registers": [
+            40
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "loop_subtract_fusion",
+          "count_per_call": 1.0,
+          "us_per_call": 42.07818465909091
+        },
+        {
+          "count": 352,
+          "ns": 5836268,
+          "registers": [
+            40
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "loop_multiply_fusion",
+          "count_per_call": 1.0,
+          "us_per_call": 16.58030681818182
+        }
+      ],
+      "scope": "complete XYZ scalar tendency",
+      "report": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.3.nsys-rep",
+      "report_sha256": "b761bde2d005804139b4bce302677038dc0bc4bfd356486aaa91091c03a90994",
+      "device_batches_us": [
+        58.846906249999996,
+        58.5678125,
+        58.4058125,
+        58.71903125,
+        58.692781249999996,
+        58.730875000000005,
+        58.5488125,
+        58.80465625,
+        58.62,
+        58.69078125,
+        58.6159375
+      ],
+      "device_batch_ci95_us": [
+        58.58723487215909,
+        58.72595241477273
+      ]
+    },
+    {
+      "domain": "d02",
+      "mode": "fused32",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "errors": {
+        "rms": 0.001275633487313289,
+        "max_abs": 0.01601409912109375,
+        "frozen_rms_limit": 0.0018192724327064994,
+        "frozen_max_limit": 1.0709640625,
+        "compiler_rms": 0.0013415232494255061,
+        "compiler_max": 0.02399754524230957,
+        "tier_p_rms_limit": 0.004502318931557512,
+        "tier_p_max_limit": 1.1189591529846192,
+        "finite": true,
+        "frozen_passed": true,
+        "passed": true
+      },
+      "backend": "gpu",
+      "device": "NVIDIA GeForce RTX 5090",
+      "f64_tokens": 0,
+      "hlo_sha256": "503f16e904331b38189e0208ab2a06c62a5444f65c90dd3bcf9f04c7cdc59b77",
+      "median_s": 2.4809843125694897e-05,
+      "database": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.4.sqlite",
+      "database_sha256": "8a0681b9932be498d9842119f1b1c4e6579d091bf4a370af78123579e281a952",
+      "calls": 352,
+      "marker": [],
+      "attribution": "single repeated capture in fixed source loop order",
+      "kernels_per_call": 1.0,
+      "kernel_us_per_call": 16.658721590909092,
+      "memcpy": {},
+      "memsets_per_call": 0.0,
+      "device_ops_per_call": 1.0,
+      "device_sum_us_per_call": 16.658721590909092,
+      "device_union_us_per_call": 16.658721590909092,
+      "kernels": [
+        {
+          "count": 352,
+          "ns": 5863870,
+          "registers": [
+            64
+          ],
+          "local_bytes": [
+            0
+          ],
+          "name": "b_core_scalar_flux_fp32",
+          "count_per_call": 1.0,
+          "us_per_call": 16.658721590909092
+        }
+      ],
+      "scope": "complete XYZ scalar tendency",
+      "report": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC32/raw/profile.4.nsys-rep",
+      "report_sha256": "7bc29aeac4d39fa72120ac97fc8223d1b2986e44607611ee0b513a4a9477bcac",
+      "device_batches_us": [
+        16.602031250000003,
+        16.58309375,
+        16.810093750000004,
+        16.546062499999998,
+        16.79209375,
+        16.750124999999997,
+        16.5480625,
+        16.678093750000002,
+        16.687093750000003,
+        16.634093749999998,
+        16.61509375
+      ],
+      "device_batch_ci95_us": [
+        16.60761910511364,
+        16.712737713068183
+      ]
+    }
+  ]
+}

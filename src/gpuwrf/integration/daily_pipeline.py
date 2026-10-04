@@ -20,7 +20,7 @@ from typing import Any, Callable, Iterable, Mapping, Sequence
 import numpy as np
 import pandas as pd
 import xarray as xr
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset, NETCDF_LOCK
 
 from gpuwrf.config import paths
 from gpuwrf.integration.d02_replay import build_replay_case
@@ -151,11 +151,10 @@ class DailyPipelineConfig:
     #                                    GPU output at its lead, never interpolated.
     # Use ``auxhist_streams`` for the normalized tuple. See gpuwrf.io.auxhist_stream.
     auxhist: AuxhistStreamConfig | Sequence[AuxhistStreamConfig] | None = None
-    # Opt-in heavy WRF compatibility stream: main wrfout and auxhist prepared
-    # payloads contain the exact 375-variable WRF history list. Default False keeps
-    # the existing operational subset unchanged. Also enabled by
-    # GPUWRF_FULL_WRFOUT_VARIABLES=1 / GPUWRF_FULL_WRFOUT=1.
-    full_wrfout_variables: bool = False
+    # None follows the shared release default (full WRF history) and environment
+    # opt-out. An explicit API False also selects reduced output; an environment
+    # opt-out wins so full output cannot outlive disabled resident diagnostics.
+    full_wrfout_variables: bool | None = None
 
     @property
     def auxhist_streams(self) -> tuple[AuxhistStreamConfig, ...]:
@@ -483,8 +482,8 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     #     dycore-only + real-boundary run is STABLE for the full hour (|w|~14,
     #     |u|~31, theta physical over 360 steps).  proofs/dycore_realinit/
     #     step4_fix_longrun.json + step2_bc_isolation.json + step5_opentop_bndy.json.
-    # Guards stay ON for the production real path (the operational safety net); the
-    # guards-off stability of the dycore itself is proven separately (Sprint U P1-6).
+    # Guards follow from_grid's F2 default (strict, no masking repairs since Phase C;
+    # GPUWRF_STRICT_GUARDS=0 restores the legacy safety-net guards for A/B runs).
     namelist = OperationalNamelist.from_grid(
         replay.grid,
         tendencies=replay.tendencies,
@@ -527,6 +526,20 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         # advection; the legacy hardwired order-2/periodic operator broke the
         # ~65:1 horizontal/vertical cancellation over steep terrain.
         h_sca_adv_order=int(_domain_namelist_value(replay.run, "dynamics", "h_sca_adv_order", config.domain, 5)),
+        # Per-domain WRF scalar-advection controls.  The live-nested path binds
+        # these same &dynamics values; the single-domain path must not silently
+        # fall through to OperationalNamelist's 0/0 defaults when the case
+        # explicitly requests positive-definite or monotonic advection.
+        moist_adv_opt=int(
+            _domain_namelist_value(
+                replay.run, "dynamics", "moist_adv_opt", config.domain, 0
+            )
+        ),
+        scalar_adv_opt=int(
+            _domain_namelist_value(
+                replay.run, "dynamics", "scalar_adv_opt", config.domain, 0
+            )
+        ),
         # v0.14 stage3/wrapper-cadence sprint: WRF SPECIFIED-domain per-stage
         # relax + per-substep spec boundary cadence (operational_mode docstring).
         # Opt-in via env until the hourly venting gate proves it for default-on.
@@ -592,6 +605,8 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             "use_vertical_solver": bool(namelist.use_vertical_solver),
             # Sprint U (P0-1): F7 dycore operators on the real-case operational path.
             "use_flux_advection": bool(namelist.use_flux_advection),
+            "moist_adv_opt": int(namelist.moist_adv_opt),
+            "scalar_adv_opt": int(namelist.scalar_adv_opt),
             "force_fp64": bool(namelist.force_fp64),
             "diff_6th_opt": int(namelist.diff_6th_opt),
             "diff_6th_factor": float(namelist.diff_6th_factor),
@@ -798,13 +813,10 @@ def _daily_async_output_from_config(
 
 
 def _full_wrfout_variables_enabled(config: DailyPipelineConfig) -> bool:
-    if bool(config.full_wrfout_variables):
-        return True
-    for env_name in ("GPUWRF_FULL_WRFOUT_VARIABLES", "GPUWRF_FULL_WRFOUT"):
-        raw = os.environ.get(env_name, "").strip().lower()
-        if raw in _ASYNC_TRUE_TOKENS:
-            return True
-    return False
+    from gpuwrf.config.history_output import full_wrfout_variables_enabled
+
+    enabled = full_wrfout_variables_enabled()
+    return enabled and (config.full_wrfout_variables is None or bool(config.full_wrfout_variables))
 
 
 def _emit_auxhist_frame(
@@ -977,6 +989,7 @@ def _surface_diagnostics_for_output(
     *,
     lead_seconds: float,
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
+    output_radiation_work: list[int] | None = None,
 ) -> dict[str, np.ndarray] | None:
     """Recompute the operational surface map for the wrfout writer.
 
@@ -1003,6 +1016,7 @@ def _surface_diagnostics_for_output(
     selected_attrs = _byte_identical_selected_m9_attrs(requested_names)
     attrs = selected_attrs or _m9_attrs_for_requested_names(requested_names)
     m9_by_attr: dict[str, Any] = {}
+    surface = None
     if attrs:
         try:
             # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
@@ -1014,15 +1028,27 @@ def _surface_diagnostics_for_output(
                     lead_seconds,
                     clock_base,
                     selected_attrs,
+                    **({"_with_radiation_count": True} if output_radiation_work is not None else {}),
                 )
+                if output_radiation_work is not None:
+                    values, calls = values
+                    output_radiation_work.append(int(jax.device_get(calls)))
                 m9_by_attr = dict(zip(selected_attrs, values, strict=True))
             else:
+                from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
+
+                surface = surface_layer_diagnostics(state, clock_namelist.grid)
                 m9 = compute_m9_diagnostics(
                     state,
                     clock_namelist,
                     lead_seconds,
                     clock_base=clock_base,
+                    surface_diagnostics=surface,
+                    **({"_with_radiation_count": True} if output_radiation_work is not None else {}),
                 )
+                if output_radiation_work is not None:
+                    m9, calls = m9
+                    output_radiation_work.append(int(jax.device_get(calls)))
                 m9_by_attr = {attr: getattr(m9, attr, None) for attr in attrs}
         except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
             return None
@@ -1034,7 +1060,9 @@ def _surface_diagnostics_for_output(
         try:
             from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
 
-            q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+            if surface is None:
+                surface = surface_layer_diagnostics(state, clock_namelist.grid)
+            q2 = getattr(surface, "q2", None)
         except Exception:  # noqa: BLE001
             q2 = None
 
@@ -1670,8 +1698,8 @@ def compare_wrfouts_xarray(left_path: str | Path, right_path: str | Path) -> dic
     right = Path(right_path)
     fields: dict[str, Any] = {}
     passed = True
-    with xr.open_dataset(left, engine="netcdf4", decode_times=False) as left_ds:
-        with xr.open_dataset(right, engine="netcdf4", decode_times=False) as right_ds:
+    with NETCDF_LOCK, xr.open_dataset(left, engine="netcdf4", decode_times=False) as left_ds:
+        with NETCDF_LOCK, xr.open_dataset(right, engine="netcdf4", decode_times=False) as right_ds:
             for name in sorted(set(left_ds.variables) | set(right_ds.variables)):
                 if name not in left_ds.variables or name not in right_ds.variables:
                     fields[name] = {"status": "MISSING", "pass": False}

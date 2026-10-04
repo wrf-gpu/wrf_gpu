@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+import subprocess
 
 import numpy as np
 import pytest
@@ -59,7 +60,15 @@ def _small_shapes(monkeypatch):
 
 
 def test_import_is_backend_dark_and_inventory_is_exact() -> None:
-    assert not any(name == "jax" or name.startswith(("jax.", "gpuwrf.")) for name in sys.modules)
+    # Other collected tests import the model; prove this script's import in a
+    # fresh process so the assertion measures its own dependency footprint.
+    code = (
+        "import importlib.util, sys; "
+        f"spec = importlib.util.spec_from_file_location('reference', {str(SCRIPT)!r}); "
+        "module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); "
+        "assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf.')) for n in sys.modules)"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True, timeout=30)
     assert len(reference.REQUIRED) == 28
     assert len(reference.AVAILABLE) == 5
     assert len(reference.MISSING) == 23
@@ -140,13 +149,23 @@ def test_residual_source_order_drift_refuses(tmp_path: Path, field: str) -> None
         reference.validate_reference(manifest, archive)
 
 
-def test_source_authority_binds_exact_formula_symbols() -> None:
+def test_source_authority_binds_exact_formula_symbols(monkeypatch: pytest.MonkeyPatch) -> None:
+    # SOURCE_SHA256 certifies the v0.23.4 capture-time sources (2026-07); the live tree has moved
+    # since (B39 state.py, couplers, MYNN), so pinning it to the current files would only hide that.
+    # Test the binding MECHANISM on the current content: exact digests bind, any drift refuses.
+    assert len(reference.SOURCE_SHA256) == 8
+    current = {name: reference.sha256_file(reference.REPO / name) for name in reference.SOURCE_SHA256}
+    monkeypatch.setattr(reference, "SOURCE_SHA256", current)
     result = reference.source_authority()
-    assert set(result["files"]) == set(reference.SOURCE_SHA256)
+    assert {name: record["sha256"] for name, record in result["files"].items()} == current
     assert set(result["symbols"]) == {
         "_mym_turbulence", "_solve_tridiagonal", "_step_mynn_pbl_impl_with_pblh",
         "_apply_mean_tendencies", "_diffusion_solve_with_mf",
     }
+    for name in current:
+        monkeypatch.setattr(reference, "SOURCE_SHA256", {**current, name: "0" * 64})
+        with pytest.raises(reference.ReferenceError, match=f"AUTHORITY_DRIFT:.*{name}"):
+            reference.source_authority()
 
 
 def test_script_contains_no_gpu_query_or_wrf_mpi_launch() -> None:

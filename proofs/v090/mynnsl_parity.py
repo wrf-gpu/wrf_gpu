@@ -54,7 +54,7 @@ def run_oracle(cases, exe="mynn_oracle", itimestep=2, isfflx=1, isftcflx=0, iz0t
     for c in cases:
         lines.append(" ".join(repr(float(c[k])) for k in IN_COLS))
     proc = subprocess.run(
-        ["taskset", "-c", "0-3", os.path.join(HERE, exe)],
+        ["taskset", "-c", os.environ.get("ORACLE_CPUS", "8,9,12,13,24,25,28,29"), os.path.join(HERE, exe)],
         input="\n".join(lines) + "\n", capture_output=True, text=True, check=True,
     )
     rows = [ln for ln in proc.stdout.splitlines() if ln and not ln.startswith("#")]

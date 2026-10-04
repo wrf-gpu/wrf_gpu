@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import hashlib
 import json
 import math
@@ -48,6 +50,7 @@ def test_raw_red_parser_cannot_hide_a_post_dispatch_gate() -> None:
 
 
 def test_frozen_policy_and_known_initial_false_red_are_authenticated() -> None:
+    require_historical(policy.MANAGER_POLICY, policy.FROZEN_PAIR_STATE, policy.INITIAL_FRAME_PROOF)
     assert hashlib.sha256(policy.MANAGER_POLICY.read_bytes()).hexdigest() == policy.MANAGER_POLICY_SHA
     assert hashlib.sha256(policy.FROZEN_PAIR_STATE.read_bytes()).hexdigest() == policy.FROZEN_PAIR_STATE_SHA
     frozen = json.loads(policy.FROZEN_PAIR_STATE.read_text())

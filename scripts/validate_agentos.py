@@ -31,8 +31,10 @@ REQUIRED_FILES = [
     "CONTRIBUTING_AGENT.md",
     "pyproject.toml",
     ".gitignore",
-    ".agent/README.md",
-    ".agent/rules/non-negotiables.md",
+    ".agent/kernel/STATE.md",
+    ".agent/kernel/FINDINGS.md",
+    ".agent/kernel/ARCH.md",
+    ".agent/kernel/MANAGER.md",
     ".agent/decisions/ADR-0000-template.md",
     "scripts/create_sprint.py",
     "scripts/close_sprint.py",
@@ -47,19 +49,11 @@ REQUIRED_FILES = [
 ]
 
 SKILLS = [
-    "managing-sprints",
-    "writing-execplans",
-    "conducting-blind-review",
-    "resolving-cross-model-disagreements",
-    "maintaining-memory",
-    "researching-prior-art",
     "building-wrf-oracles",
     "validating-physics",
     "designing-gpu-state",
     "writing-gpu-kernels",
     "profiling-nvidia-gpu",
-    "updating-docs-minimally",
-    "reporting-to-human",
 ]
 
 

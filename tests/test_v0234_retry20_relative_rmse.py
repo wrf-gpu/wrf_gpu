@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 from datetime import datetime, timedelta, timezone
 import json
 import math
@@ -252,6 +254,7 @@ def test_retained_retry19_0000_pair_regression_on_current_direct_gate(tmp_path: 
         for side, root in roots.items()
         for valid in RETRY19_TIMES
     }
+    require_historical(*source_paths.values())
     before = {}
     for (side, valid), path in source_paths.items():
         stamp = valid.strftime("%Y-%m-%d_%H:%M:%S")

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
-
 import numpy as np
 
 from scripts.v0234_gpt_s2_boundary_revalidation import (
@@ -50,10 +48,9 @@ def test_literal_wrf_relax_support_is_only_rows_one_to_three() -> None:
 
 
 def test_interaction_surface_retains_operator_and_wrapper() -> None:
-    head = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], text=True
-    ).strip()
-    audit = source_interaction_audit(head)
+    # S2_REVALIDATION_PROOF.json authenticates this head. Later option-B
+    # implementations intentionally replace the operator and wrappers.
+    audit = source_interaction_audit("08de36659e27f5d2ab662c35ea6963e072912360")
     assert audit["gate"] is True
     assert audit["boundary_operator"]["whole_file_identical"] is True
     assert all(

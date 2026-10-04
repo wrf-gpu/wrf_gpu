@@ -290,9 +290,7 @@ def test_real_wrf_energy_savepoint_parity():
     sp = json.load(open(_PROOFS / "savepoints_energy.json"))
     failures = []
     for col in sp["columns"]:
-        wrf = col["wrf"]
-        ref = {**wrf["energy_out"], "albedo": wrf["energy_state"]["albedo"],
-               "tg": wrf["energy_state"]["tg"], "tah": wrf["energy_state"]["tah"]}
+        ref = gate.reference(col)
         got = gate.run_column(col)
         for fld, (atol, rtol) in gate.TOL.items():
             if fld == "qsfc":

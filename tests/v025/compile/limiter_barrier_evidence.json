@@ -1,0 +1,203 @@
+{
+  "scope": "PROD d01 compile-only and active real-history limiter component regression; full d01+d02 compile and whole-program drift pending",
+  "source_base": "411659843bdeeac510c3c55c8bfbe1529aadc9d7 + PD inputbarrier",
+  "compile": {
+    "hlo": "f294c8d29c98c7ed0ffda48e281fde710cd1c0e1ad2675e8fcc277ec8587c5f5",
+    "compiled": true,
+    "compile_seconds": 437.16112040699227,
+    "process_seconds": 582.2784514999948,
+    "case": "PROD actuald01+d02 init; ONLYfirstd01 exact lower/compile; noforecast and nofallbackretry",
+    "memory_analysis": "CompiledMemoryStats(generated_code_size_in_bytes=156459796, argument_size_in_bytes=515215932, output_size_in_bytes=497903120, alias_size_in_bytes=0, temp_size_in_bytes=7848202248, host_generated_code_size_in_bytes=0, host_argument_size_in_bytes=0, host_output_size_in_bytes=0, host_alias_size_in_bytes=0, host_temp_size_in_bytes=0)"
+  },
+  "cpu": {
+    "comparison": {
+      "bitwise": true,
+      "max_abs": 0.0,
+      "bit_mismatch_cells": 0
+    },
+    "active_limiter_cells": [
+      18,
+      294,
+      642,
+      0,
+      0,
+      0
+    ],
+    "history": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+    "flux_max_abs": [
+      829086.9389879869,
+      406259.6614736506,
+      62.31888514103199
+    ]
+  },
+  "gpu": {
+    "normal": {
+      "platform": "gpu",
+      "comparison": {
+        "bitwise": true,
+        "bit_mismatch_cells": 0,
+        "max_abs": 0.0
+      },
+      "active_limiter_cells": [
+        18,
+        224,
+        495,
+        0,
+        0,
+        0
+      ],
+      "baseline": {
+        "compile_seconds": 2.4185600049968343,
+        "median_s": 0.0011179079992871266,
+        "samples_s": [
+          0.001155840749561321,
+          0.0011109992483397946,
+          0.0011235867495997809,
+          0.0011089253748650663,
+          0.0011193579994142056,
+          0.0011112467509519774,
+          0.0011386456244508736,
+          0.001116772873501759,
+          0.0011379618772480171,
+          0.0011179079992871266,
+          0.0011053942507714964
+        ],
+        "finite": true
+      },
+      "candidate": {
+        "compile_seconds": 2.3782408369879704,
+        "median_s": 0.0010624962524161674,
+        "samples_s": [
+          0.0010624962524161674,
+          0.0010599801244097762,
+          0.001056086373864673,
+          0.0010563962496235035,
+          0.0010686251262086444,
+          0.0011111417479696684,
+          0.0010661312480806373,
+          0.0010910716227954254,
+          0.0010582837494439445,
+          0.0010605938732624054,
+          0.0010632863741193432
+        ],
+        "finite": true
+      },
+      "history": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+      "xla_flags": "--xla_gpu_autotune_level=4 --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/autotune_cache --xla_gpu_force_compilation_parallelism=8"
+    },
+    "autotune0": {
+      "platform": "gpu",
+      "comparison": {
+        "bitwise": true,
+        "bit_mismatch_cells": 0,
+        "max_abs": 0.0
+      },
+      "active_limiter_cells": [
+        18,
+        224,
+        495,
+        0,
+        0,
+        0
+      ],
+      "baseline": {
+        "compile_seconds": 2.150271938997321,
+        "median_s": 0.0010983877509715967,
+        "samples_s": [
+          0.0011126892495667562,
+          0.0011302117491140962,
+          0.0011288443747616839,
+          0.001121936751587782,
+          0.0010967466223519295,
+          0.0010958990023937076,
+          0.0010989728762069717,
+          0.0010951366239169147,
+          0.0010983877509715967,
+          0.001097915373975411,
+          0.0010956141268252395
+        ],
+        "finite": true
+      },
+      "candidate": {
+        "compile_seconds": 2.036395295028342,
+        "median_s": 0.001082694001524942,
+        "samples_s": [
+          0.0010684801236493513,
+          0.0010678476246539503,
+          0.0010584837509668432,
+          0.0011127492471132427,
+          0.001082694001524942,
+          0.0010777213719848078,
+          0.0011006339991581626,
+          0.0011031203757738695,
+          0.0010913303776760586,
+          0.0011018653749488294,
+          0.0010647763738234062
+        ],
+        "finite": true
+      },
+      "history": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+      "xla_flags": "--xla_gpu_autotune_level=0 --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/autotune_cache --xla_gpu_force_compilation_parallelism=8"
+    }
+  },
+  "cross_knob": {
+    "baseline_0": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "baseline_1": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "baseline_2": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "baseline_3": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "baseline_4": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "baseline_5": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_0": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_1": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_2": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_3": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_4": {
+      "bitwise": true,
+      "max_abs": 0.0
+    },
+    "candidate_5": {
+      "bitwise": true,
+      "max_abs": 0.0
+    }
+  },
+  "existing_cpu_tests": "38 passed40.20s: PD moisture,PD monotonic,map factors",
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2",
+  "cache_dirs": {
+    "compile": "phase2/LW1_default/cache",
+    "micro": "phase2/micro_cache",
+    "cpu": "phase2/cpu_cache",
+    "autotune": "phase2/autotune_cache",
+    "cuda": "phase2/cuda_cache"
+  },
+  "limitations": "micro dispatch +1.8% normal vs autotune0 is within noise; no whole-forecast speed correction inferred; local byte parity is regression, not independent fidelity"
+}

@@ -145,10 +145,10 @@ def test_gridspec_rejects_eta_levels_wrong_length():
         GridSpec(proj, terrain, vertical, bc, bad, th)
 
 
-def test_gridspec_rejects_fp32_arrays():
+def test_gridspec_rejects_mixed_precision_arrays():
     proj, terrain, vertical, bc, eta, th = _base_components()
     bad_eta = eta.astype(jnp.float32)
-    with pytest.raises(TypeError, match="fp64"):
+    with pytest.raises(TypeError, match="same precision"):
         GridSpec(proj, terrain, vertical, bc, bad_eta, th)
 
 

@@ -35,6 +35,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp_coupler import assemble_noahmp_forcing, noahmp_surface_adapter
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
+from gpuwrf.physics.noahmp.precision import real_dtype as noahmp_real_dtype
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 from gpuwrf.coupling.physics_couplers import (
     WRF_RV_OVER_RD,
@@ -84,6 +85,19 @@ class _NoahMPColumnView(NamedTuple):
     t_air: Any = None
     psfc: Any = None
     rho: Any = None
+    # B39: previous-step WRF inputs surface_driver hands to SFCLAY_mynn
+    # (grid%MOL/HFX/QFX/QSFC/PBLH and the domain DX). ``None`` = not carried.
+    mol: Any = None
+    hfx: Any = None
+    qfx: Any = None
+    qsfc: Any = None
+    pblh: Any = None
+    dx_m: Any = None
+    prcpconv: Any = None
+    prcpnonc: Any = None
+    prcpsnow: Any = None
+    prcpgrpl: Any = None
+    prcphail: Any = None
 
     def replace(self, **updates) -> "_NoahMPColumnView":
         d = self._asdict()
@@ -106,12 +120,16 @@ def _build_column_view(state: Any, grid: Any = None) -> _NoahMPColumnView:
     ideal-gas fallback.
     """
     qv = _to_columns(state.qv)
-    theta_dry = jnp.asarray(state.theta, jnp.float64) / (
-        1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, jnp.float64)
+    # WRF phy_prep th_phy/t_phy are REAL: under GPUWRF_CARRY_REAL_ALL or the Noah-MP native
+    # REAL path (either flag); float64 with both off.
+    from gpuwrf.kernels.dyn_carry_fp32 import real_dtype
+    phy_dtype = real_dtype(noahmp_real_dtype())
+    theta_dry = jnp.asarray(state.theta, phy_dtype) / (
+        1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, phy_dtype)
     )
     # t_air uses the nonhydrostatic state pressure (WRF t_phy is from p+pb), matching
     # the grid-backed view; the column ``p`` handed to the surface layer is hydrostatic.
-    t_air = _to_columns(_temperature_from_theta(theta_dry, jnp.asarray(state.p, jnp.float64)))
+    t_air = _to_columns(_temperature_from_theta(theta_dry, jnp.asarray(state.p, phy_dtype)))
     if _mynn_column_uses_wrf_phy_prep(grid):
         p_hyd, psfc = _wrf_hydrostatic_pressure_from_state(state, grid.metrics)
         rho = _wrf_phy_prep_rho_from_state(state, grid.metrics)
@@ -149,7 +167,21 @@ def _build_column_view(state: Any, grid: Any = None) -> _NoahMPColumnView:
         t_air=t_air,
         psfc=psfc_col,
         rho=rho_col,
+        mol=getattr(state, "mol", None),
+        hfx=getattr(state, "hfx", None),
+        qfx=getattr(state, "qfx", None),
+        qsfc=getattr(state, "qsfc", None),
+        pblh=getattr(state, "pblh", None),
+        dx_m=_grid_dx_m(grid),
     )
+
+
+def _grid_dx_m(grid: Any):
+    """Domain DX (m) WRF passes to SFCLAY_mynn (VSGD); ``None`` without a grid."""
+
+    projection = getattr(grid, "projection", None) if grid is not None else None
+    dx_m = getattr(projection, "dx_m", None)
+    return None if dx_m is None else float(dx_m)
 
 
 def _output_dtype(state: Any, field: str):
@@ -176,22 +208,30 @@ def noahmp_surface_step(
     rad_params: Any = None,
     first_timestep: Any = False,
     grid: Any = None,
+    history: bool = False,
+    land_history: bool = False,
+    precipitation: Any = None,
 ) -> tuple[Any, NoahMPLandState]:
     """Run the Noah-MP/sfclay blend and write the blended flux handles into State.
 
     Returns ``(state', land_state')``. ``state'`` carries the blended kinematic
     surface-flux handles MYNN consumes, plus t_skin/roughness_m/qsfc. ``land_state'``
     is the prognostically advanced Noah-MP land carry for the next step.
+    ``history=True`` appends this step's WRF history surface fields (incl. the
+    step-start hydrostatic PSFC, module_surface_driver.F:1988).
 
     ``energy_params``/``rad_params`` are the PRE-BUILT (concrete-``nroot``) parameter
     bundles; passing them avoids re-running the frozen ``build_energy_params``
     (which concretizes ``nroot``) inside the jitted scan.
     """
     view = _build_column_view(state, grid)
-    view_wb, land_out, blended = noahmp_surface_adapter(
+    if precipitation is not None:
+        view = view.replace(**precipitation._asdict())
+    view_wb, land_out, blended, *fields = noahmp_surface_adapter(
         view, land_state, static, radiation=radiation, clock=clock, dt=float(dt),
         energy_params=energy_params, rad_params=rad_params,
-        first_timestep=first_timestep,
+        first_timestep=first_timestep, history=history,
+        **({"land_history": True} if land_history else {}),
     )
     # ``view_wb`` carries the blended 2-D t_skin/roughness_m/qsfc; the blended
     # kinematic flux handles come from ``blended``. Map both back onto the State.
@@ -206,7 +246,13 @@ def noahmp_surface_step(
         "t_skin": _to_state_surface(state, "t_skin", view_wb.t_skin),
         "roughness_m": _to_state_surface(state, "roughness_m", view_wb.roughness_m),
     }
+    # B39: carry the WRF grid%MOL/HFX/QFX/QSFC the next SFCLAY_mynn call reads.
+    for name in ("mol", "hfx", "qfx", "qsfc"):
+        if getattr(state, name, None) is not None and getattr(view_wb, name) is not None:
+            updates[name] = _to_state_surface(state, name, getattr(view_wb, name))
     state_out = state.replace(**updates)
+    if history or land_history:
+        return state_out, land_out, dict(fields[0], psfc=view.psfc)
     return state_out, land_out
 
 
@@ -235,35 +281,35 @@ def overlay_noahmp_land_diagnostics(
 
     The M9 surface map (gates / TOST) is recomputed post-step from ``State`` via
     the bulk surface layer; over LAND it must instead report the prognostic
-    Noah-MP fluxes (the standalone-replacement contract). This runs ONE Noah-MP
-    column step on the CURRENT (post-step) land carry to read back HFX/LH/TSK and
+    Noah-MP fluxes (the standalone-replacement contract). This evaluates the same Noah-MP
+    ENERGY diagnostics on the CURRENT (post-step) land carry to read back HFX/LH/TSK and
     selects them where ``is_land``; ocean/water keeps the bulk diagnostic value.
 
     LAND T2 (v0.9.0): real WRF OVERWRITES the surface-layer (MYNN/sfclay) 2-m
     temperature with the Noah-MP LSM diagnostic ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``
     over every land point (module_surface_driver.F:3469-3473). When ``bulk_t2`` is
-    supplied this routes the faithful ``nm.t2`` over land (water keeps ``bulk_t2``)
+    supplied this routes the faithful ``nm_t2`` over land (water keeps ``bulk_t2``)
     and returns a 4-tuple ``(hfx, lh, tsk, t2)``; with ``bulk_t2=None`` it returns
     the legacy ``(hfx, lh, tsk)`` (callers that have not yet wired the T2 overwrite).
     """
     view = _build_column_view(state, grid)
     forcing: NoahMPForcing = assemble_noahmp_forcing(view, static, radiation, clock, float(dt))
-    _land_out, nm = noah_mp_step(
+    nm_hfx, nm_lh, nm_tsk, nm_t2 = noah_mp_step(
         land_state, forcing, static, float(dt),
-        energy_params=energy_params, rad_params=rad_params,
+        energy_params=energy_params, rad_params=rad_params, output_only=True,
     )
 
     xland = _surface_2d(getattr(state, "xland", jnp.ones_like(jnp.asarray(bulk_hfx, dtype=jnp.float64))))
     is_land = (xland - 1.5) < 0.0
 
-    hfx = jnp.where(is_land, jnp.asarray(nm.hfx, dtype=jnp.float64), jnp.asarray(bulk_hfx, dtype=jnp.float64))
-    lh = jnp.where(is_land, jnp.asarray(nm.lh, dtype=jnp.float64), jnp.asarray(bulk_lh, dtype=jnp.float64))
-    tsk = jnp.where(is_land, jnp.asarray(nm.tsk, dtype=jnp.float64), jnp.asarray(bulk_tsk, dtype=jnp.float64))
+    hfx = jnp.where(is_land, jnp.asarray(nm_hfx, dtype=jnp.float64), jnp.asarray(bulk_hfx, dtype=jnp.float64))
+    lh = jnp.where(is_land, jnp.asarray(nm_lh, dtype=jnp.float64), jnp.asarray(bulk_lh, dtype=jnp.float64))
+    tsk = jnp.where(is_land, jnp.asarray(nm_tsk, dtype=jnp.float64), jnp.asarray(bulk_tsk, dtype=jnp.float64))
     if bulk_t2 is None:
         return hfx, lh, tsk
     # LSM 2-m air temperature overwrite over land (the faithful resolution of the
     # operational land-T2 the MYNN-SL empirical stand-in was patching).
-    t2 = jnp.where(is_land, jnp.asarray(nm.t2, dtype=jnp.float64), jnp.asarray(bulk_t2, dtype=jnp.float64))
+    t2 = jnp.where(is_land, jnp.asarray(nm_t2, dtype=jnp.float64), jnp.asarray(bulk_t2, dtype=jnp.float64))
     return hfx, lh, tsk, t2
 
 

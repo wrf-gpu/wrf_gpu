@@ -51,6 +51,7 @@ from gpuwrf.runtime.operational_mode import (
     _initial_carry_for_run,
     _resolve_operational_suite,
     build_clock_base,
+    unalias_donated_carry,
 )
 from gpuwrf.runtime.operational_state import OperationalCarry
 
@@ -436,7 +437,9 @@ def run_domain_tree_callbacks(
         raise ValueError("event_aware_fusion_k must be 0 or 1") from exc
     if isinstance(event_aware_fusion_k, bool) or fusion_k not in (0, 1):
         raise ValueError("event_aware_fusion_k must be 0 or 1")
-    out = dict(carries)
+    # Donation (GPUWRF_CARRY_DONATE): one owner per buffer across all entering carries.
+    _entering: set = set()
+    out = {name: unalias_donated_carry(carry, seen=_entering, by_buffer=True) for name, carry in carries.items()}
     _cap = int(max_event_tail) if max_event_tail is not None else 0
     # ``events`` / ``outputs`` are append-only audit logs.  Default = plain lists
     # (unbounded, bit-identical).  When the opt-in cap is on they become bounded
@@ -1059,6 +1062,115 @@ def _record_nested_aot_cache_hit(name: str, key_token: str) -> None:
     key["cache_hit_count"] += 1
 
 
+class _CheapKeyMemo:
+    """Memo of full AOT cheap keys per advance-call signature (dispatch D02).
+
+    The full key content-hashes the namelist static aux (every host table) on
+    each call: ~40 ms of Python per advance on PROD, on the critical path of a
+    host-bound root. The signature holds everything the full key reads that can
+    vary per call (call avals and placement, structure, kwargs, GPUWRF_*/XLA env,
+    JAX config, resolved import-time module constants); the frozen namelist enters by identity (a strong ref keeps the
+    id valid), as JAX's own jit cache keys its ``_StaticHolder`` statics. Any
+    signature error computes the full key (never a stale key, only slower).
+    """
+
+    def __init__(self) -> None:
+        self._keys: dict[Any, tuple[str, OperationalNamelist]] = {}
+
+    @staticmethod
+    def _leaf(leaf: Any) -> Any:
+        if isinstance(leaf, jax.Array):
+            # Placement parity with aot_cheap_key._placement_class: committed or
+            # non-single-device shardings are distinct, the uncommitted default is one class.
+            committed = bool(getattr(leaf, "_committed", False))
+            sharding = leaf.sharding
+            distinct = committed or not isinstance(sharding, jax.sharding.SingleDeviceSharding)
+            return (
+                leaf.shape,
+                leaf.dtype,
+                bool(getattr(leaf, "weak_type", False)),
+                committed,
+                str(sharding) if distinct else None,
+            )
+        if isinstance(leaf, (bool, int, float, complex, str)) or leaf is None:
+            return (type(leaf).__name__, leaf)
+        return (
+            type(leaf).__name__,
+            tuple(getattr(leaf, "shape", ()) or ()),
+            str(getattr(leaf, "dtype", "")),
+        )
+
+    def signature(
+        self,
+        namelist: OperationalNamelist,
+        call_args: tuple[Any, ...],
+        call_kwargs: dict[str, Any],
+    ) -> Any | None:
+        try:
+            from gpuwrf.runtime import aot_cheap_key as _ck
+
+            leaves, treedef = jax.tree_util.tree_flatten(call_args)
+            env = tuple(
+                sorted(
+                    (k, v)
+                    for k, v in os.environ.items()
+                    if k.startswith("GPUWRF_") or k in _ck._EXEC_ENV_FLAGS
+                )
+            )
+            config = tuple(
+                getattr(jax.config, flag, None)
+                for flag in _ck._PROGRAM_JAX_CONFIG_FLAGS + _ck._EXEC_JAX_CONFIG_FLAGS
+            )
+            signature = (
+                id(namelist),
+                tuple(sorted(call_kwargs.items())),
+                treedef,
+                tuple(self._leaf(leaf) for leaf in leaves),
+                env,
+                config,
+                # Resolved import-time module constants (a runtime flip must miss).
+                _ck.module_const_env_hash(),
+            )
+            hash(signature)
+            return signature
+        except BaseException:  # noqa: BLE001 - no memo: compute the full key
+            return None
+
+    def key(
+        self,
+        carry: Any,
+        namelist: OperationalNamelist,
+        start: Any,
+        clock_base: Any,
+        *,
+        n_steps: int,
+        cadence: int,
+    ) -> str | None:
+        """Full ``aot_cheap_key.cheap_key`` for this call, memoized; ``None`` on error."""
+        kwargs = {"n_steps": int(n_steps), "cadence": int(cadence)}
+        signature = self.signature(namelist, (carry, start, clock_base), kwargs)
+        try:
+            hit = self._keys.get(signature) if signature is not None else None
+        except BaseException:  # noqa: BLE001 - uncomparable signature: no memo
+            hit, signature = None, None
+        if hit is not None:
+            return hit[0]
+        try:
+            from gpuwrf.runtime import aot_cheap_key as _ck
+
+            key = _ck.cheap_key(
+                _advance_chunk_fori,
+                (carry, namelist, start, clock_base),
+                kwargs,
+                namelist,
+            )
+        except BaseException:  # noqa: BLE001 - fail-open to the lower path
+            return None
+        if key is not None and signature is not None:
+            self._keys[signature] = (key, namelist)
+        return key
+
+
 def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
     # #91: one traced clock_base per domain namelist (built once, reused every chunk)
     # so each domain's compiled HLO is date-independent (cross-date cache hit).
@@ -1126,6 +1238,9 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
         mode = os.environ.get("GPUWRF_ADVANCE_CHUNK_LOOP", "fori").strip().lower()
         return mode in {"", "fori", "fori_loop", "fori-loop"}
 
+    # Per-runtime memo of full cheap keys (see _CheapKeyMemo).
+    _cheap_key_memo = _CheapKeyMemo()
+
     def _cheap_key_for(
         carry: OperationalCarry,
         namelist: OperationalNamelist,
@@ -1139,18 +1254,11 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
 
         Returns the key, or ``None`` on any error (caller falls back to the
         lower-only path -> compile). This is the microsecond replacement for the
-        ~30-54 min ``_lower_advance_variant`` on the WARM path."""
-        try:
-            from gpuwrf.runtime import aot_cheap_key as _ck
-
-            return _ck.cheap_key(
-                _advance_chunk_fori,
-                (carry, namelist, start, clock_base),
-                {"n_steps": int(n_steps), "cadence": int(cadence)},
-                namelist,
-            )
-        except BaseException:  # noqa: BLE001 - fail-open to the lower path
-            return None
+        ~30-54 min ``_lower_advance_variant`` on the WARM path. Full keys are
+        memoized per call signature."""
+        return _cheap_key_memo.key(
+            carry, namelist, start, clock_base, n_steps=n_steps, cadence=cadence
+        )
 
     def _lower_advance_variant(
         carry: OperationalCarry,
@@ -1338,12 +1446,28 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
         )
         if call is not None:
             _aot_loaded_keys.add(key)
+            from gpuwrf.runtime.gpu_allocator import record_executable
+
+            record_executable(name, call, ckey)
         # Surface the blob's recorded HLO as ``hlo_sha256`` too so the diagnostic
         # log line / report still shows WHICH program loaded (cheap_key is the
         # lookup address; the HLO is the program identity).
         if status.get("hlo_sha256") is None and status.get("meta_hlo_sha256"):
             status["hlo_sha256"] = status["meta_hlo_sha256"]
         return call, status
+
+    def _alias_cheap_key(name: str, ckey: str, hlo_sha256: str) -> None:
+        try:
+            from gpuwrf.runtime import aot_precompile
+
+            alias = aot_precompile.alias_cheap_key_to_hlo(name, ckey, hlo_sha256)
+            NESTED_AOT_STATUS["domains"].setdefault(name, {})["cheap_key_alias"] = alias  # type: ignore[index]
+            sys.stderr.write(
+                f"[gpuwrf:nested-aot] domain={name} cheap_key_alias={alias.get('reason')} "
+                f"cheap_key={str(ckey)[:12]} hlo={str(hlo_sha256)[:12]}\n"
+            )
+        except Exception:  # noqa: BLE001 - alias is an optimisation only
+            pass
 
     def _aot_advance_for(name: str, hlo_sha256: str):
         """Return a drop-in AOT advance callable for ``name``/``hlo`` or ``None``.
@@ -1444,7 +1568,9 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                 cadence=cadence,
             )
         try:
-            compiled = lowered.compile()
+            from gpuwrf.runtime import aot_executable as _aotx_export
+
+            compiled = lowered.compile(_aotx_export.export_compile_options())
             if hlo_sha256:
                 _aot_attempted.add((name, hlo_sha256))
                 _aot_calls[(name, hlo_sha256)] = compiled
@@ -1495,6 +1621,9 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                     capture_status["error"] = f"{type(exc).__name__}: {exc}"
             _record_aot_status(name, capture_status)
             _log_aot_status(name, capture_status)
+            from gpuwrf.runtime.gpu_allocator import record_executable
+
+            record_executable(name, compiled, cheap_key or hlo_sha256 or "compiled")
             return compiled(
                 carry,
                 namelist,
@@ -1524,6 +1653,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             )
 
     def advance(name: str, carry: OperationalCarry, start_step: int, n_steps: int) -> OperationalCarry:
+        carry = unalias_donated_carry(carry)  # GPUWRF_CARRY_DONATE only; identity otherwise
         namelist = tree.domains[name].namelist
         cadence = int(namelist.radiation_cadence_steps)
         if cadence <= 0:
@@ -1674,6 +1804,9 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                                     _aot_attempted.add((name, ckey))
                                     _aot_calls[(name, ckey)] = hlo_call
                                     _aot_loaded_keys.add((name, ckey))
+                                    # Persist that proof so the next process finds
+                                    # the blob (and can prefetch it) without lowering.
+                                    _alias_cheap_key(name, ckey, hlo_sha256)
                                     return out
                         return _compile_capture_and_call(
                             name,
@@ -1829,14 +1962,17 @@ def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: Operat
             child_metrics=edge.child_metrics,
             coupled_forcedown=True,
             parent_grid_ratio=int(edge.parent_grid_ratio),
+            _compiled_producers=True,
         )
     else:
-        # Preserve the released call surface and operation graph exactly.
+        # Group ring/strip dispatch while preserving the eager rounding and
+        # placement of every untouched child State leaf.
         forced_state = build_child_boundary_package(
             child_state,
             parent.state,
             edge.weights,
             bdy_width=bdy_width,
+            _compiled_producers=True,
         )
     return child.replace(state=forced_state)
 
@@ -2258,6 +2394,10 @@ def _build_fused_cascade_program(
                     _log_nested_aot_status(aot_name, hlo_status)
                 else:
                     _store_cached_call(sig, hlo_call, ckey)
+                    if ckey:
+                        alias = _aotp.alias_cheap_key_to_hlo(aot_name, ckey, hlo_sha256)
+                        hlo_status["cheap_key_alias"] = alias
+                        _record_nested_aot_status(aot_name, hlo_status)
                     return out
         except BaseException as exc:  # noqa: BLE001 - fail-open to compile
             hlo_status = {
@@ -2272,7 +2412,9 @@ def _build_fused_cascade_program(
             _log_nested_aot_status(aot_name, hlo_status)
 
         try:
-            compiled = lowered.compile()
+            from gpuwrf.runtime import aot_executable as _aotx_export
+
+            compiled = lowered.compile(_aotx_export.export_compile_options())
             _store_cached_call(sig, compiled, ckey)
             status: dict[str, Any] = {
                 "name": aot_name,
@@ -2846,9 +2988,13 @@ def maybe_prewarm_defused_nest(
     independent per-domain modules compiled, which is what parallelizes. The
     fused DEFAULT compiles ONE module, so there is nothing to fan out.
 
-    Honors ``GPUWRF_NESTED_PARALLEL_COMPILE`` (=0 opt-out; =N worker override).
-    Calls :func:`aot_precompile.prewarm_defused_nest` to warm the shared
-    version-keyed cache, then records the report. ``carries`` should be the exact
+    On GPU, ``GPUWRF_NESTED_THREADED_COMPILE`` defaults to two bounded
+    compilation threads (=0 opts out, =1 selects one). Lowering stays on the
+    caller and a shared-cache lease prevents concurrent cases duplicating cold
+    work. Calls :func:`aot_precompile.prewarm_runtime_threads`, then records the
+    report. The older spawned path is explicitly opt-in through
+    ``GPUWRF_NESTED_PARALLEL_COMPILE`` only when threaded prewarm is disabled.
+    ``carries`` should be the exact
     runtime carry map the eager integration loop will use, after post-init scheme
     seeding and device commit; this keeps the child cache key identical to the
     parent eager key. FAILS OPEN: any exception is captured in
@@ -2873,6 +3019,24 @@ def maybe_prewarm_defused_nest(
         # (a) only when de-fused.
         if _nested_fuse_default_enabled():
             NESTED_PRECOMPILE_STATUS["source"] = "skip:fused-default"
+            return dict(NESTED_PRECOMPILE_STATUS)
+
+        # Cold per-domain compilation stays in this process: lower on the caller,
+        # compile in two bounded threads, then the existing eager loop loads AOT.
+        # Explicit opt-out retains the former serial startup path.
+        raw_threads = os.environ.get("GPUWRF_NESTED_THREADED_COMPILE", "2")
+        try:
+            thread_workers = max(0, min(2, int(raw_threads)))
+        except ValueError:
+            thread_workers = 0
+        if thread_workers and carries is not None and jax.default_backend() == "gpu":
+            from gpuwrf.runtime import aot_precompile
+
+            report = aot_precompile.prewarm_runtime_threads(
+                tree, carries=carries, max_workers=thread_workers)
+            NESTED_PRECOMPILE_STATUS.update(active=report.get("active", False),
+                source=report.get("source"), workers=report.get("workers"), report=report,
+                error=report.get("errors") or None)
             return dict(NESTED_PRECOMPILE_STATUS)
 
         # (b) honor the opt-out / worker override.
@@ -2951,12 +3115,12 @@ def nested_defuse_env_help() -> str:
         "GPUWRF_NESTED_DEFUSE_COMPILE=1 / GPUWRF_NESTED_FUSE=0 / GPUWRF_BITWISE also "
         "select the eager per-domain path -- useful as a low-host-compile-RAM or "
         "bitwise/debug fallback, with documented runtime cost. "
-        "GPUWRF_NESTED_PARALLEL_COMPILE controls the cross-domain PARALLEL "
-        "pre-compile of the de-fuse path (=0 opt-out, =N worker count): when SET to "
-        "N>0 it compiles the N independent per-domain modules CONCURRENTLY in "
-        "SPAWNED processes to cut cold wall from Sum(N) toward max(one body). It is "
-        "OPT-IN: when UNSET the explicit de-fuse path stays SEQUENTIAL (no spawn) "
-        "so unguarded entry points (pytest/web/scripts) are spawn-safe. "
+        "GPUWRF_NESTED_THREADED_COMPILE defaults to 2 bounded compile threads "
+        "on GPU (=0 serial opt-out, =1 one worker, larger values capped at 2). "
+        "Lowering stays on the caller; a shared-cache lease bounds duplicate "
+        "cold work across cases. Failures join workers and resume serial stepping. "
+        "With threaded prewarm disabled, GPUWRF_NESTED_PARALLEL_COMPILE=N>0 "
+        "retains the older explicitly opted-in spawned precompile path. "
         "Numerically inert (warms the shared cache the unchanged eager loop hits). "
         "Requires the de-fuse path active. "
         "GPUWRF_NESTED_PARALLEL_VERIFY=1 (default OFF) re-enables the diagnostic "

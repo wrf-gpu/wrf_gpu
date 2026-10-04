@@ -64,6 +64,10 @@ from gpuwrf.physics.thompson_column import (
     _sed_one_species,
     _snow_moment,
     _snow_moments,
+    _cloud_sed_rho_stages,
+    _condensation_branch,
+    _wrf_cloud_sed_band,
+    _wrf_l_qc_any,
     _sublimation_prefactor,
     _take2,
     _take3_last,
@@ -322,8 +326,40 @@ def _cloud_distribution_aero(qc, nc_m3, rho, aero: ThompsonAeroTableBundle):
     return rc, nu, lamc, xdc, mvd_c, qc > R1
 
 
+def _cloud_number_tendency_balance(state: ThompsonAeroColumnState, rc_entry, rho_entry,
+                                   aero: ThompsonAeroTableBundle) -> ThompsonAeroColumnState:
+    """P0 K7: WRF tendency-stage cloud-number balance, MPT :2997-3019, applied to the PROGNOSTIC Nc after the
+    warm-rain/ice tendencies and before the saturation adjustment (whose :3217 working nc is this Nc).
+
+    ``state.qc``/``state.Nc`` are the tended ``qc1d + qcten*DT`` / ``nc1d + ncten*DT`` (per kg); ``rc_entry`` and
+    ``rho_entry`` are WRF's ENTRY rc(k) (:1828, R1 where qc1d <= R1) and rho(k), which WRF does not update before :3003.
+    xrc/xnc use the tended values; lamc uses the entry rc(k) (WRF quirk, :3002); nu_c has NO lower clip (nu_c = 2 is
+    reachable); outside [D0c, 2*D0r] the number is rebalanced from xrc (:3004-3012); no cloud -> 0 (:3014-3015); then
+    the per-m3 Nt_c_max cap (:3017-3019).  Elementwise, no reduction, no host transfer.
+    """
+
+    xrc = jnp.maximum(R1, state.qc * rho_entry)
+    xnc = jnp.maximum(2.0, state.Nc * rho_entry)
+    nu_c = jnp.minimum(15, jnp.floor(1000.0e6 / xnc + 0.5).astype(jnp.int32) + 2)
+    nu = nu_c - 1
+    ccg1 = jnp.take(aero.ccg[0], nu)
+    ccg2 = jnp.take(aero.ccg[1], nu)
+    cce2 = jnp.take(aero.cce[1], nu)
+    ocg1 = jnp.take(aero.ocg1, nu)
+    ocg2 = jnp.take(aero.ocg2, nu)
+    lamc = (xnc * AM_R * ccg2 * ocg1 / rc_entry) ** OBMR
+    xdc = (3.0 + nu_c.astype(xnc.dtype) + 1.0) / lamc
+    low, high = xdc < D0C, xdc > D0R * 2.0
+    lamc_edge = jnp.where(low, cce2 / D0C, cce2 / (D0R * 2.0))
+    nc_edge = ccg1 * ocg2 * xrc / AM_R * lamc_edge**3.0 / rho_entry
+    Nc = jnp.where(low | high, nc_edge, state.Nc)
+    Nc = jnp.where(xrc > R1, Nc, 0.0)
+    Nc = jnp.where(jnp.maximum(0.0, Nc * rho_entry) > NT_C_MAX, NT_C_MAX / rho_entry, Nc)
+    return state.replace(Nc=Nc)
+
+
 def _cloud_number_balance(qc, Nc, rho, aero: ThompsonAeroTableBundle):
-    """Mass/number balance keeping xDc in [D0c, 2*D0r] (WRF 2997-3019, 4007-4021).
+    """Mass/number balance keeping xDc in [D0c, 2*D0r] (the final writeback, WRF 4007-4021).
 
     Operates on per-kg (qc, Nc); returns the balanced per-kg Nc (0 where no
     cloud), capped at Nt_c_max/rho.
@@ -905,10 +941,11 @@ def _saturation_adjustment_aero(
         dfcd = qvs * lvt2 * expo + 1.0
         clap = clap - fcd / dfcd
     ssatw = state.qv / qvs - 1.0
-    active = (ssatw > EPS) | ((ssatw < -EPS) & (state.qc > 0.0))
+    active = _condensation_branch(state)   # WRF :3401-3402, L_qc = qc > R1 (was qc > 0.0)
 
     rc = jnp.maximum(state.qc * state.rho, R1)
-    nc_m3 = _entry_cloud_number(state.qc, state.Nc, state.rho, aero)
+    # WRF :3215-3223 working nc: the tended, K7-balanced prognostic Nc, clamped only (no second rebalance)
+    nc_m3 = jnp.where(state.qc > R1, jnp.maximum(2.0, jnp.minimum(state.Nc * state.rho, NT_C_MAX)), 2.0)
     xrc = rc + clap * state.rho
 
     # --- Droplet nucleation (WRF 3413-3420). ---
@@ -947,7 +984,9 @@ def _saturation_adjustment_aero(
     evap_branch = (clap < -EPS) & (ssatw < -1.0e-6)
     full_evap = xrc <= R1
     prw_vcd = jnp.where(full_evap, -rc / state.rho * odt, clap * odt)
-    prw_vcd = jnp.where(~full_evap & (clap < 0.0), jnp.maximum(-rc * 0.99 / state.rho * odt, prw_vcd), prw_vcd)
+    # WRF :3422, :3467: the 0.99 limiter only inside the evaporation branch (clap < -eps .and. ssatw < -1e-6 .and.
+    # is_aerosol_aware), not for every clap < 0.
+    prw_vcd = jnp.where(~full_evap & evap_branch, jnp.maximum(-rc * 0.99 / state.rho * odt, prw_vcd), prw_vcd)
     pnc_wcd = jnp.where(
         full_evap,
         -nc_m3 / state.rho * odt,
@@ -1029,13 +1068,19 @@ def _rain_evaporation_aero(
     )
 
 
-def _cloud_water_fall_speeds_aero(state: ThompsonAeroColumnState, aero: ThompsonAeroTableBundle):
-    """Cloud mass/number fall speeds with variable nu_c (WRF 3655-3665)."""
+def _cloud_water_fall_speeds_aero(state: ThompsonAeroColumnState, aero: ThompsonAeroTableBundle, rho_rc=None, rho_f=None):
+    """Cloud mass/number fall speeds with variable nu_c (WRF 3655-3665).
 
-    rho = jnp.maximum(state.rho, R1)
-    rhof = _rho_correction(rho)
+    Density stages (P0 closure K5, as mp=8): rc and the droplet number density use the pre-condensation rho
+    (``rho_rc``; :3217, :3484, :3486), rhof the ``rho_f`` of thompson_column._cloud_sed_rho_stages.  ``None`` keeps
+    ``state.rho``."""
+
+    rho = jnp.maximum(state.rho if rho_rc is None else rho_rc, R1)
+    rhof = _rho_correction(state.rho if rho_f is None else rho_f)
     rc = jnp.maximum(state.qc * rho, R1)
-    nc_m3 = _entry_cloud_number(state.qc, state.Nc, rho, aero)
+    # WRF working nc at sedimentation: nc = MAX(2., MIN((nc1d+ncten*DT)*rho, Nt_c_max)) (:3217, :3486), NOT the
+    # entry-only xDc/lamc rebalance (:1832-1842); where rc <= R1 vtc/vtnc are zero anyway.
+    nc_m3 = jnp.maximum(2.0, jnp.minimum(state.Nc * rho, NT_C_MAX))
     nu = _nu_c_from_nc(nc_m3)
     ccg2 = jnp.take(aero.ccg[1], nu)
     ocg1 = jnp.take(aero.ocg1, nu)
@@ -1046,36 +1091,46 @@ def _cloud_water_fall_speeds_aero(state: ThompsonAeroColumnState, aero: Thompson
     ilamc = 1.0 / lamc
     vtc = rhof * AV_C * ccg5 * ocg2 * ilamc**BV_C
     vtnc = rhof * AV_C * ccg4 * ocg1 * ilamc**BV_C
-    active = (state.qc > R1) & (state.w < 1.0e-1)
+    active = (rc > R1) & (state.w < 1.0e-1)   # WRF :3657 tests the density rc = MAX(R1, qc*rho)
     return jnp.where(active, vtc, 0.0), jnp.where(active, vtnc, 0.0)
 
 
-def _sed_cloud_water_aero(state: ThompsonAeroColumnState, dt: float, aero: ThompsonAeroTableBundle):
-    """Cloud water + droplet-number sedimentation below 500 m AGL (WRF 3824-3837)."""
+def _sed_cloud_water_aero(state: ThompsonAeroColumnState, dt: float, aero: ThompsonAeroTableBundle, cloud_sed_on=None,
+                          cloud_rho=None):
+    """Cloud water + droplet-number sedimentation on the WRF ksed1(5) band (WRF 3646-3655, 3824-3837), gated on WRF
+    ANY(L_qc) (``cloud_sed_on``; see thompson_column._wrf_l_qc_any / _wrf_cloud_sed_band).  ``cloud_rho`` = the WRF
+    density stages (rc/nc, rhof, orho) of thompson_column._cloud_sed_rho_stages; ``None`` uses ``state.rho``."""
 
-    rho = jnp.maximum(state.rho, R1)
+    rho_rc, rho_f, rho_o = (state.rho,) * 3 if cloud_rho is None else cloud_rho
+    rho = jnp.maximum(rho_rc, R1)
+    orho_rho = jnp.maximum(rho_o, R1)
     dz = jnp.maximum(state.dz, 1.0)
-    vtc, vtnc = _cloud_water_fall_speeds_aero(state, aero)
+    vtc, vtnc = _cloud_water_fall_speeds_aero(state, aero, rho_rc, rho_f)
+    if cloud_sed_on is not None:
+        vtc = jnp.where(cloud_sed_on, vtc, jnp.zeros_like(vtc))
+        vtnc = jnp.where(cloud_sed_on, vtnc, jnp.zeros_like(vtnc))
     dt_a = jnp.asarray(dt, state.qc.dtype)
 
-    hgt_agl = jnp.cumsum(dz, axis=-1) - dz
-    below_500m = hgt_agl < 500.0
+    band = _wrf_cloud_sed_band(jnp.maximum(state.qc * rho, R1), dz)   # WRF ksed1(5) (was: strict below 500 m)
 
     rc = jnp.maximum(state.qc * rho, 0.0)
-    nc = jnp.maximum(state.Nc * rho, 0.0)
-    sed_c = jnp.where(below_500m, vtc * rc, 0.0)
-    sed_n = jnp.where(below_500m, vtnc * nc, 0.0)
+    # WRF sed_n = vtnck*nc(k) with the working nc = MAX(2., MIN(nc*rho, Nt_c_max)) (:3217, :3486, :3826); the :3835
+    # MAX(10., ...) floor only updates that working nc, which WRF never reads after this loop (outputs use ncten).
+    nc = jnp.maximum(2.0, jnp.minimum(state.Nc * rho, NT_C_MAX))
+    sed_c = jnp.where(band, vtc * rc, 0.0)
+    sed_n = jnp.where(band, vtnc * nc, 0.0)
     sed_c_above = jnp.concatenate([sed_c[..., 1:], jnp.zeros_like(sed_c[..., :1])], axis=-1)
     sed_n_above = jnp.concatenate([sed_n[..., 1:], jnp.zeros_like(sed_n[..., :1])], axis=-1)
-    dq = (sed_c_above - sed_c) / dz / rho * dt_a
-    dn = (sed_n_above - sed_n) / dz / rho * dt_a
-    qc_new = jnp.where(below_500m, jnp.maximum(state.qc + dq, 0.0), state.qc)
-    nc_new = jnp.where(below_500m, jnp.maximum(state.Nc + dn, 0.0), state.Nc)
+    dq = (sed_c_above - sed_c) / dz / orho_rho * dt_a   # WRF :3831-3833, orho = 1/current rho
+    dn = (sed_n_above - sed_n) / dz / orho_rho * dt_a
+    qc_new = jnp.where(band, jnp.maximum(state.qc + dq, 0.0), state.qc)
+    nc_new = jnp.where(band, jnp.maximum(state.Nc + dn, 0.0), state.Nc)
     cloudw_surface_loss = sed_c[..., 0] * dt_a
     return qc_new, nc_new, cloudw_surface_loss.astype(jnp.float64)
 
 
-def _sedimentation_aero(state: ThompsonAeroColumnState, dt: float, aero: ThompsonAeroTableBundle):
+def _sedimentation_aero(state: ThompsonAeroColumnState, dt: float, aero: ThompsonAeroTableBundle, cloud_sed_on=None,
+                       cloud_rho=None):
     """Four-species WRF sedimentation (reused from mp=8) + aero cloud channel."""
 
     vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
@@ -1097,7 +1152,7 @@ def _sedimentation_aero(state: ThompsonAeroColumnState, dt: float, aero: Thompso
     qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)
     qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt, nstep_g)
 
-    qc, Nc, ppt_cloudw = _sed_cloud_water_aero(state, dt, aero)
+    qc, Nc, ppt_cloudw = _sed_cloud_water_aero(state, dt, aero, cloud_sed_on, cloud_rho)
 
     updated = state.replace(qc=qc, Nc=Nc, qr=qr, Nr=Nr, qi=qi, Ni=Ni, qs=qs, Ns=Ns, qg=qg, Ng=Ng)
     precip = {
@@ -1261,12 +1316,18 @@ def _thompson_aero_body(state: ThompsonAeroColumnState, dt: float, debug: bool):
     state = _clip_species_aero(state)
     valid = _thermo_admissible(state)
     fallback = state
+    rc_entry, rho_entry = jnp.where(state.qc > R1, state.qc * state.rho, R1), state.rho   # WRF entry rc(k), rho(k)
     state = _warm_rain_collection_aero(state, dt)
     state = _snow_graupel_scavenging(state, dt)
     state, graupel_melt = _ice_sources_aero(state, dt)
+    state = _cloud_number_tendency_balance(state, rc_entry, rho_entry, THOMPSON_AERO_TABLES)   # P0 K7 (:2997-3019)
+    qc_pre_cond, rho_pre_cond, branch = state.qc, state.rho, _condensation_branch(state)
+    qr_pre_cond = state.qr   # WRF L_qr set point (:3236-3239)
     state, cloud_condensed = _saturation_adjustment_aero(state, dt)
+    cloud_sed_on = _wrf_l_qc_any(qc_pre_cond, rho_pre_cond, state.qc, branch)   # WRF ANY(L_qc) (:3646, :3824)
     state = _rain_evaporation_aero(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
-    state, precip = _sedimentation_aero(state, dt, THOMPSON_AERO_TABLES)
+    cloud_rho = _cloud_sed_rho_stages(rho_pre_cond, qr_pre_cond, state)   # WRF density stages (K5, D2)
+    state, precip = _sedimentation_aero(state, dt, THOMPSON_AERO_TABLES, cloud_sed_on, cloud_rho)
     state = _instant_melt_freeze_aero(state, dt)
     state = _finish_aero(state, THOMPSON_AERO_TABLES)
     state = _select_state(valid, state, fallback)

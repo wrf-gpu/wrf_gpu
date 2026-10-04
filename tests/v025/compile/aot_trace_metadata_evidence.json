@@ -1,0 +1,79 @@
+{
+  "experiment": "CP28/CP29/CP30wire",
+  "scope": "Compile-only GPU AOT trace metadata; numerical regression of the identical native code, not independent WRF fidelity; R3 full-process still pending",
+  "program": "immutable main6302 source0fcc944a; PROD d01/d02 dt54/18 legacy sound10 nativeflagsOFF normalautotuning",
+  "GPU_platform_assertion": "test_debug_strip.py asserts jax.devices()[0].platform == gpu before either load",
+  "removed": "OpMetadata op_type/op_name/source coords/stackframe id; HloModule stackframe index; pinned jaxlib0.10.0 legacy GPU schema only",
+  "preserved": "IFRT header, computational instruction fields, module config, buffer assignment, PTX, native cubin/ELF bytes and original CompileOptions; original lower digest unchanged",
+  "original_deserialize_seconds": {
+    "d01": 32.37048,
+    "d02": 19.56195
+  },
+  "GPU_regression": {
+    "scope": "debug-source-stack trim only; originalABI/PTX/binary/options unchanged; numerical regression not independentfidelity",
+    "rows": [
+      {
+        "domain": "d01",
+        "clean_load_s": 12.447946430998854,
+        "ready_from_process_s": 17.812644061021274,
+        "checks": {
+          "1": {
+            "equal_leaves": 130,
+            "total_leaves": 130
+          },
+          "33": {
+            "equal_leaves": 130,
+            "total_leaves": 130
+          }
+        }
+      },
+      {
+        "domain": "d02",
+        "clean_load_s": 6.522294422000414,
+        "ready_from_process_s": 68.14393570201355,
+        "checks": {
+          "1": {
+            "equal_leaves": 121,
+            "total_leaves": 121
+          },
+          "100": {
+            "equal_leaves": 121,
+            "total_leaves": 121
+          }
+        }
+      }
+    ],
+    "variant": "clean",
+    "process_s": 107.05810733602266
+  },
+  "production_equivalence": [
+    {
+      "domain": "d01",
+      "rewrite_seconds": 13.162318841990782,
+      "production_matches_GPU_verified_blob": true,
+      "sha256": "eacb52c66f5f2a012beffff5c428fef31c0019f3ba47f5281cc43e6f543f6ffc",
+      "status": {
+        "reason": "source-trace-labels",
+        "removed_fields": 638370,
+        "original_bytes": 253278503,
+        "compact_bytes": 228327136
+      }
+    },
+    {
+      "domain": "d02",
+      "rewrite_seconds": 16.540437129995553,
+      "production_matches_GPU_verified_blob": true,
+      "sha256": "c86eeb306c994d0a2f3f350f43a98ad0d5a35639bb362d3d54264f8d28193dea",
+      "status": {
+        "reason": "source-trace-labels",
+        "removed_fields": 380599,
+        "original_bytes": 233834643,
+        "compact_bytes": 217344843
+      }
+    }
+  ],
+  "profiler_opt_out": "GPUWRF_AOT_KEEP_TRACE_METADATA=1 before export/load; compact cached blob refused for rich request; unsupported format/version retains original",
+  "cost_accounting": "CPU compaction seconds exposed in serialization status and added to precompile compile_seconds",
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2",
+  "tests": "7 metadata structural/production policy tests + GPU 130/121 raw leaves both ordinary/radiation; all finite"
+}

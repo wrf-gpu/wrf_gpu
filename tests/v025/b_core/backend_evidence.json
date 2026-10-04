@@ -1,0 +1,45 @@
+{
+  "audit": "E13",
+  "timing_claims_stand": [
+    "BC15",
+    "BC16 timing summary",
+    "BC17",
+    "BC18"
+  ],
+  "timing_authority": "bench_acoustic.py main rejects backend != gpu unless --interpret; direct Python with default interpret false; all nsys/ncu launches used that main",
+  "oracle_claims_require_asserted_rerun": [
+    "BC12",
+    "BC14 stress",
+    "BC15/BC16 oracle",
+    "BC17 oracle",
+    "BC18 oracle"
+  ],
+  "oracle_status": "direct Python, no pytest/conftest; JAX_PLATFORMS=cuda and non-interpreted Pallas but no explicit platform assertion in verifier; requeue current corrected full-shape 1/2/4 gates as BC21",
+  "pytest_gpu_claims_to_relabel_cpu": [],
+  "already_cpu": [
+    "BC01",
+    "BC13",
+    "BC19a",
+    "BC19b",
+    "all CPU crops/bisects BC02-BC11"
+  ],
+  "invalid_oracle_history": "BC12/BC15/BC16/BC17 old-caller fidelity remains withdrawn independently of backend audit; red BC14 preserved",
+  "phase2": "pending BC20 profile_prod_step.py explicitly checks gpu backend",
+  "source_assertion_fix": "verify_pristine.py main now rejects platform != gpu for device oracle",
+  "asserted_current_oracle_rerun": "BC21: both full PROD GPU1/2/4 passed,0guards; both processes explicitly asserted gpu NVIDIA GeForce RTX5090 in run.log",
+  "current_oracle_receipts": {
+    "d01_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d01_oracle.json",
+      "sha256": "1608d2ea6593f6ad2adb57ca026f444353fc3f4c85d596e7ad25ffb4eaaf5e20"
+    },
+    "d02_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d02_oracle.json",
+      "sha256": "39f6d85dc4a57dc1cffe6cbac86cc19d91288ee02870dadb6c9c28d9feaaf6ef"
+    },
+    "run.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/run.log",
+      "sha256": "64bdb6c2bcabb60a2dc3cf7451876a15458296dd08cbba624f57833e23c680db"
+    }
+  },
+  "asserted_verifier_sha256": "ba9d7222560dfde54c18895b7915c72ab0c72b053013ebc25bc825799fad96f8"
+}

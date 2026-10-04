@@ -268,6 +268,11 @@ Safety rails to explain:
   reports `{domain, field, level, step, sim-time, index}`.
 - For `--max-dom > 1`, a CPU-side VRAM preflight runs before the long compile and
   fails closed with exit 75 if there is not enough headroom.
+  - On a normal machine that is the only check. Run `python -m gpuwrf.cli run …` directly; no lock wrapper is needed.
+  - The GPU-lock proof (`scripts/with_gpu_lock.sh`) is enforced only on hosts with the shared dev lock
+    (`/tmp/wrf_gpu2_gpu.lock` exists) or with `GPUWRF_REQUIRE_GPU_LOCK=1`.
+  - A first run of a new geometry (no memory plan yet) needs max(24 GiB, 50 % of the card) free.
+    On a smaller card set `GPUWRF_MIN_FREE_VRAM_GIB`.
 - Terrain above about 6000 m can diverge and is expected to fail closed with 0
   bad frames.
 - The nested pipeline currently uses a fixed 30-minute radiation target rather
@@ -294,6 +299,54 @@ Safety rails to explain:
   Preserve the versioned cache and a stable staging namespace. A safe JIT/AOT
   rebuild is expected on a miss; report the compile delay rather than treating
   it as a numerical failure or promising a warm hit.
+
+### Several cases on one GPU
+
+When the user has several nested cases (e.g. a nightly set of dates), run them
+concurrently with one launcher:
+
+```bash
+scripts/run_parallel_cases.sh --out-root runs/batch_01 \
+  /data/case_a /data/case_b /data/case_c \
+  -- --domains-from-namelist --hours 24
+```
+
+On a host with the shared dev GPU lock, wrap the whole batch once:
+`scripts/with_gpu_lock.sh --label batch -- scripts/run_parallel_cases.sh …`.
+
+- One `gpuwrf run` process per case. `--input-dir` and `--output-dir` (`<out-root>/<case>/wrfout`) are set per case.
+- After `--` you may give these case options, spelled out exactly (abbreviations are refused):
+  - `--domains-from-namelist`, `--max-dom`, `--domain`, `--hours`
+  - `--emit-initial-history`, `--[no-]aot-prefetch`, `--feedback`, `--score`, `--force-gpu-run`
+- Refused with a reason:
+  - per-case paths: namelist, scratch, proof and compare-cpu dirs;
+  - checkpoint and resume options (run such a case alone with the CLI);
+  - `--dry-run` (use the launcher's own).
+- If the launcher fails, it stops every case it started and every helper, writes the receipts, and reports the original error.
+  Use a fresh `--out-root` per batch: history files are never overwritten.
+- Admission is first-in-first-out. A case starts while the summed per-case need fits the free
+  VRAM at launch and the summed host need fits `MemAvailable` minus 8 GB.
+  - **Per-case VRAM:** C-auto memory plan for 2-domain nests; 3-nest currently runs
+    with demand allocation (known issue, fix in v0.3.1). The launcher still records
+    measured per-case memory for admission. For two-domain plans, allow the pool
+    plus at least 1 GiB outside it. A new geometry runs alone for sizing before
+    further cases are admitted.
+  - **Host need** is 1.1× the measured peak RSS, or 16 GB before anything was measured.
+  - Run `--dry-run` first to print the admission plan.
+  - `--max-parallel K` caps concurrency. `--pool-gib P` pins a fixed pool instead; single-domain cases need it.
+- Compatible same-geometry cases share the warm cache. Measured host and GPU
+  memory determine admission; the release N-sweep records the achieved concurrency
+  and throughput. Three-nest v0.3.0 measurements include demand-allocation overhead.
+- Receipts:
+  - `<out-root>/<case>/receipt.json`: rc, wall time, peak RSS, sizing, per-frame write times, finite check.
+  - `<out-root>/parallel_run.json`: batch wall time and wall seconds per case-hour.
+  - `gpu_dmon.log`: power, utilisation and memory.
+- `--compress` deflates finished history frames losslessly in the background
+  (`nccopy -d1 -s`, every value verified; about 4.7× smaller). Do not combine it
+  with `--checkpoint-dir`.
+- Stopping:
+  - A host-RAM watchdog stops all cases below 6 GB `MemAvailable`.
+  - TERM or Ctrl-C stops all cases: TERM first, KILL after 60 s.
 
 ## Step 6 - Deliver and Verify
 
@@ -327,7 +380,7 @@ State what was verified:
 | --- | --- | --- |
 | Noah-MP, RRTM/RRTMG, or Thompson table error | `GPUWRF_WRF_ROOT` is missing or wrong | Set `GPUWRF_WRF_ROOT` to a pristine WRF v4 source/run tree and rerun. |
 | Namelist rejected before compile | Unsupported or unsafe option | Read the named reason, report it to the user, and ask before changing physics. |
-| Nested run exits 75 before compile | CPU-side VRAM preflight failed | Free GPU memory, reduce the case, or use `--force-gpu-run` only as an explicit operator override. |
+| Nested run exits 75 before compile | CPU-side VRAM preflight failed (or, on a dev-lock host, the GPU lock is not held) | Free GPU memory, reduce the case, set `GPUWRF_MIN_FREE_VRAM_GIB` on a smaller card, run through `scripts/with_gpu_lock.sh` on a dev-lock host, or use `--force-gpu-run` only as an explicit operator override. |
 | Scratch fills memory | Scratch path is tmpfs | Use `--scratch-dir` or `GPUWRF_TMPDIR`/`GPUWRF_SCRATCH` on real disk. |
 | First run looks hung | Cold JAX compile with no output | Tell the user the expected compile range and wait. Later runs should use the warm cache. |
 | `jax.devices()` lists only CPU | CPU JAX install or CUDA driver/JAX mismatch | Install `jax[cuda13]` and confirm the driver with `nvidia-smi`. |

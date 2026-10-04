@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import ast
 import importlib.util
 from pathlib import Path
@@ -59,6 +61,7 @@ def test_independent_algebraic_oracles() -> None:
 
 def test_authenticated_redesign_reproduces_bounded_no_go() -> None:
     module = _module()
+    require_historical(module.STEP_9313, module.STEP_9314)
     proof = module.build_proof()
 
     assert proof["status"] == "COMPLETE"

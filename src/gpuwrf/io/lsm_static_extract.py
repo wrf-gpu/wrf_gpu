@@ -347,7 +347,7 @@ def _wrfinput_times(run: Any, domain: str) -> str:
     -- the season ISN derivation needs only this scalar timestamp.
     """
 
-    from netCDF4 import Dataset
+    from gpuwrf.io.netcdf_lock import Dataset
 
     with Dataset(run.wrfinput_file(domain), "r") as ds:
         if "Times" not in ds.variables:

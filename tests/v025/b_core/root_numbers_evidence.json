@@ -1,0 +1,240 @@
+{
+ "schema": "wrf_gpu2.b_core.root_numbers_evidence.v1",
+ "finding": "B37 (+ root rk_update_scalar msfty/spec_zone)",
+ "scope": "root (specified) d01 Ni/Nr transport: product helper + root update vs pristine REAL4 advect_scalar_pd/advect_scalar -> rk_update_scalar (solve_em other_scalar_advance wiring, sc_tend=0); CPU; not a forecast/D6 claim",
+ "verdict": {
+  "legacy": true,
+  "native": true,
+  "deletion_rejected": true,
+  "dispatch_test": "tests/v025/b_core/test_root_number_transport.py 1 passed 59.5 s CPU: real d01 own-step 3/3 RK stages call number transport, Ni/Nr in all 3 updates; pre-fix root branch 0 calls"
+ },
+ "v1_failure": "v1 compared helper with msfty*pristine and FAILED (Nr max 0.538 vs bound 0.0074); ours/pristine = 1+-1e-6 and residual tracked msfty-1 (corr -0.99999): helper returns raw advect_tend; root update omitted rk_update_scalar's msfty (also root moisture). Fixed in _root_scalar_stage_tendencies; v1 kept as pd_gate_v1_legacy_FAIL.json",
+ "limits": [
+  "PROD d01 has no ice (QNICE=0 every hour): Ni slot fed 1e8*QCLOUD (real cloud-edge structure)",
+  "GPUWRF_DYN_ADVECTION_FP32 reaches only the plain RK1/2 stencil (stage C); final-stage PD limiter is the retained fp64 path",
+  "root ring-0 still follows the end-of-step apply_lateral_boundaries pass (pre-existing; WRF uses per-stage spec/relax sc_tend); species without a bdy leaf keep ring advection (no flow_dep_bdy)"
+ ],
+ "legacy": [
+  {
+   "pair": "02:00:36->03:00:00",
+   "species": "Ni",
+   "operand": "1e8*QCLOUD",
+   "limiter_cells": 2648,
+   "stageA": [
+    1.3502474374545272,
+    47.679080000000006
+   ],
+   "stageB": [
+    0.008138214427162893,
+    0.1009865546875,
+    9.430736964896495e-05,
+    0.01009865546875
+   ],
+   "stageC": [
+    0.008457670315692667,
+    0.1005100859375,
+    9.603759945953589e-05,
+    0.010051008593749999
+   ],
+   "deletion_B_max": 2.163346301556885,
+   "deletion_C_max": 1.0132637694143796,
+   "passed": true
+  },
+  {
+   "pair": "02:00:36->03:00:00",
+   "species": "Nr",
+   "operand": "QNRAIN",
+   "limiter_cells": 4465,
+   "stageA": [
+    0.00017521540635812016,
+    0.007443963623046876
+   ],
+   "stageB": [
+    9.86552851856004e-07,
+    1.4967809677124022e-05,
+    8.602230035108518e-09,
+    1.4967809677124022e-06
+   ],
+   "stageC": [
+    9.732260890515931e-07,
+    1.5064166069030762e-05,
+    8.294706527929166e-09,
+    1.506416606903076e-06
+   ],
+   "deletion_B_max": 0.00030021951824465987,
+   "deletion_C_max": 0.00014381240563177133,
+   "passed": true
+  },
+  {
+   "pair": "09:00:00->10:00:18",
+   "species": "Ni",
+   "operand": "1e8*QCLOUD",
+   "limiter_cells": 2993,
+   "stageA": [
+    1.844099419482518,
+    43.31198500000001
+   ],
+   "stageB": [
+    0.015955502931319643,
+    0.12944984375,
+    0.00010601149811561572,
+    0.012944984375
+   ],
+   "stageC": [
+    0.012885490526969079,
+    0.129353453125,
+    0.00010414847192755276,
+    0.012935345312499999
+   ],
+   "deletion_B_max": 1.6005684645087968,
+   "deletion_C_max": 0.8461442704801811,
+   "passed": true
+  },
+  {
+   "pair": "09:00:00->10:00:18",
+   "species": "Nr",
+   "operand": "QNRAIN",
+   "limiter_cells": 9060,
+   "stageA": [
+    0.006576647536348901,
+    0.21449955078125002
+   ],
+   "stageB": [
+    4.170407052583869e-05,
+    0.0005647568359375,
+    3.3820668149863404e-07,
+    5.6475683593749996e-05
+   ],
+   "stageC": [
+    3.169169048078402e-05,
+    0.0005658067626953125,
+    3.331225601910348e-07,
+    5.658067626953125e-05
+   ],
+   "deletion_B_max": 0.007898230922890548,
+   "deletion_C_max": 0.003944860755098034,
+   "passed": true
+  }
+ ],
+ "native": [
+  {
+   "pair": "02:00:36->03:00:00",
+   "species": "Ni",
+   "operand": "1e8*QCLOUD",
+   "limiter_cells": 2648,
+   "stageA": [
+    1.3502474374545272,
+    47.679080000000006
+   ],
+   "stageB": [
+    0.008138214427162893,
+    0.1009865546875,
+    9.430736964896495e-05,
+    0.01009865546875
+   ],
+   "stageC": [
+    0.008375476500077639,
+    0.1005100859375,
+    9.614283856384929e-05,
+    0.010051008593749999
+   ],
+   "deletion_B_max": 2.163346301556885,
+   "deletion_C_max": 1.0133374640629427,
+   "passed": true
+  },
+  {
+   "pair": "02:00:36->03:00:00",
+   "species": "Nr",
+   "operand": "QNRAIN",
+   "limiter_cells": 4465,
+   "stageA": [
+    0.00017521540635812016,
+    0.007443963623046876
+   ],
+   "stageB": [
+    9.86552851856004e-07,
+    1.4967809677124022e-05,
+    8.602230035108518e-09,
+    1.4967809677124022e-06
+   ],
+   "stageC": [
+    9.936613354355472e-07,
+    1.5064166069030762e-05,
+    8.330601094881164e-09,
+    1.506416606903076e-06
+   ],
+   "deletion_B_max": 0.00030021951824465987,
+   "deletion_C_max": 0.0001438194945114768,
+   "passed": true
+  },
+  {
+   "pair": "09:00:00->10:00:18",
+   "species": "Ni",
+   "operand": "1e8*QCLOUD",
+   "limiter_cells": 2993,
+   "stageA": [
+    1.844099419482518,
+    43.31198500000001
+   ],
+   "stageB": [
+    0.015955502931319643,
+    0.12944984375,
+    0.00010601149811561572,
+    0.012944984375
+   ],
+   "stageC": [
+    0.01304430111485999,
+    0.129353453125,
+    0.0001043084500170569,
+    0.012935345312499999
+   ],
+   "deletion_B_max": 1.6005684645087968,
+   "deletion_C_max": 0.846220071015523,
+   "passed": true
+  },
+  {
+   "pair": "09:00:00->10:00:18",
+   "species": "Nr",
+   "operand": "QNRAIN",
+   "limiter_cells": 9060,
+   "stageA": [
+    0.006576647536348901,
+    0.21449955078125002
+   ],
+   "stageB": [
+    4.170407052583869e-05,
+    0.0005647568359375,
+    3.3820668149863404e-07,
+    5.6475683593749996e-05
+   ],
+   "stageC": [
+    3.190646788198137e-05,
+    0.0005658067626953125,
+    3.3371678093087864e-07,
+    5.658067626953125e-05
+   ],
+   "deletion_B_max": 0.007898230922890548,
+   "deletion_C_max": 0.003945095027219736,
+   "passed": true
+  }
+ ],
+ "registrations": {
+  "REGISTRATION_v1.json": "d99f579ee9963d84c7621f4b138a792d6ce716a961e14cf181c0dce0e252b486",
+  "REGISTRATION_v2.json": "e7d41e21c8d7bc7362d1bc899434c9e0c41056e2e629049ca372b86955e52788",
+  "REGISTRATION_v2c.json": "f7c3291bfe490c61018e49da522ca7aa93723d6e8e3e90a8662328f5473cabb5"
+ },
+ "artifacts": {
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/chain_gate_legacy.json": "3f9c12990ca68eea8e304cfefe7516197c3d27a54c57094778dc2373944d1cb0",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/chain_gate_native.json": "c69cf8e7848b4f3cc4514e71f47484453d053dd654fe0badf35acccd5d0e167f",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/pd_gate_v1_legacy_FAIL.json": "9323d542c7c0f76698511c4fa1bc5f574c19f05a6164b091ec66585bb9332a98",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/probe_chain.py": "88416506aacf1fe7c27b11693144dcaa6c2e09a6af864d238ef9db5522f4d6e1",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/oracle_off/manifest.json": "5838934316d07de1b868ea06196131c90324a19f65565b6ba68bc59cb928cfd7",
+  "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC42_root_numbers/update_off/manifest.json": "22957ac52474654760afd2b8f2200bc7c2dff2fc99d13f7421d2a256cfe484d1"
+ },
+ "source_hashes": {
+  "tests/v025/b_core/pd_scalar_oracle.py": "ec1557390dcdd9c24deeeffc1fd8d1329b6386a4aea16198e9d98cfc37667bd0",
+  "tests/v025/b_core/update_scalar_oracle.py": "d067c07de1f4dca65563fb1dd90990d934f43921b44a6033db8bf9bf08240bb3",
+  "tests/v025/b_core/scalar_oracle.py": "92ebedde52fca6ac8f30477df7b2d5b21882126f4d0dc7974763bed2b22bca84",
+  "tests/v025/b_core/test_root_number_transport.py": "20646c64906ad81e8b5acfacbb6fe421222691ca4e69c4abe3a0be537184a067"
+ }
+}

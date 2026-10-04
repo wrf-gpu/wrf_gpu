@@ -116,6 +116,39 @@ def _env_bool(name: str, default: bool) -> bool:
 # `_SW_COLUMN_TILING=False` or `_SW_COLUMN_TILE_COLS=0` for the whole-column
 # reference path used by proofs.
 _SW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_SW_COLUMN_TILING", True)
+_MCICA_JUMPAHEAD = _env_bool("GPUWRF_MCICA_JUMPAHEAD", False)
+_FUSED_QUADRATURE = _env_bool("GPUWRF_RRTMG_SW_FUSED_QUADRATURE", False)
+
+
+def _sw_band_sums_mode():
+    """lever-phys LP02 (trace time): on the WRF-REAL fused path, one Pallas launch per
+    band forms the layer optics, reftra and BOTH vrtqdr streams (total + clear) and
+    emits g-summed fluxes (GPUWRF_RRTMG_SW_BAND_SUMS=1); =2 builds every band's taumol
+    once per column tile and solves all bands in ONE launch (no band scan); =3 unrolls the
+    14 bands (static taumol + the per-band launch, no while loop / lax.switch).  Default 0."""
+
+    value = os.environ.get("GPUWRF_RRTMG_SW_BAND_SUMS", "0")
+    return int(value) if value in ("1", "2", "3") else 0
+
+
+def _canonical_float():
+    """Trace-time float dtype: float64 on the default path, explicit REAL (float32)
+    inside the WRF-REAL entries' ``jax.enable_x64(False)`` scope (review A1: no
+    implicit float64 truncation / trace-time UserWarnings)."""
+
+    return jax.dtypes.canonicalize_dtype(jnp.float64)
+
+
+def _real_entry() -> bool:
+    """WRF-REAL solver entry (state/tables REAL32) only when BOTH radiation fast flags
+    are on, i.e. exactly when the coupler's shared preparation is REAL too
+    (physics_couplers._rrtmg_real_enabled; review-rrtmg32 A2). A single-flag
+    config keeps the f64 entry around the fused kernel instead of mixing an f64
+    coupler with a REAL solver."""
+
+    from gpuwrf.physics import rrtmg_lw
+
+    return bool(_FUSED_QUADRATURE and rrtmg_lw._FUSED_TRANSFER)
 _SW_COLUMN_TILE_COLS = max(
     0,
     _env_int(
@@ -123,6 +156,73 @@ _SW_COLUMN_TILE_COLS = max(
         _env_int("GPUWRF_RRTMG_COLUMN_TILE_COLS", 1024),
     ),
 )
+# BP49: with the WRF-REAL radiation entries on (both fast flags, ``_real_entry``)
+# a 4096-column tile is byte-identical to 1024 and cuts the band x tile launches
+# ~4x (PROD d02 radiation call 210 -> 120 ms wall) for ~0.45 GiB more temps.
+# An explicit tile env var always wins; the f64 path keeps 1024.
+_SW_COLUMN_TILE_COLS_EXPLICIT = (
+    "GPUWRF_RRTMG_SW_COLUMN_TILE_COLS" in os.environ or "GPUWRF_RRTMG_COLUMN_TILE_COLS" in os.environ
+)
+_REAL_DEFAULT_COLUMN_TILE_COLS = 4096
+
+
+def _default_sw_column_tile_cols() -> int:
+    """Trace-time default tile width (explicit env > REAL-path 4096 > 1024)."""
+
+    if _SW_COLUMN_TILE_COLS_EXPLICIT or not _real_entry():
+        return _SW_COLUMN_TILE_COLS
+    return _REAL_DEFAULT_COLUMN_TILE_COLS
+
+
+# Pytree layout of :class:`RRTMGSWColumnState`, a partition of ``__slots__``.
+#
+# v0.25 I2: the CLWRF SSP245 greenhouse-gas scalars moved from the STATIC aux to
+# DYNAMIC children.  They are plain multiplicative gas amounts in the radiative
+# transfer -- they set no array shape -- but as aux they were `jax.jit`
+# compile constants, and the coupler advances them with the forecast clock, so
+# every wrfout output time minted a NEW SW executable
+# (`.agent/sprints/2026-08-28-v0250-i1-identity-fused-truth/M9_RETRACE_PROOF.json`).
+# As children the SW program depends on geometry only.  SW has no shape-setting
+# scalar, so its static aux is now empty.
+_SW_ARRAY_FIELDS: tuple[str, ...] = (
+    "T",
+    "p",
+    "qv",
+    "qc",
+    "qi",
+    "qs",
+    "qg",
+    "cloud_fraction",
+    "surface_albedo",
+    "coszen",
+    "dz",
+    "rho",
+    "solar_source_scale",
+    "pressure_interfaces",
+    "temperature_interfaces",
+    "ozone_vmr",
+)
+_SW_GAS_FIELDS: tuple[str, ...] = ("co2_vmr", "n2o_vmr", "ch4_vmr")
+_SW_STATIC_FIELDS: tuple[str, ...] = ()
+_SW_CHILD_FIELDS: tuple[str, ...] = _SW_ARRAY_FIELDS + _SW_GAS_FIELDS
+# Non-array scalars, in the historical aux order, for equality and hashing.
+_SW_SCALAR_FIELDS: tuple[str, ...] = _SW_STATIC_FIELDS + _SW_GAS_FIELDS
+
+
+def _resolved_gas_scalar(value):
+    """Coerce and validate host gases; preserve JAX tracer leaves.
+
+    The greenhouse-gas scalars are dynamic pytree children, so ``tree_unflatten``
+    hands them back as JAX tracers inside ``jax.jit``.  A tracer cannot be read on
+    the host, so it is passed through untouched -- it was already validated when
+    the state was first constructed. Concrete inputs keep historical ``float``
+    coercion and the finite/positive check that follows it."""
+
+    if value is None:
+        return None
+    if isinstance(value, jax.core.Tracer):
+        return value
+    return float(value)
 
 
 @jax.tree_util.register_pytree_node_class
@@ -220,11 +320,12 @@ class RRTMGSWColumnState:
             value is None for value in gases
         ):
             raise ValueError("SW greenhouse-gas VMR metadata must be all supplied or all None")
-        resolved_gases = tuple(
-            None if value is None else float(value) for value in gases
-        )
-        if not all(value is None for value in resolved_gases) and any(
-            not np.isfinite(value) or value <= 0.0 for value in resolved_gases
+        resolved_gases = tuple(_resolved_gas_scalar(value) for value in gases)
+        concrete_gases = [
+            value for value in resolved_gases if isinstance(value, float)
+        ]
+        if concrete_gases and any(
+            not np.isfinite(value) or value <= 0.0 for value in concrete_gases
         ):
             raise ValueError("SW greenhouse-gas VMR metadata must be finite and positive")
         self.co2_vmr, self.n2o_vmr, self.ch4_vmr = resolved_gases
@@ -237,25 +338,25 @@ class RRTMGSWColumnState:
         return type(self)(**values)
 
     def tree_flatten(self):
-        """Presents all state arrays as JAX leaves."""
+        """Presents all state arrays AND the gas scalars as JAX leaves."""
 
-        children = tuple(getattr(self, name) for name in self.__slots__[:16])
-        static = tuple(getattr(self, name) for name in self.__slots__[16:])
+        children = tuple(getattr(self, name) for name in _SW_CHILD_FIELDS)
+        static = tuple(getattr(self, name) for name in _SW_STATIC_FIELDS)
         return children, static
 
     @classmethod
     def tree_unflatten(cls, aux, children):
         """Rebuilds the state after JAX transforms."""
 
-        return cls(
-            *children[:13],
-            pressure_interfaces=children[13],
-            temperature_interfaces=children[14],
-            ozone_vmr=children[15],
-            co2_vmr=aux[0],
-            n2o_vmr=aux[1],
-            ch4_vmr=aux[2],
-        )
+        fields = dict(zip(_SW_CHILD_FIELDS, children, strict=True))
+        fields.update(zip(_SW_STATIC_FIELDS, aux, strict=True))
+        # JAX also rebuilds pytrees with ArgInfo/ShapeDtypeStruct placeholders
+        # when lowering. Reconstruction must retain leaves without constructor
+        # conversion or validation; ordinary construction validates inputs.
+        state = object.__new__(cls)
+        for name, value in fields.items():
+            setattr(state, name, value)
+        return state
 
     def __eq__(self, other: object) -> bool:
         """Implements array-aware equality outside JIT for tests."""
@@ -272,13 +373,13 @@ class RRTMGSWColumnState:
                 and np.array_equal(np.asarray(left), np.asarray(right))
             )
 
-        return tuple(getattr(self, name) for name in self.__slots__[16:]) == tuple(
-            getattr(other, name) for name in self.__slots__[16:]
+        return tuple(getattr(self, name) for name in _SW_SCALAR_FIELDS) == tuple(
+            getattr(other, name) for name in _SW_SCALAR_FIELDS
         ) and all(
             leaf_equal(left, right)
             for left, right in zip(
-                (getattr(self, name) for name in self.__slots__[:16]),
-                (getattr(other, name) for name in self.__slots__[:16]),
+                (getattr(self, name) for name in _SW_ARRAY_FIELDS),
+                (getattr(other, name) for name in _SW_ARRAY_FIELDS),
                 strict=True,
             )
         )
@@ -294,9 +395,21 @@ class RRTMGSWColumnState:
             host = np.asarray(leaf)
             parts.append((tuple(host.shape), str(host.dtype), host.tobytes()))
         parts.append(
-            tuple((name, getattr(self, name)) for name in self.__slots__[16:])
+            tuple((name, getattr(self, name)) for name in _SW_SCALAR_FIELDS)
         )
         return hash(tuple(parts))
+
+
+# The pytree field groups above must stay an exact partition of ``__slots__``:
+# a field added to the class but left out of both groups would silently vanish
+# from the flattened state (a wrong-result hole), and one listed twice would be
+# passed twice to the constructor.
+if tuple(sorted(_SW_CHILD_FIELDS + _SW_STATIC_FIELDS)) != tuple(
+    sorted(RRTMGSWColumnState.__slots__)
+):  # pragma: no cover - import-time structural guard
+    raise RuntimeError(
+        "RRTMGSWColumnState pytree field groups are out of sync with __slots__"
+    )
 
 
 class RRTMGSWColumnResult(NamedTuple):
@@ -454,7 +567,7 @@ def _setcoef_state_dtype(coef: _SWSetCoefState, dtype) -> _SWSetCoefState:
 def _leaves(state: RRTMGSWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
-    return (getattr(state, name) for name in RRTMGSWColumnState.__slots__[:16])
+    return (getattr(state, name) for name in _SW_ARRAY_FIELDS)
 
 
 def _clip_state(state: RRTMGSWColumnState) -> RRTMGSWColumnState:
@@ -503,7 +616,7 @@ def _column_count(leading_shape: tuple[int, ...]) -> int:
 def _effective_sw_column_tile_cols(ncol: int, column_tile_cols: int | None = None) -> int:
     """Return the bounded SW tile width for a flattened column batch."""
 
-    cap = _SW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    cap = _default_sw_column_tile_cols() if column_tile_cols is None else int(column_tile_cols)
     return min(max(int(cap), 1), int(ncol))
 
 
@@ -1190,7 +1303,7 @@ def _wrf_o3_vmr(pressure_interfaces_pa):
     pt1 = jnp.where(pt <= lower, zero, pt - lower)
     pt2 = jnp.where(pt <= upper, zero, pt - upper)
     o3_mmr = jnp.sum((pb2 - pb1 - pt2 + pt1) * o3ann, axis=-1) / jnp.maximum(plev[..., :-1] - plev[..., 1:], jnp.float32(1.0e-12))
-    return (o3_mmr * jnp.float32(0.603461)).astype(jnp.float64)
+    return (o3_mmr * jnp.float32(0.603461)).astype(_canonical_float())
 
 
 def _sw_o3_vmr_for_state(state: RRTMGSWColumnState, pressure_interfaces_pa):
@@ -1723,7 +1836,7 @@ def _kissvec_step(seed1, seed2, seed3, seed4):
     seed3 = jnp.uint32(18000) * jnp.bitwise_and(seed3, jnp.uint32(65535)) + jnp.right_shift(seed3, jnp.uint32(16))
     seed4 = jnp.uint32(30903) * jnp.bitwise_and(seed4, jnp.uint32(65535)) + jnp.right_shift(seed4, jnp.uint32(16))
     kiss = seed1 + seed2 + jnp.left_shift(seed3, jnp.uint32(16)) + seed4
-    signed = kiss.astype(jnp.int32).astype(jnp.float64)
+    signed = kiss.astype(jnp.int32).astype(_canonical_float())
     random = signed * 2.328306e-10 + 0.5
     return seed1, seed2, seed3, seed4, random
 
@@ -1731,10 +1844,15 @@ def _kissvec_step(seed1, seed2, seed3, seed4):
 def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     """Builds WRF `mcica_subcol_sw` random-overlap cloud masks for reduced SW g-points."""
 
+    if _MCICA_JUMPAHEAD:
+        from gpuwrf.kernels.rad_mcica import sw_cloud_mask
+
+        return sw_cloud_mask(p_pa, cloud_fraction, gpoint_mask)
+
     # WRF passes play in mb, then mcica_subcol_sw converts it back to Pa in
     # real*4 before deriving KISS seeds from the bottom four layer pressures.
     p_seed = (p_pa.astype(jnp.float32) * jnp.float32(0.01)).astype(jnp.float32) * jnp.float32(100.0)
-    p_seed = p_seed.astype(jnp.float64)
+    p_seed = p_seed.astype(_canonical_float())
     frac = p_seed - jnp.floor(p_seed)
     seed = (frac[..., :4].astype(jnp.float32) * jnp.float32(1.0e9)).astype(jnp.uint32)
     seed1, seed2, seed3, seed4 = (seed[..., 0], seed[..., 1], seed[..., 2], seed[..., 3])
@@ -1752,7 +1870,7 @@ def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     cdf = jnp.moveaxis(cdf, (0, 1), (-1, -2))
     cloudy_global = cdf >= (1.0 - cloud_fraction[..., :, None])
     cloudy_reduced = jnp.take(cloudy_global, _SW_GLOBAL_GPOINT_INDEX, axis=-1)
-    return cloudy_reduced.astype(jnp.float64) * gpoint_mask
+    return cloudy_reduced.astype(_canonical_float()) * gpoint_mask
 
 
 def _sw_transmittance_lookup(optical_depth):
@@ -1857,6 +1975,11 @@ def _reftra_eddington(tau, omega, asymmetry, mu0, active):
 
 def _vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans):
     """Applies the WRF `vrtqdr_sw` adding-method vertical quadrature."""
+
+    if _FUSED_QUADRATURE:
+        from gpuwrf.kernels.rad_sw_quadrature import vertical_quadrature
+
+        return vertical_quadrature(pref, prefd, ptra, ptrad, direct_trans)
 
     surface_shape = pref.shape[:-3] + (1, pref.shape[-2], pref.shape[-1])
     ptdbt = jnp.concatenate((jnp.ones(surface_shape, dtype=pref.dtype), jnp.cumprod(direct_trans, axis=-3)), axis=-3)
@@ -2308,6 +2431,55 @@ def _sw_band_scan_optics_fluxes(
     n_acc = 5 if with_clear_sky else 3
     init = tuple(zero_flux for _ in range(n_acc))
 
+    band_sums = _sw_band_sums_mode() if chunk == 1 and _FUSED_QUADRATURE and _real_entry() else 0
+    if band_sums:
+        from gpuwrf.kernels import rad_sw_band_sums
+
+        def band_coeffs(forward, ssa, asy):
+            # scale_cloud_component's band-only terms (tau factor, omega, asymmetry).
+            denom = jnp.maximum(1.0 - forward * ssa, 1.0e-12)
+            omega = jnp.clip(ssa * (1.0 - forward) / denom, 0.0, 0.999999)
+            asym = jnp.clip((asy - forward) / jnp.maximum(1.0 - forward, 1.0e-12), -0.999999, 0.999999)
+            return denom[:, 0], omega[:, 0], asym[:, 0]
+
+        lq, iq, sq = (band_coeffs(liquid_forward, liquid_ssa, liquid_asy),
+                      band_coeffs(ice_forward, ice_ssa, ice_asy),
+                      band_coeffs(snow_forward, snow_ssa, snow_asy))
+        cloud_coeffs = jnp.stack([liquid_coeff[:, 0], ice_coeff[:, 0], snow_coeff[:, 0],
+                                  lq[0], iq[0], sq[0], lq[1], iq[1], sq[1], lq[2], iq[2], sq[2]])
+        incloud = jnp.stack([liquid_incloud[..., 0, 0], ice_incloud[..., 0, 0], snow_incloud[..., 0, 0]], axis=-1)
+
+        if band_sums == 2:
+            tau_all, ray_all = _sw_taumol(coef, tables)
+            parts = rad_sw_band_sums.sw_allband_flux_sums(
+                tau_all, ray_all, cloud_amount, incloud, cloud_coeffs, gpoint_mask,
+                sfluxzen, coszen, surface_albedo, source_scale)
+            parts = parts if with_clear_sky else parts[:3]
+            return tuple(acc + part.astype(out_dtype) for acc, part in zip(init, parts))
+
+        if band_sums == 3:
+            # Same per-band kernel as mode 1, unrolled: no host-driven band loop iterations.
+            accumulated = init
+            for band in range(n_bands):
+                tau_b, ray_b = _sw_taumol_band(band, coef, tables)
+                parts = rad_sw_band_sums.sw_band_flux_sums(
+                    tau_b, ray_b, cloud_amount, incloud, cloud_coeffs, gpoint_mask,
+                    sfluxzen, coszen, surface_albedo, source_scale, jnp.int32(band))
+                parts = parts if with_clear_sky else parts[:3]
+                accumulated = tuple(acc + part.astype(out_dtype) for acc, part in zip(accumulated, parts))
+            return accumulated
+
+        def sums_body(carry, band):
+            tau_b, ray_b = lax.switch(band, taumol_branches)
+            parts = rad_sw_band_sums.sw_band_flux_sums(
+                tau_b, ray_b, cloud_amount, incloud, cloud_coeffs, gpoint_mask,
+                sfluxzen, coszen, surface_albedo, source_scale, band)
+            parts = parts if with_clear_sky else parts[:3]
+            return tuple(acc + part.astype(out_dtype) for acc, part in zip(carry, parts)), None
+
+        accumulated, _ = lax.scan(sums_body, init, jnp.arange(n_tiles))
+        return accumulated
+
     def body(carry, tile_index):
         start = tile_index * chunk
         # ---- per-tile taumol (gas + Rayleigh), built lazily over the tile bands.
@@ -2666,7 +2838,7 @@ def _shortwave_column_tiled_impl(
 ) -> RRTMGSWColumnResult | RRTMGSWM9FluxResult:
     """Runs the SW solve over fixed-size flattened column tiles."""
 
-    configured_tile_cols = _SW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    configured_tile_cols = _default_sw_column_tile_cols() if column_tile_cols is None else int(column_tile_cols)
     if not _SW_COLUMN_TILING or configured_tile_cols <= 0:
         return _shortwave_impl(state, tables, debug, topography, with_clear_sky, m9_flux_only)
 
@@ -2903,6 +3075,13 @@ def compute_rrtmg_sw_intermediates(
     )
 
 
+def _sw_floating_dtype(tree, dtype):
+    """Change radiation floating leaves, retaining masks and integer indices."""
+    return jax.tree.map(lambda value: value.astype(dtype)
+        if hasattr(value, "dtype") and jnp.issubdtype(value.dtype, jnp.floating)
+        else value, tree)
+
+
 @partial(jax.jit, static_argnames=("debug", "with_clear_sky", "column_tile_cols"))
 def solve_rrtmg_sw_column(
     state: RRTMGSWColumnState,
@@ -2921,6 +3100,17 @@ def solve_rrtmg_sw_column(
     main all-sky flux outputs are byte-identical regardless of this flag.
     """
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        # Both WRF radiation schemes use parkind REAL*4. Limit this precision
+        # selection to the existing fast path; preserve output interface types.
+        with jax.enable_x64(False):
+            result = _shortwave_column_tiled_impl(
+                _sw_floating_dtype(state, jnp.float32), _sw_floating_dtype(tables, jnp.float32),
+                debug, None if topography is None else _sw_floating_dtype(topography, jnp.float32),
+                with_clear_sky, column_tile_cols,
+            )
+        return _sw_floating_dtype(result, output_dtype)
     return _shortwave_column_tiled_impl(
         state,
         tables,
@@ -2942,6 +3132,15 @@ def solve_rrtmg_sw_m9_flux_slices(
 ) -> RRTMGSWM9FluxResult:
     """Computes only the SW surface/TOA flux slices consumed by M9 wrfout."""
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        with jax.enable_x64(False):
+            result = _shortwave_column_tiled_impl(
+                _sw_floating_dtype(state, jnp.float32), _sw_floating_dtype(tables, jnp.float32),
+                debug, None if topography is None else _sw_floating_dtype(topography, jnp.float32),
+                False, column_tile_cols, m9_flux_only=True,
+            )
+        return _sw_floating_dtype(result, output_dtype)
     return _shortwave_column_tiled_impl(
         state,
         tables,
@@ -2960,4 +3159,10 @@ def solve_rrtmg_sw_column_debug_stripped(
 ) -> RRTMGSWColumnResult:
     """Hand-stripped sibling used for the HLO debug identity proof."""
 
+    if _real_entry():
+        output_dtype = state.T.dtype
+        with jax.enable_x64(False):
+            result = _shortwave_impl(_sw_floating_dtype(state, jnp.float32),
+                                     _sw_floating_dtype(tables, jnp.float32), False)
+        return _sw_floating_dtype(result, output_dtype)
     return _shortwave_impl(state, tables, False)

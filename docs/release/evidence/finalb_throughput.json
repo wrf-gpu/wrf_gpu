@@ -1,0 +1,109 @@
+{
+  "arms": [
+    {
+      "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n1",
+      "tree": "dead7d004",
+      "n": 1,
+      "hours": 6.0,
+      "wall_s": 99.806,
+      "whole_s_per_case_h": 16.634333333333334,
+      "stepping_s_per_case_h": 7.441200017929077,
+      "vram_sum_pid_peaks_mib": 3916.0,
+      "fb_peak_mib": NaN,
+      "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour",
+      "label": "M",
+      "ref": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n1/parallel_run.json",
+      "gpu_energy_j": 19690.5,
+      "gpu_kj_per_case_h": 3.28175,
+      "gpu_mean_w": 198.8939393939394
+    },
+    {
+      "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n2",
+      "tree": "dead7d004",
+      "n": 2,
+      "hours": 6.0,
+      "wall_s": 157.088,
+      "whole_s_per_case_h": 13.090666666666666,
+      "stepping_s_per_case_h": 5.634500002861023,
+      "vram_sum_pid_peaks_mib": 7960.0,
+      "fb_peak_mib": NaN,
+      "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour",
+      "label": "M",
+      "ref": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n2/parallel_run.json",
+      "gpu_energy_j": 36498.0,
+      "gpu_kj_per_case_h": 3.0414999999999996,
+      "gpu_mean_w": 233.96153846153845
+    },
+    {
+      "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n3",
+      "tree": "dead7d004",
+      "n": 3,
+      "hours": 6.0,
+      "wall_s": 173.293,
+      "whole_s_per_case_h": 9.62738888888889,
+      "stepping_s_per_case_h": 5.5600000063578285,
+      "vram_sum_pid_peaks_mib": 12676.0,
+      "fb_peak_mib": NaN,
+      "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour",
+      "label": "M",
+      "ref": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n3/parallel_run.json",
+      "gpu_energy_j": 51393.0,
+      "gpu_kj_per_case_h": 2.855166666666667,
+      "gpu_mean_w": 298.79651162790697
+    },
+    {
+      "dir": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4",
+      "tree": "dead7d004",
+      "n": 4,
+      "hours": 6.0,
+      "wall_s": 232.292,
+      "whole_s_per_case_h": 9.678833333333333,
+      "stepping_s_per_case_h": 5.33585000038147,
+      "vram_sum_pid_peaks_mib": 17584.0,
+      "fb_peak_mib": NaN,
+      "timing_method": "first-publication polling (1 s); includes output; excludes first forecast hour",
+      "label": "M",
+      "ref": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/parallel_run.json",
+      "gpu_energy_j": 68880.0,
+      "gpu_kj_per_case_h": 2.8699999999999997,
+      "gpu_mean_w": 296.8965517241379
+    }
+  ],
+  "production": {
+    "wall_s": 2713.348,
+    "case_hours": 432,
+    "cases": 6,
+    "hours": 72,
+    "peak_concurrency": 3,
+    "s_per_case_h": 6.280898148148148,
+    "ref": "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r3/parallel_run.json",
+    "method": "whole launcher, six cases including FIFO waves, compression and cleanup"
+  },
+  "development_baseline": {
+    "wall_s": 971.488777526,
+    "hours": 24,
+    "n_cases": 3,
+    "case_dirs": [
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W6/bench24_p3/20260227_18z_a1",
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W6/bench24_p3/20260502_18z_a1",
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W6/bench24_p3/20260614_18z_a1"
+    ],
+    "last_publication_wall_s": null,
+    "s_per_case_h": 13.492899687861112,
+    "timing_method": "24 h process completion (W6, includes output joins)"
+  },
+  "best_N4_endpoint": {
+    "wall_s": 232.292,
+    "hours": 6,
+    "n_cases": 4,
+    "case_dirs": [
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/20260614_18z_a1",
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/20260227_18z_a1",
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/20260502_18z_a1",
+      "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/20260220_18z_a1"
+    ],
+    "last_publication_wall_s": 186.1159999370575,
+    "s_per_case_h": 9.678833333333333,
+    "timing_method": "whole launcher completion, including output compression and cleanup"
+  }
+}

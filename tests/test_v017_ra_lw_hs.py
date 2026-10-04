@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 
 import pytest
+from _historical_artifacts import require_historical
 
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_PLATFORMS", "cpu")
@@ -50,7 +51,9 @@ RTH_ABS_FP64 = 1.0e-18
 
 
 def _load(save_dir: Path, cid: int) -> dict:
-    with open(save_dir / f"hs_case_{cid}.json", encoding="utf-8") as fh:
+    path = save_dir / f"hs_case_{cid}.json"
+    require_historical(path)
+    with path.open(encoding="utf-8") as fh:
         return json.load(fh)
 
 

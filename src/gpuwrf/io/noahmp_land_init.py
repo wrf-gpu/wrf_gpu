@@ -31,6 +31,7 @@ from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
+from gpuwrf.physics.noahmp.precision import native_real_enabled, real_tree
 
 
 # Standard WRF MPTABLE / Noah-MP table directory (pristine WRF run/).
@@ -63,13 +64,26 @@ def build_noahmp_land_state(
     *,
     table_dir: str | Path | None = None,
 ) -> tuple[NoahMPLandState, NoahMPStatic, dict[str, Any]]:
+    """Warm-start land with one read-only wrfinput handle during init."""
+    run = Gen2Run(Path(run_dir))
+    with run.input_read_scope(domain):
+        return _build_noahmp_land_state(run_dir, domain, table_dir=table_dir, _run=run)
+
+
+def _build_noahmp_land_state(
+    run_dir: str | Path,
+    domain: str = "d02",
+    *,
+    table_dir: str | Path | None = None,
+    _run: Gen2Run | None = None,
+) -> tuple[NoahMPLandState, NoahMPStatic, dict[str, Any]]:
     """Warm-start the prognostic Noah-MP land carry from a corpus wrfinput.
 
     Returns ``(land_state, static, meta)``. ``meta`` records per-field provenance
     (wrfinput-loaded vs cold-init default) for the activation proof.
     """
 
-    run = Gen2Run(Path(run_dir))
+    run = _run if _run is not None else Gen2Run(Path(run_dir))
     present = set(run.wrfinput_variables(domain))
     # Precedence: explicit arg > GPUWRF_WRF_ROOT env (re-read here so a late
     # os.environ set still wins) > checkout-relative default.
@@ -140,8 +154,18 @@ def build_noahmp_land_state(
     # ---- prognostic land carry ----
     tslb = _layered(L("TSLB"), NSOIL)
     smois = _layered(L("SMOIS"), NSOIL)
-    provenance["tslb"] = "wrfinput TSLB"
-    provenance["smois"] = "wrfinput SMOIS"
+    # Preserve the existing seed for the inactive OPT_RUN=3 groundwater leaf;
+    # the soil initializer must not change unrelated carried diagnostics.
+    groundwater_seed = smois[-1]
+    seaice = _surface_2d(L("SEAICE")) if has("SEAICE") else jnp.zeros((ny, nx))
+    glacier = (ivgtyp == int(parameters.isice)) & (seaice <= 0)
+    # NOAHMP_INIT:2073-2089 changes the prognostic input, before SH2O and
+    # SNOW_INIT. This is the model initial state, not an output-only correction.
+    tslb = jnp.where(glacier[None, ...], jnp.minimum(tslb, 263.15), tslb)
+    maxsoil = jnp.asarray(parameters.smcmax)[isltyp]
+    smois = jnp.where(glacier[None, ...], 1.0, jnp.minimum(smois, maxsoil[None, ...]))
+    provenance["tslb"] = "NOAHMP_INIT: glacier TSLB=min(wrfinput,263.15)"
+    provenance["smois"] = "NOAHMP_INIT: glacier SMOIS=1; other columns capped at porosity"
 
     # WRF NOAHMP_INIT initialises the liquid soil water SH2O from SMOIS + TSLB
     # (module_sf_noahmpdrv.F:2069-2106): SH2O = SMOIS where TSLB >= 273.149 K
@@ -153,7 +177,7 @@ def build_noahmp_land_state(
     # drives the overnight cold-start transient. We therefore reconstruct SH2O
     # via the faithful NOAHMP_INIT relation -- the SAME liquid-water state WRF
     # integrates from (see wrfout t=0: SH2O == SMOIS over the warm Canary soil).
-    sh2o = _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters)
+    sh2o = _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters, glacier_mask=glacier)
     provenance["sh2o"] = (
         "NOAHMP_INIT reconstruction from SMOIS/TSLB (module_sf_noahmpdrv.F:2088-2106); "
         "corpus wrfinput SH2O is pre-init zero"
@@ -173,6 +197,9 @@ def build_noahmp_land_state(
     canwat = _surface_2d(L("CANWAT")) if has("CANWAT") else jnp.zeros((ny, nx), dtype=jnp.float64)
     snowh = _surface_2d(L("SNOWH")) if has("SNOWH") else jnp.zeros((ny, nx), dtype=jnp.float64)
     sneqv = _surface_2d(L("SNOW")) if has("SNOW") else jnp.zeros((ny, nx), dtype=jnp.float64)
+    # WRF's same glacier branch initializes snow mass/depth before SNOW_INIT.
+    sneqv = jnp.where(glacier, jnp.maximum(sneqv, 10.0), sneqv)
+    snowh = jnp.where(glacier, sneqv * 0.01, snowh)
 
     def _init_over_land(corpus_name, default, *, is_temp=False):
         """Use the corpus field on land where it is plausibly initialised; else
@@ -214,10 +241,10 @@ def build_noahmp_land_state(
     tauss = jnp.zeros((ny, nx), dtype=jnp.float64)        # NOAHMP_INIT (TAUSSXY=0)
     provenance["sneqvo_albold_tauss"] = "NOAHMP_INIT: 0 / 0.65 / 0"
 
-    # smcwtd: deep below-bottom soil moisture. NOAHMP_INIT (opt_run=3, no
-    # groundwater) sets SMCWTDXY = bottom SMOIS layer.
-    smcwtd = smois[-1]
-    provenance["smcwtd"] = "NOAHMP_INIT opt_run=3: bottom SMOIS layer"
+    # SMCWTD is not initialized by NOAHMP_INIT unless OPT_RUN=5. Retain the
+    # compatibility seed for the unused OPT_RUN=3 leaf (SOILWATER ignores it).
+    smcwtd = groundwater_seed
+    provenance["smcwtd"] = "unchanged compatibility seed; groundwater inactive for OPT_RUN=3"
 
     # exchange coeffs: NOAHMP_INIT seeds CMXY=CHXY=0 (the driver overwrites them
     # with the sfclay-supplied CH/CM each step via the coupler seed). Use a small
@@ -231,7 +258,12 @@ def build_noahmp_land_state(
     qsfc = jnp.zeros((ny, nx), dtype=jnp.float64)   # OUTPUT diagnostic; recomputed each step
     znt = jnp.full((ny, nx), 0.05, dtype=jnp.float64)
     emiss = jnp.full((ny, nx), 0.97, dtype=jnp.float64)
-    albedo = albold
+    # WRF's ALBEDO entering the first step (landuse_init, physics_init.F:1958-1965), which the driver
+    # keeps until NOAHMP_SFLX returns a valid SALB (module_sf_noahmpdrv.F:1230-1232); not ALBOLD.
+    from gpuwrf.io.land_history import wrf_initial_albedo
+    with run._read_dataset(run.wrfinput_file(domain)) as ds:
+        albedo = jnp.asarray(wrf_initial_albedo(ds, tdir), dtype=jnp.float64)
+    provenance["albedo"] = "WRF landuse_init ALBEDO (LANDUSE.TBL season, SNOWC>0.5 x (1+SCFX))"
     sfcrunoff = jnp.zeros((ny, nx), dtype=jnp.float64)
     udrunoff = jnp.zeros((ny, nx), dtype=jnp.float64)
 
@@ -268,6 +300,8 @@ def build_noahmp_land_state(
         ),
         "cold_init_provenance": provenance,
     }
+    if native_real_enabled():
+        land_state, static = real_tree((land_state, static))
     return land_state, static, meta
 
 
@@ -346,7 +380,7 @@ _GRAV_INIT = 9.81  # gravity used in the NOAHMP_INIT FK expression [m/s2]
 _T0 = 273.15       # triple point [K]
 
 
-def _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters):
+def _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters, *, glacier_mask=None):
     """Liquid soil water SH2O per WRF NOAHMP_INIT (module_sf_noahmpdrv.F:2069-2106).
 
     For each soil layer:
@@ -394,7 +428,8 @@ def _noahmp_init_sh2o(smois, tslb, isltyp, ivgtyp, parameters):
 
     # glacier (ISICE) tile: SMOIS=1 / SH2O=0 over land. ISICE from parameters.
     isice = int(getattr(parameters, "isice", 15))
-    is_glacier = jnp.asarray(ivgtyp, dtype=jnp.int32) == isice
+    is_glacier = (jnp.asarray(ivgtyp, dtype=jnp.int32) == isice
+                  if glacier_mask is None else glacier_mask)
     sh2o = jnp.where(is_glacier[None, ...], 0.0, sh2o)
     return sh2o
 

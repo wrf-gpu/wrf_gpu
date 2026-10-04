@@ -1,0 +1,43 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260227_18z_a1.json",
+ "content": {
+  "case": "20260227_18z_a1",
+  "fields": {
+   "integrity_24h": {
+    "d02": {
+     "QICE": [
+      {
+       "file": "wrfout_d02_2026-02-28_12:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        1.907009277601901e-06
+       ]
+      }
+     ],
+     "QNICE": [
+      {
+       "file": "wrfout_d02_2026-02-28_12:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        385806.125
+       ]
+      }
+     ],
+     "QSNOW": [
+      {
+       "file": "wrfout_d02_2026-02-28_12:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        6.575924527130184e-11
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "report_sha256": "ab9245c2ec808ef38ef4adc90e51a76fdd7758284fa1ff39fd2e9f9055f388e5"
+ }
+}

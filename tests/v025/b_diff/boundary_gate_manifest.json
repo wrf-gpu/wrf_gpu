@@ -1,0 +1,51 @@
+{
+  "flag": "GPUWRF_BOUNDARY_FP32",
+  "default": "0",
+  "scope": "specified/nested REAL boundary operator replay, no fullforecastclaim",
+  "inputs": "<USER_HOME>/wrf_gpu2_lanes/b-diff/boundary_fixtures/{d01,d02}.{npz,json}",
+  "shapes": {
+    "d01": [
+      44,
+      70,
+      120
+    ],
+    "d02": [
+      44,
+      117,
+      267
+    ]
+  },
+  "dt_s": {
+    "d01": 54,
+    "d02": 18
+  },
+  "cadence_s": {
+    "d01": 21600,
+    "d02": 54
+  },
+  "oracle": "11 unmodified module_bc_em.F/share/module_bc.F source routines, REAL4, explicit caller/storage bindings",
+  "bounds": {
+    "component_rms": "2e-5*max(1,refRMS)",
+    "component_max": "2e-4*max(1,refMax)",
+    "Tier_P_manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+    "nonfinite": 0
+  },
+  "correctness": [
+    "d01 physical specified/root adapter operands",
+    "d02 physical released and coupled pristine SINT operands",
+    "dryrelax ru/rv/t/ph/mu andnested-onlyw",
+    "nestedscalarrelax+spec all8species",
+    "specifiedboundarytendencies allstaggerings",
+    "spec_bdyupdate_ph with coherently changingmu/liveMUTS anddistinctbefore/afteradvance",
+    "normal/tangential worktargets and ring ownership",
+    "OFF raw CUDA-target HLO SHA identical d01/d02 to pre270 source control; real outputs byte-identical; same import alias; no normalization",
+    "representativecorners/staggeredextent deletioncontrols"
+  ],
+  "precision": "family f64 arithmetic0; retain unowned State passthrough/interface conversions explicitly",
+  "performance": "assertedGPU warmdeviceus+nsysnode kernels/copies bothPROD shapes; no worse thanretainedFP64; directPallas onlyifvalidated/measuredneeded",
+  "limitations": [
+    "decodedrootphysicalboundaryrecords retainreleased couplingapproximation; exactcoupledconsumer also tested",
+    "nestedpack generated from real parent/child withunchangedCPUproducer; notinternalCPUWRFsavepoint",
+    "ncublocked perFINDINGS B18"
+  ]
+}

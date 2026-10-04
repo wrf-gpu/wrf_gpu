@@ -60,6 +60,26 @@ from gpuwrf.contracts.state import State
 SIDES = ("W", "E", "S", "N")
 SIDE_INDEX = {name: index for index, name in enumerate(SIDES)}
 
+_NATIVE_BOUNDARY_FP32 = os.environ.get("GPUWRF_BOUNDARY_FP32", "0") == "1"
+# Under GPUWRF_BOUNDARY_FP32 the in-loop updates (apply_normal_bdy_work,
+# spec_bdyupdate_ph_inloop, spec_bdyupdate_ph_tendency_inloop) compute on the
+# WHOLE work array in WRF REAL and return the caller's storage dtype.  With the
+# native fp32 acoustic that array is already REAL (no-op casts); with a legacy
+# f64 acoustic carry every interior cell is rounded to REAL each substep too.
+
+
+def _real_boundary_operand(value):
+    """Convert a boundary operator's floating operand to WRF REAL."""
+    if hasattr(value, "dtype") and hasattr(value, "shape") and jnp.issubdtype(value.dtype, jnp.floating):
+        return jnp.asarray(value, jnp.float32)
+    return value
+
+
+def _real(value):
+    """Native path: a WRF REAL operand (identity when the flag is off)."""
+    return jnp.asarray(value).astype(jnp.float32) if _NATIVE_BOUNDARY_FP32 else value
+
+
 # WRF equation-of-state / hydrostatic-integration constants.  Mirror the dycore
 # (acoustic_wrf.R_D/CP_D/P0_PA/CVPM) so the boundary-ring geopotential rebuild is
 # the EXACT inverse of ``diagnose_pressure_al_alt`` / WRF ``calc_p_rho_phi``.
@@ -152,6 +172,14 @@ class BoundaryConfig:
     # legacy calibrated replay default (``NORMAL_BDY_RELAX_STRENGTH``). Native
     # standalone wrfbdy roots set this to 1.0, WRF's own relax_bdy_dry strength.
     normal_bdy_relax_strength: float | None = None
+    # WRF &bdy_control have_bcs_moist / have_bcs_scalar (Registry default
+    # .false.) for a SPECIFIED root.  False: only QV is spec+relaxed from the
+    # wrfbdy records; the other moist species (have_bcs_moist) and the scalars
+    # Ni/Nr (have_bcs_scalar) get ``flow_dep_bdy`` (solve_em.F:2346-2438,
+    # 2960-3021).  None keeps the released behaviour (every populated
+    # ``*_bdy`` leaf spec+relaxed) for replay/idealized/nest callers.
+    have_bcs_moist: bool | None = None
+    have_bcs_scalar: bool | None = None
 
 
 DEFAULT_BOUNDARY_CONFIG = BoundaryConfig()
@@ -166,11 +194,23 @@ def _apply_3d_spec_only(field, boundary, lead_seconds, config: BoundaryConfig):
     end-of-step relax-zone value write.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        return _native_ring_update(field, boundary, lead_seconds, 0.0, config, do_relax=False)
     forcing = interpolate_boundary_leaf(boundary, lead_seconds, config.update_cadence_s)
     out = field
     for side in SIDES:
         out = _apply_side_spec(out, forcing, side, config)
     return out
+
+
+def _native_ring_update(field, boundary, lead_seconds, dt_s, config, *, do_relax, base=None):
+    """One fused REAL kernel: interpolated spec rows (+ relax rows), other cells copied."""
+    from gpuwrf.kernels.dyn_boundary_fp32 import ring_update
+    weights = ([_wrf_relax_weights(b, dt_s, config) for b in range(config.spec_bdy_width)]
+               if do_relax else [(0.0, 0.0)] * int(config.spec_bdy_width))
+    return ring_update(field, boundary, lead_seconds, config.update_cadence_s,
+                       [f for f, _ in weights], [g for _, g in weights],
+                       spec=config.spec_zone, relax=config.relax_zone, do_relax=do_relax, base=base)
 
 
 def _apply_3d_spec_only_wrf_owned(field, boundary, lead_seconds, config: BoundaryConfig):
@@ -210,6 +250,7 @@ def apply_lateral_boundaries(
     metrics: DycoreMetrics | None = None,
     *,
     dry_spec_only: bool = False,
+    positivity_floor: bool = True,
 ) -> State:
     """Apply the WRF specified outer zone + relaxation-zone nudging in-place.
 
@@ -227,14 +268,34 @@ def apply_lateral_boundaries(
     mu'/theta'/qv' (see :func:`_hydrostatic_ph_perturbation`).  When it is
     ``None`` (idealized / d02 self-replay callers) the geopotential ring is left
     exactly as before, so those paths stay bit-for-bit unchanged.
+
+    ``positivity_floor=False`` (guards-disabled / strict runs) returns qv and the
+    populated scalar boundary results unclamped.  Pristine WRF applies moist and
+    scalar boundaries only as tendencies (relax_bdy_scalar / spec_bdy_scalar ->
+    rk_update_scalar, solve_em.F:2346-2380) and has no positivity clamp there;
+    this port's ``max(., 0)`` acts on the FULL field, interior included, so it
+    is a non-WRF repair.  The default keeps the released floor byte-identical.
     """
+
+    def _floor(value):
+        return jnp.maximum(value, 0.0) if positivity_floor else value
+
+    if _NATIVE_BOUNDARY_FP32:
+        # Storage dtypes are preserved: only boundary strips are rounded to
+        # REAL (dtype-aware spec/relax helpers), interior cells are untouched.
+        lead_seconds = _real_boundary_operand(lead_seconds)
 
     def _apply_optional_scalar(field_name: str):
         leaf = getattr(state, f"{field_name}_bdy", None)
         field = getattr(state, field_name)
+        have_bcs = config.have_bcs_scalar if field_name in ("Ni", "Nr") else config.have_bcs_moist
+        if have_bcs is False and field is not None:
+            # WRF specified root without boundary data for this species:
+            # flow_dep_bdy on the spec rows (inflow 0, outflow interior copy).
+            return _floor(flow_dep_bdy(field, state.u, state.v, config))
         if leaf is None:
             return field
-        return jnp.maximum(_apply_3d(field, leaf, lead_seconds, dt_s, config), 0.0)
+        return _floor(_apply_3d(field, leaf, lead_seconds, dt_s, config))
 
     if dry_spec_only:
         # WRF SPECIFIED cadence (v0.14 stage3/wrapper sprint): the in-loop spec
@@ -270,7 +331,7 @@ def apply_lateral_boundaries(
         # inside the acoustic loop owns the specified w ring.
         w = _spec3(state.w, state.w_bdy) if nested_frozen else state.w
         theta = _spec3(state.theta, state.theta_bdy)
-        qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
+        qv = _floor(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config))
         qc = _apply_optional_scalar("qc")
         qr = _apply_optional_scalar("qr")
         qi = _apply_optional_scalar("qi")
@@ -279,6 +340,17 @@ def apply_lateral_boundaries(
         Ni = _apply_optional_scalar("Ni")
         Nr = _apply_optional_scalar("Nr")
         mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
+        if _NATIVE_BOUNDARY_FP32:
+            # Ring-0 totals are the REAL sum of the base and perturbation
+            # forcing; no whole-field base subtraction or total rebuild.
+            ph_perturbation = _spec3(state.ph_perturbation, state.ph_bdy)
+            return state.replace(
+                u=u, v=v, w=w, theta=theta, qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr,
+                ph_total=_spec_ring_total(state.ph_total, state.phb_bdy, state.ph_bdy, lead_seconds, config),
+                ph_perturbation=ph_perturbation,
+                mu_total=_spec_ring_total(state.mu_total[None], state.mub_bdy, state.mu_bdy, lead_seconds, config)[0],
+                mu_perturbation=mu_perturbation,
+            )
         # A live WRF child walks perturbation mu/ph; its child base state is not
         # replaced by interpolated parent base leaves.  Keep the released root
         # behavior byte-identical when the candidate is off.
@@ -316,7 +388,7 @@ def apply_lateral_boundaries(
     v = _apply_3d(state.v, state.v_bdy, lead_seconds, dt_s, config)
     w = _apply_3d(state.w, state.w_bdy, lead_seconds, dt_s, config)
     theta = _apply_3d(state.theta, state.theta_bdy, lead_seconds, dt_s, config)
-    qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
+    qv = _floor(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config))
     qc = _apply_optional_scalar("qc")
     qr = _apply_optional_scalar("qr")
     qi = _apply_optional_scalar("qi")
@@ -325,6 +397,11 @@ def apply_lateral_boundaries(
     Ni = _apply_optional_scalar("Ni")
     Nr = _apply_optional_scalar("Nr")
     p_perturbation = _apply_3d(state.p_perturbation, state.p_bdy, lead_seconds, dt_s, config)
+    if _NATIVE_BOUNDARY_FP32:
+        mu_perturbation = _apply_3d(state.mu_perturbation[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
+        return _native_full_lateral(state, lead_seconds, dt_s, config, u=u, v=v, w=w, theta=theta, qv=qv,
+            qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, p_perturbation=p_perturbation,
+            mu_perturbation=mu_perturbation)
     pb = _apply_3d(_base_pressure(state), state.pb_bdy, lead_seconds, dt_s, config)
     mu_perturbation = _apply_3d(state.mu_perturbation[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
     mub = _apply_3d(_base_mu(state)[None, :, :], state.mub_bdy, lead_seconds, dt_s, config)[0]
@@ -389,6 +466,74 @@ def apply_lateral_boundaries(
     )
 
 
+def _spec_ring_total(total, base_leaf, pert_leaf, lead_seconds, config: BoundaryConfig):
+    """Native ring-0 total = REAL(base forcing + perturbation forcing), storage dtype kept."""
+    return _native_ring_update(total, pert_leaf, lead_seconds, 0.0, config, do_relax=False, base=base_leaf)
+
+
+def _boundary_band(shape, width: int):
+    """(y, x) cells within ``width`` of the lateral edge (spec + relax band)."""
+    y_len, x_len = shape[-2:]
+    y = jnp.arange(y_len)[:, None]
+    x = jnp.arange(x_len)[None, :]
+    return jnp.minimum(jnp.minimum(y, y_len - 1 - y), jnp.minimum(x, x_len - 1 - x)) < width
+
+
+def _native_full_lateral(state, lead_seconds, dt_s, config, **fields):
+    """Native spec+relax end-of-step pass: REAL base/totals inside the band only."""
+    band = _boundary_band(state.theta.shape, int(config.relax_zone))
+
+    def total(old, base, pert):
+        return jnp.where(band, (_real(base) + _real(pert)).astype(old.dtype), old)
+
+    pert_p = fields["p_perturbation"]
+    pert_mu = fields["mu_perturbation"]
+    pb = _apply_3d(_real(state.p_total) - _real(state.p_perturbation), state.pb_bdy, lead_seconds, dt_s, config)
+    mub = _apply_3d((_real(state.mu_total) - _real(state.mu_perturbation))[None], state.mub_bdy,
+                    lead_seconds, dt_s, config)[0]
+    updates = dict(fields, p_total=total(state.p_total, pb, pert_p), mu_total=total(state.mu_total, mub, pert_mu))
+    if config.force_geopotential:
+        ph = _apply_3d(state.ph_perturbation, state.ph_bdy, lead_seconds, dt_s, config)
+        phb = _apply_3d(_real(state.ph_total) - _real(state.ph_perturbation), state.phb_bdy,
+                        lead_seconds, dt_s, config)
+        updates.update(ph_perturbation=ph, ph_total=total(state.ph_total, phb, ph))
+    return state.replace(**updates)
+
+
+def flow_dep_bdy(field, u, v, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG):
+    """Pristine ``share/module_bc.F`` ``flow_dep_bdy`` on the ``spec_zone`` rows.
+
+    Outflow (edge-face normal velocity pointing out of the domain) copies the
+    first interior cell (index clamped to ``[spec_zone, n-1-spec_zone]``),
+    inflow sets 0.  S/N rows run ``i = b .. nx-1-b`` first; W/E columns trim to
+    ``j = b+1 .. ny-2-b`` (S/N own the corners).  ``u`` ``(z, ny, nx+1)`` and
+    ``v`` ``(z, ny+1, nx)`` supply only the sign test (WRF passes ru_m/rv_m).
+    Pure copy/select: no arithmetic, storage dtype kept.
+    """
+
+    nz, ny, nx = field.shape
+    spec = int(config.spec_zone)
+    zero = jnp.zeros((), field.dtype)
+    i = jnp.arange(nx)
+    j = jnp.arange(ny)
+    i_inner = jnp.clip(i, spec, nx - 1 - spec)
+    j_inner = jnp.clip(j, spec, ny - 1 - spec)
+    out = field
+    for b in range(spec):
+        cols = (i >= b) & (i <= nx - 1 - b)
+        south = jnp.where(v[:nz, b, :nx] < 0, field[:, spec, :][:, i_inner], zero)
+        out = out.at[:, b, :].set(jnp.where(cols, south, out[:, b, :]))
+        north = jnp.where(v[:nz, ny - b, :nx] > 0, field[:, ny - 1 - spec, :][:, i_inner], zero)
+        out = out.at[:, ny - 1 - b, :].set(jnp.where(cols, north, out[:, ny - 1 - b, :]))
+    for b in range(spec):
+        rows = (j >= b + 1) & (j <= ny - 2 - b)
+        west = jnp.where(u[:nz, :ny, b] < 0, field[:, :, spec][:, j_inner], zero)
+        out = out.at[:, :, b].set(jnp.where(rows, west, out[:, :, b]))
+        east = jnp.where(u[:nz, :ny, nx - b] > 0, field[:, :, nx - 1 - spec][:, j_inner], zero)
+        out = out.at[:, :, nx - 1 - b].set(jnp.where(rows, east, out[:, :, nx - 1 - b]))
+    return out
+
+
 def interpolate_boundary_leaf(boundary, lead_seconds, cadence_s: float = 3600.0):
     """Linearly interpolate one boundary leaf along its leading time axis.
 
@@ -397,11 +542,16 @@ def interpolate_boundary_leaf(boundary, lead_seconds, cadence_s: float = 3600.0)
     ``field_bdy + dtbc*field_bdy_tend`` linear-in-time forcing.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        # Storage-dtype leaf and clock; the kernel rounds to REAL at load.
+        from gpuwrf.kernels.dyn_boundary_fp32 import interpolate_leaf
+        return interpolate_leaf(boundary, lead_seconds, cadence_s)
     max_index = int(boundary.shape[0]) - 1
-    lead_index = jnp.asarray(lead_seconds, dtype=jnp.float64) / float(cadence_s)
+    clock_dtype = jnp.float64
+    lead_index = jnp.asarray(lead_seconds, dtype=clock_dtype) / float(cadence_s)
     lower = jnp.clip(jnp.floor(lead_index).astype(jnp.int32), 0, max_index)
     upper = jnp.clip(lower + 1, 0, max_index)
-    alpha = jnp.clip(lead_index - lower.astype(jnp.float64), 0.0, 1.0)
+    alpha = jnp.clip(lead_index - lower.astype(clock_dtype), 0.0, 1.0)
     lower_values = jnp.take(boundary, lower, axis=0)
     upper_values = jnp.take(boundary, upper, axis=0)
     return (lower_values * (1.0 - alpha) + upper_values * alpha).astype(boundary.dtype)
@@ -570,6 +720,8 @@ def _apply_3d(field, boundary, lead_seconds, dt_s: float, config: BoundaryConfig
     whose ``bdy_width`` axis runs outer (index 0, the domain edge) to inner.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        return _native_ring_update(field, boundary, lead_seconds, dt_s, config, do_relax=True)
     forcing = interpolate_boundary_leaf(boundary, lead_seconds, config.update_cadence_s)
     # WRF applies spec_bdytend (outer zone) and relax_bdytend (relaxation zone)
     # in one pass.  WRF computes every side's relaxation tendency from the SAME
@@ -808,6 +960,18 @@ def normal_bdy_work_target_u(
     WRF coupled momentum ``mass*u/msfuy`` and is used directly.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        if coupled_boundary_leaves:
+            # Storage-dtype operands; the kernel rounds to REAL at load.
+            from gpuwrf.kernels.dyn_boundary_fp32 import coupled_work_target
+            return coupled_work_target(u_bdy_strip, u_save, mass_u_cur, msfuy,
+                                       axis="x", zone=config.spec_zone + config.relax_zone)
+        u_bdy_strip = _real_boundary_operand(u_bdy_strip)
+        u_save = _real_boundary_operand(u_save)
+        mass_u_cur = _real_boundary_operand(mass_u_cur)
+        mass_u_stage = _real_boundary_operand(mass_u_stage)
+        msfuy = _real_boundary_operand(msfuy)
+
     z_len, y_len, x_len = u_save.shape  # x_len == nx+1
     target = jnp.zeros_like(u_save)
     nzone = int(config.spec_zone + config.relax_zone)
@@ -840,6 +1004,18 @@ def normal_bdy_work_target_v(
     coupled_boundary_leaves: bool = False,
 ):
     """Coupled work-array target for the S/N normal face (whole ``(z, ny+1, nx)``)."""
+
+    if _NATIVE_BOUNDARY_FP32:
+        if coupled_boundary_leaves:
+            # Storage-dtype operands; the kernel rounds to REAL at load.
+            from gpuwrf.kernels.dyn_boundary_fp32 import coupled_work_target
+            return coupled_work_target(v_bdy_strip, v_save, mass_v_cur, msfvx,
+                                       axis="y", zone=config.spec_zone + config.relax_zone)
+        v_bdy_strip = _real_boundary_operand(v_bdy_strip)
+        v_save = _real_boundary_operand(v_save)
+        mass_v_cur = _real_boundary_operand(mass_v_cur)
+        mass_v_stage = _real_boundary_operand(mass_v_stage)
+        msfvx = _real_boundary_operand(msfvx)
 
     z_len, y_len, x_len = v_save.shape  # y_len == ny+1
     target = jnp.zeros_like(v_save)
@@ -1003,7 +1179,20 @@ def apply_normal_bdy_work(
     Tangential components (v at W/E, u at S/N) are LEFT UNTOUCHED -- WRF's
     relax/spec for those is the existing end-of-step ``apply_lateral_boundaries``
     path, and the diagnosis localised the blow-up to the normal component only.
+
+    Under ``GPUWRF_BOUNDARY_FP32`` the blend runs on the whole work arrays in
+    WRF REAL and returns the caller's dtype: a no-op with the native fp32
+    acoustic, but with a legacy f64 carry the interior is rounded to REAL too.
     """
+
+    if _NATIVE_BOUNDARY_FP32:
+        # REAL arithmetic; results go back in the caller's storage dtype so
+        # the flag works with either acoustic carry (native fp32 or legacy).
+        storage = (u_work.dtype, v_work.dtype)
+        u_work = _real_boundary_operand(u_work)
+        v_work = _real_boundary_operand(v_work)
+        u_target = _real_boundary_operand(u_target)
+        v_target = _real_boundary_operand(v_target)
 
     strength = float(NORMAL_BDY_RELAX_STRENGTH if relax_strength is None else relax_strength)
     # dts/dt_full converts the WRF per-step relax weight to a per-substep one.
@@ -1028,6 +1217,8 @@ def apply_normal_bdy_work(
     )
     v = v_work + wv * (v_target - v_work)
 
+    if _NATIVE_BOUNDARY_FP32:
+        return u.astype(storage[0]), v.astype(storage[1])
     return u, v
 
 
@@ -1081,6 +1272,11 @@ def _full_ring_target_from_leaf(leaf, z_len, y_len, x_len, dtype):
     ``field(i+1)`` interior cell, so the zero fill there is never used).
     """
 
+    from gpuwrf.kernels import ring_select
+
+    if ring_select.enabled() and leaf.ndim == 4:
+        # Same values, same last-write-wins corners: one gather from the leaf.
+        return ring_select.full_ring_target(leaf, z_len, y_len, x_len, dtype, SIDE_INDEX)
     target = jnp.zeros((z_len, y_len, x_len), dtype=dtype)
     for b_dist in range(int(leaf.shape[1])):
         w_strip = _strip(leaf, "W", b_dist, z_len, y_len).astype(dtype)  # (z, y)
@@ -1167,6 +1363,26 @@ def _scatter_relax_tendency(field_coupled, target_coupled, dt_full: float, confi
     return tend
 
 
+def native_ring_relax_tendency(coupled_field, value_leaf, rate_leaf, dt_full: float, config: BoundaryConfig,
+                               *, mass=None):
+    """REAL drop-in for ``_full_ring_target_from_leaf`` + ``_scatter_relax_tendency``
+    (+ ``_scatter_spec_scalar_tendency`` when ``rate_leaf`` is given): one dense
+    ring-stencil kernel, WRF ``relax_bdytend``/``spec_bdytend`` ownership.
+
+    Inputs are the already-coupled field ``(z, ny, nx)`` -- or the uncoupled
+    field with ``mass=(mu_total, c1h, c2h)``, coupled in-kernel in WRF
+    ``mass_weight`` order at boundary cells only -- and REAL boundary leaves
+    ``(side, width, z, side_len)``; the caller keeps its record value/rate
+    semantics (e.g. the nest scalar consumer).
+    """
+    from gpuwrf.kernels.dyn_ring_relax_fp32 import ring_relax_tendency
+    weights = [_wrf_relax_weights(b, dt_full, config) for b in range(config.spec_bdy_width)]
+    fcx = [f / float(dt_full) for f, _ in weights]
+    gcx = [g / float(dt_full) for _, g in weights]
+    return ring_relax_tendency(coupled_field, value_leaf, rate_leaf, fcx, gcx,
+                               spec=config.spec_zone, relax=config.relax_zone, mass=mass)
+
+
 # Pristine WRF Registry order represented by the current State boundary
 # interface.  Every member uses the same ``relax_bdy_scalar`` /
 # ``spec_bdy_scalar`` cadence (solve_em.F:2260-2324 and the analogous scalar
@@ -1192,10 +1408,14 @@ def boundary_tendency_leaf(boundary, lead_seconds, cadence_s: float):
     lower bracket.  A one-record constant fixture has a zero tendency.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        boundary = _real_boundary_operand(boundary)
+        lead_seconds = _real_boundary_operand(lead_seconds)
+
     nrec = int(boundary.shape[0])
     if nrec < 2:
         return jnp.zeros_like(boundary[0])
-    lead_index = jnp.asarray(lead_seconds, dtype=jnp.float64) / float(cadence_s)
+    lead_index = jnp.asarray(lead_seconds, dtype=jnp.float32 if _NATIVE_BOUNDARY_FP32 else jnp.float64) / float(cadence_s)
     lower = jnp.clip(
         jnp.ceil(lead_index).astype(jnp.int32) - 1,
         0,
@@ -1266,6 +1486,11 @@ def specified_boundary_tendency(
     no mass or map-factor conversion belongs here.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        boundary = _real_boundary_operand(boundary)
+        lead_seconds = _real_boundary_operand(lead_seconds)
+        dtype = jnp.float32
+
     return _scatter_spec_scalar_tendency(
         boundary_tendency_leaf(boundary, lead_seconds, float(cadence_s)),
         z_len=int(z_len),
@@ -1273,6 +1498,104 @@ def specified_boundary_tendency(
         x_len=int(x_len),
         dtype=dtype,
         config=config,
+    )
+
+
+def _scalar_couple_kernel(field, mu, c1, c2, out, *, nz, ny, nx, interpret):
+    from jax.experimental import pallas as pl
+    from jax.experimental.pallas import triton as pt
+
+    i = pl.program_id(0) * 256 + jnp.arange(256, dtype=jnp.int32)
+    k, y, x = i // (ny * nx), (i // nx) % ny, i % nx
+    valid = i < nz * ny * nx
+    load = lambda ref, idx: pt.load(ref.at[idx], mask=valid, other=jnp.float32(0))
+
+    def rn(op, a, b):
+        if interpret:
+            # CPU-only prescreen: binary64 exactly represents the REAL4
+            # multiply before its explicit round. reduce_precision pins that
+            # round: XLA's excess-precision rewrite would otherwise drop the
+            # f64->f32->f64 trip between chained ops. GPU proof is mandatory.
+            a, b = a.astype(jnp.float64), b.astype(jnp.float64)
+            exact = a * b if op == "mul" else a + b
+            return jax.lax.reduce_precision(
+                exact, exponent_bits=8, mantissa_bits=23
+            ).astype(jnp.float32)
+        return pt.elementwise_inline_asm(
+            op + ".rn.f32 $0, $1, $2;", args=[a, b],
+            constraints="=f,f,f", pack=1,
+            result_shape_dtypes=[jax.ShapeDtypeStruct(a.shape, jnp.float32)],
+        )[0]
+
+    mass = rn("add", rn("mul", load(c1, (k,)), load(mu, (y, x))), load(c2, (k,)))
+    value = rn("mul", load(field, (k, y, x)), mass)
+    pt.store(out.at[k, y, x], value, mask=valid)
+
+
+def couple_scalar_real4(field, mu_total, metrics: DycoreMetrics):
+    """Opaque WRF REAL mass weighting; GPU uses explicit mul/add.rn.f32."""
+
+    return _couple_scalar_real4_arrays(field, mu_total, metrics.c1h, metrics.c2h)
+
+
+@jax.jit
+def _couple_scalar_real4_arrays(field, mu_total, c1h, c2h):
+    from functools import partial
+    from jax.experimental import pallas as pl
+    from jax.experimental.pallas import triton as pt
+
+    field, mu, c1, c2 = (
+        jnp.asarray(a, jnp.float32)
+        for a in (field, mu_total, c1h, c2h)
+    )
+    nz, ny, nx = field.shape
+    interpret = jax.default_backend() == "cpu"
+    return pl.pallas_call(
+        partial(_scalar_couple_kernel, nz=nz, ny=ny, nx=nx, interpret=interpret),
+        out_shape=jax.ShapeDtypeStruct(field.shape, jnp.float32),
+        grid=((field.size + 255) // 256,), interpret=interpret,
+        compiler_params=pt.CompilerParams(num_warps=4),
+        name="nest_scalar_couple_real4",
+    )(field, mu, c1, c2)
+
+
+def _scalar_record_value_rate_real4(boundary, lead_seconds, cadence_s):
+    """REAL records with bdy_interp1's explicit DOUBLE reciprocal-time island."""
+
+    records = boundary.astype(jnp.float32)
+    nrec = int(records.shape[0])
+    if nrec < 2:
+        return records[0], jnp.zeros_like(records[0])
+    # WRF grid%dtbc is REAL (only the model clock curr_secs_r8 is REAL(8)).
+    lead = jnp.asarray(lead_seconds).astype(jnp.float32)
+    cadence = jnp.float32(cadence_s)
+    if nrec == 2:
+        # Live-nest records hold exactly one force-down interval.
+        lower = 0
+    else:
+        lower = jnp.clip(jnp.ceil(lead / cadence).astype(jnp.int32) - 1, 0, nrec - 2)
+    value = jnp.take(records, lower, axis=0)
+    difference = jax.lax.optimization_barrier(
+        jnp.take(records, lower + 1, axis=0) - value
+    )
+    # share/interp_fcn.F::bdy_interp1 declares rdt REAL*8; the subtraction
+    # remains REAL and assignment rounds the retained tendency back to REAL.
+    rate = (difference.astype(jnp.float64) * (1.0 / float(cadence_s))).astype(jnp.float32)
+    dtbc = jnp.clip(lead - lower * cadence, jnp.float32(0.0), cadence)
+    increment = jax.lax.optimization_barrier(dtbc * rate)
+    return value + increment, rate
+
+
+def _ring_relax_spec_real4(field, value_leaf, rate_leaf, mu_total, metrics, dt_full, config):
+    """REAL4 nest-scalar relax+spec tendency in one kernel (b-diff ring stencil)."""
+    from gpuwrf.kernels.dyn_ring_relax_fp32 import ring_relax_tendency
+
+    weights = [_wrf_relax_weights(b, dt_full, config) for b in range(config.spec_bdy_width)]
+    return ring_relax_tendency(
+        field, value_leaf, rate_leaf,
+        [f / dt_full for f, _ in weights], [g / dt_full for _, g in weights],
+        spec=config.spec_zone, relax=config.relax_zone,
+        mass=(mu_total, metrics.c1h, metrics.c2h),
     )
 
 
@@ -1309,15 +1632,33 @@ def nested_scalar_boundary_tendencies(
         if boundary is None:
             tendencies.append(jnp.zeros_like(field, dtype=dtype))
             continue
-        value_leaf = interpolate_boundary_leaf(boundary, lead_seconds, cadence)
+        if name == "qv":
+            scalar_dtype = dtype
+            value_leaf = interpolate_boundary_leaf(boundary, lead_seconds, cadence)
+            rate_leaf = boundary_tendency_leaf(boundary, lead_seconds, cadence)
+            coupled_reference = field.astype(dtype) * mass_h
+        else:
+            # The newly represented Thompson scalar records are WRF REAL,
+            # including when the port's surrounding carry is fp64.  Matching
+            # both sides avoids large spurious residuals for number fields.
+            scalar_dtype = jnp.float32
+            value_leaf, rate_leaf = _scalar_record_value_rate_real4(
+                boundary, lead_seconds, cadence
+            )
+            # One dense ring-stencil kernel: REAL4 mass weighting (WRF
+            # mass_weight order, boundary cells only) + relax_bdytend + the
+            # spec_bdytend rows; replaces couple/target/scatter/spec passes.
+            tendencies.append(_ring_relax_spec_real4(
+                field, value_leaf, rate_leaf, reference.mu_total, metrics, float(dt_full), config
+            ))
+            continue
         target = _full_ring_target_from_leaf(
             value_leaf,
             nz,
             ny,
             nx,
-            dtype,
+            scalar_dtype,
         )
-        coupled_reference = field.astype(dtype) * mass_h
         tendency = _scatter_relax_tendency(
             coupled_reference,
             target,
@@ -1325,11 +1666,11 @@ def nested_scalar_boundary_tendencies(
             config,
         )
         spec_tendency = _scatter_spec_scalar_tendency(
-            boundary_tendency_leaf(boundary, lead_seconds, cadence),
+            rate_leaf,
             z_len=nz,
             y_len=ny,
             x_len=nx,
-            dtype=dtype,
+            dtype=scalar_dtype,
             config=config,
         )
         # Relaxation and specified bands are disjoint by source construction;
@@ -1353,6 +1694,14 @@ def nested_ph_relax_tendency(ph_perturbation, ph_bdy_leaf, mut, msfty, c1f, c2f,
     ``ph_bdy_leaf`` is the time-interpolated parent STRIP leaf
     ``(side, bdy_width, z, side_len)``.
     """
+
+    if _NATIVE_BOUNDARY_FP32:
+        # Fail closed: this non-bundle nest path interpolates PHYSICAL ph strips
+        # before mass coupling (WRF couples first); in REAL that misses pristine
+        # relax_bdy_dry at the ~1e9 coupled-value cancellation level (b-diff BD41).
+        raise NotImplementedError(
+            "GPUWRF_BOUNDARY_FP32 covers specified domains and the nested frozen WRF "
+            "boundary bundle only; the non-bundle nest ph relax stays legacy-only")
 
     dtype = ph_perturbation.dtype
     z_len, y_len, x_len = ph_perturbation.shape
@@ -1445,6 +1794,36 @@ class SpecifiedRelaxTendencies:
     w: jax.Array | None = None
 
 
+def _native_dry_relax(reference, lead, metrics, dt, config, *, include_w, coupled):
+    """Fuse literal REAL coupling/clock/residuals into one stencil per field."""
+    from gpuwrf.kernels.dyn_boundary_fp32 import dry_relax
+    weights = [_wrf_relax_weights(b, dt, config) for b in range(config.spec_bdy_width)]
+    fcx = jnp.asarray([f / dt for f, _ in weights], jnp.float32)
+    gcx = jnp.asarray([g / dt for _, g in weights], jnp.float32)
+    rows = (
+        ('u', 'ru', metrics.c1h, metrics.c2h, metrics.msfuy),
+        ('v', 'rv', metrics.c1h, metrics.c2h, metrics.msfvx),
+        ('theta', 't', metrics.c1h, metrics.c2h, metrics.msfty),
+        ('ph_perturbation', 'ph', metrics.c1f, metrics.c2f, metrics.msfty),
+    )
+    if include_w:
+        rows += (('w', 'w', metrics.c1f, metrics.c2f, metrics.msfty),)
+    result = {}
+    for name, output, c1, c2, msf in rows:
+        field = getattr(reference, name)
+        leaf = getattr(reference, 'ph_bdy' if name == 'ph_perturbation' else name+'_bdy')
+        result[output] = dry_relax(field, reference.mu_total, c1, c2, msf, leaf,
+            lead, config.update_cadence_s, fcx, gcx,
+            kind='ph' if name == 'ph_perturbation' else name, coupled=coupled,
+            spec=config.spec_zone, relax=config.relax_zone)
+    result['mu'] = dry_relax(reference.mu_perturbation[None], reference.mu_total,
+        metrics.c1h, metrics.c2h, metrics.msfty, reference.mu_bdy,
+        lead, config.update_cadence_s, fcx, gcx, kind='mu', coupled=True,
+        spec=config.spec_zone, relax=config.relax_zone)[0]
+    return SpecifiedRelaxTendencies(ru=result['ru'], rv=result['rv'], t=result['t'], ph=result['ph'],
+                                   mu=result['mu'], w=result.get('w'))
+
+
 def specified_relax_dry_tendencies(
     reference,
     lead_seconds,
@@ -1468,6 +1847,10 @@ def specified_relax_dry_tendencies(
     which reproduces WRF's ``ibe=ide`` (u) / ``jbe=jde`` (v) extensions.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        # Storage-dtype operands: the stencil rounds to WRF REAL at load.
+        return _native_dry_relax(reference, jnp.asarray(lead_seconds), metrics, dt_full, config,
+                                 include_w=include_nested_w, coupled=coupled_boundary_leaves)
     cadence = float(config.update_cadence_s)
     dtype = reference.u.dtype
     c1h = metrics.c1h.astype(dtype)[:, None, None]
@@ -1634,6 +2017,18 @@ def tangential_bdy_work_target_u(
     Only the ``spec_zone`` outer rows are meaningful; the rest stays zero.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        if coupled_boundary_leaves:
+            # Storage-dtype operands; the kernel rounds to REAL at load.
+            from gpuwrf.kernels.dyn_boundary_fp32 import coupled_work_target
+            return coupled_work_target(u_bdy_strip, u_save, mass_u_cur, msfuy,
+                                       axis="y", zone=config.spec_zone)
+        u_bdy_strip = _real_boundary_operand(u_bdy_strip)
+        u_save = _real_boundary_operand(u_save)
+        mass_u_cur = _real_boundary_operand(mass_u_cur)
+        mass_u_stage = _real_boundary_operand(mass_u_stage)
+        msfuy = _real_boundary_operand(msfuy)
+
     z_len, y_len, x_len = u_save.shape  # x_len == nx+1
     target = jnp.zeros_like(u_save)
     for b_dist in range(int(config.spec_zone)):
@@ -1667,6 +2062,18 @@ def tangential_bdy_work_target_v(
     WRF ``spec_bdyupdate(v, 'v')`` x-side rows trim the corners (j in
     [b_dist+1, jbe-b_dist-1]); the caller applies that trim when scattering.
     """
+
+    if _NATIVE_BOUNDARY_FP32:
+        if coupled_boundary_leaves:
+            # Storage-dtype operands; the kernel rounds to REAL at load.
+            from gpuwrf.kernels.dyn_boundary_fp32 import coupled_work_target
+            return coupled_work_target(v_bdy_strip, v_save, mass_v_cur, msfvx,
+                                       axis="x", zone=config.spec_zone)
+        v_bdy_strip = _real_boundary_operand(v_bdy_strip)
+        v_save = _real_boundary_operand(v_save)
+        mass_v_cur = _real_boundary_operand(mass_v_cur)
+        mass_v_stage = _real_boundary_operand(mass_v_stage)
+        msfvx = _real_boundary_operand(msfvx)
 
     z_len, y_len, x_len = v_save.shape  # y_len == ny+1
     target = jnp.zeros_like(v_save)
@@ -1716,18 +2123,35 @@ def spec_bdyupdate_ph_inloop(
     when mu_old==muts).  Full-level extent (WRF ``ktf=kte`` for 'h').
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        storage = ph_work.dtype  # REAL math, caller's storage dtype on return
+        ph_work = _real_boundary_operand(ph_work)
+        ph_bdy_leaf = _real_boundary_operand(ph_bdy_leaf)
+        ph_save = _real_boundary_operand(ph_save)
+        mu_tend = _real_boundary_operand(mu_tend)
+        muts = _real_boundary_operand(muts)
+        c1f = _real_boundary_operand(c1f)
+        c2f = _real_boundary_operand(c2f)
+
     del mu_tend, muts, c1f, c2f, dts  # O(mu') reweight terms ~0 for fixed-mass replay
     z_len, y_len, x_len = ph_work.shape
     target_delta = ph_bdy_leaf.astype(ph_work.dtype) - ph_save.astype(ph_work.dtype)
-    out = ph_work
-    for b_dist in range(int(config.spec_zone)):
-        # W / E columns
-        out = out.at[:, :, b_dist].set(target_delta[:, :, b_dist])
-        out = out.at[:, :, x_len - 1 - b_dist].set(target_delta[:, :, x_len - 1 - b_dist])
-        # S / N rows
-        out = out.at[:, b_dist, :].set(target_delta[:, b_dist, :])
-        out = out.at[:, y_len - 1 - b_dist, :].set(target_delta[:, y_len - 1 - b_dist, :])
-    return out
+    from gpuwrf.kernels import ring_select
+
+    if ring_select.enabled():
+        # Every write in the loop copies target_delta: the union is the spec ring.
+        out = ring_select.select_ring(ph_work, target_delta, int(config.spec_zone))
+    else:
+        out = ph_work
+        for b_dist in range(int(config.spec_zone)):
+            # W / E columns
+            out = out.at[:, :, b_dist].set(target_delta[:, :, b_dist])
+            out = out.at[:, :, x_len - 1 - b_dist].set(target_delta[:, :, x_len - 1 - b_dist])
+            # S / N rows
+            out = out.at[:, b_dist, :].set(target_delta[:, b_dist, :])
+            out = out.at[:, y_len - 1 - b_dist, :].set(target_delta[:, y_len - 1 - b_dist, :])
+    result = out
+    return result.astype(storage) if _NATIVE_BOUNDARY_FP32 else result
 
 
 def spec_bdyupdate_ph_tendency_inloop(
@@ -1764,6 +2188,17 @@ def spec_bdyupdate_ph_tendency_inloop(
     substep.
     """
 
+    if _NATIVE_BOUNDARY_FP32:
+        storage = ph_advanced.dtype  # REAL math, caller's storage dtype on return
+        ph_advanced = _real_boundary_operand(ph_advanced)
+        ph_work_before_advance = _real_boundary_operand(ph_work_before_advance)
+        ph_tend = _real_boundary_operand(ph_tend)
+        ph_save = _real_boundary_operand(ph_save)
+        mu_tend = _real_boundary_operand(mu_tend)
+        muts = _real_boundary_operand(muts)
+        c1f = _real_boundary_operand(c1f)
+        c2f = _real_boundary_operand(c2f)
+
     dtype = ph_advanced.dtype
     dts_value = jnp.asarray(float(dts), dtype=dtype)
     muts_value = muts.astype(dtype)
@@ -1782,22 +2217,29 @@ def spec_bdyupdate_ph_tendency_inloop(
     )
 
     active_spec_zone = int(config.spec_zone if spec_zone is None else spec_zone)
-    out = ph_advanced
-    z_len, y_len, x_len = out.shape
-    del z_len
-    for b_dist in range(active_spec_zone):
-        # X sides trim the corners; S/N writes last and owns them, matching
-        # module_bc_em.F's b_limit loops.
-        rows = slice(b_dist + 1, y_len - 1 - b_dist)
-        out = out.at[:, rows, b_dist].set(target[:, rows, b_dist])
-        out = out.at[:, rows, x_len - 1 - b_dist].set(
-            target[:, rows, x_len - 1 - b_dist]
-        )
-        out = out.at[:, b_dist, :].set(target[:, b_dist, :])
-        out = out.at[:, y_len - 1 - b_dist, :].set(
-            target[:, y_len - 1 - b_dist, :]
-        )
-    return out
+    from gpuwrf.kernels import ring_select
+
+    if ring_select.enabled():
+        # Every write in the loop copies target: the union is the spec ring.
+        out = ring_select.select_ring(ph_advanced, target, active_spec_zone)
+    else:
+        out = ph_advanced
+        z_len, y_len, x_len = out.shape
+        del z_len
+        for b_dist in range(active_spec_zone):
+            # X sides trim the corners; S/N writes last and owns them, matching
+            # module_bc_em.F's b_limit loops.
+            rows = slice(b_dist + 1, y_len - 1 - b_dist)
+            out = out.at[:, rows, b_dist].set(target[:, rows, b_dist])
+            out = out.at[:, rows, x_len - 1 - b_dist].set(
+                target[:, rows, x_len - 1 - b_dist]
+            )
+            out = out.at[:, b_dist, :].set(target[:, b_dist, :])
+            out = out.at[:, y_len - 1 - b_dist, :].set(
+                target[:, y_len - 1 - b_dist, :]
+            )
+    result = out
+    return result.astype(storage) if _NATIVE_BOUNDARY_FP32 else result
 
 
 __all__ = [

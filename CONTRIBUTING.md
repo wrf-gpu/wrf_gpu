@@ -4,7 +4,7 @@ Thanks for your interest. wrf_gpu is a GPU-native, WRF-compatible regional NWP
 system (a clean JAX rewrite validated against WRF as an oracle, not a Fortran
 port). This guide is for external contributors. The project was developed by a
 team of AI agents under human direction; the agent-side process is documented
-separately in [`CONTRIBUTING_AGENT.md`](CONTRIBUTING_AGENT.md) and the
+separately in `CONTRIBUTING_AGENT.md` and the
 [`.agent/`](.agent/) development log.
 
 ## Ground rules
@@ -12,7 +12,7 @@ separately in [`CONTRIBUTING_AGENT.md`](CONTRIBUTING_AGENT.md) and the
 - **Validation, not bitwise parity.** Correctness is judged against WRF as an
   oracle through a tiered pyramid: micro fixture / savepoint parity → physical
   invariants (conservation) → short-run / convergence → station-RMSE
-  equivalence. See [`VALIDATION_STRATEGY.md`](VALIDATION_STRATEGY.md).
+  equivalence. See `VALIDATION_STRATEGY.md`.
 - **Every claim needs evidence.** A physics/numerics change must come with a
   proof object (fixture, analytic oracle, conservation budget, or ensemble).
   Performance changes need a profiler artifact and a transfer audit — no perf
@@ -62,7 +62,7 @@ The supported WRF namelist matrix and the deliberate boundaries are in
 named reason — new schemes must be oracle-proven before they are wired into the
 operational loop. The remaining gap to a complete WRF v4 port is tracked in
 [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md) and
-[`PROJECT_PLAN.md`](PROJECT_PLAN.md).
+`PROJECT_PLAN.md`.
 
 ## Reporting issues
 
@@ -73,6 +73,6 @@ JSON or `compare_wrfout_grid.py` output if you have it.
 
 ## License
 
-By contributing you agree your contributions are licensed under the project
-[`LICENSE`](LICENSE). See [`LICENSE_NOTES.md`](LICENSE_NOTES.md) for the
+The project license file is not published yet (decision pending); contributions
+will be licensed under it once it is. See [`LICENSE_NOTES.md`](LICENSE_NOTES.md) for the
 WRF-derived-material notes.

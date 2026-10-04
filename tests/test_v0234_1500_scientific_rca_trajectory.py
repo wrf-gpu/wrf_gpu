@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import numpy as np
 
 from scripts import v0234_1500_scientific_rca_trajectory as rca
@@ -21,6 +23,7 @@ def test_compact_spatial_partitions_are_exhaustive_for_all_staggers() -> None:
 
 
 def test_discovered_frame_set_and_pair_proofs_are_exact() -> None:
+    require_historical(*(path for path, _sha in rca.FROZEN_FILES.values()))
     rows = rca.discover_frames()
     assert len(rows) == 46
     assert rows[0]["own_step"] == 0

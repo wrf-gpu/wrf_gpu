@@ -58,12 +58,16 @@ from gpuwrf.io.wrfout_writer import (
     prepare_wrfout_payload,
     write_prepared_wrfout,
 )
-from gpuwrf.nesting.boundary_construction import build_child_boundary_package
+from gpuwrf.nesting.boundary_construction import (
+    build_child_boundary_package,
+    initialize_child_scalar_boundaries,
+)
 from gpuwrf.runtime.finite_state_guard import assert_state_finite_at_boundary
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
     DomainTreeResult,
+    _coupled_forcedown_enabled,
     _prepare_operational_domain_tree_runtime,
     maybe_prewarm_defused_nest,
     nested_aot_report,
@@ -140,6 +144,15 @@ class NestedPipelineConfig:
     # GPUWRF_BATCH_ENSEMBLE is a fixed supported B; unset repeats ``input_dir``
     # for all lanes (useful for bit-identity/perturbation gates).
     batch_input_dirs: tuple[Path, ...] | None = None
+    checkpoint_dir: Path | None = None
+    checkpoint_interval_steps: int = 0
+    checkpoint_max_bytes: int = 8 * 1024**3
+    checkpoint_max_generations: int = 2
+    checkpoint_reserve_bytes: int = 10 * 1024**3
+    resume_checkpoint: Path | None = None
+    # Speculative cached loads; actual runtime keys still gate executable reuse.
+    # Default-off until concurrent GPU loading and wall-time gates pass.
+    aot_prefetch: bool = False
 
 
 def domain_names_for(max_dom: int) -> tuple[str, ...]:
@@ -302,8 +315,154 @@ def _output_alarm_steps_by_domain(
     return schedules, nonintegral
 
 
-def _radiation_cadence_steps(dt_s: float) -> int:
-    return max(1, int(round(_RADT_TARGET_S / float(dt_s))))
+def _radiation_cadence_steps(dt_s: float, radt_minutes: float = 30.0) -> int:
+    # WRF module_physics_init.F uses NINT, whose positive half ties round up.
+    return max(1, int(float(radt_minutes) * 60.0 / float(dt_s) + 0.5))
+
+
+def _wrf_sound_steps(grid, dt_s: float, configured: int = 0) -> int:
+    """WRF solve_em.F:447-464, fixed timestep (RK3's sound-step count)."""
+    if configured:
+        return int(configured)
+    spacing = min(float(grid.projection.dx_m), float(grid.projection.dy_m))
+    return max(2 * (int(300.0 * float(dt_s) / spacing - 0.01) + 1), 4)
+
+
+def _cumulus_cadence_metadata(namelist):
+    """Report the applied operands, including domains with cumulus disabled."""
+    return {
+        "cudt_minutes": float(namelist.cudt_minutes),
+        "cumulus_cadence_steps": int(namelist.cumulus_cadence_steps),
+    }
+
+
+def _aot_prefetch_artifact_candidates(names, *, directory=None):
+    """Select unambiguous artifact identities without guessing runtime keys.
+
+    These are speculative load hints only. A caller must still require the
+    exact runtime key before using a loaded executable; the loader owns all
+    target, integrity, ABI and quarantine guards. Several complete keys use the
+    runtime's last-used key; otherwise ambiguous/cold caches skip.
+    """
+    if directory is None:
+        from gpuwrf.runtime.aot_precompile import aot_dir
+        directory = aot_dir()
+    if directory is None:
+        return {}
+    selected = {}
+    for name in names:
+        candidates = []
+        for meta in (Path(directory) / name).glob("k_*.meta"):
+            key = meta.stem[2:]
+            if len(key) == 64 and all(c in "0123456789abcdef" for c in key):
+                blob = meta.with_suffix(".xlaexec")
+                if blob.is_file() and blob.stat().st_size:
+                    candidates.append(key)
+        from gpuwrf.runtime.aot_precompile import preferred_prefetch_key
+
+        # Several complete keys: hint only the runtime's last-used one.
+        key = preferred_prefetch_key(directory, name, candidates)
+        if key is not None:
+            selected[name] = key
+    return selected
+
+
+def _carry_donation_enabled() -> bool:
+    """True when any ``GPUWRF_*DONATE*`` flag is on (e.g. GPUWRF_CARRY_DONATE: the advance
+    deletes the carry it receives). Holders of a carry across a later device call must
+    then keep their own device copy."""
+    return any(
+        name.startswith("GPUWRF_") and "DONATE" in name and value.strip().lower() in {"1", "true", "on", "yes"}
+        for name, value in os.environ.items()
+    )
+
+
+def _device_copy_tree(tree: Any) -> Any:
+    """Distinct device buffers for every ``jax.Array`` leaf; other leaves pass through."""
+    import jax  # noqa: PLC0415
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    return jax.tree.map(lambda leaf: jnp.copy(leaf) if isinstance(leaf, jax.Array) else leaf, tree)
+
+
+def _start_forcedown_warmup(tree: Any, initial_carries: dict[str, Any]) -> dict[str, Any] | None:
+    """Load each coupled force-down executable on a background thread during init.
+
+    Calls the runtime's own ``_operational_force`` once per coupled edge on the
+    committed initial carries (the same signature as every real call) and drops
+    the result, so the first real force-down hits the in-memory jit cache instead
+    of tracing and loading inside the first forecast segment. Pure: no carry or
+    output is touched. ``GPUWRF_FORCEDOWN_WARMUP=0`` disables it.
+    """
+    if os.environ.get("GPUWRF_FORCEDOWN_WARMUP", "1").strip().lower() in {"0", "false", "off", "no"}:
+        return None
+    try:  # fail-open: any unexpected tree/carry shape only skips the warm-up
+        import threading  # noqa: PLC0415
+
+        import jax  # noqa: PLC0415
+
+        from gpuwrf.runtime.domain_tree import _operational_force  # noqa: PLC0415
+
+        jobs = [
+            (edge, initial_carries[parent], initial_carries[edge.child])
+            for parent, edges in dict(getattr(tree, "edges", None) or {}).items()
+            for edge in edges
+            if bool(getattr(edge, "coupled_forcedown", False))
+            and parent in initial_carries and edge.child in initial_carries
+        ]
+        if not jobs:
+            return None
+        report: dict[str, Any] = {"edges": [f"{e.parent}->{e.child}" for e, _p, _c in jobs], "error": None}
+        donating = _carry_donation_enabled()
+
+        def work() -> None:
+            try:
+                for edge, parent, child in jobs:
+                    if donating:  # a donating force-down must not delete the live init carries
+                        parent, child = _device_copy_tree(parent), _device_copy_tree(child)
+                    jax.block_until_ready(_operational_force(edge, parent, child).state.u_bdy)
+            except Exception as exc:  # noqa: BLE001 -- fail-open: the real call compiles as before
+                report["error"] = f"{type(exc).__name__}: {exc}"
+
+        report["thread"] = threading.Thread(target=work, name="forcedown-warmup", daemon=True)
+        report["thread"].start()
+    except Exception:  # noqa: BLE001
+        return None
+    return report
+
+
+def _join_forcedown_warmup(report: dict[str, Any], timeout_s: float = 600.0) -> dict[str, Any]:
+    """Wait for the force-down warm-up, bounded: a stuck warm-up never stalls the run.
+
+    On timeout the daemon thread is left behind (fail-open: the real force-down call
+    traces/loads as it would without the warm-up); ``joined`` records which happened.
+    """
+    wait_start = time.perf_counter()
+    report["thread"].join(timeout=timeout_s)
+    return {
+        "edges": report["edges"],
+        "remaining_wait_s": time.perf_counter() - wait_start,
+        "error": report["error"],
+        "joined": not report["thread"].is_alive(),
+    }
+
+
+def _two_time_live_nest_bdy(state: Any) -> Any:
+    """Give a live-nest child's 1-level ``*_bdy`` placeholders the force-down's 2-level shape.
+
+    The first force-down replaces every ``*_bdy`` package with ``[old_ring, new_target]``
+    built from the child's current fields; ``two_time`` reads only the placeholder's
+    last-level shape/dtype, never its values. Matching that shape at init lets the
+    first force-down share the steady jit signature (one load instead of two).
+    """
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    updates = {}
+    for name in getattr(type(state), "__slots__", ()):
+        leaf = getattr(state, name, None) if name.endswith("_bdy") else None
+        if leaf is not None and getattr(leaf, "ndim", 0) >= 1 and leaf.shape[0] == 1:
+            updates[name] = jnp.concatenate([leaf, leaf], axis=0)
+    return state.replace(**updates) if updates else state
 
 
 def _make_namelist(
@@ -323,6 +482,11 @@ def _make_namelist(
     h_sca_adv_order: int = 5,
     moist_adv_opt: int = 0,
     scalar_adv_opt: int = 0,
+    topo_shading: int = 0,
+    slope_rad: int = 0,
+    time_step_sound: int = 0,
+    radt_minutes: float = 30.0,
+    cudt_minutes: float = 0.0,
 ) -> OperationalNamelist:
     """Per-domain operational namelist (mirrors the v0.11.0 nesting proof config).
 
@@ -338,8 +502,10 @@ def _make_namelist(
         tendencies=tendencies,
         metrics=metrics,
         dt_s=float(dt_s),
-        acoustic_substeps=int(os.environ.get("GPUWRF_ACOUSTIC_SUBSTEPS", 10)),
-        radiation_cadence_steps=_radiation_cadence_steps(dt_s),
+        acoustic_substeps=int(os.environ.get(
+            "GPUWRF_ACOUSTIC_SUBSTEPS", _wrf_sound_steps(grid, dt_s, time_step_sound)
+        )),
+        radiation_cadence_steps=_radiation_cadence_steps(dt_s, radt_minutes),
         use_vertical_solver=True,
         use_flux_advection=True,
         force_fp64=True,
@@ -367,6 +533,9 @@ def _make_namelist(
         # both values explicitly on every domain.
         moist_adv_opt=int(moist_adv_opt),
         scalar_adv_opt=int(scalar_adv_opt),
+        # Keep WRF's per-domain SW terrain controls through the live-nest seam.
+        topo_shading=int(topo_shading),
+        slope_rad=int(slope_rad),
         radiation_static=radiation_static,
         time_utc=run_start,
         gwd_opt=int(gwd_opt),
@@ -412,12 +581,17 @@ def _make_namelist(
             nested_ph_spec=True,
             nested_frozen_wrf_boundary_bundle=nested_frozen_bundle,
         )
-    namelist = dataclass_replace(namelist, cu_physics=int(cu_physics))
+    namelist = dataclass_replace(
+        namelist, cu_physics=int(cu_physics),
+        radiation_interval_s=float(radt_minutes) * 60.0,
+        cumulus_cadence_steps=_radiation_cadence_steps(dt_s, cudt_minutes),
+        cudt_minutes=float(cudt_minutes),
+    )
     return namelist
 
 
 def _root_boundary_cadence_override(
-    namelist: OperationalNamelist, case_metadata: dict[str, Any]
+    namelist: OperationalNamelist, case_metadata: dict[str, Any], wrf_namelist: dict | None = None
 ) -> OperationalNamelist:
     """Enable WRF-native specified-boundary handling for standalone roots.
 
@@ -450,8 +624,30 @@ def _root_boundary_cadence_override(
             namelist.boundary_config,
             update_cadence_s=float(interval_s),
             normal_bdy_relax_strength=1.0,
+            # WRF &bdy_control (Registry default .false.): without them the
+            # specified root relaxes only QV; other moist/scalars flow_dep_bdy.
+            have_bcs_moist=_root_bdy_flag(wrf_namelist, "have_bcs_moist"),
+            have_bcs_scalar=_root_bdy_flag(wrf_namelist, "have_bcs_scalar"),
         ),
     )
+
+
+def _root_bdy_flag(wrf_namelist: dict | None, key: str) -> bool:
+    """Root (first-domain) value of a WRF &bdy_control logical; Registry default False."""
+
+    raw = ((wrf_namelist or {}).get("bdy_control") or {}).get(key, False)
+    if isinstance(raw, (list, tuple)):
+        raw = raw[0] if raw else False
+    return bool(raw)
+
+
+def _domain_float(run, group: str, key: str, domain: str, default: float = 0.0) -> float:
+    """Read WRF's scalar or per-domain REAL namelist control."""
+    raw = run.namelist.get(group, {}).get(key, default)
+    if isinstance(raw, (list, tuple)):
+        index = max(int(domain[1:]) - 1, 0)
+        raw = raw[min(index, len(raw) - 1)] if raw else default
+    return float(raw)
 
 
 def _domain_int(run, group: str, key: str, domain: str, default: int = 0) -> int:
@@ -539,6 +735,8 @@ def _nest_edge(run, child: str, parent: str, *, feedback: bool = False) -> Domai
 def _load_domains(
     config: NestedPipelineConfig,
     names: tuple[str, ...],
+    *,
+    _init_kernel_call=None,
 ) -> tuple[
     DomainHierarchy,
     dict[str, DomainBundle],
@@ -557,6 +755,9 @@ def _load_domains(
     promotion inside the run is impossible by construction.
     """
 
+    if _init_kernel_call is None:
+        from gpuwrf.integration.init_kernels import InitKernelCache
+        _init_kernel_call = InitKernelCache()
     run_dir = Path(config.input_dir)
     # Build the root case first so we share its Gen2Run for namelist/grid metadata.
     root_case = build_replay_case(run_dir, domain=names[0], standalone=True)
@@ -598,13 +799,18 @@ def _load_domains(
             parent_dt = dt_by_domain[parent]
         loaded_cases[name] = case
 
+        slope_rad = _domain_physics_int(run, "slope_rad", name, 0)
         radiation_static = None
         try:
             radiation_static, _ = load_radiation_static(
                 case.run, name, grid=case.grid, metrics=case.metrics
             )
-        except Exception:  # noqa: BLE001 -- radiation static is best-effort; never block init.
+        except Exception as exc:  # noqa: BLE001 -- required when slope radiation is on.
+            if slope_rad == 1:
+                raise RuntimeError(f"{name}: slope_rad=1 requires radiation static") from exc
             radiation_static = None
+        if slope_rad == 1 and radiation_static is None:
+            raise RuntimeError(f"{name}: slope_rad=1 requires radiation static")
 
         # Orographic gravity-wave drag per nested domain: read this domain's
         # &physics gwd_opt and, when on, build its GWDOStatics from the geo_em
@@ -642,6 +848,14 @@ def _load_domains(
         noahmp_land = None
         noahmp_init_meta = None
         if sf_surface_physics == 4:
+            if _resolve_full_wrfout_variables():
+                # These options require bucket counters / diagnostic time-window
+                # resets. Never silently publish unbucketed or unreset sums.
+                for group, option, default in (("physics", "bucket_j", -1), ("physics", "bucket_mm", -1),
+                                                ("noah_mp", "noahmp_acc_dt", 0)):
+                    value = float(run.namelist.get(group, {}).get(option, default))
+                    if value > 0:
+                        raise ValueError(f"full land history requires inactive {option}; got {value}")
             noahmp_land, noahmp_static, noahmp_init_meta = build_noahmp_land_state(
                 run_dir, name
             )
@@ -655,6 +869,8 @@ def _load_domains(
         state = case.state.replace(
             p=case.state.p_total, ph=case.state.ph_total, mu=case.state.mu_total
         )
+        if name != names[0]:
+            state = _two_time_live_nest_bdy(state)
         namelist = _make_namelist(
             grid=case.grid,
             tendencies=case.tendencies,
@@ -664,6 +880,9 @@ def _load_domains(
             run_start=run_start,
             radiation_static=radiation_static,
             cu_physics=_domain_cu_physics(run, name),
+            time_step_sound=_domain_int(run, "dynamics", "time_step_sound", name, 0),
+            radt_minutes=_domain_float(run, "physics", "radt", name, 30.0),
+            cudt_minutes=_domain_float(run, "physics", "cudt", name, 0.0),
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
             diff_opt=_domain_int(run, "dynamics", "diff_opt", name, 0),
@@ -677,6 +896,8 @@ def _load_domains(
             scalar_adv_opt=_domain_int(
                 run, "dynamics", "scalar_adv_opt", name, 0
             ),
+            topo_shading=_domain_physics_int(run, "topo_shading", name, 0),
+            slope_rad=slope_rad,
         )
         if noahmp_land is not None:
             namelist = dataclass_replace(
@@ -691,7 +912,21 @@ def _load_domains(
                 noahmp_yearlen=noahmp_yearlen,
             )
         if name == names[0]:
-            namelist = _root_boundary_cadence_override(namelist, case.metadata)
+            namelist = _root_boundary_cadence_override(namelist, case.metadata, run.namelist)
+        from gpuwrf.io.lower_boundary import load_lower_boundary
+        lower_boundary = load_lower_boundary(
+            run_dir, run.namelist, name,
+            run_start=run_start, dt_s=dt_by_domain[name], shape=state.t_skin.shape,
+        )
+        if lower_boundary is not None:
+            namelist = dataclass_replace(namelist, lower_boundary=lower_boundary)
+        if parent_dt is not None and _coupled_forcedown_enabled(namelist):
+            # Registry moist/scalar force-down records must exist before the
+            # child carry is frozen for compilation or restart.  The first
+            # parent force-down replaces these unread two-time templates; the
+            # predicate is the edge's own coupled_forcedown switch, so legacy
+            # (uncoupled) packages never see zero records.
+            state = initialize_child_scalar_boundaries(state)
         # Initial carry: identical to the domain-tree cold start for the bulk path
         # (same _initial_carry_for_run on the same state/namelist); under Noah-MP the
         # prognostic land carry plus the REAL t=0 held surface radiation are seeded
@@ -699,10 +934,24 @@ def _load_domains(
         # the proven s6b/TOST carry seeding; nocturnal LWDN cold-start mitigation).
         carry = _initial_carry_for_run(state, namelist)
         if noahmp_land is not None:
-            carry = carry.replace(
-                noahmp_land=noahmp_land,
-                noahmp_rad=noahmp_initial_rad(carry.state, namelist, land_state=noahmp_land),
+            initial_surface_rad, initial_full_rad = noahmp_initial_rad(
+                carry.state, namelist, land_state=noahmp_land, _with_diagnostics=True,
+                _kernel_call=_init_kernel_call,
             )
+            carry = carry.replace(
+                noahmp_land=noahmp_land, noahmp_rad=initial_surface_rad,
+                radiation_diagnostics=(initial_full_rad if carry.radiation_diagnostics is not None else None),
+            )
+            from gpuwrf.diagnostics.census import count_work
+            carry = carry.replace(census=count_work(carry.census, "radiation_init_calls"))
+            from gpuwrf.runtime.operational_state import (  # noqa: PLC0415
+                history_instep_diag_enabled,
+                seed_history_diagnostics,
+            )
+            if history_instep_diag_enabled():
+                carry = carry.replace(history_diagnostics=seed_history_diagnostics(carry.state))
+        from gpuwrf.kernels.dyn_carry_fp32 import real_carry
+        carry = real_carry(carry)  # GPUWRF_CARRY_REAL_ALL: post-seed held radiation as REAL
         # v0.17 nested compile-CHURN fix.  `_advance_chunk` RETURNS device-committed
         # leaves; if the FIRST nested advance for a domain receives this HOST/
         # uncommitted seed while the SECOND receives the prior chunk's COMMITTED
@@ -740,11 +989,15 @@ def _load_domains(
                     namelist.boundary_config.nested_frozen_wrf_boundary_bundle
                 ),
                 "cu_physics": int(namelist.cu_physics),
+                **_cumulus_cadence_metadata(namelist),
                 "radiation_static_loaded": radiation_static is not None,
                 "gwd_opt": int(namelist.gwd_opt),
                 "moist_adv_opt": int(namelist.moist_adv_opt),
                 "scalar_adv_opt": int(namelist.scalar_adv_opt),
                 "gwdo_statics_loaded": namelist.gwdo_statics is not None,
+                # Effective terrain-radiation controls of this domain (twin-delivery evidence; metadata only).
+                "topo_shading": int(namelist.topo_shading),
+                "slope_rad": int(namelist.slope_rad),
             },
             "land_surface": {
                 "sf_surface_physics": int(sf_surface_physics),
@@ -910,9 +1163,13 @@ def _canonicalize_batch_bundles(
     updated = dict(candidate)
     for name in names:
         bundle = candidate[name]
-        namelist = _canonicalize_batch_namelist_static(
+        namelist = _canonicalize_lane_value_tolerant(
             reference[name].namelist,
             bundle.namelist,
+        )
+        namelist = _canonicalize_batch_namelist_static(
+            reference[name].namelist,
+            namelist,
         )
         if namelist is not bundle.namelist:
             updated[name] = dataclass_replace(bundle, namelist=namelist)
@@ -972,6 +1229,220 @@ def _slice_batched_tree(tree: Any, lane: int) -> Any:
     return jax.tree_util.tree_map(take, tree)
 
 
+# Tenerife B=4 batch extension: NoahMPStatic slots that legitimately differ
+# ACROSS lanes (they are per-case wrfinput data: TMN->tbot deep-soil BC,
+# VEGFRA->shdfac/shdmax green-vegetation fraction) but must NOT discriminate the
+# batch namelist treedef. They are extracted per lane BEFORE canonicalization and
+# threaded as TRACED per-lane clock-base leaves (runtime.operational_mode).
+_NOAHMP_LANE_OVERRIDE_SLOTS = ("tbot", "shdfac", "shdmax")
+
+
+def _noahmp_lane_arrays(bundle: Any) -> tuple[Any, Any, Any] | None:
+    """Extract the ``(tbot, shdfac, shdmax)`` arrays from one lane's bundle.
+
+    Returns ``None`` when the domain runs without Noah-MP or the static is
+    absent/all-None, so B-runs without Noah-MP keep the previous clock shape.
+    """
+
+    namelist = bundle.namelist
+    if not bool(getattr(namelist, "use_noahmp", False)):
+        return None
+    static = getattr(namelist, "noahmp_static", None)
+    if static is None:
+        return None
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    arrays = []
+    for slot in _NOAHMP_LANE_OVERRIDE_SLOTS:
+        value = getattr(static, slot, None)
+        arrays.append(None if value is None else jnp.asarray(value))
+    if all(arr is None for arr in arrays):
+        return None
+    return tuple(arrays)
+
+
+def _terrain_provenance_equivalent(left: Any, right: Any) -> bool:
+    """True when two TerrainProvenance records match ignoring PATH metadata.
+
+    ``source_path`` embeds the per-lane input directory (lane00/lane01/...) and
+    ``sha256`` labels the manifest it came from; neither is read by any kernel.
+    Every other provenance field (shape, units, transform, max elevation,
+    coastline check) and the terrain DATA itself (compared by the grid digest)
+    must match.
+    """
+
+    if left is right:
+        return True
+    if left is None or right is None:
+        return left is None and right is None
+    for field in (
+        "shape",
+        "units",
+        "projection_transform",
+        "max_elevation_m",
+        "coastline_sanity_check_passed",
+    ):
+        if getattr(left, field, None) != getattr(right, field, None):
+            return False
+    return True
+
+
+def _grid_metrics_provenance_blind(metrics: Any) -> Any:
+    """Return ``metrics`` with its provenance STRING neutralized for digesting.
+
+    ``DycoreMetrics.provenance`` embeds the input FILE PATH (lane-specific);
+    every metric ARRAY is grid data. Kernels never read the string.
+    """
+
+    if metrics is None:
+        return None
+    try:
+        import dataclasses
+
+        return dataclasses.replace(metrics, provenance="")
+    except Exception:  # noqa: BLE001 -- fail closed: keep the raw object.
+        return metrics
+
+
+def _grids_equal_modulo_provenance(left: Any, right: Any) -> bool:
+    """True when two GridSpecs differ ONLY in provenance PATH metadata.
+
+    Tolerated: ``terrain`` path fields and ``metrics.provenance`` (both embed the
+    per-lane input path; neither is read by any kernel). Field comparison is
+    digest-based (GridSpec carries array fields where a bare ``!=`` returns an
+    elementwise array, not a bool).
+    """
+
+    if left is right:
+        return True
+    try:
+        from dataclasses import fields as dc_fields
+
+        from gpuwrf.runtime.aot_cheap_key import canonical_digest
+
+        if type(left) is not type(right):
+            return False
+        for field in dc_fields(type(left)):
+            if field.name == "terrain":
+                continue
+            lv = getattr(left, field.name, None)
+            rv = getattr(right, field.name, None)
+            if field.name == "metrics":
+                lv = _grid_metrics_provenance_blind(lv)
+                rv = _grid_metrics_provenance_blind(rv)
+            if canonical_digest(lv) != canonical_digest(rv):
+                return False
+        return _terrain_provenance_equivalent(left.terrain, right.terrain)
+    except Exception:  # noqa: BLE001 -- fail closed: leave uncanonicalized.
+        return False
+
+
+def _noahmp_statics_equal_modulo_lane_slots(left: Any, right: Any) -> bool:
+    """True when two NoahMPStatics differ ONLY in the per-lane override slots.
+
+    Every non-override slot must digest-match (categories, soil geometry,
+    parameter tables...); override slots only need matching dtype/shape (their
+    values are the per-lane physics data that ride the clock base instead).
+    """
+
+    if left is right:
+        return True
+    if left is None or right is None:
+        return left is None and right is None
+    if type(left) is not type(right):
+        return False
+    try:
+        from gpuwrf.runtime.aot_cheap_key import canonical_digest
+
+        for slot in type(left).__slots__:
+            lv = getattr(left, slot, None)
+            rv = getattr(right, slot, None)
+            if slot in _NOAHMP_LANE_OVERRIDE_SLOTS:
+                if (lv is None) != (rv is None):
+                    return False
+                if lv is None:
+                    continue
+                import numpy as np  # noqa: PLC0415
+
+                if (
+                    np.asarray(lv).shape != np.asarray(rv).shape
+                    or np.asarray(lv).dtype != np.asarray(rv).dtype
+                ):
+                    return False
+                continue
+            if canonical_digest(lv) != canonical_digest(rv):
+                return False
+        return True
+    except Exception:  # noqa: BLE001 -- fail closed: leave uncanonicalized.
+        return False
+
+
+def _canonicalize_lane_value_tolerant(reference: Any, candidate: Any) -> Any:
+    """Neutralize lane-varying METADATA in a candidate namelist's statics.
+
+    Two differences are tolerated between batch lanes (Tenerife B=4, 2026-09-18):
+      1. ``GridSpec`` terrain provenance PATH metadata (lane00/ vs lane01/ ...);
+      2. ``NoahMPStatic`` per-lane arrays {tbot, shdfac, shdmax} (extracted into
+         the per-lane clock base by the caller BEFORE this canonicalization, so
+         replacing the static with the reference's loses nothing).
+    Everything else must already match -- genuine physics/static differences keep
+    the treedef distinct and the downstream treedef assertion still fails closed.
+    """
+
+    import dataclasses
+
+    updates: dict[str, Any] = {}
+    ref_grid = getattr(reference, "grid", None)
+    cand_grid = getattr(candidate, "grid", None)
+    if cand_grid is not None and ref_grid is not None and cand_grid != ref_grid:
+        if _grids_equal_modulo_provenance(cand_grid, ref_grid):
+            try:
+                cand_metrics = cand_grid.metrics
+                ref_metrics = ref_grid.metrics
+                if (
+                    cand_metrics is not None
+                    and ref_metrics is not None
+                    and getattr(cand_metrics, "provenance", None)
+                    != getattr(ref_metrics, "provenance", None)
+                ):
+                    cand_metrics = dataclasses.replace(
+                        cand_metrics, provenance=ref_metrics.provenance
+                    )
+                updates["grid"] = dataclasses.replace(
+                    cand_grid,
+                    terrain=dataclasses.replace(
+                        cand_grid.terrain,
+                        source_path=ref_grid.terrain.source_path,
+                        sha256=ref_grid.terrain.sha256,
+                    ),
+                    metrics=cand_metrics,
+                )
+            except Exception:  # noqa: BLE001 -- fail closed, keep the raw grid.
+                pass
+    ref_static = getattr(reference, "noahmp_static", None)
+    cand_static = getattr(candidate, "noahmp_static", None)
+    if cand_static is not None and ref_static is not None and cand_static is not ref_static:
+        if _noahmp_statics_equal_modulo_lane_slots(ref_static, cand_static):
+            updates["noahmp_static"] = ref_static
+    # ``metrics`` is a CHILD pytree of the namelist whose DycoreMetrics aux is the
+    # provenance STRING (embeds the per-lane input path); arrays are grid data.
+    ref_metrics = getattr(reference, "metrics", None)
+    cand_metrics = getattr(candidate, "metrics", None)
+    if cand_metrics is not None and ref_metrics is not None and cand_metrics is not ref_metrics:
+        ref_blind = _grid_metrics_provenance_blind(ref_metrics)
+        cand_blind = _grid_metrics_provenance_blind(cand_metrics)
+        try:
+            from gpuwrf.runtime.aot_cheap_key import canonical_digest
+
+            if canonical_digest(ref_blind) == canonical_digest(cand_blind):
+                updates["metrics"] = ref_metrics
+        except Exception:  # noqa: BLE001 -- fail closed: leave unshared.
+            pass
+    if not updates:
+        return candidate
+    return dataclasses.replace(candidate, **updates)
+
+
 def _load_batched_domains(
     config: NestedPipelineConfig,
     names: tuple[str, ...],
@@ -987,6 +1458,7 @@ def _load_batched_domains(
     dict[str, tuple[OperationalNamelist, ...]],
     tuple[Path, ...],
     tuple[datetime, ...],
+    dict[str, tuple[tuple[Any, Any, Any] | None, ...]],
 ]:
     input_dirs = _resolve_batch_input_dirs(config, batch_size)
     loaded = []
@@ -999,6 +1471,14 @@ def _load_batched_domains(
         loaded.append(loaded_by_path[resolved_path])
 
     ref_hierarchy, ref_bundles, ref_meta, ref_run_start, ref_dt, ref_carries = loaded[0]
+    # Tenerife B=4: extract the genuinely per-lane Noah-MP arrays (tbot/shdfac/
+    # shdmax) BEFORE canonicalization shares the reference statics -- the lane
+    # values must survive to feed the per-lane clock bases.
+    batch_noahmp_arrays: dict[str, tuple[tuple[Any, Any, Any] | None, ...]] = {}
+    for name in names:
+        batch_noahmp_arrays[name] = tuple(
+            _noahmp_lane_arrays(lane[1][name]) for lane in loaded
+        )
     canonical_loaded = [loaded[0]]
     for lane, (hierarchy, bundles, meta, run_start, dt_by_domain, carries) in enumerate(
         loaded[1:], start=1
@@ -1043,6 +1523,7 @@ def _load_batched_domains(
         batch_namelists,
         input_dirs,
         tuple(lane[3] for lane in loaded),
+        batch_noahmp_arrays,
     )
 
 
@@ -1052,6 +1533,7 @@ def _clock_bases_for_batch_domain(
     name: str,
     batch_namelists: dict[str, tuple[OperationalNamelist, ...]],
     batch_size: int,
+    noahmp_lane_arrays: tuple[tuple[Any, Any, Any] | None, ...] | None = None,
 ) -> Any:
     if int(batch_size) <= 1:
         return build_clock_base(tree.domains[name].namelist)
@@ -1062,7 +1544,50 @@ def _clock_bases_for_batch_domain(
         raise ValueError(
             f"{name}: expected {int(batch_size)} batched namelists, got {len(namelists)}"
         )
-    return _stack_batched_tree(*(build_clock_base(namelist) for namelist in namelists))
+    clock_bases = []
+    for lane, namelist in enumerate(namelists):
+        arrays = None if noahmp_lane_arrays is None else noahmp_lane_arrays[lane]
+        clock_bases.append(build_clock_base(namelist, noahmp_static_arrays=arrays))
+    return _stack_batched_tree(*clock_bases)
+
+
+def _batch_subchunk_size(batch_size: int) -> int:
+    """Sub-batch width for the outer vmap (Tenerife B=4 VRAM fix, 2026-09-18).
+
+    The batched fused executable's device TEMP scales ~linearly with B (measured:
+    B=1 fits, B=4 requests a single ~28.8 GiB temp on the 32 GB RTX 5090 and OOMs
+    at execution). ``GPUWRF_BATCH_SUBCHUNK=G`` runs the SAME batched vmap in
+    ceil(B/G) device groups of G lanes: per-lane numerics are unchanged (vmap is
+    lane-independent, so results are bitwise-equal to the single-group run); only
+    peak VRAM and launch granularity change. Default: full batch in one group.
+    """
+
+    raw = os.environ.get("GPUWRF_BATCH_SUBCHUNK", "").strip()
+    if not raw:
+        return int(batch_size)
+    try:
+        group = int(raw)
+    except ValueError as exc:
+        raise ValueError(f"GPUWRF_BATCH_SUBCHUNK must be a positive integer; got {raw!r}") from exc
+    if group < 1:
+        raise ValueError(f"GPUWRF_BATCH_SUBCHUNK must be a positive integer; got {raw!r}")
+    return min(group, int(batch_size))
+
+
+def _slice_leaves(tree: Any, start: int, stop: int) -> Any:
+    import jax  # noqa: PLC0415
+
+    return jax.tree_util.tree_map(
+        lambda leaf: leaf[start:stop] if hasattr(leaf, "shape") and len(leaf.shape) > 0 else leaf,
+        tree,
+    )
+
+
+def _concat_leaves(*trees: Any) -> Any:
+    import jax  # noqa: PLC0415
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    return jax.tree_util.tree_map(lambda *xs: jnp.concatenate(xs, axis=0), *trees)
 
 
 def _batched_advance_factory(
@@ -1070,6 +1595,7 @@ def _batched_advance_factory(
     tree: DomainTree,
     batch_namelists: dict[str, tuple[OperationalNamelist, ...]],
     batch_size: int,
+    batch_noahmp_arrays: dict[str, tuple[tuple[Any, Any, Any] | None, ...]] | None = None,
 ):
     import jax  # noqa: PLC0415
     import jax.numpy as jnp  # noqa: PLC0415
@@ -1080,6 +1606,7 @@ def _batched_advance_factory(
             name=name,
             batch_namelists=batch_namelists,
             batch_size=int(batch_size),
+            noahmp_lane_arrays=None if batch_noahmp_arrays is None else batch_noahmp_arrays.get(name),
         )
         for name in tree.domains
     }
@@ -1097,18 +1624,29 @@ def _batched_advance_factory(
                 n_steps=int(n_steps),
                 cadence=cadence,
             )
-        return jax.vmap(
-            lambda lane_carry, lane_clock_base: _advance_chunk(
-                lane_carry,
-                namelist,
-                start,
-                lane_clock_base,
-                n_steps=int(n_steps),
-                cadence=cadence,
-            ),
-            in_axes=(0, 0),
-            out_axes=0,
-        )(carry, clock_bases[name])
+        group = _batch_subchunk_size(int(batch_size))
+
+        def run_group(group_carry: Any, group_clock: Any) -> Any:
+            return jax.vmap(
+                lambda lane_carry, lane_clock_base: _advance_chunk(
+                    lane_carry,
+                    namelist,
+                    start,
+                    lane_clock_base,
+                    n_steps=int(n_steps),
+                    cadence=cadence,
+                ),
+                in_axes=(0, 0),
+                out_axes=0,
+            )(group_carry, group_clock)
+
+        if group >= int(batch_size):
+            return run_group(carry, clock_bases[name])
+        results = []
+        for lo in range(0, int(batch_size), group):
+            hi = min(lo + group, int(batch_size))
+            results.append(run_group(_slice_leaves(carry, lo, hi), _slice_leaves(clock_bases[name], lo, hi)))
+        return _concat_leaves(*results)
 
     return advance
 
@@ -1117,6 +1655,16 @@ def _batched_force(edge, parent: Any, child: Any, *, batch_size: int) -> Any:
     import jax  # noqa: PLC0415
 
     child_state = child.state
+    # Mirror _operational_force's edge dispatch EXACTLY (Tenerife B=4 fix,
+    # 2026-09-18): when the edge is coupled_forcedown (live-nest child with
+    # nested_frozen_wrf_boundary_bundle + force_geopotential=False -- the
+    # production default), the boundary package MUST be built with the coupled
+    # signature (parent/child metrics + parent_grid_ratio). The batched path
+    # previously ALWAYS used the legacy package, silently diverging the child
+    # LBC from the B=1 runtime (~50x worse GPU-vs-CPU deltas, growing with
+    # lead). The extra arguments are lane-INVARIANT edge statics, so the vmap
+    # broadcasts them unchanged.
+    coupled = bool(getattr(edge, "coupled_forcedown", False))
     if int(batch_size) <= 1:
         bdy_width = int(child_state.u_bdy.shape[2])
         forced_state = build_child_boundary_package(
@@ -1124,6 +1672,16 @@ def _batched_force(edge, parent: Any, child: Any, *, batch_size: int) -> Any:
             parent.state,
             edge.weights,
             bdy_width=bdy_width,
+            **(
+                {
+                    "parent_metrics": edge.parent_metrics,
+                    "child_metrics": edge.child_metrics,
+                    "coupled_forcedown": True,
+                    "parent_grid_ratio": int(edge.parent_grid_ratio),
+                }
+                if coupled
+                else {}
+            ),
         )
     else:
         bdy_width = int(child_state.u_bdy.shape[3])
@@ -1133,6 +1691,16 @@ def _batched_force(edge, parent: Any, child: Any, *, batch_size: int) -> Any:
                 lane_parent_state,
                 edge.weights,
                 bdy_width=bdy_width,
+                **(
+                    {
+                        "parent_metrics": edge.parent_metrics,
+                        "child_metrics": edge.child_metrics,
+                        "coupled_forcedown": True,
+                        "parent_grid_ratio": int(edge.parent_grid_ratio),
+                    }
+                    if coupled
+                    else {}
+                ),
             ),
             in_axes=(0, 0),
             out_axes=0,
@@ -1158,6 +1726,7 @@ def run_batched_operational_domain_tree(
     carries: dict[str, Any] | None = None,
     initial_own_steps: dict[str, int] | None = None,
     max_event_tail: int | None = None,
+    batch_noahmp_arrays: dict[str, tuple[tuple[Any, Any, Any] | None, ...]] | None = None,
 ) -> DomainTreeResult:
     """Run the opt-in F1 B>1 vmap path without changing the B=1 runtime."""
 
@@ -1207,6 +1776,7 @@ def run_batched_operational_domain_tree(
             tree=tree,
             batch_namelists=batch_namelists,
             batch_size=int(batch_size),
+            batch_noahmp_arrays=batch_noahmp_arrays,
         ),
         force=lambda edge, parent, child: _batched_force(
             edge,
@@ -1363,7 +1933,10 @@ def _noahmp_surface_diagnostics_for_output(
     lead_seconds: float,
     noahmp_land: Any,
     noahmp_rad: Any,
+    radiation_diagnostics: Any = None,
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
+    output_radiation_work: list[int] | None = None,
+    history_diagnostics: Any = None,
 ) -> dict[str, np.ndarray] | None:
     """Writer surface map with the ACTIVE Noah-MP carry threaded into the overlay.
 
@@ -1377,7 +1950,7 @@ def _noahmp_surface_diagnostics_for_output(
     land-surface record this sprint removes).
     """
 
-    if _nested_m9_radiation_from_carry_from_env() and noahmp_rad is not None:
+    if radiation_diagnostics is None and _nested_m9_radiation_from_carry_from_env() and noahmp_rad is not None:
         return _noahmp_surface_diagnostics_from_held_radiation(
             state,
             namelist,
@@ -1386,6 +1959,19 @@ def _noahmp_surface_diagnostics_for_output(
             noahmp_land=noahmp_land,
             noahmp_rad=noahmp_rad,
             variable_subset=variable_subset,
+        )
+    if history_diagnostics is not None:
+        return _history_surface_diagnostics_for_output(
+            state,
+            namelist,
+            run_start,
+            lead_seconds=lead_seconds,
+            noahmp_land=noahmp_land,
+            noahmp_rad=noahmp_rad,
+            radiation_diagnostics=radiation_diagnostics,
+            history=history_diagnostics,
+            variable_subset=variable_subset,
+            output_radiation_work=output_radiation_work,
         )
 
     import jax  # noqa: PLC0415 -- lazy: keeps module import light (mirrors writer).
@@ -1410,6 +1996,7 @@ def _noahmp_surface_diagnostics_for_output(
     selected_attrs = _byte_identical_selected_m9_attrs(requested_names)
     attrs = selected_attrs or _m9_attrs_for_requested_names(requested_names)
     m9_by_attr: dict[str, Any] = {}
+    surface = None
     if attrs:
         # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
         clock_base = build_clock_base(clock_namelist)
@@ -1422,23 +2009,37 @@ def _noahmp_surface_diagnostics_for_output(
                 selected_attrs,
                 noahmp_land=noahmp_land,
                 noahmp_rad=noahmp_rad,
+                radiation_diagnostics=radiation_diagnostics,
+                **({"_with_radiation_count": True} if output_radiation_work is not None else {}),
             )
+            if output_radiation_work is not None:
+                values, calls = values
+                output_radiation_work.append(int(jax.device_get(calls)))
             m9_by_attr = dict(zip(selected_attrs, values, strict=True))
         else:
+            surface = surface_layer_diagnostics(state, clock_namelist.grid)
             m9 = compute_m9_diagnostics(
                 state,
                 clock_namelist,
                 lead_seconds,
                 noahmp_land=noahmp_land,
                 noahmp_rad=noahmp_rad,
+                radiation_diagnostics=radiation_diagnostics,
+                surface_diagnostics=surface,
+                **({"_with_radiation_count": True} if output_radiation_work is not None else {}),
                 clock_base=clock_base,
             )
+            if output_radiation_work is not None:
+                m9, calls = m9
+                output_radiation_work.append(int(jax.device_get(calls)))
             m9_by_attr = {attr: getattr(m9, attr, None) for attr in attrs}
     # Q2 stays the bulk surface-layer diagnostic (matches the single-domain path).
     q2 = None
     if requested_names is None or "Q2" in requested_names:
         try:
-            q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+            if surface is None:
+                surface = surface_layer_diagnostics(state, clock_namelist.grid)
+            q2 = getattr(surface, "q2", None)
         except Exception:  # noqa: BLE001 -- Q2 is auxiliary; the writer keeps its default.
             q2 = None
     out: dict[str, np.ndarray] = {}
@@ -1455,6 +2056,70 @@ def _noahmp_surface_diagnostics_for_output(
             continue
         out[wrf_name] = np.asarray(jax.device_get(value))
     return out or None
+
+
+def _history_surface_diagnostics_for_output(
+    state: Any,
+    namelist: OperationalNamelist,
+    run_start: datetime,
+    *,
+    lead_seconds: float,
+    noahmp_land: Any,
+    noahmp_rad: Any,
+    radiation_diagnostics: Any,
+    history: Any,
+    variable_subset: tuple[str, ...] | frozenset[str] | None,
+    output_radiation_work: list[int] | None,
+) -> dict[str, np.ndarray] | None:
+    """Writer surface map from the last step's in-step physics (WRF history semantics).
+
+    WRF writes history before ``solve`` (module_integrate.F:375 vs :393), so
+    T2/Q2/U10/V10/HFX/LH/PSFC are the previous step's surface_driver values held in
+    ``carry.history_diagnostics``; radiation fields keep the held carry path. No
+    surface-layer or Noah-MP re-solve runs here; HFX/LH replace the writer fallback.
+    """
+
+    import jax  # noqa: PLC0415 -- lazy: keeps module import light (mirrors writer).
+
+    from gpuwrf.integration.daily_pipeline import (  # noqa: PLC0415
+        _M9_OUTPUT_FIELDS,
+        _requested_m9_output_names,
+    )
+    from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
+        build_clock_base,
+        compute_m9_diagnostics,
+    )
+
+    clock_namelist = namelist
+    if getattr(namelist, "time_utc", None) is None:
+        clock_namelist = dataclass_replace(namelist, time_utc=run_start)
+    m9 = compute_m9_diagnostics(
+        state,
+        clock_namelist,
+        lead_seconds,
+        noahmp_land=noahmp_land,
+        noahmp_rad=noahmp_rad,
+        radiation_diagnostics=radiation_diagnostics,
+        history_diagnostics=history,
+        clock_base=build_clock_base(clock_namelist),
+        **({"_with_radiation_count": True} if output_radiation_work is not None else {}),
+    )
+    if output_radiation_work is not None:
+        m9, calls = m9
+        output_radiation_work.append(int(jax.device_get(calls)))
+    values = {
+        wrf_name: history.q2 if attr is None else getattr(m9, attr)
+        for wrf_name, attr in _M9_OUTPUT_FIELDS
+    }
+    values.update(HFX=m9.hfx, LH=m9.lh)
+    requested = _requested_m9_output_names(variable_subset)
+    out = {
+        name: value
+        for name, value in values.items()
+        if value is not None and (requested is None or name in requested)
+    }
+    host_out = jax.device_get(out)
+    return {name: np.asarray(value) for name, value in host_out.items()} or None
 
 
 def _resolve_training_output_subset() -> tuple[str, ...] | None:
@@ -1476,13 +2141,10 @@ def _resolve_training_output_subset() -> tuple[str, ...] | None:
 
 
 def _resolve_full_wrfout_variables() -> bool:
-    """Resolve the OPT-IN 375-variable WRF history stream for nested output."""
+    """Default to full WRF history; explicit =0 selects the reduced stream."""
+    from gpuwrf.config.history_output import full_wrfout_variables_enabled
 
-    for env_name in ("GPUWRF_FULL_WRFOUT_VARIABLES", "GPUWRF_FULL_WRFOUT"):
-        raw = os.environ.get(env_name, "").strip().lower()
-        if raw in {"1", "true", "yes", "on"}:
-            return True
-    return False
+    return full_wrfout_variables_enabled()
 
 
 def _nested_perf_timers_from_env() -> bool:
@@ -1708,7 +2370,9 @@ class OutputSnapshot:
     ``donate_argnums`` on ``_advance_chunk`` / ``_advance_chunk_fori`` / the fused
     cascade). So holding this reference keeps the captured leaves byte-identical and
     VRAM-resident until the materialize thread drains them -- the immutable handle
-    IS the snapshot, no device double-buffer needed (design Sec.2.2). Everything
+    IS the snapshot, no device double-buffer needed (design Sec.2.2). Under a
+    ``GPUWRF_*DONATE*`` flag the advance DOES delete its input carry, so the writer
+    hands this snapshot a device copy instead (``_device_copy_tree``). Everything
     else here is host metadata (datetimes / floats / a deterministic Path), safe to
     read on the materialize thread.
     """
@@ -1884,8 +2548,10 @@ class _PerDomainWrfoutWriter:
         async_writer: AsyncWrfoutWriter | None = None,
         perf_timers: _NestedOutputPerfTimers | None = None,
         output_pipeline: "OutputPipeline | None" = None,
+        initial_lands: dict[str, Any] | None = None,
     ) -> None:
         self.output_dir = output_dir
+        self.input_dir = Path(input_dir)
         self.run_start = run_start
         self.bundles = bundles
         self.output_cadence_steps = output_cadence_steps
@@ -1910,6 +2576,16 @@ class _PerDomainWrfoutWriter:
         self._variable_subset = _resolve_training_output_subset()
         self._full_variable_set = _resolve_full_wrfout_variables()
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
+        from gpuwrf.diagnostics.census import WriterIoLedger, enabled as census_enabled
+        self.census_io_ledger = WriterIoLedger() if census_enabled() else None
+        self._census_persist_info = {}
+        if self.census_io_ledger is not None and async_writer is not None:
+            previous_callback = async_writer._write_timing_callback
+            def counted_persist(path, seconds):
+                self._record_census_persist(path)
+                if previous_callback is not None:
+                    previous_callback(path, seconds)
+            async_writer._write_timing_callback = counted_persist
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
         from gpuwrf.integration.daily_pipeline import (
@@ -1925,7 +2601,14 @@ class _PerDomainWrfoutWriter:
         self.writer_diagnostics: dict[str, dict[str, Any]] = {}
         self.writer_static_latlon_metadata: dict[str, Any] = {}
         self.domain_authorities = {}
+        self._land_history_inputs = {}
+        self._land_history_initial = dict(initial_lands or {})
+        self.writer_global_attrs = {}
+        from gpuwrf.io.wrf_history_metadata import wrf_history_global_attributes
         for domain, bundle in bundles.items():
+            self.writer_global_attrs[domain] = wrf_history_global_attributes(
+                self.input_dir / f"wrfinput_{domain}", run.namelist, domain, self.dt_by_domain[domain]
+            )
             self.domain_authorities[domain] = bind_wrfout_domain_authority(
                 domain, run.grid(domain), bundle.grid
             )
@@ -1935,6 +2618,79 @@ class _PerDomainWrfoutWriter:
             self.writer_static_latlon_metadata[domain] = meta
             if diagnostics:
                 self.writer_diagnostics[domain] = diagnostics
+            if bool(getattr(bundle.namelist, "use_noahmp", False)):
+                from gpuwrf.config.paths import wrf_run_dir
+                from gpuwrf.io.land_history import load_land_history_inputs
+                self._land_history_inputs[domain] = load_land_history_inputs(
+                    self.input_dir / f"wrfinput_{domain}", table_dir=wrf_run_dir(),
+                    parameters=bundle.namelist.noahmp_static.parameters,
+                )
+
+    def _initial_surface_fields(self, name: str) -> dict[str, np.ndarray]:
+        """WRF writes initialized diagnostics before the first surface solve.
+
+        Lead-zero history precedes ``solve`` (module_integrate.F:375 vs :393): the six
+        surface fields are the wrfinput values, and every other surface/radiation
+        diagnostic the writer would re-solve (M9 radiation/PBL fields, HFX/LH) holds
+        its initialized value -- the wrfinput field when present, else WRF's zero
+        (== CPU-WRF t=0 history on 9/9 WN3 gate domain-cases, SI38).
+        """
+        from gpuwrf.io.netcdf_lock import Dataset
+
+        from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS
+
+        grid = self.bundles[name].grid
+        fields = {}
+        path = self.input_dir / f"wrfinput_{name}"
+        with Dataset(path, "r") as initial:
+            for field in ("PSFC", "T2", "TSK", "U10", "V10", "Q2"):
+                variable = initial.variables[field]
+                value = variable[0] if variable.dimensions[0] == "Time" else variable[:]
+                if np.ma.isMaskedArray(value) and np.any(np.ma.getmaskarray(value)):
+                    raise ValueError(f"{path}:{field} has uninitialized values")
+                value = np.asarray(value)
+                if value.shape != (grid.ny, grid.nx) or not np.all(np.isfinite(value)):
+                    raise ValueError(f"{path}:{field} is not a finite initialized surface field")
+                fields[field] = value
+            for field in [wrf_name for wrf_name, _attr in _M9_OUTPUT_FIELDS] + [
+                "HFX", "LH", "SWDNBC", "SWUPBC", "SWDNTC", "SWUPTC",
+                "LWDNBC", "LWUPBC", "LWDNTC", "LWUPTC",
+                "DUSFCG", "DVSFCG",
+            ]:
+                if field in fields:
+                    continue
+                if field not in initial.variables:
+                    fields[field] = np.zeros((grid.ny, grid.nx), dtype=np.float32)
+                    continue
+                variable = initial.variables[field]
+                value = np.ma.filled(variable[0] if variable.dimensions[0] == "Time" else variable[:], np.nan)
+                value = np.asarray(value)
+                if value.shape != (grid.ny, grid.nx) or not np.all(np.isfinite(value)):
+                    raise ValueError(f"{path}:{field} is not a finite initialized surface field")
+                fields[field] = value
+            for field in ("QKE", "CLDFRA", "QC_BL", "CLDFRA_BL", "DTAUX3D", "DTAUY3D"):
+                nz = getattr(grid, "nz", None)
+                if nz is None:
+                    nz = len(initial.dimensions["bottom_top"])
+                shape = (int(nz), grid.ny, grid.nx)
+                if field in initial.variables:
+                    variable = initial.variables[field]
+                    value = np.ma.filled(variable[0] if variable.dimensions[0] == "Time" else variable[:], np.nan)
+                    value = np.asarray(value)
+                    if value.shape != shape or not np.all(np.isfinite(value)):
+                        raise ValueError(f"{path}:{field} is not a finite initialized volume field")
+                    fields[field] = value
+                else:
+                    fields[field] = np.zeros(shape, dtype=np.float32)
+        return fields
+
+    def _record_census_persist(self, path):
+        if self.census_io_ledger is None:
+            return
+        info = self._census_persist_info.pop(str(path), None)
+        if info is not None:
+            domain, radiation_calls = info
+            self.census_io_ledger.record_persist(domain, radiation_output_calls=radiation_calls)
 
     def __call__(self, name: str, own_step: int, carry: Any) -> dict[str, Any]:
         """Output-boundary callback (``name, own_step, carry) -> result dict``.
@@ -1966,13 +2722,14 @@ class _PerDomainWrfoutWriter:
         if self._output_pipeline is not None:
             # S1: hand the post-step carry (device leaves by reference) + host
             # metadata to the materialize stage and return. ``submit`` re-raises a
-            # prior-frame error fail-closed before enqueuing -> Invariant F.
+            # prior-frame error fail-closed before enqueuing -> Invariant F. Under carry
+            # donation the next advance deletes this carry -> the snapshot owns a copy.
             self._output_pipeline.submit(
                 OutputSnapshot(
                     writer=self,
                     name=name,
                     own_step=int(own_step),
-                    carry=carry,
+                    carry=_device_copy_tree(carry) if _carry_donation_enabled() else carry,
                     valid_time=valid_time,
                     lead_seconds=float(lead_seconds),
                     lead_hours=float(lead_hours),
@@ -2035,9 +2792,15 @@ class _PerDomainWrfoutWriter:
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
         noahmp_land = getattr(carry, "noahmp_land", None)
+        radiation_work = [] if self.census_io_ledger is not None else None
         t0 = perf_timers.start()
         try:
-            if bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
+            initial = self._initial_surface_fields(name) if int(own_step) == 0 else None
+            if initial is not None:
+                # WRF lead-zero history precedes the first solve: no surface-layer,
+                # Noah-MP or radiation re-solve at step 0 (SI38).
+                surface_diagnostics = dict(initial)
+            elif bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
                 surface_diagnostics = _noahmp_surface_diagnostics_for_output(
                     state,
                     namelist,
@@ -2045,7 +2808,10 @@ class _PerDomainWrfoutWriter:
                     lead_seconds=lead_seconds,
                     noahmp_land=noahmp_land,
                     noahmp_rad=getattr(carry, "noahmp_rad", None),
+                    radiation_diagnostics=getattr(carry, "radiation_diagnostics", None),
                     variable_subset=self._variable_subset,
+                    **({"output_radiation_work": radiation_work} if radiation_work is not None else {}),
+                    history_diagnostics=getattr(carry, "history_diagnostics", None),
                 )
             else:
                 surface_diagnostics = self._surface_diagnostics_for_output(
@@ -2054,10 +2820,57 @@ class _PerDomainWrfoutWriter:
                     self.run_start,
                     lead_seconds=lead_seconds,
                     variable_subset=self._variable_subset,
+                    **({"output_radiation_work": radiation_work} if radiation_work is not None else {}),
                 )
             diagnostics = self._merge_output_diagnostics(
                 self.writer_diagnostics.get(name), surface_diagnostics
             )
+            if initial is None:
+                diagnostics = dict(diagnostics or {})
+                rad = getattr(carry, "radiation_diagnostics", None)
+                for wrf_name, attr in (
+                    ("CLDFRA", "cloud_fraction"),
+                    ("SWDNBC", "sw_clear_sfc_down"), ("SWUPBC", "sw_clear_sfc_up"),
+                    ("SWDNTC", "sw_clear_toa_down"), ("SWUPTC", "sw_clear_toa_up"),
+                    ("LWDNBC", "lw_clear_sfc_down"), ("LWUPBC", "lw_clear_sfc_up"),
+                    ("LWDNTC", "lw_clear_toa_down"), ("LWUPTC", "lw_clear_toa_up"),
+                ):
+                    value = getattr(rad, attr, None)
+                    if value is not None:
+                        diagnostics[wrf_name] = value
+                for wrf_name, attr in (("QC_BL", "qc_bl"), ("CLDFRA_BL", "cldfra_bl"),
+                                       ("DTAUX3D", "dtaux3d"), ("DTAUY3D", "dtauy3d"),
+                                       ("DUSFCG", "dusfcg"), ("DVSFCG", "dvsfcg")):
+                    value = getattr(state, attr, None)
+                    if value is not None:
+                        diagnostics[wrf_name] = value
+            if os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1":
+                base = getattr(carry, "base_state", None)
+                if base is None:
+                    raise ValueError("native RK output requires its initial WRF base state")
+                diagnostics = dict(diagnostics or {})
+                diagnostics.update(PB=base.pb, PHB=base.phb, MUB=base.mub)
+            if initial is not None:
+                diagnostics = dict(diagnostics or {})
+                diagnostics.update(initial)
+            if noahmp_land is not None and name in getattr(self, "_land_history_inputs", {}):
+                from gpuwrf.io.land_history import land_history_diagnostics
+                initial_land = self._land_history_initial.get(name)
+                if initial_land is None:
+                    if int(own_step) != 0:
+                        raise ValueError("land history requires the initialized water-tile carry")
+                    initial_land = jax.device_get(noahmp_land)
+                    self._land_history_initial[name] = initial_land
+                land_fields, noahmp_land = land_history_diagnostics(
+                    noahmp_land, initial_land, self._land_history_inputs[name],
+                    own_step=int(own_step), history=getattr(carry, "land_history", None),
+                )
+                diagnostics = dict(diagnostics or {})
+                diagnostics.update(land_fields)
+                diagnostics.update(getattr(carry, "energy_accumulators", None) or {})
+            if getattr(namelist, "lower_boundary", None) is not None:
+                from gpuwrf.io.lower_boundary import lower_boundary_history
+                diagnostics.update(lower_boundary_history(namelist.lower_boundary, own_step))
         finally:
             perf_timers.stop(
                 "M9-diag", t0, domain=name, own_step=int(own_step)
@@ -2075,14 +2888,21 @@ class _PerDomainWrfoutWriter:
                 lead_hours=float(lead_hours),
                 run_start=self.run_start,
                 diagnostics=diagnostics,
+                land_state=noahmp_land,
                 variable_subset=self._variable_subset,
                 include_mandatory_coords=self._variable_subset is not None,
                 full_variable_set=self._full_variable_set,
+                **({"source_global_attrs": self.writer_global_attrs[name]}
+                   if getattr(self, "writer_global_attrs", None) is not None else {}),
             )
         finally:
             perf_timers.stop(
                 "prepare_payload", t0, domain=name, own_step=int(own_step), path=path
             )
+        if getattr(self, "history_journal", None) is not None:
+            prepared = dataclass_replace(prepared, restart_publication=self.history_journal.publish)
+        if self.census_io_ledger is not None:
+            self._census_persist_info[str(path)] = (name, sum(radiation_work))
         if self._async_writer is not None:
             # Keep the device->host pull on the step thread (so no off-thread
             # touch of a device buffer the GPU may reuse), then submit the
@@ -2137,6 +2957,7 @@ class _PerDomainWrfoutWriter:
                     include_mandatory_coords=self._variable_subset is not None,
                     compress=self._variable_subset is not None,
                 )
+                self._record_census_persist(path)
             finally:
                 perf_timers.stop(
                     "writer_write",
@@ -2203,9 +3024,10 @@ def _emit_initial_history_frames(
 
 
 def _finite_stats_host(state: Any) -> dict[str, Any]:
-    from gpuwrf.integration.daily_pipeline import finite_summary
+    from gpuwrf.integration.daily_pipeline import finite_guard_summary
 
-    return finite_summary(state)
+    # The final verdict consumes only all_finite; failures retain full host stats.
+    return finite_guard_summary(state)
 
 
 def _nested_async_output_from_env() -> bool:
@@ -2304,6 +3126,32 @@ def _nested_event_tail_cap_from_env(default: int = 4096) -> int:
 
 
 def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
+    """Run the nested pipeline and join all owned AOT loader threads on exit."""
+    prefetch_handles = []
+    try:
+        return _execute_nested_pipeline(config, _prefetch_handles=prefetch_handles)
+    finally:
+        for handle in prefetch_handles:
+            handle.close()
+
+
+
+def _require_native_base_state(carries, source) -> None:
+    """Refuse a legacy checkpoint under native RK before any step runs (v0.3 fast defaults)."""
+
+    if os.environ.get("GPUWRF_DYN_RK_FP32", "0") != "1":
+        return
+    missing = sorted(name for name, carry in carries.items() if getattr(carry, "base_state", None) is None)
+    if missing:
+        raise ValueError(
+            f"checkpoint {source} has no native-RK base_state for {missing}: it was written by a "
+            "legacy build (pre-v0.3 or GPUWRF_FAST_DEFAULTS=0). Resume it with GPUWRF_FAST_DEFAULTS=0, "
+            "or restart from a checkpoint written by the fast-default build."
+        )
+
+def _execute_nested_pipeline(
+    config: NestedPipelineConfig, *, _prefetch_handles: list,
+) -> dict[str, Any]:
     """Run a standalone live-nested forecast and write per-domain wrfout.
 
     Returns an ``M7DailyPipelineRun``-shaped payload with ``init_mode``
@@ -2348,7 +3196,33 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
 
     overall_start = time.perf_counter()
     batch_size = _batch_ensemble_size_from_env()
+    restart_enabled = config.checkpoint_dir is not None or config.resume_checkpoint is not None
+    if restart_enabled and batch_size != 1:
+        raise ValueError("operational checkpoint/resume currently requires B=1")
+    if config.checkpoint_dir is not None and config.checkpoint_interval_steps < 1:
+        raise ValueError("checkpoint cadence must be positive in root-domain steps")
+    prefetch_report = {"enabled": bool(config.aot_prefetch), "domains": {}}
+    prefetch_started = None
+    if config.aot_prefetch and batch_size == 1:
+        # Allocator/flags are settled above; initialize the client on this thread
+        # before the loader's workers run alongside input reading/native init.
+        device = jax.devices()[0]
+        if device.platform == "gpu":
+            from gpuwrf.runtime import aot_precompile
+            try:
+                candidates = _aot_prefetch_artifact_candidates(names)
+                if candidates:
+                    prefetch_started = time.perf_counter()
+                    handle = aot_precompile.prefetch_domain_blobs(
+                        candidates, dev=device, max_workers=2,
+                    )
+                    _prefetch_handles.append(handle)
+            except Exception as exc:
+                prefetch_report["error"] = f"{type(exc).__name__}: {exc}"
+        else:
+            prefetch_report["skip"] = "non-gpu-backend"
     batch_namelists: dict[str, tuple[OperationalNamelist, ...]] = {}
+    batch_noahmp_arrays: dict[str, tuple[tuple[Any, Any, Any] | None, ...]] = {}
     batch_input_dirs: tuple[Path, ...] = (Path(config.input_dir),)
     batch_run_starts: tuple[datetime, ...] = ()
     if batch_size > 1:
@@ -2362,6 +3236,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             batch_namelists,
             batch_input_dirs,
             batch_run_starts,
+            batch_noahmp_arrays,
         ) = _load_batched_domains(config, names, batch_size=batch_size)
     else:
         hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries = _load_domains(
@@ -2369,8 +3244,37 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         )
         batch_run_starts = (run_start,)
 
+    # Preserve initialized water-tile values before restart replaces the carries.
+    # Noah-MP advances land only in WRF; its vectorized dummy water values must
+    # never become history, including after a resumed forecast.
+    writer_initial_lands = {
+        name: jax.device_get(carry.noahmp_land)
+        for name, carry in initial_carries.items() if carry.noahmp_land is not None
+    }
+
     root = names[0]
     root_dt = dt_by_domain[root]
+    restart_store = None
+    restart_snapshot = None
+    restart_report = {"enabled": restart_enabled, "checkpoints": []}
+    if restart_enabled:
+        from gpuwrf.runtime.restart_store import RestartStore, nested_identity
+        restart_store = RestartStore(
+            config.checkpoint_dir or Path(config.resume_checkpoint).parent,
+            config.checkpoint_max_bytes, config.checkpoint_max_generations,
+            config.checkpoint_reserve_bytes,
+        )
+        restart_identity = nested_identity(config, bundles, run_start)
+        if config.resume_checkpoint is not None:
+            resume_t0 = time.perf_counter()
+            restart_snapshot, receipt = restart_store.read(
+                config.resume_checkpoint, expected_identity=restart_identity,
+            )
+            if tuple(receipt["domains"]) != names or receipt["dt_s"] != dt_by_domain:
+                raise ValueError("restart domain topology/timesteps differ from current run")
+            initial_carries = {name: _commit_to_operational_device(carry) for name, carry in restart_snapshot["carries"].items()}
+            _require_native_base_state(initial_carries, config.resume_checkpoint)
+            restart_report.update(resumed_from=str(config.resume_checkpoint), read_wall_s=time.perf_counter() - resume_t0)
     root_steps_raw = float(config.hours) * 3600.0 / root_dt
     root_steps = int(round(root_steps_raw))
     if abs(root_steps_raw - root_steps) > 1.0e-9:
@@ -2405,19 +3309,15 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
 
     feedback_enabled = bool(config.feedback)
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
+    forcedown_warmup = (
+        _start_forcedown_warmup(tree, initial_carries) if int(batch_size) == 1 else None
+    )
 
-    # CROSS-DOMAIN PARALLEL PRE-COMPILE (vNext de-fuse cold-wall win). When the
-    # de-fuse compile path is active (GPUWRF_NESTED_DEFUSE_COMPILE=1 /
-    # GPUWRF_NESTED_FUSE=0 / GPUWRF_BITWISE) the N independent per-domain
-    # _advance_chunk_fori modules would otherwise compile SEQUENTIALLY (~Sum(N)
-    # ~50 min). This warms the shared version-keyed (locked) cache CONCURRENTLY in
-    # spawned child processes BEFORE the integration loop, so the eager loop below
-    # warm-hits all N (cold wall ~max(one body) + pool overhead). No-op for the
-    # fused default and fully FAIL-OPEN (a failure just
-    # cold-compiles as today). Numerically inert. The two stderr markers below
-    # bracket the wall so a GPU A/B can time the cold-compile-wall precisely. The
-    # gate self-gates (no-op for the fused default / GPUWRF_NESTED_PARALLEL_COMPILE=0)
-    # so it is always safe to call here. De-fuse remains opt-in.
+    # Cold de-fused domains lower on this thread and compile/export on at most
+    # two worker threads before stepping. A shared-cache lease prevents parallel
+    # cases from duplicating the cold work. Warm artifacts skip this phase;
+    # failures leave the ordinary serial compile/load path available. No forecast
+    # is executed here. The markers expose the cold wall in the run receipt.
     _pc_t0 = time.perf_counter()
     sys.stderr.write("[parallel-compile] PREWARM_START de-fuse nest\n")
     sys.stderr.flush()
@@ -2499,6 +3399,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
                     async_writer=async_writer,
                     perf_timers=perf_timers,
                     output_pipeline=output_pipeline,
+                    initial_lands={name: jax.tree.map(lambda x: x[lane], land)
+                                   for name, land in writer_initial_lands.items()},
                 )
             )
         writer = _BatchedPerDomainWrfoutWriter(tuple(lane_writers))
@@ -2513,9 +3415,20 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             async_writer=async_writer,
             perf_timers=perf_timers,
             output_pipeline=output_pipeline,
+            initial_lands=writer_initial_lands,
         )
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
+    if restart_snapshot is not None:
+        from gpuwrf.runtime.restart_store import restore_output_receipts, restore_writer_census
+        restore_output_receipts(writer, restart_snapshot["driver_state"]["outputs"])
+        restore_writer_census(writer, restart_snapshot["driver_state"]["writer_census"])
+    if restart_enabled:
+        from gpuwrf.runtime.restart_store import HistoryJournal
+        stream = restart_snapshot["driver_state"].get("history_stream") if restart_snapshot is not None else None
+        writer.history_journal = HistoryJournal(restart_store, restart_identity, stream)
+        if restart_snapshot is not None:
+            restart_report["replayed_history"] = writer.history_journal.recover(restart_snapshot["driver_state"]["outputs"])
 
     # WRF-compatible lead-zero history is an explicit corrected-validation opt-in.
     # It uses the same authenticated per-domain writer before the first numerical
@@ -2524,7 +3437,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         writer,
         names,
         initial_carries,
-        enabled=bool(config.emit_initial_history),
+        enabled=bool(config.emit_initial_history) and restart_snapshot is None,
     )
 
     # MEMORY-BOUNDED segmented host loop (v0.12.0 nested-OOM fix).  The whole
@@ -2543,6 +3456,25 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # radiation gate keys off the threaded global step index); only the
     # memory/segmentation orchestration changes, NOT the physics/dynamics or the
     # live parent->child boundary coupling.
+    # Complete loads before the first segment; keep their futures registered
+    # until the real runtime-key lookup consumes them. Wait time stays in the
+    # process/pre-step wall, rather than being hidden from whole-run S1.
+    if _prefetch_handles:
+        wait_start = time.perf_counter()
+        future = None
+        for name, future in _prefetch_handles[0].futures.items():
+            try:
+                status = future.result()[1]
+                prefetch_report["domains"][name] = status
+            except Exception as exc:
+                prefetch_report["domains"][name] = {"error": f"{type(exc).__name__}: {exc}"}
+        del future  # A loop local must not retain an unused executable.
+        prefetch_report["remaining_wait_s"] = time.perf_counter() - wait_start
+        prefetch_report["elapsed_s"] = time.perf_counter() - prefetch_started
+    meta["aot_prefetch"] = prefetch_report
+    if forcedown_warmup is not None:
+        meta["forcedown_warmup"] = _join_forcedown_warmup(forcedown_warmup)
+
     forecast_start = time.perf_counter()
     root_seg_steps = int(output_cadence[root])  # one root history-output segment
     # Pre-seeded initial carries from _load_domains: bit-identical to the former
@@ -2583,10 +3515,24 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     )
     legacy_aot_reports: list[dict[str, Any]] = []
     start = 0
+    if restart_snapshot is not None:
+        own_steps = dict(restart_snapshot["own_steps"])
+        start = own_steps[root]
+        if start > root_steps:
+            raise ValueError("restart is beyond the requested forecast endpoint")
+        saved_driver = restart_snapshot["driver_state"]
+        event_counts.update(saved_driver["event_counts"])
+        force_counts.update(saved_driver["force_counts"])
+        cascade_counts.update(saved_driver["cascade_counts"])
+        events_tail.extend(saved_driver["events_tail"])
+        final_states = {name: carry.state for name, carry in carries.items()}
+    first_resumed_segment = restart_snapshot is not None
     async_writer_joined = False
     try:
         while start < root_steps:
             seg = min(root_seg_steps, root_steps - start)
+            if config.checkpoint_dir is not None:
+                seg = min(seg, config.checkpoint_interval_steps - start % config.checkpoint_interval_steps)
             run_tree = (
                 run_batched_operational_domain_tree
                 if int(batch_size) > 1
@@ -2596,6 +3542,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             if int(batch_size) > 1:
                 run_kwargs["batch_namelists"] = batch_namelists
                 run_kwargs["batch_size"] = int(batch_size)
+                run_kwargs["batch_noahmp_arrays"] = batch_noahmp_arrays
             else:
                 run_kwargs["prepared_runtime"] = prepared_runtime
                 run_kwargs["event_aware_fusion_k"] = event_aware_fusion_k
@@ -2631,6 +3578,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
                 )
             carries = result.carries
             own_steps = dict(result.own_steps)
+            from gpuwrf.diagnostics.census import write_segment
+            write_segment(config.output_dir, carries, bundles, own_steps, writer, output_cadence)
             # Fold this segment's events into the running summary + bounded tail, then
             # DROP the segment's tuple (host RAM stays O(1) in forecast length).
             for event in result.events:
@@ -2643,6 +3592,28 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             cascade_counts.update(result.cascade_counts)
             final_states = result.states
             start += seg
+            if first_resumed_segment:
+                restart_report["resume_to_first_segment_ready_s"] = time.perf_counter() - overall_start
+                first_resumed_segment = False
+            if config.checkpoint_dir is not None and (start % config.checkpoint_interval_steps == 0 or start == root_steps):
+                from gpuwrf.runtime.restart_store import drain_checkpoint_output, output_receipts, writer_census_snapshot
+                checkpoint_t0 = time.perf_counter()
+                drain_checkpoint_output(output_pipeline, async_writer)
+                generation, storage_receipt = restart_store.save(
+                    carries, own_steps, dt_by_domain, restart_identity,
+                    driver_state={
+                        "history_stream": writer.history_journal.stream,
+                        "outputs": output_receipts(writer.written),
+                        "writer_census": writer_census_snapshot(writer),
+                        "prepared_runtime_reuse": prepared_runtime_reuse,
+                        "aot": nested_aot_report(),
+                        "event_counts": dict(event_counts), "force_counts": dict(force_counts),
+                        "cascade_counts": dict(cascade_counts), "events_tail": tuple(events_tail),
+                    },
+                )
+                restart_report["checkpoints"].append({"path": str(generation), "root_step": start, "wall_s": time.perf_counter() - checkpoint_t0, **storage_receipt})
+                sys.stderr.write(f"[checkpoint] VERIFIED {generation} root_step={start}\n")
+                sys.stderr.flush()
         jax.block_until_ready(tuple(state.theta for state in final_states.values()))
         forecast_wall_s = time.perf_counter() - forecast_start
         # Drain the background output stages: every submitted output frame must be
@@ -2678,6 +3649,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
                     submitted_paths=sum(len(paths) for paths in writer.written.values()),
                 )
             async_writer_joined = True
+        from gpuwrf.diagnostics.census import write_segment
+        write_segment(config.output_dir, carries, bundles, own_steps, writer, output_cadence)
     finally:
         # Fail-closed: if the forecast loop above raised (NaN/OOM/etc.), still drain
         # the background stages so no daemon thread outlives the run and any in-flight
@@ -2784,6 +3757,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         },
         "wall_clock_total_s": float(total_wall_s),
         "wall_clock_forecast_only_s": float(forecast_wall_s),
+        "restart": restart_report,
         "wrfout_files": [path for name in names for path in writer.written.get(name, [])],
         "per_domain": per_domain,
         "all_domains_finite": bool(all_finite),

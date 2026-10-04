@@ -11,7 +11,7 @@ import jax
 from jax import config
 import jax.numpy as jnp
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 
@@ -128,7 +128,7 @@ def load_wrfinput_metrics(path: str | Path) -> DycoreMetrics:
             sina=sina,
             cosa=cosa,
             p_top=_first_time_variable(dataset, "P_TOP"),
-            provenance=f"wrfinput:{Path(path)}:nz={nz}:eta={tuple(eta_levels.shape)}",
+            provenance=f"wrfinput:{Path(path).name}:nz={nz}:eta={tuple(eta_levels.shape)}",  # no case dir: AOT keys stay case-invariant
         )
 
 

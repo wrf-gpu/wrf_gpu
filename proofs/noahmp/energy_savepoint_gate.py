@@ -255,6 +255,15 @@ def run_column(col):
     return out
 
 
+def reference(col):
+    """WRF values for run_column: the NOAHMP_SFLX outputs, except ALBEDO, which the driver keeps at its value
+    entering the step (run_column seeds it with ALBOLD) while SALB = -999.9 (SWDOWN = 0; noahmpdrv.F:1230-1232)."""
+    wrf = col["wrf"]
+    salb = wrf["energy_state"]["albedo"]
+    return {**wrf["energy_out"], "albedo": salb if salb > -999 else col["state_in"]["albold"],
+            "tg": wrf["energy_state"]["tg"], "tah": wrf["energy_state"]["tah"]}
+
+
 def main():
     sp = json.load(open(HERE / "savepoints_energy.json"))
     cols = sp["columns"]
@@ -262,8 +271,7 @@ def main():
     n_pass = n_fail = 0
     for col in cols:
         wrf = col["wrf"]
-        ref = {**wrf["energy_out"], "albedo": wrf["energy_state"]["albedo"],
-               "tg": wrf["energy_state"]["tg"], "tah": wrf["energy_state"]["tah"]}
+        ref = reference(col)
         # qsfc reference = WRF Q1 (driver writes Q1 back to QSFC); reconstruct:
         got = run_column(col)
         result = {}

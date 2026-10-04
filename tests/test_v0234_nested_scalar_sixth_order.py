@@ -69,7 +69,10 @@ def test_pristine_wrf_moist_and_other_scalar_diff6_is_rk1_frozen():
     stages = source.index("def advance_stage")
     consume = source.index("_nested_scalar_stage_tendencies", stages)
     assert build < stages < consume
-    assert source.count("_nested_scalar_sixth_order_tendencies(") == 1
+    # Released C1 arm keeps the time-t bundle; the post-acoustic path forms the
+    # sixth-order part at RK1 from grid%muts (solve_em.F:2303) and caches it.
+    assert source.count("_nested_scalar_sixth_order_tendencies(") == 2
+    assert '_rk1_cached("child"' in source[stages:]
 
 
 def test_bundle_order_dt_over_three_and_exact_scalar_values():

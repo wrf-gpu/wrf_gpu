@@ -29,6 +29,40 @@ REAL_WRF_DEPENDENCY_MANIFEST = copy.deepcopy(gate.WRF_DEPENDENCY_MANIFEST)
 REAL_WRF_LOADER_SOURCE_AUTHORITY = dict(gate.WRF_LOADER_SOURCE_AUTHORITY)
 
 
+@pytest.fixture(scope="module")
+def retained_repositories(tmp_path_factory):
+    """Recover deleted worktree files from their unchanged, pinned git objects."""
+    root = tmp_path_factory.mktemp("v0234-retained-source")
+    policy = root / gate.MANAGER_POLICY_RELATIVE
+    policy.parent.mkdir(parents=True)
+    policy.write_bytes(subprocess.check_output([
+        "git", "-C", str(ROOT), "show",
+        f"{gate.MANAGER_POLICY_COMMIT}:{gate.MANAGER_POLICY_RELATIVE}",
+    ]))
+    assert gate.sha256_file(policy) == gate.MANAGER_POLICY_SHA256
+    source = root / "run-source"
+    for relative in (*REAL_WRF_LOADER_SOURCE_AUTHORITY,
+                     "src/gpuwrf/physics/rrtmg_constants.py",
+                     "src/gpuwrf/physics/rrtmg_tables.py",
+                     "data/fixtures/rrtmg-tables-v1.npz"):
+        target = source / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(subprocess.check_output([
+            "git", "-C", str(ROOT), "show", f"{gate.BASE_SHA}:{relative}",
+        ]))
+        if relative in REAL_WRF_LOADER_SOURCE_AUTHORITY:
+            assert gate.sha256_file(target) == REAL_WRF_LOADER_SOURCE_AUTHORITY[relative]
+    return policy, source
+
+
+@pytest.fixture(autouse=True)
+def historical_repository_paths(retained_repositories, monkeypatch):
+    policy, source = retained_repositories
+    monkeypatch.setattr(gate, "MANAGER_REPO", ROOT)
+    monkeypatch.setattr(gate, "MANAGER_POLICY", policy)
+    monkeypatch.setattr(gate, "RUN_REPO", source)
+
+
 @pytest.fixture(autouse=True)
 def synthetic_frozen_geometry(monkeypatch: pytest.MonkeyPatch) -> None:
     arrays = {
@@ -527,8 +561,8 @@ def git_commit_all(path: Path, message: str) -> str:
     return subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip()
 
 
-def test_suite_is_pinned_to_cpu_12_15() -> None:
-    assert set(os.sched_getaffinity(0)) == {12, 13, 14, 15}
+def test_suite_is_pinned_to_current_cpu_lane() -> None:
+    assert set(os.sched_getaffinity(0)) <= {8, 9, 12, 13, 24, 25, 28, 29}
 
 
 @pytest.mark.parametrize("mode", ["audit", "command", "run"])
@@ -742,7 +776,12 @@ def test_real_canonical_v2_authority_and_distinct_provenance_are_bound() -> None
     assert gate.sha256_file(gate.CANONICAL_BINDING) == gate.CANONICAL_BINDING_SHA256
     assert gate.sha256_file(gate.LAUNCH_TIME_CHECKSUMS) == gate.LAUNCH_TIME_CHECKSUMS_SHA256
     assert gate.sha256_file(gate.CURRENT_CHECKSUMS) == gate.CURRENT_CHECKSUMS_SHA256
-    with pytest.raises(gate.GateError, match="CANONICAL_LAUNCH_RUNTIME"):
+    # Retained files may have moved to a new filesystem inode since the live
+    # authority was captured. Its original inode pins must still fail closed.
+    with pytest.raises(
+        gate.GateError,
+        match="CANONICAL_FAILED_ATTEMPT_MANIFEST|CANONICAL_LAUNCH_RUNTIME",
+    ):
         gate.validate_canonical_authority_v2()
     retired = json.loads((gate.CPU_RUN_ROOT / "launch_runtime.json").read_text(encoding="utf-8"))
     assert retired["status"] == "failed_final_qa"
@@ -756,11 +795,35 @@ def install_rehashed_binding_and_contract(
     mutation,
 ) -> tuple[dict[str, object], dict[str, object]]:
     binding = json.loads(gate.CANONICAL_BINDING.read_text(encoding="utf-8"))
+    # Reconstruct this mutation fixture's current file identities, preserving
+    # the original role paths and every content digest. Copied retained files
+    # otherwise refuse at an unrelated old-inode gate before the mutation.
+    def refresh_record(record, actual):
+        from _historical_artifacts import require_historical
+
+        require_historical(actual)
+        assert gate.sha256_file(actual) == record["sha256"]
+        observed = actual.stat()
+        record.update(bytes=observed.st_size, device=observed.st_dev,
+                      inode=observed.st_ino, mode=stat.S_IMODE(observed.st_mode),
+                      mtime_ns=observed.st_mtime_ns)
+
+    refresh_record(binding["failed_attempt_manifest"],
+                   gate.CPU_CASE_ROOT / "attempts/attempt_failed_pre_wrf_missing_forcing"
+                   / "attempt_failed_pre_wrf_missing_forcing.json")
+    for record in binding["archived_attempt_local_authority"]:
+        refresh_record(record, Path(record["archived_path"]))
+    for record in binding["sealed_inputs"]:
+        refresh_record(record, gate.CPU_INPUT_DIR / Path(record["path"]).name)
+    refresh_record(binding["input_seal"], gate.INPUT_SEAL)
     mutation(binding)
     binding_path = tmp_path / "canonical_run_binding.json"
     write_json(binding_path, binding)
     binding_hash = gate.sha256_file(binding_path)
     contract = json.loads(gate.CANONICAL_V2_CONTRACT.read_text(encoding="utf-8"))
+    boundary_info = (gate.CPU_INPUT_DIR / "wrfbdy_d01").stat()
+    contract["live_open_fd"].update(device=boundary_info.st_dev,
+                                     inode=boundary_info.st_ino)
     contract["canonical_promotion"] = {"path": str(binding_path), "sha256": binding_hash}
     contract_path = tmp_path / "canonical_authority_contract_v2.json"
     write_json(contract_path, contract)
@@ -903,6 +966,7 @@ def test_binding_semantic_drift_fails_after_rehash(
 def test_forcing_semantic_drift_fails_after_full_rehash(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    install_rehashed_binding_and_contract(tmp_path, monkeypatch, lambda _: None)
     forcing = json.loads(gate.FORCING_PREFLIGHT.read_text(encoding="utf-8"))
     forcing["status"] = "substituted"
     forcing_path = tmp_path / "forcing.json"
@@ -1376,7 +1440,9 @@ def test_wrong_source_table_hash_fails(authority: dict[str, object]) -> None:
         build(authority)
 
 
-def test_real_maxdom3_initialization_dependency_inventory_and_cpu_loader_smoke(tmp_path: Path) -> None:
+def test_real_maxdom3_initialization_dependency_inventory_and_cpu_loader_smoke(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
     work_dir = tmp_path / "private-smoke"
     authority = gate.materialize_table_snapshot(gate.WRF_SOURCE_ROOT, work_dir)
     assert set(authority["inventory"]) == set(REAL_WRF_DEPENDENCY_MANIFEST)
@@ -1388,9 +1454,25 @@ def test_real_maxdom3_initialization_dependency_inventory_and_cpu_loader_smoke(t
         for relative, expected in REAL_WRF_DEPENDENCY_MANIFEST.items()
     }
     assert authority["loader_source_authority"] == REAL_WRF_LOADER_SOURCE_AUTHORITY
+    run = subprocess.run
+    launches = []
+
+    def current_cpu_lane(argv, **kwargs):
+        # The archived loader smoke used the July validation cpuset. Keep its
+        # real child and source checks while obeying today's lane allocation.
+        if argv[:3] == ["/usr/bin/taskset", "-c", "12-15"]:
+            argv = list(argv)
+            argv[2] = ",".join(map(str, sorted(os.sched_getaffinity(0))))
+            kwargs["env"] = dict(kwargs["env"], JAX_PLATFORMS="cpu",
+                                 GPUWRF_JAX_CACHE="0")
+            launches.append(argv[2])
+        return run(argv, **kwargs)
+
+    monkeypatch.setattr(gate.subprocess, "run", current_cpu_lane)
     observed = gate.cpu_initialization_dependency_smoke(
         authority, expected_work_dir=work_dir,
     )
+    assert len(launches) == 1
     assert observed["real_jax_backend_imported"] is False
     assert observed["lw_source_sha256"] == "c7a5238612aa8a4213c8d3af6708ec6a5248e6701e19758a80e563905d306de3"
     assert observed["production_loader"] == "gpuwrf.physics.rrtmg_lw._native_lw_tables"
@@ -2135,7 +2217,9 @@ def test_sanitized_private_lock_wrapper_injects_attested_environment_for_payload
         encoding="utf-8",
     )
     environment = gate._command_environment(tmp_path / "work", tmp_path / "tables")
-    payload = ["/usr/bin/taskset", "-c", "12-15", sys.executable, str(checker)]
+    payload = ["/usr/bin/taskset", "-c",
+               ",".join(map(str, sorted(os.sched_getaffinity(0)))),
+               sys.executable, str(checker)]
     argv = gate._lock_wrapped_argv(environment, payload, lock_wrapper=wrapper)
     inherited = os.environ.copy()
     inherited["GPUWRF_GPU_LOCK_HELD"] = "malicious-preexisting-value"

@@ -1,0 +1,101 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/integrity_24h.json",
+ "content": {
+  "cpu_dir": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260614_18z_a1/run/run",
+  "gpu_dir": "~/wrf_gpu2_lanes/wn3/W9/finalb_r3/20260614_18z_a1/gpu_24h",
+  "rule": "missing CPU variables + degenerate fields + WRF globals (full CPU header, every paired frame)",
+  "domains": {
+   "d01": {
+    "frames_checked": [
+     "wrfout_d01_2026-06-15_00:00:00",
+     "wrfout_d01_2026-06-15_12:00:00",
+     "wrfout_d01_2026-06-16_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {
+     "QICE": [
+      {
+       "file": "wrfout_d01_2026-06-16_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -2.3694186475061456e-28,
+        5.869984359696545e-11
+       ]
+      }
+     ],
+     "QSNOW": [
+      {
+       "file": "wrfout_d01_2026-06-16_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -1.4199536738507045e-27,
+        1.725597026380754e-10
+       ]
+      }
+     ]
+    },
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": false
+   },
+   "d02": {
+    "frames_checked": [
+     "wrfout_d02_2026-06-15_00:00:00",
+     "wrfout_d02_2026-06-15_12:00:00",
+     "wrfout_d02_2026-06-16_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {},
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": true
+   },
+   "d03": {
+    "frames_checked": [
+     "wrfout_d03_2026-06-15_00:00:00",
+     "wrfout_d03_2026-06-15_12:00:00",
+     "wrfout_d03_2026-06-16_00:00:00"
+    ],
+    "frames_paired": 25,
+    "pairing_ok": true,
+    "cpu_frames": 25,
+    "missing_variables_vs_cpu": {},
+    "optional_missing_allowed": {},
+    "degenerate_fields": {},
+    "global_attrs": {
+     "cpu_count": 155,
+     "gpu_count": 157,
+     "frames_checked": 25,
+     "missing_vs_cpu": [],
+     "missing_required": [],
+     "by_frame": {},
+     "optional_missing_allowed": {}
+    },
+    "pass": true
+   }
+  },
+  "pass": false
+ }
+}

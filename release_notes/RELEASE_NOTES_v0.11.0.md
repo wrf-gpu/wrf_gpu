@@ -3,7 +3,7 @@
 - **Tag:** `v0.11.0`
 - **Release commit:** resolve with `git rev-parse v0.11.0^{commit}` after the annotated tag is created. Trunk HEAD at docs-commit: see `git log --oneline -1`.
 - **Branch:** `worker/opus/v0110-integration`
-- **Binding numbers:** every performance or fidelity figure below traces to committed proof objects under [`proofs/v0110/`](proofs/v0110/) and the v0.9.0/v0.10.0 baselines. Nothing is rounded upward, invented, or relaxed to manufacture a pass.
+- **Binding numbers:** every performance or fidelity figure below traces to committed proof objects under [`proofs/v0110/`](../proofs/v0110) and the v0.9.0/v0.10.0 baselines. Nothing is rounded upward, invented, or relaxed to manufacture a pass.
 
 ## What v0.11.0 is
 
@@ -122,7 +122,7 @@ also shipped as v0.10.1. Proof: `proofs/v0110/recompile_fix2_3chunks.json`.
 
 ## Known issues / carried forward
 
-Full write-up: [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+Full write-up: [`docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md).
 
 - **KI-3** (scope boundary): focused 64-variable wrfout vs CPU-WRF's 375.
 - **KI-4** (residual): U10 final-lead RMSE 8.06 m/s (just above 7.5 m/s bar; 23/24 beats persistence).
@@ -136,4 +136,4 @@ No powered TOST PASS; no bitwise WRF parity (RMSE-equivalence is the operational
 no full WRF v4 physics catalog (unported schemes fail closed); no two-way nesting in a
 long live forecast proof; no real multi-GPU throughput without a DGX/NVLink cluster.
 The gap chain to a complete WRF replacement is inventoried in
-[`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md).
+[`publish/GPU_PORT_GAPS_TODO.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.11.0/publish/GPU_PORT_GAPS_TODO.md).

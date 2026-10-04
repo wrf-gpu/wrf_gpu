@@ -1,0 +1,61 @@
+{
+  "scope": "compile-only determinism: frozen750 plus ONLY fixed MOST-table hunk; initialized realPROD d02 dt18 nsteps3 cadence100; no GPU domain compile/step or WRF fidelity claim",
+  "normal_GPU_lower": {
+    "platform": "gpu",
+    "cpu_affinity": [
+      10,
+      11,
+      26,
+      27
+    ],
+    "normal_GPU_lower_hlo": "8a3a139448e4cbe172acab8f87c069b8e2d20ad6dfd2541d16e69103c939f22f",
+    "prior_GPU_lower_hlo": "8a3a139448e4cbe172acab8f87c069b8e2d20ad6dfd2541d16e69103c939f22f",
+    "byte_identical": true,
+    "table_hashes": {
+      "_PSIM_STAB_TABLE": "1d39d1cc5d905f4612ba86d5d0d5912943d012ec6e7104b900505e91b8b3c65a",
+      "_PSIH_STAB_TABLE": "ea1b7db9f1df26348957b096a8724bbf346d4137ace37f0b3405be826cfef316",
+      "_PSIM_UNSTAB_TABLE": "c5b91c6313edc2f8583e8982a02810691618b6a3d3439f99262f1a828a892d61",
+      "_PSIH_UNSTAB_TABLE": "a250bf0b8b62c1335ba2cf97c89597d390e8fff54aea12aaf94ef9d9067c4308"
+    },
+    "source_fingerprint": "8906451793ef794fc235f713c30395c37335a6fa6b1e3fcd8cb4bd59f6f5bb79",
+    "provider_sha": "b95e44170b29581fd17144bc8c32cc7663e21fa823f41c14a534d917d4dc3267",
+    "process_s": 13.69283299500239,
+    "scope": "frozen750 plus ONLY granted fixed-table hunk; actualPRODd02 dt18 nsteps3 cadence100 actual initialized input; GPUlower ONLY/no compile or step"
+  },
+  "deviceless_CPU_lower_hlo": "8a3a139448e4cbe172acab8f87c069b8e2d20ad6dfd2541d16e69103c939f22f",
+  "CPU_surface_regressions": {
+    "passed": 9,
+    "skipped": 2,
+    "seconds": 13.55,
+    "unchanged_tests": [
+      "tests/test_m6_surface_layer_kernel.py",
+      "tests/test_v014_mynn_surface_layer_regressions.py",
+      "tests/test_v090_mynnsl_oracle_parity.py"
+    ],
+    "skips": [
+      "historical intentionally disabled M6 wrong-scheme oracle",
+      "v090 hardcoded gfortran path unavailable"
+    ]
+  },
+  "source_fingerprints": {
+    "original750": "84f3ed78225112db3d487d668f4ca667889f364dd6b8379dbde43ee3d98efb38",
+    "fixedtable750": "8906451793ef794fc235f713c30395c37335a6fa6b1e3fcd8cb4bd59f6f5bb79"
+  },
+  "asset_sha256": "5be823f1befe1c5d1d4fb2c19275577174b423a710a1dc434b78b58ded2e2570",
+  "asset_bytes": 33118,
+  "package_wheel": {
+    "wheel": "gpuwrf-0.23.4-py3-none-any.whl",
+    "asset_bytes": 33118,
+    "asset_sha256": "5be823f1befe1c5d1d4fb2c19275577174b423a710a1dc434b78b58ded2e2570",
+    "seconds": 0.3381682540057227,
+    "success": true
+  },
+  "provenance": {
+    "capture_source": "75074b23b",
+    "provider_source_sha256": "715bef8be9e0b702168d653893446370e87c98a858ed0324cb6080ce11830260",
+    "capture_method": "original asserted-GPU normal lowered MLIR constants22-25; little-endian float64; no regeneration/rounding",
+    "target_sha256": "f46c185780fdbd4aab62ef20293385bb8de31a71bd260e9ce62cbfc21f196a23",
+    "jaxlib_version": "0.10.0"
+  },
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/deviceless/surface_table_proposal"
+}

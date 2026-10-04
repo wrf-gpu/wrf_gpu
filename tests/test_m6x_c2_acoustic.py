@@ -18,6 +18,16 @@ from gpuwrf.dynamics.acoustic_wrf import (
 from gpuwrf.dynamics.damping import SmdivConfig
 from gpuwrf.dynamics.metrics import flat_metrics_for_grid
 
+import pytest
+
+@pytest.fixture(autouse=True)
+def _legacy_fp64_dycore(monkeypatch):
+    """These tests pin the fp64 legacy dycore; GPUWRF_DYN_REAL_ALL (WRF REAL consumers)
+    has its own pristine REAL4 gates (tests/v025/b_diff). Flag-aware for the RC default flip."""
+    monkeypatch.setenv("GPUWRF_DYN_REAL_ALL", "0")
+    monkeypatch.setenv("GPUWRF_CARRY_REAL_ALL", "0")  # the v0.3 release pairs them; CARRY_REAL_ALL alone is refused
+
+
 
 def _rest_state_and_base(grid: GridSpec) -> tuple[State, BaseState]:
     arrays = {field: jnp.zeros(shape, dtype=jnp.float64) for field, shape in _state_field_shapes(grid).items()}

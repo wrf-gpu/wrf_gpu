@@ -1,0 +1,3392 @@
+{
+  "model_commit": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+  "scorer_commit": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+  "inputs_sha256": {
+    "namelist.input": "98eb3e0457b53a510931401ad1575e980a716da4588f8cbca4be95fd92846039",
+    "wrfinput_d01": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781",
+    "wrfbdy_d01": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230"
+  },
+  "scorer_sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+  "scope": "unmodified frozen output_integrity called separately on every frame",
+  "rows": [
+    {
+      "lead_h": 0,
+      "file": "wrfout_d01_2023-01-15_00:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_00:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {},
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": true
+      }
+    },
+    {
+      "lead_h": 1,
+      "file": "wrfout_d01_2023-01-15_01:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_01:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_01:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 2,
+      "file": "wrfout_d01_2023-01-15_02:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_02:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "FWET": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_02:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 3,
+      "file": "wrfout_d01_2023-01-15_03:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_03:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_03:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 4,
+      "file": "wrfout_d01_2023-01-15_04:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_04:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_04:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 5,
+      "file": "wrfout_d01_2023-01-15_05:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_05:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_05:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 6,
+      "file": "wrfout_d01_2023-01-15_06:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_06:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_06:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 7,
+      "file": "wrfout_d01_2023-01-15_07:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_07:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_07:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 8,
+      "file": "wrfout_d01_2023-01-15_08:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_08:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_08:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 9,
+      "file": "wrfout_d01_2023-01-15_09:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_09:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_09:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 10,
+      "file": "wrfout_d01_2023-01-15_10:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_10:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_10:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 11,
+      "file": "wrfout_d01_2023-01-15_11:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_11:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_11:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 12,
+      "file": "wrfout_d01_2023-01-15_12:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_12:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_12:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 13,
+      "file": "wrfout_d01_2023-01-15_13:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_13:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_13:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 14,
+      "file": "wrfout_d01_2023-01-15_14:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_14:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_14:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 15,
+      "file": "wrfout_d01_2023-01-15_15:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_15:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_15:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 16,
+      "file": "wrfout_d01_2023-01-15_16:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_16:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_16:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 17,
+      "file": "wrfout_d01_2023-01-15_17:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_17:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_17:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 18,
+      "file": "wrfout_d01_2023-01-15_18:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_18:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_18:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 19,
+      "file": "wrfout_d01_2023-01-15_19:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_19:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_19:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 20,
+      "file": "wrfout_d01_2023-01-15_20:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_20:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_20:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 21,
+      "file": "wrfout_d01_2023-01-15_21:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_21:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_21:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 22,
+      "file": "wrfout_d01_2023-01-15_22:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_22:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "QNRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -3.737730110636906e-19,
+                84.11336517333984
+              ]
+            }
+          ],
+          "QRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -6.199355434982414e-29,
+                1.1864996096733194e-08
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_22:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 23,
+      "file": "wrfout_d01_2023-01-15_23:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-15_23:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-15_23:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    },
+    {
+      "lead_h": 24,
+      "file": "wrfout_d01_2023-01-16_00:00:00",
+      "result": {
+        "frames_checked": [
+          "wrfout_d01_2023-01-16_00:00:00"
+        ],
+        "frames_paired": 1,
+        "pairing_ok": true,
+        "cpu_frames": 1,
+        "missing_variables_vs_cpu": {},
+        "optional_missing_allowed": {},
+        "degenerate_fields": {
+          "APAR": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "BGAP": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GDD": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GPP": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "GRAIN": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                1.000000013351432e-10
+              ]
+            }
+          ],
+          "NEE": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "NPP": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "PSN": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WA": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ],
+          "WGAP": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WSLAKE": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                0.0
+              ]
+            }
+          ],
+          "WT": [
+            {
+              "file": "wrfout_d01_2023-01-16_00:00:00",
+              "gpu_value": 0.0,
+              "cpu_range": [
+                -9.999999616903162e+35,
+                4900.0
+              ]
+            }
+          ]
+        },
+        "global_attrs": {
+          "cpu_count": 155,
+          "gpu_count": 157,
+          "frames_checked": 1,
+          "missing_vs_cpu": [],
+          "missing_required": [],
+          "by_frame": {},
+          "optional_missing_allowed": {}
+        },
+        "pass": false
+      }
+    }
+  ]
+}

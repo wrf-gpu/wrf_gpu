@@ -8,6 +8,7 @@ the small-step mass work fields, and prepares coupled perturbation work arrays.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 import jax
 import jax.numpy as jnp
@@ -23,6 +24,23 @@ from gpuwrf.dynamics.acoustic_wrf import (
 )
 
 
+_NATIVE_RK_FP32 = os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1"
+_PREP_WORK_DTYPE = jnp.float32 if _NATIVE_RK_FP32 else jnp.float64
+_PALLAS_INTERPRET = False
+if _NATIVE_RK_FP32:
+    from gpuwrf.kernels.dyn_rk_fp32 import (
+        real_state, real_metrics, real_base, diagnose_pressure_fp32,
+        stage_masses_fp32, coupled_work_fp32,
+    )
+    diagnose_pressure_al_alt = diagnose_pressure_fp32
+
+
+def _prep_work_values(*values):
+    if _NATIVE_RK_FP32:
+        return tuple(jnp.asarray(a, jnp.float32) for a in values)
+    return force_fp64_island(*values)
+
+
 THETA_BASE_OFFSET_K = 300.0
 _SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
@@ -34,19 +52,19 @@ def _base_mu(state: State) -> jax.Array:
 def _base_pressure(state: State, base_state: BaseState | None) -> jax.Array:
     if base_state is None:
         return jnp.asarray(state.p_total) - jnp.asarray(state.p_perturbation)
-    return jnp.asarray(base_state.pb, dtype=jnp.float64)
+    return jnp.asarray(base_state.pb, dtype=_PREP_WORK_DTYPE)
 
 
 def _base_geopotential(state: State, base_state: BaseState | None) -> jax.Array:
     if base_state is None:
         return jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)
-    return jnp.asarray(base_state.phb, dtype=jnp.float64)
+    return jnp.asarray(base_state.phb, dtype=_PREP_WORK_DTYPE)
 
 
 def _base_dry_mass(state: State, base_state: BaseState | None) -> jax.Array:
     if base_state is None:
         return _base_mu(state)
-    return jnp.asarray(base_state.mub, dtype=jnp.float64)
+    return jnp.asarray(base_state.mub, dtype=_PREP_WORK_DTYPE)
 
 
 def _maybe_sharded_u_face_average(field: jax.Array, face: jax.Array) -> jax.Array:
@@ -231,7 +249,13 @@ def small_step_prep_wrf(
     ``muts - mut == mu - mu_save`` remains explicit across substeps.
     """
 
-    reference = state if reference_state is None else reference_state
+    original_state = state
+    if _NATIVE_RK_FP32:
+        state = real_state(state)
+        reference_state = None if reference_state is None else real_state(reference_state)
+        metrics, base_state = real_metrics(metrics), real_base(base_state)
+        ww = None if ww is None else jnp.asarray(ww, jnp.float32)
+    reference = state if reference_state is None or (_NATIVE_RK_FP32 and int(rk_step) == 1) else reference_state
     theta_offset = jnp.asarray(THETA_BASE_OFFSET_K, dtype=state.theta.dtype)
     theta_ref = jnp.asarray(reference.theta) - theta_offset
     theta_cur = jnp.asarray(state.theta) - theta_offset
@@ -266,6 +290,12 @@ def small_step_prep_wrf(
     muv = _v_face_average_2d(mut)
     muus = _u_face_average_2d(muts)
     muvs = _v_face_average_2d(muts)
+    if _NATIVE_RK_FP32:
+        masses = stage_masses_fp32(mub, mu_current, mu_ref, rk_step=rk_step,
+                                  interpret=_PALLAS_INTERPRET)
+        mut, muts, muu, muv, muus, muvs, mu_work = (
+            masses[n] for n in ("mut", "muts", "muu", "muv", "muus", "muvs", "mu_work")
+        )
 
     mass_u_ref = metrics.c1h[:, None, None] * muus[None, :, :] + metrics.c2h[:, None, None]
     mass_u_cur = metrics.c1h[:, None, None] * muu[None, :, :] + metrics.c2h[:, None, None]
@@ -288,7 +318,7 @@ def small_step_prep_wrf(
     # already fp64, so force_fp64_island returns them UNCHANGED (Python identity,
     # no convert HLO) -> fp64_default stays bit-identical.
     ref_u, cur_u, ref_v, cur_v, ref_w, cur_w, theta_ref_i, theta_cur_i, ref_php, cur_php = (
-        force_fp64_island(
+        _prep_work_values(
             reference.u,
             state.u,
             reference.v,
@@ -301,10 +331,19 @@ def small_step_prep_wrf(
             state.ph_perturbation,
         )
     )
-    u_work = (mass_u_ref * ref_u - mass_u_cur * cur_u) / metrics.msfuy[None, :, :]
-    v_work = (mass_v_ref * ref_v - mass_v_cur * cur_v) / metrics.msfvx[None, :, :]
-    theta_work = mass_h_ref * theta_ref_i - mass_h_cur * theta_cur_i
-    w_work = (mass_f_ref * ref_w - mass_f_cur * cur_w) / metrics.msfty[None, :, :]
+    if _NATIVE_RK_FP32:
+        def work(ref, cur, mref, mcur, c1, c2, maps, name):
+            return coupled_work_fp32(ref, cur, mref, mcur, c1, c2, maps,
+                                     name=name, interpret=_PALLAS_INTERPRET)
+        u_work = work(ref_u, cur_u, muus, muu, metrics.c1h, metrics.c2h, metrics.msfuy, "u")
+        v_work = work(ref_v, cur_v, muvs, muv, metrics.c1h, metrics.c2h, metrics.msfvx, "v")
+        theta_work = work(theta_ref_i, theta_cur_i, muts, mut, metrics.c1h, metrics.c2h, metrics.msfty, "theta")
+        w_work = work(ref_w, cur_w, muts, mut, metrics.c1f, metrics.c2f, metrics.msfty, "w")
+    else:
+        u_work = (mass_u_ref * ref_u - mass_u_cur * cur_u) / metrics.msfuy[None, :, :]
+        v_work = (mass_v_ref * ref_v - mass_v_cur * cur_v) / metrics.msfvx[None, :, :]
+        theta_work = mass_h_ref * theta_ref_i - mass_h_cur * theta_cur_i
+        w_work = (mass_f_ref * ref_w - mass_f_cur * cur_w) / metrics.msfty[None, :, :]
     ph_work = ref_php - cur_php
 
     p_pert, al, alt = diagnose_pressure_al_alt(state, base_state, metrics)
@@ -342,7 +381,7 @@ def small_step_prep_wrf(
     return SmallStepPrepState(
         rk_step=int(rk_step),
         dt_rk=float(dt_rk),
-        entry_state=state,
+        entry_state=original_state,
         theta_offset=theta_offset,
         u_1=jnp.asarray(reference.u),
         v_1=jnp.asarray(reference.v),

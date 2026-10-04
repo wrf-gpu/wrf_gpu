@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.4</span>
+          <span class="brand-sub">User's Guide · v0.3.0</span>
         </span>
       </a>
       <div class="search-box">
@@ -74,8 +74,7 @@
 
 <p class="lead">wrf_gpu writes a <strong>WRF-compatible <code>wrfout</code> history file</strong>: standard
 NetCDF, WRF variable names, dimensions, and staggering, one frame per output time. If you already
-post-process WRF <code>wrfout</code>, your tools read wrf_gpu output the same way. A
-<code>wrfrst</code>-equivalent restart file lets you continue a run bit-for-bit.</p>
+post-process WRF <code>wrfout</code>, your tools read wrf_gpu output the same way.</p>
 
 <h2 id="wrfout">The wrfout history file<a class="headerlink" href="#wrfout" aria-label="Permalink">¶</a></h2>
 <p>The operational writer emits a <strong>focused 104-variable</strong> <code>wrfout</code> covering
@@ -163,10 +162,11 @@ port does not currently carry.</p>
 </div>
 
 <h2 id="restart">Restart files (wrfrst)<a class="headerlink" href="#restart" aria-label="Permalink">¶</a></h2>
-<p>wrf_gpu writes a WRF-compatible <code>wrfrst</code>-equivalent restart file — a bit-continuation
-snapshot of the full operational physics carry. Reloading it and continuing the forecast reproduces
-the state <strong>byte-for-byte</strong> (write → read → compare bit-identity is a validation gate).
-Restart is available on both single-domain and nested runs.</p>
+<p>A WRF-named NetCDF serializer foundation for the full gpuwrf state/carry exists,
+but its current boundary schema has failing structural roundtrip tests. The public
+forecast command also does <strong>not</strong> call that serializer or resume from it,
+so no operational <code>wrfrst</code> is emitted and interrupted single-domain or
+nested runs restart from their initial state.</p>
 
 <div class="admon note">
   <div class="admon-title">See also</div>

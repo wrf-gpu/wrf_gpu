@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import ast
 import hashlib
 import json
@@ -175,6 +177,7 @@ def test_closeout_rejects_intrinsic_and_raw_deviation() -> None:
 
 
 def test_closeout_binds_archive_inventory_and_cpu_only_scope() -> None:
+    require_historical(closeout.PREDICTIONS)
     assert closeout.sha256_file(closeout.PREDICTIONS) == closeout.PREDICTIONS_SHA256
     source = Path(closeout.__file__).read_text()
     assert "== 180" in source

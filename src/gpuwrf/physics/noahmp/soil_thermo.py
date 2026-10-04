@@ -37,6 +37,9 @@ from gpuwrf._x64_config import configure_jax_x64
 import jax
 from jax import config
 import jax.numpy as jnp
+from gpuwrf.physics.noahmp.precision import real_tree
+from gpuwrf.kernels.phys_noahmp_layers import (  # GPUWRF_NOAHMP_LAYER_SELECT
+    add_layer, layers_enabled, rosr12_backward, rosr12_forward, set_layer)
 
 configure_jax_x64()
 
@@ -146,6 +149,7 @@ def noahmp_thermoprop(
     THERMOPROP branch; the snow/soil DF blend uses SNOWH directly).
     """
 
+    land_state, static = real_tree((land_state, static))
     del fsno  # land THERMOPROP branch uses SNOWH, not the FSNO fraction
     p = static.parameters
     smcmax = p.smcmax       # (NSOIL, ny, nx)
@@ -194,7 +198,7 @@ def noahmp_thermoprop(
     df1_nosnow = (df_soil1 * dz_soil1 + 0.35 * snowh) / (snowh + dz_soil1)
     df1_snow = (df_soil1 * dz_soil1 + df_snow0 * dz_snow0) / (dz_snow0 + dz_soil1)
     df_top_soil = jnp.where(no_snow, df1_nosnow, df1_snow)
-    df = df.at[_SOIL_TOP].set(df_top_soil)
+    df = set_layer(df, _SOIL_TOP, df_top_soil)
 
     return df, hcpct
 
@@ -249,6 +253,7 @@ def noahmp_soil_thermo(
     Pure thermal: no water movement, no melt (that is ``noahmp_phasechange``).
     """
 
+    stc, df, hcpct, ssoil, tbot, zsnso, dzsnso = real_tree((stc, df, hcpct, ssoil, tbot, zsnso, dzsnso))
     # ZBOTSNO = ZBOT - SNOWH (TSNOSOI:5314). SNOWH = -ZSNSO at the soil-surface
     # interface = -zsnso[NSNOW-1] (top of soil = bottom of snow). No-snow -> SNOWH=0.
     snowh = jnp.where(isnow < 0, -zsnso[_SOIL_TOP - 1], 0.0)
@@ -349,6 +354,33 @@ def _hrt(stc, tbot, zbot, df, hcpct, ssoil, zsnso, isnow):
     return ai, bi, ci, rhsts
 
 
+@jax.jit
+def _rosr12_fwd_scan(carry, rows):
+    """Cache the original forward scan without fusing its caller's arithmetic."""
+    eps = 1e-30
+    def fwd(carry, row):
+        p_prev, delta_prev = carry
+        ak, bk, ck, dk = row
+        denom = bk + ak * p_prev
+        denom = jnp.where(jnp.abs(denom) > eps, denom, eps)
+        pk = -ck / denom
+        deltak = (dk - ak * delta_prev) / denom
+        return (pk, deltak), (pk, deltak)
+
+    return jax.lax.scan(fwd, carry, rows)
+
+
+@jax.jit
+def _rosr12_bwd_scan(carry, rows):
+    """Cache the original backward scan with the same operation order."""
+    def bwd(x_next, row):
+        p_k, delta_k = row
+        x_k = p_k * x_next + delta_k
+        return x_k, x_k
+
+    return jax.lax.scan(bwd, carry, rows)
+
+
 def _rosr12(a, b, c, d, isnow):
     """ROSR12 (:5534-5591): forward elimination + back substitution over axis 0.
 
@@ -370,17 +402,11 @@ def _rosr12(a, b, c, d, isnow):
     p0 = -c[0] / b0
     delta0 = d[0] / b0
 
-    def fwd(carry, row):
-        p_prev, delta_prev = carry
-        ak, bk, ck, dk = row
-        denom = bk + ak * p_prev
-        denom = jnp.where(jnp.abs(denom) > eps, denom, eps)
-        pk = -ck / denom
-        deltak = (dk - ak * delta_prev) / denom
-        return (pk, deltak), (pk, deltak)
-
     rows = (a[1:], b[1:], c[1:], d[1:])
-    _, (p_tail, delta_tail) = jax.lax.scan(fwd, (p0, delta0), rows)
+    # Native REAL layer-select path: unrolled recurrences (same order), no per-row launches.
+    fwd, bwd = ((rosr12_forward, rosr12_backward) if layers_enabled()
+                else (_rosr12_fwd_scan, _rosr12_bwd_scan))
+    _, (p_tail, delta_tail) = fwd((p0, delta0), rows)
 
     p = jnp.concatenate([p0[None], p_tail], axis=0)
     delta = jnp.concatenate([delta0[None], delta_tail], axis=0)
@@ -388,13 +414,8 @@ def _rosr12(a, b, c, d, isnow):
     # Back substitution: P(NSOIL)=DELTA(NSOIL); P(KK)=P(KK)*P(KK+1)+DELTA(KK).
     x_last = delta[-1]
 
-    def bwd(x_next, row):
-        p_k, delta_k = row
-        x_k = p_k * x_next + delta_k
-        return x_k, x_k
-
     rev = (p[:-1][::-1], delta[:-1][::-1])
-    _, x_rev = jax.lax.scan(bwd, x_last, rev)
+    _, x_rev = bwd(x_last, rev)
     x = jnp.concatenate([x_rev[::-1], x_last[None]], axis=0)
 
     idx = jnp.arange(nz).reshape(nz, 1, 1)
@@ -441,6 +462,8 @@ def noahmp_phasechange(
     carry only the thermal solve). The energy/water sprints call it directly.
     """
 
+    stc, snice, snliq, smc, sh2o, sneqv, snowh, hcpct, dzsnso, smcmax, psisat, bexp = real_tree(
+        (stc, snice, snliq, smc, sh2o, sneqv, snowh, hcpct, dzsnso, smcmax, psisat, bexp))
     nz = stc.shape[0]
     idx = jnp.arange(nz).reshape(nz, 1, 1)
     top = NSNOW + isnow
@@ -508,8 +531,8 @@ def noahmp_phasechange(
     qmelt = jnp.where(do_nolayer, jnp.maximum(0.0, temp1 - sneqv_new) / dt, 0.0)
     ponding = jnp.where(do_nolayer, temp1 - sneqv_new, 0.0)
 
-    hm = hm.at[_SOIL_TOP].set(jnp.where(do_nolayer, hm_top_new, hm[_SOIL_TOP]))
-    xm = xm.at[_SOIL_TOP].set(jnp.where(do_nolayer, xm_top_new, xm[_SOIL_TOP]))
+    hm = set_layer(hm, _SOIL_TOP, jnp.where(do_nolayer, hm_top_new, hm[_SOIL_TOP]))
+    xm = set_layer(xm, _SOIL_TOP, jnp.where(do_nolayer, xm_top_new, xm[_SOIL_TOP]))
     sneqv = sneqv_new
     snowh = snowh_new
 

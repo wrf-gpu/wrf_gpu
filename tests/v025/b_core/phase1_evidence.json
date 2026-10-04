@@ -1,0 +1,218 @@
+{
+  "schema": "b_core.phase1.prototype.v2",
+  "hardware": "NVIDIA GeForce RTX 5090",
+  "measurements_label": "M",
+  "extrapolation_label": "I",
+  "domains": [
+    {
+      "domain": "d01",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "stage_protocol": "resolved WRF RK trip counts 1/2/4; separate stage savepoint arms",
+      "stage_fidelity_pass": true,
+      "initial_bound_misses": 3,
+      "tier_p_misses": 0,
+      "native_mass_guard_events": 0,
+      "substep_dispatch_ms": 0.31686249985796167,
+      "coefficient_dispatch_ms": 0.029791749511787202,
+      "substep_kernel_device_ms": 0.2502467982954545,
+      "kernels": 5.0,
+      "dto_d_per_dispatch": 47.0,
+      "dto_d_ms": 0.051445744318181816,
+      "h_to_d": 0,
+      "d_to_h": 0,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "c79ca6dd763ae5d19b8eb179b30d573075acf6e11f77122cdb2e9d21f025f0a0",
+      "coefficient_stablehlo_sha256": "3c449f99f28151b06e11a8b2c14b9ff7827480f63a013f97caade1163da2a6a4",
+      "families": {
+        "b_core_uv_fp32": {
+          "mean_us": 15.147417613636364
+        },
+        "b_core_mass_fp32": {
+          "mean_us": 76.38030397727272
+        },
+        "loop_concatenate_fusion": {
+          "mean_us": 1.0374431818181817
+        },
+        "b_core_w_fp32": {
+          "mean_us": 153.39897443181817
+        },
+        "b_core_pressure_fp32": {
+          "mean_us": 4.282659090909091
+        }
+      }
+    },
+    {
+      "domain": "d02",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "stage_protocol": "resolved WRF RK trip counts 1/2/4; separate stage savepoint arms",
+      "stage_fidelity_pass": true,
+      "initial_bound_misses": 7,
+      "tier_p_misses": 0,
+      "native_mass_guard_events": 0,
+      "substep_dispatch_ms": 0.6294683744272334,
+      "coefficient_dispatch_ms": 0.028800187465094496,
+      "substep_kernel_device_ms": 0.42699069602272727,
+      "kernels": 5.0,
+      "dto_d_per_dispatch": 47.0,
+      "dto_d_ms": 0.1718670653409091,
+      "h_to_d": 0,
+      "d_to_h": 0,
+      "stablehlo_f64_tokens": 0,
+      "stablehlo_sha256": "c4292f51bf2b9e9c21903adc6c00076be230df9c3867798f1eccd17226a477d7",
+      "coefficient_stablehlo_sha256": "4d63a9260eb8813f23bb5d76ff14071e534a0b550cdc54d0f15afa208136ef77",
+      "families": {
+        "b_core_uv_fp32": {
+          "mean_us": 63.10552840909091
+        },
+        "b_core_mass_fp32": {
+          "mean_us": 108.01189488636363
+        },
+        "loop_concatenate_fusion": {
+          "mean_us": 1.0549744318181817
+        },
+        "b_core_w_fp32": {
+          "mean_us": 238.20576420454543
+        },
+        "b_core_pressure_fp32": {
+          "mean_us": 16.61253409090909
+        }
+      }
+    }
+  ],
+  "acoustic_dispatch_extrapolation_s_per_fc_h": 1.052363353179923,
+  "acoustic_budget_s_per_fc_h": 2.4,
+  "dynamics_budget_s_per_fc_h": 3.0,
+  "ordinary_budget_s_per_fc_h": 6.5,
+  "ncu_status": "DEFERRED_BY_MANAGER: principal driver option/reboot required; agents must not sudo or change driver",
+  "phase1_status": "corrected enabler ready for re-review using nsys; release roofline gate remains pending",
+  "ordinary_term_status": "U; no full-step or 3h flagged proxy yet",
+  "limits": [
+    "Hourly-derived real CPU-WRF stage inputs, not internal forecast dumps.",
+    "Separate source stage arms validate primitives at resolved1/2/4 cadence; no full RK trajectory gate.",
+    "Original seven-same-RK d01 RED stress artifact retained, predates caller correction; not rerun or overwritten.",
+    "Full-return baseline still copies 47 leaves; evolving-return adapter removes every copy in corrected nsys profiles.",
+    "Native operational flag/census hooks are untested; keep out of production until whole-step/3h gate."
+  ],
+  "artifacts": {
+    "warm_full.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/warm_full.json",
+      "sha256": "a60ecef3c84495e1fe8c70f765465186859a2654eca0d0f5d8cb221ad5df8e4a"
+    },
+    "warm_evolving.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/warm_evolving.json",
+      "sha256": "b6f4d7efbc5cc827684799e64ad6fa5a83949c355e810908ec438e89e080d5fe"
+    },
+    "warm_coef.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/warm_coef.json",
+      "sha256": "f090f5f390663cc010494eed985be3c770679a82ed29acfac903e77275cee988"
+    },
+    "d01_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/d01_oracle.json",
+      "sha256": "1608d2ea6593f6ad2adb57ca026f444353fc3f4c85d596e7ad25ffb4eaaf5e20"
+    },
+    "d02_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/d02_oracle.json",
+      "sha256": "39f6d85dc4a57dc1cffe6cbac86cc19d91288ee02870dadb6c9c28d9feaaf6ef"
+    },
+    "nsys_full_d01_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_full_d01_summary.json",
+      "sha256": "4b003584ed27574dd75f9f6231433d3f7dda78df982e8c25d5dc16b35483d197"
+    },
+    "nsys_full_d02_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_full_d02_summary.json",
+      "sha256": "e3d264aeee10ef03a4772dafdb14a0ba73f2f453198147e4f9ca253ee2e33f84"
+    },
+    "nsys_evolving_d01_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d01_summary.json",
+      "sha256": "2b87637c0f55d03a09aed71053f7fc86beca324186906faf432118b018fbb339"
+    },
+    "nsys_evolving_d02_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC18/nsys_evolving_d02_summary.json",
+      "sha256": "ff8c1fd604b0bf2e80d383ebb977bf8826359e93e58eee26a18525cbe2f29dc6"
+    },
+    "asserted_d01_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d01_oracle.json",
+      "sha256": "1608d2ea6593f6ad2adb57ca026f444353fc3f4c85d596e7ad25ffb4eaaf5e20"
+    },
+    "asserted_d02_oracle.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/d02_oracle.json",
+      "sha256": "39f6d85dc4a57dc1cffe6cbac86cc19d91288ee02870dadb6c9c28d9feaaf6ef"
+    },
+    "asserted_oracle_backend.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/BC21/run.log",
+      "sha256": "64bdb6c2bcabb60a2dc3cf7451876a15458296dd08cbba624f57833e23c680db"
+    }
+  },
+  "experiment": "BC18 corrected caller/native theta-save timings/nsys; BC21 explicit-GPU backend oracle rerun",
+  "oracle_caller_bindings": {
+    "calc_p_rho.mut": "grid%muts",
+    "advance_mu_t.t_ave/advance_w.t_2ave": "shared t_2save, mass phase saves PRE-update t_2"
+  },
+  "bounds": "UNCHANGED: initial RMS 2e-5*max(1,RMSref), max 2e-4*max(1,maxabsref); Tier-P adds 2*Fortran off/fast binary32 spread",
+  "prior_fidelity_claims": "BC15/BC17 original-caller PASS withdrawn; original artifacts retained",
+  "retained_red_stress": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/evidence/pristine_gpu_d01.json",
+    "sha256": "6f966d9c4b25b9c39944308081bc969d112a8da1a198c11e6b08926ab26716c4"
+  },
+  "fresh_oracle_builds": {
+    "reference": {
+      "manifest.json": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/reference/manifest.json",
+        "sha256": "b2543d7482d244f4267bc0d425ba6b2adb0c1ad95324768d3d2a08f3df848859"
+      },
+      "oracle.f90": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/reference/oracle.f90",
+        "sha256": "69cab9d59932fb2544616dcb255432c21f3ea0dc911fbf710e3f5476e9115e01"
+      },
+      "oracle.so": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/reference/oracle.so",
+        "sha256": "cf66d37e05b8886e417e383611ad03d830739ad4ffde3534b607486019eb2023"
+      }
+    },
+    "fast": {
+      "manifest.json": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/fast/manifest.json",
+        "sha256": "cd97cecd9bbc9d040965bb917a651c66be4ff2e6982ee22465c315ef0a2c4b04"
+      },
+      "oracle.f90": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/fast/oracle.f90",
+        "sha256": "69cab9d59932fb2544616dcb255432c21f3ea0dc911fbf710e3f5476e9115e01"
+      },
+      "oracle.so": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/fast/oracle.so",
+        "sha256": "d977ba479a0295098b2927398ad05cd34bc690462ded054aa0b639b33da3f709"
+      }
+    },
+    "off": {
+      "manifest.json": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/off/manifest.json",
+        "sha256": "e581407516499e07c75e0a502709b37327e0398d806d80547fe532ce21c5dfd2"
+      },
+      "oracle.f90": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/off/oracle.f90",
+        "sha256": "69cab9d59932fb2544616dcb255432c21f3ea0dc911fbf710e3f5476e9115e01"
+      },
+      "oracle.so": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase1/pristine_corrected/off/oracle.so",
+        "sha256": "55d4d225890b0c695beaadb9b564b1bebd4abc8e9d1e11c70d88a630b8cbaacf"
+      }
+    }
+  },
+  "measured_source_sha256": {
+    "src/gpuwrf/kernels/dyn_acoustic_fp32.py": "d2059082da87f442a927bcffe42b1d7de034ad24ed05b80554cc7bb49a56cbb0",
+    "src/gpuwrf/kernels/fused_vertical_implicit.py": "42438d1bf6471d48cb0547a53de98a0256443096e8c71b7f1b4918a669d5da64",
+    "src/gpuwrf/dynamics/core/acoustic.py": "5288e84721acca5ada3c85ac88cdecd150367a12288899fcbc028d03e7c28600",
+    "tests/v025/b_core/pristine_oracle.py": "4c5e4bc95c8bf1d647ac6ded8a2547ea2baf91dbed335e9618625197a8c59b65",
+    "tests/v025/b_core/verify_pristine.py": "ba9d7222560dfde54c18895b7915c72ab0c72b053013ebc25bc825799fad96f8",
+    "tests/v025/b_core/bench_acoustic.py": "cf361edadf00dbc1dbfefc5b03a389a697d2ec67209ffe070fbec593fd6e156e"
+  },
+  "backend_assurance": "bench main asserted GPU for BC18 timings; both BC21 oracle processes explicitly asserted gpu NVIDIA GeForce RTX5090 in run.log (direct Python, no pytest/conftest)"
+}

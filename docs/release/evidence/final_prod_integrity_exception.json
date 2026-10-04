@@ -1,0 +1,580 @@
+{
+  "schema": "release-docs.integrity_exception.v1",
+  "model_commit": "1fece48dabe6805a624f86d169c036cd39f267a5",
+  "raw_integrity_pass": false,
+  "disposition": "manager-approved specific PROD trace exceptions; gate unchanged",
+  "approval": "manager 2026-10-04 05:37Z",
+  "scope": "PROD 24h WN2 numerical illustration only; no automatic WN3/Swiss waiver",
+  "source_reports": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL/scoring/final_prod_integrity_allframes.json",
+      "sha256": "57a14bc397b2a25ac07203d34acd6bbf8a8f9d3e7b1236d3cb711dba4a46df8d"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL/scoring/final_prod_integrity.json",
+      "sha256": "5f3d47d6245958489d99f2da5d7bd9ed6c769ba37e2980647242e1f804af502c"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-thompson/NF07/canopy_13z.txt",
+      "sha256": "a6a596030845bf5e77586a4180b6b6083f6c28a267c174d9070da0a465548a5f"
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/b-thompson/NF07/canopy_13z_cells.txt",
+      "sha256": "a6a596030845bf5e77586a4180b6b6083f6c28a267c174d9070da0a465548a5f"
+    }
+  ],
+  "cpu_dir": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+  "gpu_dir": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL/bench/final_s1/extra24h/run/wrfout",
+  "canopy_classification": "NF07: trace drizzle timing; snow45 terms inactive at audited cells; no writer omission",
+  "initial_sample_coverage": {
+    "d01": {
+      "frames_checked": [
+        "wrfout_d01_2026-07-26_01:00:18",
+        "wrfout_d01_2026-07-26_13:00:18",
+        "wrfout_d01_2026-07-27_00:00:00"
+      ],
+      "frames_paired": 24,
+      "cpu_frames": 24,
+      "global_attrs": {
+        "cpu_count": 155,
+        "gpu_count": 157,
+        "frames_checked": 24,
+        "missing_vs_cpu": [],
+        "missing_required": [],
+        "by_frame": {},
+        "optional_missing_allowed": {}
+      }
+    },
+    "d02": {
+      "frames_checked": [
+        "wrfout_d02_2026-07-26_01:00:00",
+        "wrfout_d02_2026-07-26_13:00:00",
+        "wrfout_d02_2026-07-27_00:00:00"
+      ],
+      "frames_paired": 24,
+      "cpu_frames": 24,
+      "global_attrs": {
+        "cpu_count": 155,
+        "gpu_count": 157,
+        "frames_checked": 24,
+        "missing_vs_cpu": [],
+        "missing_required": [],
+        "by_frame": {},
+        "optional_missing_allowed": {}
+      }
+    }
+  },
+  "initial_sample_events": [
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_13:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.863837978676201e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-27_00:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        9.051927705116224e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_13:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.773747466664584e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-27_00:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.338296824578719e-15
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "CANLIQ",
+      "unit": "kg/m2",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        2.235258079963387e-06
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "CANWAT",
+      "unit": "kg/m2",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        2.235258079963387e-06
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "FWET",
+      "unit": "dimensionless",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        0.0005369787104427814
+      ]
+    }
+  ],
+  "coverage": {
+    "d01": {
+      "frames_checked": [
+        "wrfout_d01_2026-07-26_01:00:18",
+        "wrfout_d01_2026-07-26_02:00:36",
+        "wrfout_d01_2026-07-26_03:00:00",
+        "wrfout_d01_2026-07-26_04:00:18",
+        "wrfout_d01_2026-07-26_05:00:36",
+        "wrfout_d01_2026-07-26_06:00:00",
+        "wrfout_d01_2026-07-26_07:00:18",
+        "wrfout_d01_2026-07-26_08:00:36",
+        "wrfout_d01_2026-07-26_09:00:00",
+        "wrfout_d01_2026-07-26_10:00:18",
+        "wrfout_d01_2026-07-26_11:00:36",
+        "wrfout_d01_2026-07-26_12:00:00",
+        "wrfout_d01_2026-07-26_13:00:18",
+        "wrfout_d01_2026-07-26_14:00:36",
+        "wrfout_d01_2026-07-26_15:00:00",
+        "wrfout_d01_2026-07-26_16:00:18",
+        "wrfout_d01_2026-07-26_17:00:36",
+        "wrfout_d01_2026-07-26_18:00:00",
+        "wrfout_d01_2026-07-26_19:00:18",
+        "wrfout_d01_2026-07-26_20:00:36",
+        "wrfout_d01_2026-07-26_21:00:00",
+        "wrfout_d01_2026-07-26_22:00:18",
+        "wrfout_d01_2026-07-26_23:00:36",
+        "wrfout_d01_2026-07-27_00:00:00"
+      ],
+      "n_frames": 24,
+      "initial_frame_available": false,
+      "missing_variables_vs_cpu": {},
+      "global_attrs_missing_required": [],
+      "global_attrs_by_frame": {}
+    },
+    "d02": {
+      "frames_checked": [
+        "wrfout_d02_2026-07-26_01:00:00",
+        "wrfout_d02_2026-07-26_02:00:00",
+        "wrfout_d02_2026-07-26_03:00:00",
+        "wrfout_d02_2026-07-26_04:00:00",
+        "wrfout_d02_2026-07-26_05:00:00",
+        "wrfout_d02_2026-07-26_06:00:00",
+        "wrfout_d02_2026-07-26_07:00:00",
+        "wrfout_d02_2026-07-26_08:00:00",
+        "wrfout_d02_2026-07-26_09:00:00",
+        "wrfout_d02_2026-07-26_10:00:00",
+        "wrfout_d02_2026-07-26_11:00:00",
+        "wrfout_d02_2026-07-26_12:00:00",
+        "wrfout_d02_2026-07-26_13:00:00",
+        "wrfout_d02_2026-07-26_14:00:00",
+        "wrfout_d02_2026-07-26_15:00:00",
+        "wrfout_d02_2026-07-26_16:00:00",
+        "wrfout_d02_2026-07-26_17:00:00",
+        "wrfout_d02_2026-07-26_18:00:00",
+        "wrfout_d02_2026-07-26_19:00:00",
+        "wrfout_d02_2026-07-26_20:00:00",
+        "wrfout_d02_2026-07-26_21:00:00",
+        "wrfout_d02_2026-07-26_22:00:00",
+        "wrfout_d02_2026-07-26_23:00:00",
+        "wrfout_d02_2026-07-27_00:00:00"
+      ],
+      "n_frames": 24,
+      "initial_frame_available": false,
+      "missing_variables_vs_cpu": {},
+      "global_attrs_missing_required": [],
+      "global_attrs_by_frame": {}
+    }
+  },
+  "events": [
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_08:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.601468358593879e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_09:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.5138506352551837e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_10:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.264786420466569e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_11:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.3095545469486822e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_12:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.1313775666037143e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_13:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.863837978676201e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_14:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.0054573310275348e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_15:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        9.316955843982622e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_16:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        1.8927338357635304e-41
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_19:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        8.207281802586404e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_20:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        8.290590139926825e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_21:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        8.662449250474488e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_22:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        8.986163008300216e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_23:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        9.118838013993393e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QICE",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-27_00:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        9.051927705116224e-16
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_08:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        8.739286997251714e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_09:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.620446361672817e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_10:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        4.218553573142898e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_11:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        4.181926174437727e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_12:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.4128949139917804e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_13:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.773747466664584e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_14:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.151968532172461e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_15:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.285511323120101e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_16:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        6.97398219725175e-41
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_19:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.241104452562498e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_20:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.272526410290317e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_21:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.450809905028402e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_22:00:18",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.598481629052717e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-26_23:00:36",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.536560555993112e-15
+      ]
+    },
+    {
+      "domain": "d01",
+      "field": "QSNOW",
+      "unit": "kg/kg",
+      "file": "wrfout_d01_2026-07-27_00:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        5.338296824578719e-15
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "CANLIQ",
+      "unit": "kg/m2",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        2.235258079963387e-06
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "CANWAT",
+      "unit": "kg/m2",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        2.235258079963387e-06
+      ]
+    },
+    {
+      "domain": "d02",
+      "field": "FWET",
+      "unit": "dimensionless",
+      "file": "wrfout_d02_2026-07-26_13:00:00",
+      "gpu_value": 0.0,
+      "cpu_range": [
+        0.0,
+        0.0005369787104427814
+      ]
+    }
+  ],
+  "all_frame_audit": "integrate 2026-10-04 05:50Z; h1..h24, no t0 in original benchmark arm"
+}

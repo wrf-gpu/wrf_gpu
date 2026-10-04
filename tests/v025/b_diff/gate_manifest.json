@@ -1,0 +1,30 @@
+{
+  "lane": "b-diff",
+  "scope": "specified/nested PROD operator replay, not forecast speed or station validation",
+  "prod_shapes_zyx": {"d01": [44, 70, 120], "d02": [44, 117, 267]},
+  "dt_s": {"d01": 54, "d02": 18},
+  "dx_dy_m": {"d01": 9000, "d02": 3000},
+  "flags_default_off": ["GPUWRF_DYN_DIFFUSION_FP32", "GPUWRF_DYN_RK_FP32"],
+  "oracle_source": "<USER_HOME>/src/wrf_pristine/WRF",
+  "oracle_kind": "unchanged REAL4 operator bodies, source and caller hashes, explicit argument mapping",
+  "operator_bounds": {
+    "source": "tests/v025/b_core/bench_acoustic.py:compare (reused before experiments)",
+    "rms": "2e-5 * max(1, reference RMS)",
+    "max_abs": "2e-4 * max(1, reference max abs)",
+    "nonfinite": 0,
+    "tier_p_manifest_unchanged": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json"
+  },
+  "correctness": [
+    "sixth order u/v/w/m both limiter choices on both full PROD shapes",
+    "horizontal diffusion u/v/w/theta on both full PROD shapes with the SAME frozen REAL diffusivity",
+    "prep/finish/RK/PGF/Coriolis/curvature for RK1/2/3 on both full PROD shapes",
+    "independent calc_p_rho_phi pressure/al/alt checks for hypsometric options 1 and 2",
+    "default-off bit-exact to frozen pre-lane source 59ccd974c on the asserted GPU",
+    "native adapters equal direct native diffusion returns"
+  ],
+  "compiler": ["CPU-to-Triton lowering on cuda/sm120", "native operator HLO has zero f64 types"],
+  "measurements": ["asserted GPU device", "warm microseconds per call", "nsys graph-node kernels", "memcpy and memset ops", "DtoD bytes", "HtoD/DtoH in replay"],
+  "controls": ["retained fp64", "retained fp32 diffusion", "native fp32"],
+  "keep_rule": "WRF oracle gates pass and attributed device improvement, or validated S2 enabler needed by the next step; disclose all regressions and residuals",
+  "limitations": ["real history-derived stage increments, not internal CPU-WRF substep savepoints", "component timing excludes model init/output/radiation/nesting", "CPU interpreter is not GPU proof", "ncu currently blocked per FINDINGS B18"]
+}

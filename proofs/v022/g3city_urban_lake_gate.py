@@ -22,7 +22,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-WRF_ROOT = Path("<DATA_ROOT>/src/wrf_pristine/WRF")
+WRF_ROOT = Path("<USER_HOME>/src/wrf_pristine/WRF")
 
 from gpuwrf.io.namelist_check import UnsupportedSchemeError, validate_namelist  # noqa: E402
 from gpuwrf.io.scheme_catalog import SupportStatus, classify_scheme  # noqa: E402
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
 def build_report() -> dict[str, Any]:
     pieces = {name: _scheme_report(name, meta) for name, meta in SCHEMES.items()}
     small_grid = _small_grid_static_plausibility()
-    gate_pass = all(p["fail_closed"] and p["stub_raises"] for p in pieces.values())
+    gate_pass = all(p["fail_closed"] and p["stub_raises"] and p["source_exists"] for p in pieces.values())
     gate_pass = bool(gate_pass and small_grid["passed"])
     return {
         "gate": "v022_g3city_urban_lake",

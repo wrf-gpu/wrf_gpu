@@ -1,0 +1,164 @@
+{
+  "experiment": "CP34gpu",
+  "scope": "Joint metadata+lazy-runtime R3 explicit-saved-flags; DEFAULT imports timer is separate, not a combined default-callables measurement",
+  "lazy_commit": "d6a412695",
+  "loader_revision": "8dd32d4ee",
+  "rows": [
+    {
+      "arm": "compact1",
+      "variant": "compact",
+      "returncode": 0,
+      "whole_child_wall_s": 30.12528114701854,
+      "result": {
+        "scope": "fresh processstart -> both actual cached PROD executables loaded/callable; includes Python/JAX+product imports+bench wrappers; excludes model init/input/firststep",
+        "variant": "compact",
+        "compiled_program_revision": "2933b06ca IT08 conditional-only OFFphysics",
+        "loader_revision": "8dd32d4eede47e106ae3baca39a00d61b39c4f2c",
+        "explicit_saved_flags": true,
+        "timings": {
+          "jax_import": 0.644119089,
+          "package_import": 0.674225253,
+          "wrappers_cli_ready": 6.210307659,
+          "backend_asserted": 6.210326819
+        },
+        "platform": "gpu",
+        "device_kind": "NVIDIA GeForce RTX 5090",
+        "rows": [
+          {
+            "domain": "d01",
+            "read_decode_integrity_seconds": 0.16737983300000003,
+            "deserialize_wrapper_seconds": 13.899775499,
+            "callable": true,
+            "hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "blob_bytes": 213816095,
+            "ready_from_process_s": 20.281485648
+          },
+          {
+            "domain": "d02",
+            "read_decode_integrity_seconds": 0.20958749799999765,
+            "deserialize_wrapper_seconds": 7.423099477000001,
+            "callable": true,
+            "hlo": "649cc9c9780799c218639656a7601c04ead1012f5d3e1be497aa7ecc1677cc8f",
+            "blob_bytes": 197177246,
+            "ready_from_process_s": 27.933233032
+          }
+        ],
+        "ready_from_process_s": 27.933243802,
+        "gate_seconds": 60,
+        "gate_pass": true,
+        "imports_compile_summary": {
+          "events": 60,
+          "backend_compiles": 20,
+          "backend_seconds": 0.5298607349395752
+        }
+      }
+    },
+    {
+      "arm": "compact2",
+      "variant": "compact",
+      "returncode": 0,
+      "whole_child_wall_s": 30.208943492994877,
+      "result": {
+        "scope": "fresh processstart -> both actual cached PROD executables loaded/callable; includes Python/JAX+product imports+bench wrappers; excludes model init/input/firststep",
+        "variant": "compact",
+        "compiled_program_revision": "2933b06ca IT08 conditional-only OFFphysics",
+        "loader_revision": "8dd32d4eede47e106ae3baca39a00d61b39c4f2c",
+        "explicit_saved_flags": true,
+        "timings": {
+          "jax_import": 0.390413912,
+          "package_import": 0.416437698,
+          "wrappers_cli_ready": 6.68479656,
+          "backend_asserted": 6.68482127
+        },
+        "platform": "gpu",
+        "device_kind": "NVIDIA GeForce RTX 5090",
+        "rows": [
+          {
+            "domain": "d01",
+            "read_decode_integrity_seconds": 0.2730011070000007,
+            "deserialize_wrapper_seconds": 13.664176134000002,
+            "callable": true,
+            "hlo": "560f45a0ca58bdd4e76ce883eda952313a54e7a98dcf8eaad9dcc710b1a6bc0e",
+            "blob_bytes": 213816095,
+            "ready_from_process_s": 20.623401521
+          },
+          {
+            "domain": "d02",
+            "read_decode_integrity_seconds": 0.1698507290000002,
+            "deserialize_wrapper_seconds": 6.755116546,
+            "callable": true,
+            "hlo": "649cc9c9780799c218639656a7601c04ead1012f5d3e1be497aa7ecc1677cc8f",
+            "blob_bytes": 197177246,
+            "ready_from_process_s": 27.56216974
+          }
+        ],
+        "ready_from_process_s": 27.583598846,
+        "gate_seconds": 60,
+        "gate_pass": true,
+        "imports_compile_summary": {
+          "events": 60,
+          "backend_compiles": 20,
+          "backend_seconds": 0.681710958480835
+        }
+      }
+    }
+  ],
+  "default_import": {
+    "scope": "fresh default-config GPU imports+actual bench wrappers/CLI ONLY; no AOT/init/input/step; separate from R3 cached-callable timer",
+    "platform": "gpu",
+    "device": "NVIDIA GeForce RTX 5090",
+    "jax_import_s": 0.449015759,
+    "package_import_s": 3.304795635,
+    "imports_wrappers_backend_s": 8.409697024,
+    "xla_flags": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/default_import/autotune --xla_gpu_force_compilation_parallelism=8",
+    "command_buffers": {
+      "enabled": true,
+      "injected_flags": [
+        "--xla_gpu_enable_command_buffer=+CONDITIONAL",
+        "--xla_enable_command_buffers_during_profiling=true"
+      ],
+      "reason": "nvidia-device-node",
+      "probed": "accepted"
+    },
+    "autotune": {
+      "enabled": true,
+      "dir": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/default_import/autotune",
+      "mode": "update",
+      "parallelism": null,
+      "injected_flags": [
+        "--xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/default_import/autotune"
+      ],
+      "source": "env:GPUWRF_XLA_AUTOTUNE_CACHE_DIR",
+      "reason": "nvidia-device-node",
+      "opted_in": true,
+      "activation": "default-on-with-compile-cache",
+      "probed": {
+        "xla_gpu_per_fusion_autotune_cache_dir": "accepted",
+        "xla_gpu_experimental_autotune_cache_mode": "rejected:rc=1:\t--xla_hlo_graph_sharding_color=false\tbool\tAssign colors based on sharding assignments when generating the"
+      },
+      "rejected_flags": [
+        "--xla_gpu_experimental_autotune_cache_mode=update"
+      ],
+      "error": null
+    },
+    "parallel_compile": {
+      "enabled": true,
+      "parallelism": 8,
+      "injected_flags": [
+        "--xla_gpu_force_compilation_parallelism=8"
+      ],
+      "source": "default-on-with-compile-cache",
+      "reason": "nvidia-device-node",
+      "opted_in": true,
+      "activation": "default-on-with-compile-cache",
+      "probed": {
+        "xla_gpu_force_compilation_parallelism": "accepted"
+      },
+      "rejected_flags": null,
+      "error": null
+    },
+    "captured_target_path": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint/default_import/captured_rtx_target.textproto",
+    "topology_fingerprint": "11813763243894132637"
+  },
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/compile/phase2/R3_joint"
+}

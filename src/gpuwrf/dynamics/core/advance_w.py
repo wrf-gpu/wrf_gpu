@@ -27,6 +27,7 @@ import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.precision import force_fp64_island
+from gpuwrf.kernels.dyn_real_fp32 import dyn_island, enabled as dyn_real_enabled, real as dyn_real
 
 GRAVITY_M_S2 = 9.81  # WRF ``g`` constant used in the small-step solver.
 
@@ -173,7 +174,7 @@ def pg_buoy_w_dry(
     # nearly-equal mass-level perturbation pressures (p(k)-p(k-1)). Widen the
     # cancellation inputs to fp64 IN-OPERATOR so an fp32 storage downcast cannot
     # contaminate the buoyancy source. No-op (bit-identical) on fp64_default.
-    p, mu_work, c1f, rdnw, rdn, msfty = force_fp64_island(p, mu_work, c1f, rdnw, rdn, msfty)
+    p, mu_work, c1f, rdnw, rdn, msfty = dyn_island()(p, mu_work, c1f, rdnw, rdn, msfty)
 
     nz = int(p.shape[0])
     msft_inv = (1.0 / msfty)[None, :, :]
@@ -210,6 +211,8 @@ def moist_cqw_calc_face(qtot_mass: jax.Array) -> jax.Array:
     downstream ``calc_coef_w``/``advance_w`` interior solve never consumes.
     """
 
+    if dyn_real_enabled():
+        qtot_mass = dyn_real(qtot_mass)  # S2-DYN: WRF calc_cq is REAL
     nz = int(qtot_mass.shape[0])
     cqw_calc = jnp.zeros((nz + 1,) + tuple(qtot_mass.shape[1:]), dtype=qtot_mass.dtype)
     if nz >= 2:
@@ -259,6 +262,11 @@ def pg_buoy_w_moist(
     moist-loading face field.
     """
 
+    if dyn_real_enabled():
+        # S2-DYN: WRF pg_buoy_w is REAL (operands may arrive f64 from the glue).
+        p, mu_work, mub, cqw_calc, c1f, c2f, rdnw, rdn, msfty = dyn_real(
+            p, mu_work, mub, cqw_calc, c1f, c2f, rdnw, rdn, msfty
+        )
     nz = int(p.shape[0])
     msft_inv = (1.0 / msfty)[None, :, :]
     g = float(gravity)
@@ -373,7 +381,7 @@ def advance_w_wrf(
         w, rw_tend, ww, mu_work, mut, muave, muts, t_2ave, t_2, t_1,
         ph, ph_1, phb, ph_tend, c2a, alt, a, alpha, gamma,
         c1h, c2h, c1f, c2f, rdnw, rdn, fnm, fnp, cf1, cf2, cf3, msfty, w_save,
-    ) = force_fp64_island(
+    ) = dyn_island()(
         w, rw_tend, ww, mu_work, mut, muave, muts, t_2ave, t_2, t_1,
         ph, ph_1, phb, ph_tend, c2a, alt, a, alpha, gamma,
         c1h, c2h, c1f, c2f, rdnw, rdn, fnm, fnp, cf1, cf2, cf3, msfty, w_save,

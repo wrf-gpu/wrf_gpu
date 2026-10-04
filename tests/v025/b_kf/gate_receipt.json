@@ -1,0 +1,356 @@
+{
+  "created_utc": "2026-10-02T15:20:56.890920+00:00",
+  "model_commit": "8a53a00b2",
+  "flag": "GPUWRF_KF_COLUMN_FP32",
+  "flag_default": "0",
+  "scope": "isolated KF complete-device times; real day/night 8400x44 and explicitly labeled deep oracle scaling fixture8400x40; not forecast wall",
+  "review_status": "GREEN: review-kf2 conditional source verdict cleared by fresh RF02 GPU fidelity/performance/memory/deepACTIVE receipts; manager authorized merge without further review",
+  "artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02",
+  "paired": {
+    "day": {
+      "baseline": {
+        "kernel_ms": 137.626751,
+        "device_ms": 152.96142500000002,
+        "kernels": 38618,
+        "ops": 48306,
+        "copies": {
+          "2": {
+            "count": 15,
+            "bytes": 15,
+            "device_ms": 0.013792
+          },
+          "8": {
+            "count": 9673,
+            "bytes": 20677037968,
+            "device_ms": 15.320882
+          }
+        },
+        "ishall_counts": {
+          "1": 8,
+          "2": 8392
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 26678400,
+          "output_size_in_bytes": 50769800,
+          "temp_size_in_bytes": 146842536,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 3323556,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/day_0/run/component.xlaexec",
+          "bytes": 5958679,
+          "sha256": "8ce59871b15310ab9ad86cd5397726d8324f7a5fc2790711896c80e723d5971b",
+          "optimized_hlo_sha256": "f2a94f03ff2fba90577263cccd9eb5263474a84e2508ee09c50e5baa11903828",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "native": {
+        "kernel_ms": 0.514049,
+        "device_ms": 0.533409,
+        "kernels": 12,
+        "ops": 22,
+        "copies": {
+          "8": {
+            "count": 10,
+            "bytes": 26678400,
+            "device_ms": 0.01936
+          }
+        },
+        "ishall_counts": {
+          "1": 8,
+          "2": 8392
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 26678400,
+          "output_size_in_bytes": 50769800,
+          "temp_size_in_bytes": 13004608,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 641124,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/day_1/run/component.xlaexec",
+          "bytes": 1480258,
+          "sha256": "f4ce1fb2e9a7fc0d41514d87f42bb30e0e37b27a2ab50cae3bb7e1dace4cd06b",
+          "optimized_hlo_sha256": "6285db222210c15ae92161c005ecf3fb20b5360b0c1e7d0e4dd722f53284f439",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "memory_saved_bytes": {
+        "argument_size_in_bytes": 0,
+        "output_size_in_bytes": 0,
+        "temp_size_in_bytes": 133837928,
+        "alias_size_in_bytes": 0,
+        "generated_code_size_in_bytes": 2682432,
+        "host_argument_size_in_bytes": 0,
+        "host_output_size_in_bytes": 0,
+        "host_temp_size_in_bytes": 0,
+        "host_alias_size_in_bytes": 0
+      },
+      "memory_scope": "isolated full public KF adapter; baseline already RESIDENT=1, native incremental reduction; not all B16/nonresident or whole-root live peak",
+      "same_work_verified": true,
+      "device_speedup": 286.76198751802093,
+      "interface_kinds_verified_identical": true
+    },
+    "night": {
+      "baseline": {
+        "kernel_ms": 137.385185,
+        "device_ms": 152.459407,
+        "kernels": 38618,
+        "ops": 48306,
+        "copies": {
+          "2": {
+            "count": 15,
+            "bytes": 15,
+            "device_ms": 0.020576
+          },
+          "8": {
+            "count": 9673,
+            "bytes": 20677037968,
+            "device_ms": 15.053646
+          }
+        },
+        "ishall_counts": {
+          "2": 8400
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 26678400,
+          "output_size_in_bytes": 50769800,
+          "temp_size_in_bytes": 146842536,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 3323556,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/night_0/run/component.xlaexec",
+          "bytes": 5832975,
+          "sha256": "80ec9062b02e86ca87862707486395c6d2d406c26a5ad84403ef87b9f3f23b6c",
+          "optimized_hlo_sha256": "f2a94f03ff2fba90577263cccd9eb5263474a84e2508ee09c50e5baa11903828",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "native": {
+        "kernel_ms": 0.46765,
+        "device_ms": 0.48665800000000004,
+        "kernels": 12,
+        "ops": 22,
+        "copies": {
+          "8": {
+            "count": 10,
+            "bytes": 26678400,
+            "device_ms": 0.019008
+          }
+        },
+        "ishall_counts": {
+          "2": 8400
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 26678400,
+          "output_size_in_bytes": 50769800,
+          "temp_size_in_bytes": 13004608,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 641124,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/night_1/run/component.xlaexec",
+          "bytes": 1479144,
+          "sha256": "6aa32660502a7e1b9f36ec9ac85d14d8ea4a3fbe5ba1c1b71cc9c22b36aac460",
+          "optimized_hlo_sha256": "6285db222210c15ae92161c005ecf3fb20b5360b0c1e7d0e4dd722f53284f439",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "memory_saved_bytes": {
+        "argument_size_in_bytes": 0,
+        "output_size_in_bytes": 0,
+        "temp_size_in_bytes": 133837928,
+        "alias_size_in_bytes": 0,
+        "generated_code_size_in_bytes": 2682432,
+        "host_argument_size_in_bytes": 0,
+        "host_output_size_in_bytes": 0,
+        "host_temp_size_in_bytes": 0,
+        "host_alias_size_in_bytes": 0
+      },
+      "memory_scope": "isolated full public KF adapter; baseline already RESIDENT=1, native incremental reduction; not all B16/nonresident or whole-root live peak",
+      "same_work_verified": true,
+      "device_speedup": 313.2783330388075,
+      "interface_kinds_verified_identical": true
+    },
+    "deep": {
+      "baseline": {
+        "kernel_ms": 85.536292,
+        "device_ms": 97.974659,
+        "kernels": 15219,
+        "ops": 22553,
+        "copies": {
+          "2": {
+            "count": 2,
+            "bytes": 2,
+            "device_ms": 0.002848
+          },
+          "8": {
+            "count": 7332,
+            "bytes": 17827601672,
+            "device_ms": 12.435519
+          }
+        },
+        "ishall_counts": {
+          "0": 8400
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 21571200,
+          "output_size_in_bytes": 46200200,
+          "temp_size_in_bytes": 134679208,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 3313964,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/deep_0/run/component.xlaexec",
+          "bytes": 5942566,
+          "sha256": "96df89f67f0e55186151a368f8906d6e38db93926ef070ebc29c248d60fd37cd",
+          "optimized_hlo_sha256": "20691937290fd9020fac499f51a21af523457207c10a95cb3c168cd3c9c8bff6",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "native": {
+        "kernel_ms": 9.158489,
+        "device_ms": 9.184985,
+        "kernels": 11,
+        "ops": 22,
+        "copies": {
+          "8": {
+            "count": 11,
+            "bytes": 26947200,
+            "device_ms": 0.026496
+          }
+        },
+        "ishall_counts": {
+          "0": 8400
+        },
+        "compiled_memory": {
+          "argument_size_in_bytes": 21571200,
+          "output_size_in_bytes": 46200200,
+          "temp_size_in_bytes": 12970816,
+          "alias_size_in_bytes": 0,
+          "generated_code_size_in_bytes": 633484,
+          "host_argument_size_in_bytes": 0,
+          "host_output_size_in_bytes": 0,
+          "host_temp_size_in_bytes": 0,
+          "host_alias_size_in_bytes": 0
+        },
+        "aot": {
+          "path": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/deep_1/run/component.xlaexec",
+          "bytes": 1468073,
+          "sha256": "9bb4efe38a488d3ae1b09c0b79bd91c8c5e7d06ac860819ba2e8061d302e410c",
+          "optimized_hlo_sha256": "fefacf7943a4b3fc301d0921de120d7d8dd193320bb8fc5d0e40ba4f735ffc5b",
+          "scope": "native PJRT program bytes for offline memory/options audit"
+        }
+      },
+      "memory_saved_bytes": {
+        "argument_size_in_bytes": 0,
+        "output_size_in_bytes": 0,
+        "temp_size_in_bytes": 121708392,
+        "alias_size_in_bytes": 0,
+        "generated_code_size_in_bytes": 2680480,
+        "host_argument_size_in_bytes": 0,
+        "host_output_size_in_bytes": 0,
+        "host_temp_size_in_bytes": 0,
+        "host_alias_size_in_bytes": 0
+      },
+      "memory_scope": "isolated full public KF adapter; baseline already RESIDENT=1, native incremental reduction; not all B16/nonresident or whole-root live peak",
+      "same_work_verified": true,
+      "device_speedup": 10.666828416159635,
+      "interface_kinds_verified_identical": true
+    }
+  },
+  "wrf": {
+    "day": {
+      "columns": 8400,
+      "verdict": "PASS",
+      "nonfinite": 0,
+      "max_tend_relative": 9.256470997750179e-05,
+      "scalars_exact": true,
+      "origin": "assertedGPU outputs scored against independent pristine WRF frozen bounds"
+    },
+    "night": {
+      "columns": 8400,
+      "verdict": "PASS",
+      "nonfinite": 0,
+      "max_tend_relative": 0.0,
+      "scalars_exact": true,
+      "origin": "assertedGPU outputs scored against independent pristine WRF frozen bounds"
+    },
+    "deep": {
+      "columns": 8400,
+      "verdict": "PASS",
+      "nonfinite": 0,
+      "max_tend_relative": 4.1673812937635224e-05,
+      "scalars_exact": false,
+      "origin": "assertedGPU outputs scored against independent pristine WRF frozen bounds"
+    }
+  },
+  "frozen_gpu_oracle": "5/5PASS",
+  "gpu_hydrometeors": "4/4PASS default+threeoriginalnondefault",
+  "source_sha256": {
+    "physics/cumulus_kf.py": "aa599dee105297611d3ef985e143f5e74037e38ccf026a9607112b0cb2089eac",
+    "kernels/phys_kf_column.py": "1d3b6592eada0628881abc6d3333eceec99fc32c018a3c0940e74f9a7770c470"
+  },
+  "driver_sha256": "934192390beb99274683badc52d92ba4c034dcdc6fd265dad21a5720a27818e0",
+  "environment": {
+    "JAX_PLATFORMS": "cuda",
+    "XLA_FLAGS": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/autotune --xla_gpu_force_compilation_parallelism=2",
+    "GPUWRF_KF_COLUMN_FP32": "1",
+    "GPUWRF_KF_RESIDENT_TABLES": "1",
+    "GPUWRF_JAX_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/cache",
+    "CUDA_CACHE_PATH": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/cuda_cache",
+    "TRITON_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/triton_cache",
+    "JAX_PALLAS_USE_MOSAIC_GPU": "false",
+    "GPUWRF_XLA_AUTOTUNE_CACHE_DIR": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF02/autotune",
+    "GPUWRF_XLA_PARALLEL_COMPILE": "2"
+  },
+  "cpu_gates": {
+    "frozen": 5,
+    "hydrometeors": 4,
+    "closure_states": 13,
+    "edge_columns": 50,
+    "real_columns": 16800,
+    "caller_regressions": 19,
+    "ttir_variants": 4,
+    "verdict": "PASS",
+    "artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-kf/RF01"
+  },
+  "gpu_kernel_resource": {
+    "registers_per_thread": 168,
+    "local_bytes_per_thread": 0,
+    "all_three_fixtures": true
+  },
+  "same_measured_owned_source_on_current_branch": true,
+  "notes": [
+    "Times sum kernel+memcpy device rows, not forecast wall.",
+    "Real day/night fixtures have0deep; deepACTIVE fixture is untouched pristine WRF case1 tiled8400x40, allISHALL0; not realPROD weather.",
+    "RESIDENT_TABLES=1 on bothpairedpaths; memory delta is incremental native-column reduction, not all B16/nonresident or whole-root live peak.",
+    "Temporary bytes day/night146842536->13004608, saved133837928; arg/output/alias and input/output kinds unchanged.",
+    "All native loop work lives inside one column kernel; external adapter DtoD10real/11deep remain, zero native loop copies/hosttransfers.",
+    "Retained public interface arrays are fp64; column arithmetic fp32. Whole-product S2 carry/station/longforecast/roofline gates remain integration work.",
+    "Requested parallel2/cache flags preset before import to avoid CUDA-child probes; no claim rawenv proves effectiveCompileOptions.",
+    "AOT/HLO retained for VRAM offline audit; compiled-memory stats are not per-process GPU livepeak."
+  ],
+  "interface_scope": "actual arg/output shapes+kinds stored in each RF02/*/run/result.json; bothpairedpaths byte-identical interface specs, allprofiles/publicREAL64 and ISHALL32"
+}

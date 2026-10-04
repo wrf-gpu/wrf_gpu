@@ -19,6 +19,9 @@ from gpuwrf.physics.rrtmg_sw import (
 
 
 def _state(*, explicit_interfaces: bool) -> RRTMGSWColumnState:
+    # OOM-hardening tests reload this module; use its current registered class.
+    from gpuwrf.physics.rrtmg_sw import RRTMGSWColumnState
+
     temperature = jnp.asarray(
         [[[291.0, 267.0, 238.0], [292.0, 268.0, 239.0]]], dtype=jnp.float64
     )
@@ -79,8 +82,8 @@ def test_legacy_positional_constructor_and_none_profile_are_unchanged() -> None:
 
     leaves, treedef = jax.tree_util.tree_flatten(legacy)
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
-    # Optional None nodes add no dynamic leaves, preserving the historical
-    # 13-array pytree and positional solar_source_scale call.
+    # Optional None interfaces/gases add no dynamic leaves, preserving the
+    # historical 13-array pytree and positional solar_source_scale call.
     assert len(leaves) == 13
     assert rebuilt == legacy
 

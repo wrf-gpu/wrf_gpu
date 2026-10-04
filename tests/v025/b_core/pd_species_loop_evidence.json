@@ -1,0 +1,141 @@
+{
+ "change": "GPUWRF_DYN_PD_SPECIES_LOOP=1 (default off): native advect_scalar_pd scale/tend kernels with lanes over (k, y, x) and the species loop inside the program (fori over species); species-independent terms hoisted per cell (face velocity, dx/dz, mu, Courant divisions, mu*dx/dt, 0.5*vel, order selectors, ph_low mass factor, mx*my, my*rz). Same expressions per species -> bitwise.",
+ "off_path": "unchanged (only the lane-count expression is flag-selected; ns*nz*ny*nx when off)",
+ "cpu_interpret_rk3": {
+  "species_bitwise": {
+   "qv": true,
+   "qc": true,
+   "qr": true,
+   "qi": true,
+   "qs": true,
+   "qg": true,
+   "Ni": true,
+   "Nr": true
+  },
+  "path": "op._scalar_transport_coupled_tendencies rk_step=3 (PD), ADVECTION_FP32=1 PD_FP32=1, real PROD d01 carry, random species"
+ },
+ "test": "tests/v025/b_core/test_pd_species_loop.py (dispatch proof via pallas_call names + bitwise 8/8, PROD inputs via prod_inputs.py); mutant x-face sel2 without the east face (f == nx-1) FAILS: qv 3120/369600 mismatched",
+ "cubin_cpu": "TTIR -> triton.compile(sm_120) -> ptxas: scale_sl 166 regs / tend_sl 164 regs (old 118/119), 0 spill; pip ptxas 13.2 rc 0",
+ "gpu_BC54": {
+  "device": "cuda:0",
+  "platform": "gpu",
+  "note": "host wall per call (batch 20, median of 21, 3 interleaved rounds); nsys: 5 calls per flag per domain",
+  "inputs": "PROD d01+d02 carries regenerated on CPU with the BC54 snapshot (integrate common_inputs.pkl deleted 2026-10-03)",
+  "rows": [
+   {
+    "domain": "d01",
+    "shape": [
+     44,
+     70,
+     120
+    ],
+    "kernels_in_hlo": {
+     "0": [
+      "b_carry_pd_scale_fp32",
+      "b_carry_pd_tend_fp32"
+     ],
+     "1": [
+      "b_core_pd_scale_sl_fp32",
+      "b_core_pd_tend_sl_fp32"
+     ]
+    },
+    "bitwise": {
+     "qv": true,
+     "qc": true,
+     "qr": true,
+     "qi": true,
+     "qs": true,
+     "qg": true,
+     "Ni": true,
+     "Nr": true
+    },
+    "median_ms": {
+     "0": 0.20165714959148318,
+     "1": 0.13501579815056175
+    }
+   },
+   {
+    "domain": "d02",
+    "shape": [
+     44,
+     117,
+     267
+    ],
+    "kernels_in_hlo": {
+     "0": [
+      "b_carry_pd_scale_fp32",
+      "b_carry_pd_tend_fp32"
+     ],
+     "1": [
+      "b_core_pd_scale_sl_fp32",
+      "b_core_pd_tend_sl_fp32"
+     ]
+    },
+    "bitwise": {
+     "qv": true,
+     "qc": true,
+     "qr": true,
+     "qi": true,
+     "qs": true,
+     "qg": true,
+     "Ni": true,
+     "Nr": true
+    },
+    "median_ms": {
+     "0": 0.9914771013427525,
+     "1": 0.712069051223807
+    }
+   }
+  ],
+  "nsys_device_us_per_call": {
+   "d01:0": {
+    "pd_kernels": 147.27,
+    "per_kernel": {
+     "other": 41.98,
+     "b_carry_pd_scale_fp32": 72.63,
+     "b_carry_pd_tend_fp32": 74.64
+    }
+   },
+   "d01:1": {
+    "pd_kernels": 81.0,
+    "per_kernel": {
+     "other": 44.79,
+     "b_core_pd_scale_sl_fp32": 33.41,
+     "b_core_pd_tend_sl_fp32": 47.6
+    }
+   },
+   "d02:0": {
+    "pd_kernels": 664.24,
+    "per_kernel": {
+     "other": 268.68,
+     "b_carry_pd_scale_fp32": 324.48,
+     "b_carry_pd_tend_fp32": 339.76
+    }
+   },
+   "d02:1": {
+    "pd_kernels": 394.25,
+    "per_kernel": {
+     "other": 329.33,
+     "b_core_pd_scale_sl_fp32": 155.13,
+     "b_core_pd_tend_sl_fp32": 239.12
+    }
+   }
+  }
+ },
+ "summary": {
+  "pd_kernel_us_per_call": {
+   "d01": [
+    147.27,
+    81.0
+   ],
+   "d02": [
+    664.24,
+    394.25
+   ]
+  },
+  "per_root_estimate_ms": 0.876,
+  "per_root_basis": "[I] one PD call per own step (final RK stage): 1 d01 + 3 d02 per root; LW10 BP65 PD transport 2.91 ms/root",
+  "bitwise_gpu": "8/8 species, d01 and d02"
+ },
+ "artifacts": "<USER_HOME>/wrf_gpu2_lanes/b-core/phase2b/BC54_pdloop"
+}

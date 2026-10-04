@@ -1,0 +1,908 @@
+{
+  "cache": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/jax",
+  "entries": [
+    {
+      "entry": "jit__advance_chunk_fori-d8b0ccc5f713ebb240185419f9e8c298ea10",
+      "format": "xla-gpu-thunks-riegeli-v1",
+      "elfs": [
+        {
+          "elf": 0,
+          "sha256": "29af4dfd1541f492",
+          "kernels": 841,
+          "max_stack_B": 8,
+          "stack_over256": [],
+          "nonleaf_over1k": [
+            [
+              "input_concatenate_fusion_44",
+              1064,
+              2,
+              1
+            ],
+            [
+              "thompson_full_column",
+              18928,
+              98,
+              3
+            ],
+            [
+              "mynn_tridiag2_real",
+              2224,
+              87,
+              1
+            ],
+            [
+              "loop_and_divide_select_slice_fusion",
+              2232,
+              2,
+              1
+            ],
+            [
+              "loop_add_divide_minimum_multiply_or_select_fusion",
+              1024,
+              1,
+              1
+            ],
+            [
+              "loop_add_clamp_divide_minimum_multiply_or_select_fusion_1",
+              1312,
+              1,
+              1
+            ],
+            [
+              "loop_add_clamp_divide_minimum_multiply_or_select_fusion_2",
+              1224,
+              1,
+              1
+            ],
+            [
+              "loop_add_divide_maximum_minimum_multiply_select_fusion",
+              4168,
+              9,
+              1
+            ],
+            [
+              "loop_add_clamp_divide_minimum_multiply_select_fusion",
+              1440,
+              1,
+              1
+            ],
+            [
+              "loop_add_clamp_compare_divide_minimum_multiply_select_fusion",
+              1584,
+              1,
+              1
+            ],
+            [
+              "loop_add_clamp_divide_minimum_multiply_select_fusion_1",
+              2016,
+              1,
+              1
+            ],
+            [
+              "loop_or_select_fusion",
+              2224,
+              6,
+              1
+            ],
+            [
+              "loop_add_divide_minimum_multiply_select_fusion",
+              2144,
+              2,
+              1
+            ],
+            [
+              "loop_add_divide_minimum_multiply_select_fusion_1",
+              2752,
+              2,
+              1
+            ],
+            [
+              "loop_add_clamp_compare_divide_log_maximum_minimum_multiply_reduce_select_fusion",
+              2632,
+              1,
+              1
+            ],
+            [
+              "loop_add_divide_minimum_multiply_select_subtract_fusion",
+              2560,
+              1,
+              1
+            ],
+            [
+              "loop_add_clamp_divide_maximum_minimum_multiply_power_select_sqrt_subtract_fusion",
+              2192,
+              1,
+              1
+            ]
+          ]
+        }
+      ],
+      "kinput_transpose_over500": [
+        [
+          "input_add_broadcast_divide_transpose_fusion",
+          1030
+        ],
+        [
+          "input_add_divide_multiply_transpose_fusion",
+          741
+        ],
+        [
+          "input_power_transpose_fusion",
+          517
+        ]
+      ]
+    }
+  ],
+  "hard_stack_gate": "PASS",
+  "conservative_flags": true,
+  "n_entries": 1,
+  "model_commit": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+  "decision": "manager10:25PROCEED; b-column2026-10-04T10:30:25Z E189leafcriterionACCEPTED on exactdead7d004 ELF29af4dfd1541f492:17/17leaf-only roots,0nested/ambiguous,maxleaf464/bound479;newconcat target107/bound120;STACK8B. All17CALLroot/3kInput flags retained;noSwissruntimeprofile orPRODtimingtransfer.",
+  "leaf_acceptance": {
+    "timestamp": "2026-10-04T10:28:09.231787+00:00",
+    "lane": "b-column",
+    "wave": "Swiss FINAL-b",
+    "source_commit": "dead7d0042a3398eba2a0dac8d809938fa16df05",
+    "source_model_tree": "7a353f10ac1fc49f111a8f3504f12e12a7a16643",
+    "verdict": "E189_CLASS_ACCEPTED_SWISS_STATIC_LEAF_GATE",
+    "acceptance_wording": "Conservative static flags, Swiss geometry, accepted under manager 10:25:04Z E189 leaf-check criterion; not cubin clean.",
+    "manager_gate": "CPU-only check of 17 CALL roots including input_concatenate_fusion_44; every target a leaf <=1k SASS. No Swiss runtime nsys arm.",
+    "method": "Exact native record2 from Swiss FINAL-b real cached GPU executable; decoded per-function cuobjdump SASS; CA02 target-to-first-RET partition, all residual SASS allocated to largest target for conservative bound.",
+    "limitations": "Target partition is a static approximation, not dynamic instruction counts or runtime evidence. The three kInput flags remain explicitly disclosed. No PROD timing or prior Swiss geometry timing is transferred.",
+    "environment": {
+      "JAX_PLATFORMS": "cpu",
+      "cpu_affinity": [
+        8,
+        9,
+        12,
+        13,
+        24,
+        25,
+        28,
+        29
+      ],
+      "nice": 19,
+      "quiet_guard": true,
+      "analysis_CPU_only": true
+    },
+    "provenance": {
+      "cache_entry": "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cache/jax/jit__advance_chunk_fori-d8b0ccc5f713ebb240185419f9e8c298ea10914e444b05133ab3fbf8181c3af1-cache",
+      "cache_sha256": "d2ed0d1affbc58fd214275ee3e54c01164135c60a725815de5b1b7c63a6862ba",
+      "elf_sha256": "29af4dfd1541f492ee1fea8198299e76c7621390b0e36271e70aa42160128746",
+      "hard_gate_elf_sha256_prefix": "29af4dfd1541f492",
+      "inputs": {
+        "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cubin_cold/wave_gate.json": "8f56c1e093d95a5f1c1a8d7de0d9ce8493fd2c30413076beff397a847ac8bfc8",
+        "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cubin_cold/cubin_scan_d8b0ccc5f713_e0.json": "128e90ad0be602f7d70b9f5fe18af365e62d577cb5a32ea4e414e8009a0f5cc6",
+        "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/registration.json": "f4bd0d932cb9f3df74b087120f1fd24a9623fc4ab3951363146ec71a6927e89f",
+        "<USER_HOME>/wrf_gpu2_lanes/release-docs/SWISS_F02/cold24h/receipt.json": "aa90f7b7ebdb90853e908c9f4d8a594a54b441c4a22d3929da1eba5003e0470b",
+        "<USER_HOME>/wrf_gpu2_lanes/compile/cold/wave_cubin_gate.py": "88581727c6d97705a7676957b69b3d9414978dc93609f99b3c3307e9f8474885",
+        "<USER_HOME>/wrf_gpu2_lanes/b-column/cubin_attr/callgraph.py": "f3d510548d9bfdae6b38f907e3a614955b3a746f9c9c9b572576870139a8c4ed"
+      },
+      "disposable_native_temp": "removed; no cache copies/compile/GPU work",
+      "private_cache": "none",
+      "source_cache_reader_status": "DONE"
+    },
+    "summary": {
+      "measurement": "M static",
+      "hard_stack_gate": "PASS",
+      "max_stack_B": 8,
+      "caller_roots": 17,
+      "caller_roots_with_only_small_leaves": 17,
+      "SASS_CALL_reconciled": 17,
+      "nested_CALL_targets": 0,
+      "max_leaf_SASS": 464,
+      "max_leaf_conservative_SASS_bound": 479,
+      "max_unpartitioned_SASS": 16,
+      "ambiguous_partitions": 0,
+      "new_input_concatenate_fusion_44": {
+        "root_SASS": 1064,
+        "CALL_sites": 2,
+        "unique_targets": 1,
+        "targets": [
+          {
+            "target": "0x3b00",
+            "static_instructions": 107,
+            "nested_static_calls": 0,
+            "targets": {},
+            "calls_from_main": 2
+          }
+        ],
+        "max_leaf_conservative_SASS_bound": 120
+      },
+      "kinput_flags": [
+        [
+          "input_add_broadcast_divide_transpose_fusion",
+          1030
+        ],
+        [
+          "input_add_divide_multiply_transpose_fusion",
+          741
+        ],
+        [
+          "input_power_transpose_fusion",
+          517
+        ]
+      ]
+    },
+    "exceptions": [],
+    "rows": [
+      {
+        "kernel": "input_concatenate_fusion_44",
+        "scanner": {
+          "kernel": "input_concatenate_fusion_44",
+          "sass": 1064,
+          "calls": 2,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 42,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1064,
+          "static_calls": 2,
+          "callees": [
+            {
+              "target": "0x3b00",
+              "static_instructions": 107,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 2
+            }
+          ],
+          "main_instructions": 944,
+          "max_callee_instructions": 107,
+          "unpartitioned_instructions": 13,
+          "max_callee_conservative_instruction_bound": 120,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1158,
+          "straight_line_expansion_ratio": 1.0883458646616542
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_compare_divide_log_maximum_minimum_multiply_reduce_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_clamp_compare_divide_log_maximum_minimum_multiply_reduce_select_fusion",
+          "sass": 2632,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 64,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2632,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x9d70",
+              "static_instructions": 104,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 2519,
+          "max_callee_instructions": 104,
+          "unpartitioned_instructions": 9,
+          "max_callee_conservative_instruction_bound": 113,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2623,
+          "straight_line_expansion_ratio": 0.996580547112462
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_compare_divide_minimum_multiply_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_clamp_compare_divide_minimum_multiply_select_fusion",
+          "sass": 1584,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 72,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1584,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x5bb0",
+              "static_instructions": 107,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 1467,
+          "max_callee_instructions": 107,
+          "unpartitioned_instructions": 10,
+          "max_callee_conservative_instruction_bound": 117,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1574,
+          "straight_line_expansion_ratio": 0.9936868686868687
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_divide_maximum_minimum_multiply_power_select_sqrt_subtract_fusion",
+        "scanner": {
+          "kernel": "loop_add_clamp_divide_maximum_minimum_multiply_power_select_sqrt_subtract_fusion",
+          "sass": 2192,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 71,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2192,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x81d0",
+              "static_instructions": 105,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 2077,
+          "max_callee_instructions": 105,
+          "unpartitioned_instructions": 10,
+          "max_callee_conservative_instruction_bound": 115,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2182,
+          "straight_line_expansion_ratio": 0.9954379562043796
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_divide_minimum_multiply_or_select_fusion_1",
+        "scanner": {
+          "kernel": "loop_add_clamp_divide_minimum_multiply_or_select_fusion_1",
+          "sass": 1312,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 48,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1312,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x4a50",
+              "static_instructions": 107,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 1189,
+          "max_callee_instructions": 107,
+          "unpartitioned_instructions": 16,
+          "max_callee_conservative_instruction_bound": 123,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1296,
+          "straight_line_expansion_ratio": 0.9878048780487805
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_divide_minimum_multiply_or_select_fusion_2",
+        "scanner": {
+          "kernel": "loop_add_clamp_divide_minimum_multiply_or_select_fusion_2",
+          "sass": 1224,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 40,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1224,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x4530",
+              "static_instructions": 107,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 1107,
+          "max_callee_instructions": 107,
+          "unpartitioned_instructions": 10,
+          "max_callee_conservative_instruction_bound": 117,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1214,
+          "straight_line_expansion_ratio": 0.9918300653594772
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_divide_minimum_multiply_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_clamp_divide_minimum_multiply_select_fusion",
+          "sass": 1440,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 48,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1440,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x5260",
+              "static_instructions": 106,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 1318,
+          "max_callee_instructions": 106,
+          "unpartitioned_instructions": 16,
+          "max_callee_conservative_instruction_bound": 122,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1424,
+          "straight_line_expansion_ratio": 0.9888888888888889
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_clamp_divide_minimum_multiply_select_fusion_1",
+        "scanner": {
+          "kernel": "loop_add_clamp_divide_minimum_multiply_select_fusion_1",
+          "sass": 2016,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 79,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2016,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x76d0",
+              "static_instructions": 104,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 1901,
+          "max_callee_instructions": 104,
+          "unpartitioned_instructions": 11,
+          "max_callee_conservative_instruction_bound": 115,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2005,
+          "straight_line_expansion_ratio": 0.9945436507936508
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_divide_maximum_minimum_multiply_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_divide_maximum_minimum_multiply_select_fusion",
+          "sass": 4168,
+          "calls": 9,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 115,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 4168,
+          "static_calls": 9,
+          "callees": [
+            {
+              "target": "0xfd90",
+              "static_instructions": 102,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 9
+            }
+          ],
+          "main_instructions": 4057,
+          "max_callee_instructions": 102,
+          "unpartitioned_instructions": 9,
+          "max_callee_conservative_instruction_bound": 111,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 4975,
+          "straight_line_expansion_ratio": 1.1936180422264875
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_divide_minimum_multiply_or_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_divide_minimum_multiply_or_select_fusion",
+          "sass": 1024,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 40,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 1024,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x38c0",
+              "static_instructions": 107,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 908,
+          "max_callee_instructions": 107,
+          "unpartitioned_instructions": 9,
+          "max_callee_conservative_instruction_bound": 116,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 1015,
+          "straight_line_expansion_ratio": 0.9912109375
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_divide_minimum_multiply_select_fusion",
+        "scanner": {
+          "kernel": "loop_add_divide_minimum_multiply_select_fusion",
+          "sass": 2144,
+          "calls": 2,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 64,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2144,
+          "static_calls": 2,
+          "callees": [
+            {
+              "target": "0x7e90",
+              "static_instructions": 103,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 2
+            }
+          ],
+          "main_instructions": 2025,
+          "max_callee_instructions": 103,
+          "unpartitioned_instructions": 16,
+          "max_callee_conservative_instruction_bound": 119,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2231,
+          "straight_line_expansion_ratio": 1.0405783582089552
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_divide_minimum_multiply_select_fusion_1",
+        "scanner": {
+          "kernel": "loop_add_divide_minimum_multiply_select_fusion_1",
+          "sass": 2752,
+          "calls": 2,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 90,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2752,
+          "static_calls": 2,
+          "callees": [
+            {
+              "target": "0xa4d0",
+              "static_instructions": 103,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 2
+            }
+          ],
+          "main_instructions": 2637,
+          "max_callee_instructions": 103,
+          "unpartitioned_instructions": 12,
+          "max_callee_conservative_instruction_bound": 115,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2843,
+          "straight_line_expansion_ratio": 1.0330668604651163
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_add_divide_minimum_multiply_select_subtract_fusion",
+        "scanner": {
+          "kernel": "loop_add_divide_minimum_multiply_select_subtract_fusion",
+          "sass": 2560,
+          "calls": 1,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 72,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2560,
+          "static_calls": 1,
+          "callees": [
+            {
+              "target": "0x9890",
+              "static_instructions": 106,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 1
+            }
+          ],
+          "main_instructions": 2441,
+          "max_callee_instructions": 106,
+          "unpartitioned_instructions": 13,
+          "max_callee_conservative_instruction_bound": 119,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2547,
+          "straight_line_expansion_ratio": 0.994921875
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_and_divide_select_slice_fusion",
+        "scanner": {
+          "kernel": "loop_and_divide_select_slice_fusion",
+          "sass": 2232,
+          "calls": 2,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 92,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2232,
+          "static_calls": 2,
+          "callees": [
+            {
+              "target": "0x8470",
+              "static_instructions": 102,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 2
+            }
+          ],
+          "main_instructions": 2119,
+          "max_callee_instructions": 102,
+          "unpartitioned_instructions": 11,
+          "max_callee_conservative_instruction_bound": 113,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2323,
+          "straight_line_expansion_ratio": 1.0407706093189963
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "loop_or_select_fusion",
+        "scanner": {
+          "kernel": "loop_or_select_fusion",
+          "sass": 2224,
+          "calls": 6,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 78,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2224,
+          "static_calls": 6,
+          "callees": [
+            {
+              "target": "0x83a0",
+              "static_instructions": 104,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 6
+            }
+          ],
+          "main_instructions": 2106,
+          "max_callee_instructions": 104,
+          "unpartitioned_instructions": 14,
+          "max_callee_conservative_instruction_bound": 118,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 2730,
+          "straight_line_expansion_ratio": 1.2275179856115108
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "mynn_tridiag2_real",
+        "scanner": {
+          "kernel": "mynn_tridiag2_real",
+          "sass": 2224,
+          "calls": 87,
+          "callees": 1,
+          "stl": 0,
+          "stack": 0,
+          "regs": 128,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 2224,
+          "static_calls": 87,
+          "callees": [
+            {
+              "target": "0x83b0",
+              "static_instructions": 105,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 87
+            }
+          ],
+          "main_instructions": 2107,
+          "max_callee_instructions": 105,
+          "unpartitioned_instructions": 12,
+          "max_callee_conservative_instruction_bound": 117,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 11242,
+          "straight_line_expansion_ratio": 5.054856115107913
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      },
+      {
+        "kernel": "thompson_full_column",
+        "scanner": {
+          "kernel": "thompson_full_column",
+          "sass": 18928,
+          "calls": 98,
+          "callees": 3,
+          "stl": 0,
+          "stack": 0,
+          "regs": 166,
+          "nsys_calls": 0,
+          "nsys_ms": 0.0,
+          "nsys_max_ms": 0.0,
+          "grid": 0
+        },
+        "callgraph": {
+          "static_instructions": 18928,
+          "static_calls": 98,
+          "callees": [
+            {
+              "target": "0x47220",
+              "static_instructions": 98,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 12
+            },
+            {
+              "target": "0x47840",
+              "static_instructions": 141,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 75
+            },
+            {
+              "target": "0x48110",
+              "static_instructions": 464,
+              "nested_static_calls": 0,
+              "targets": {},
+              "calls_from_main": 11
+            }
+          ],
+          "main_instructions": 18210,
+          "max_callee_instructions": 464,
+          "unpartitioned_instructions": 15,
+          "max_callee_conservative_instruction_bound": 479,
+          "nonleaf_callees_over1k": [],
+          "ambiguous_partition": false,
+          "straight_line_expanded_instructions": 35065,
+          "straight_line_expansion_ratio": 1.8525464919695689
+        },
+        "verdict": "LARGE_ROOT_SMALL_LEAF_TARGETS",
+        "exceptions": []
+      }
+    ]
+  }
+}

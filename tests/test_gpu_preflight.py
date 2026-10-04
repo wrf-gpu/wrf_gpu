@@ -154,3 +154,93 @@ def test_preflight_force_returns_forced_payload_without_lock():
     assert payload["status"] == "FORCED"
     assert payload["forced"] is True
     assert payload["failures"]
+
+
+def _c_auto_env(budget_gib: float = 6.4, headroom_gib: float = 1.0) -> dict[str, str]:
+    return {"_GPUWRF_C_AUTO_BUDGET": str(int(budget_gib * 1024**3)),
+            "_GPUWRF_C_AUTO_HEADROOM": str(int(headroom_gib * 1024**3))}
+
+
+@pytest.mark.parametrize("backends,need", [({}, 7.4), ({"cpu": 1}, 7.4), ({"cpu": 1, "cuda": 1}, 1.0)])
+def test_c_auto_plan_threshold_counts_unreserved_pool_only(monkeypatch, backends, need):
+    import sys
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(sys.modules, "jax._src.xla_bridge", SimpleNamespace(_backends=backends))
+    threshold = resolve_min_free_vram_threshold(_c_auto_env(), total_gib=31.35)
+    assert threshold.min_free_gib == pytest.approx(need)
+    assert threshold.source.startswith("C-auto plan")
+    # Without a plan today's rule applies; an explicit GiB override still wins over a plan.
+    assert min_free_vram_gib({}, total_gib=31.35) == 24.0
+    assert min_free_vram_gib({**_c_auto_env(), "GPUWRF_MIN_FREE_VRAM_GIB": "18.5"}) == 18.5
+
+
+def test_c_auto_plan_admits_parallel_case_without_advisory(monkeypatch, tmp_path):
+    import sys
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(sys.modules, "jax._src.xla_bridge", SimpleNamespace(_backends={"cuda": 1}))
+    env, fd, lock_file, holder_file = _locked_env(tmp_path)
+    try:
+        snapshot = VramSnapshot(index="0", name="RTX 5090", free_mib=8 * 1024, total_mib=32607, used_mib=24000)
+        payload = run_nested_gpu_preflight(environ={**env, **_c_auto_env()}, query_memory=lambda: snapshot,
+                                           holder_file=holder_file, lock_file=lock_file)
+        assert payload["status"] == "PASS" and "advisories" not in payload
+        with pytest.raises(GpuPreflightError):
+            run_nested_gpu_preflight(environ={**_c_auto_env(), "GPUWRF_GPU_LOCK_HELD": "0"},
+                                     query_memory=lambda: VramSnapshot("0", "RTX 5090", 512, 32607, 32000),
+                                     holder_file=holder_file, lock_file=lock_file)
+    finally:
+        os.close(fd)
+
+
+# --- Public machine vs dev lock infrastructure (release v0.3: plain `python -m gpuwrf.cli run` for users) ---------------
+
+def _snap(free_gib: float, total_gib: float = 32.0) -> VramSnapshot:
+    return VramSnapshot("0", "RTX Test", int(free_gib * 1024), int(total_gib * 1024), int((total_gib - free_gib) * 1024))
+
+
+def test_public_machine_runs_without_lock_proof(tmp_path, capsys):
+    absent = tmp_path / "no_dev_lock"
+    payload = run_nested_gpu_preflight(environ={}, query_memory=lambda: _snap(30.0),
+                                       lock_file=absent, holder_file=tmp_path / "no_dev_lock.holder")
+    assert payload["status"] == "PASS"
+    assert payload["lock"]["required"] is False and payload["lock"]["ok"] is False
+    assert "absent" in payload["lock"]["policy"]
+    assert "nested GPU preflight PASS" in capsys.readouterr().err
+
+
+def test_public_machine_still_fails_closed_on_low_vram(tmp_path):
+    absent = tmp_path / "no_dev_lock"
+    with pytest.raises(GpuPreflightError) as raised:
+        run_nested_gpu_preflight(environ={}, query_memory=lambda: _snap(10.0), lock_file=absent,
+                                 holder_file=tmp_path / "no_dev_lock.holder")
+    payload = raised.value.payload
+    assert payload["status"] == "FAIL" and payload["lock"]["required"] is False
+    assert len(payload["failures"]) == 1 and "below resolved threshold" in payload["failures"][0]
+    assert "with_gpu_lock" not in payload["action"]
+
+
+def test_dev_lock_file_present_still_requires_the_lock_proof(tmp_path):
+    present = tmp_path / "gpu.lock"
+    present.touch()
+    with pytest.raises(GpuPreflightError) as raised:
+        run_nested_gpu_preflight(environ={"GPUWRF_REQUIRE_GPU_LOCK": "0"}, query_memory=lambda: _snap(30.0),
+                                 lock_file=present, holder_file=tmp_path / "gpu.lock.holder")
+    payload = raised.value.payload
+    assert payload["lock"]["required"] is True and "GPUWRF_GPU_LOCK_HELD" in payload["failures"][0]
+    assert "with_gpu_lock" in payload["action"]
+
+
+def test_require_env_enforces_the_lock_without_dev_infrastructure(tmp_path):
+    absent = tmp_path / "no_dev_lock"
+    with pytest.raises(GpuPreflightError) as raised:
+        run_nested_gpu_preflight(environ={"GPUWRF_REQUIRE_GPU_LOCK": "1"}, query_memory=lambda: _snap(30.0),
+                                 lock_file=absent, holder_file=tmp_path / "no_dev_lock.holder")
+    assert raised.value.payload["lock"] == {**raised.value.payload["lock"], "required": True,
+                                            "policy": "GPUWRF_REQUIRE_GPU_LOCK=1"}
+
+
+def test_require_lock_env_is_not_an_aot_cheap_key_input():
+    from gpuwrf.runtime.aot_cheap_key import trace_env_is_inert
+    assert trace_env_is_inert("GPUWRF_REQUIRE_GPU_LOCK")

@@ -33,7 +33,8 @@ from __future__ import annotations
 
 from gpuwrf._x64_config import configure_jax_x64
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, replace
+import os
 
 import jax
 from jax import config
@@ -45,6 +46,41 @@ from gpuwrf.contracts.state import State, Tendencies
 
 configure_jax_x64()
 _SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
+
+
+def _native_advection_enabled() -> bool:
+    """Default-off REAL arithmetic behind the existing advection interface."""
+    return os.environ.get("GPUWRF_DYN_ADVECTION_FP32", "0") == "1"
+
+
+def _native_pd_enabled(moist_adv_opt, vel) -> bool:
+    """Default-off native WRF advect_scalar_pd (specified/nested h5/v3 only)."""
+    return (os.environ.get("GPUWRF_DYN_PD_FP32", "0") == "1" and int(moist_adv_opt) == 1
+            and bool(getattr(vel, "specified", False))
+            and vel.ru_full is not None and vel.rv_full is not None)
+
+
+def _glue_fused_enabled(*arrays) -> bool:
+    """GPUWRF_DYN_GLUE_FUSED (default off): one REAL stencil per momentum field
+    (kernels/dyn_momflux_fp32.py) on the fp32 specified path."""
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    return "mom" in glue_parts() and all(a is not None and a.dtype == jnp.float32 for a in arrays)
+
+
+def _glue_interpret() -> bool:
+    return jax.default_backend() == "cpu"
+
+
+def _real_velocities(vel):
+    updates = {f.name: getattr(vel, f.name).astype(jnp.float32)
+               for f in fields(vel) if hasattr(getattr(vel, f.name), "dtype")}
+    return replace(vel, **updates)
+
+
+def _advection_dtype(field, vel, *vectors):
+    return jnp.result_type(field.dtype, *[getattr(vel, f.name).dtype
+        for f in fields(vel) if hasattr(getattr(vel, f.name), "dtype")],
+        *[v.dtype for v in vectors])
 
 
 # --- WRF flux operators (module_advect_em.F:3105-3119); time_step>0 -> sign=+1 ---
@@ -208,6 +244,11 @@ def stage_omega_specified(
     ``(ny+1, nx)``; ``msftx`` is the mass-point factor ``(ny, nx)``.
     """
 
+    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
+    if "omega" in glue_parts() and all(a.dtype == jnp.float32 for a in (u, v, mu_total, c1h, c2h, dnw, msfuy, msfvx, msftx)):
+        from gpuwrf.kernels.dyn_omega_fp32 import stage_omega_fp32
+        return stage_omega_fp32(u, v, mu_total, c1h, c2h, dnw, msfuy, msfvx, msftx, float(rdx), float(rdy),
+                                interpret=_glue_interpret())
     nz = int(u.shape[0])
     ny, nx = int(mu_total.shape[-2]), int(mu_total.shape[-1])
     mu_pad_x = jnp.pad(mu_total, ((0, 0), (1, 0)), mode="edge")
@@ -507,6 +548,17 @@ def advect_scalar_flux(
     adjacent to the rigid boundaries use 2nd-order ``fzm/fzp`` interpolation;
     the surface (k=0) and top (k=nz) faces carry zero flux.
     """
+
+    if _native_advection_enabled() and bool(getattr(vel, "specified", False)):
+        from gpuwrf.kernels.dyn_flux_fp32 import advect_scalar_flux_fp32
+        dtype = _advection_dtype(field, vel, rdzw, fzm, fzp)
+        real = _real_velocities(vel)
+        result = advect_scalar_flux_fp32(field.astype(jnp.float32), real.ru,
+            real.rv, real.rom, _mass_factor_or_one(real.msftx, field.astype(jnp.float32)),
+            rdzw.astype(jnp.float32), fzm.astype(jnp.float32), fzp.astype(jnp.float32),
+            rdx, rdy, interpret=jax.default_backend() == "cpu")
+        return result.astype(dtype)
+
 
     # ---- x flux divergence ----
     msftx = _mass_factor_or_one(vel.msftx, field)
@@ -821,6 +873,10 @@ def advect_scalar_flux_limited(
     if _specified:
         fqxl = jnp.where(_axis_index(fqxl, 2) == 0, 0.0, fqxl)
         fqyl = jnp.where(_axis_index(fqyl, 1) == 0, 0.0, fqyl)
+    # B48 (with the barrier below): keep the donor-flux construction (z scatter)
+    # out of the ph_low fusion that pip ptxas 13.2 also rejects (LW8b d02
+    # input_multiply_subtract_transpose_fusion).  Identity; WRF arithmetic kept.
+    fqxl, fqyl, fqzl = jax.lax.optimization_barrier((fqxl, fqyl, fqzl))
 
     # ---- high-order fluxes (= plain path), then antidiffusive A = hi - lo ----
     if _specified:
@@ -830,6 +886,11 @@ def advect_scalar_flux_limited(
         fqx = _high_order_flux_x(field, vel.ru) - fqxl  # face i
         fqy = _high_order_flux_y(field, vel.rv) - fqyl  # face j
     fqz = _high_order_flux_z(field, vel.rom, fzm, fzp) - fqzl  # face k (nz+1)
+    # B48: identity barrier between the face-flux construction (scatter/pad
+    # stencils) and the limiter arithmetic.  pip ptxas 13.2 (V13.2.78) hits an
+    # internal compiler error (C7907) on the merged f64 fusion
+    # (_high_order_flux_z + flux_out, LW8a d02 loop_multiply_fusion_37).
+    fqx, fqy, fqz = jax.lax.optimization_barrier((fqx, fqy, fqz))
 
     # ---- low-order updated coupled value (WRF ph_low / ph_upwind) ----
     # WRF builds the start-of-step coupled mass from mu_old/mub:
@@ -867,6 +928,10 @@ def advect_scalar_flux_limited(
             * (rdx * (pos(fqx_ip1) - neg(fqx)) + rdy * (pos(fqy_jp1) - neg(fqy)))
             + msftx[None, :, :] * rdzw[:, None, None] * (neg(fqz_kp1) - pos(fqz_k))
         )
+        # Keep the limiter inputs out of the multi-output transpose fusion.
+        # The pinned GPU autotuner cannot compile that fusion on sm_120a;
+        # this identity barrier preserves the WRF arithmetic and autotuning.
+        ph_low, flux_out = jax.lax.optimization_barrier((ph_low, flux_out))
         # scale only when the outgoing antidiffusive flux would empty the cell.
         scale = jnp.where(
             flux_out > ph_low,
@@ -1017,6 +1082,7 @@ def advect_moisture_scalars(
     fzp: jax.Array,
     dt: float,
     species_batch_width: int = 1,
+    msfty: jax.Array | None = None,
 ) -> tuple[jax.Array, ...]:
     """WRF moisture-species flux-form advection loop (h=5/v=3), per species.
 
@@ -1113,6 +1179,25 @@ def advect_moisture_scalars(
                 dt=dt,
             )
 
+        if _native_pd_enabled(moist_adv_opt, vel):
+            # One native WRF advect_scalar_pd launch pair for every species
+            # (kernels/dyn_pd_fp32.py); each output keeps the retained dtype.
+            from gpuwrf.kernels.dyn_pd_fp32 import advect_scalar_pd_fp32
+            real = lambda a: jnp.asarray(a, jnp.float32)
+            msftx = _mass_factor_or_one(vel.msftx, real(fields[0]))
+            # WRF advect_scalar_pd uses msftx and msfty separately; callers without
+            # msfty keep the retained conformal convention (msfty == msftx).
+            msfty_pd = msftx if msfty is None else _mass_factor_or_one(msfty, real(fields[0]))
+            tend = advect_scalar_pd_fp32(
+                jnp.stack([real(f) for f in fields]), jnp.stack([real(f) for f in fields_old]),
+                real(vel.ru_full), real(vel.rv_full), real(vel.rom), real(mut), real(mu_old),
+                real(c1), real(c2), real(msftx), real(msfty_pd), real(rdzw), real(fzm), real(fzp),
+                rdx=rdx, rdy=rdy, dt=dt, interpret=jax.default_backend() == "cpu")
+            return tuple(
+                tend[index].astype(jax.eval_shape(limited_one, field, field_old).dtype)
+                for index, (field, field_old) in enumerate(zip(fields, fields_old, strict=True))
+            )
+
         if old_stackable:
             outputs: list[jax.Array] = []
             for start in range(0, len(fields), batch_width):
@@ -1149,6 +1234,26 @@ def advect_moisture_scalars(
             fzp=fzp,
         )
 
+    # Native REAL specified stencil: one launch for all species, species loop
+    # inside each program (velocities/map/vertical coefficients loaded once per
+    # cell); per-species expressions are those of advect_scalar_flux_fp32, so the
+    # result is bitwise equal to per-species calls.  Retained XLA path: width 1.
+    if (
+        _native_advection_enabled()
+        and bool(getattr(vel, "specified", False))
+        and len(fields) > 1
+        and all(f.shape == fields[0].shape and f.dtype == fields[0].dtype for f in fields[1:])
+    ):
+        from gpuwrf.kernels.dyn_flux_fp32 import advect_scalar_flux_fp32_stacked
+        dtype = _advection_dtype(fields[0], vel, rdzw, fzm, fzp)
+        real = _real_velocities(vel)
+        first = fields[0].astype(jnp.float32)
+        stacked = advect_scalar_flux_fp32_stacked(
+            jnp.stack([f.astype(jnp.float32) for f in fields], axis=0), real.ru, real.rv, real.rom,
+            _mass_factor_or_one(real.msftx, first), rdzw.astype(jnp.float32),
+            fzm.astype(jnp.float32), fzp.astype(jnp.float32), rdx, rdy,
+            interpret=jax.default_backend() == "cpu").astype(dtype)
+        return tuple(stacked[index] for index in range(len(fields)))
     return tuple(plain_one(field) for field in fields)
 
 
@@ -1198,6 +1303,15 @@ def advect_u_flux(
     the coupled momentum, exactly like ``advect_scalar_flux``).
     """
 
+    if _native_advection_enabled():
+        dtype = _advection_dtype(u, vel, rdzw, fzm, fzp)
+        if dtype != jnp.float32:
+            result = advect_u_flux(u.astype(jnp.float32), _real_velocities(vel),
+                rdx=rdx, rdy=rdy, rdzw=rdzw.astype(jnp.float32),
+                fzm=fzm.astype(jnp.float32), fzp=fzp.astype(jnp.float32))
+            return result.astype(dtype)
+
+
     nx = vel.ru.shape[-1]
     if bool(getattr(vel, "specified", False)) and vel.ru_full is not None and vel.rv_full is not None:
         # v0.14 SPECIFIED degraded path (advect_u order-5 degrade blocks).
@@ -1217,6 +1331,10 @@ def advect_u_flux(
                 # periodic-collapsed factor: faces 0..nx-1 exact; the edge-pad
                 # face nx is masked out of the update range anyway.
                 msfux_f = jnp.concatenate([msfux_f, msfux_f[:, -1:]], axis=-1)
+        if _glue_fused_enabled(u, vel.ru_full, vel.rv_full, vel.rom, msfux_f, rdzw, fzm, fzp):
+            from gpuwrf.kernels.dyn_momflux_fp32 import advect_u_fp32
+            return advect_u_fp32(u, vel.ru_full, vel.rv_full, vel.rom, msfux_f, rdzw, fzm, fzp,
+                                 float(rdx), float(rdy), interpret=_glue_interpret())
         velx = 0.5 * (vel.ru_full + _shift0(vel.ru_full, 1, 2))
         fqx = specified_flux_faces(u, velx, axis=2, upstream=True)
         tend = -msfux_f[None, :, :] * rdx * _specified_div(fqx, axis=2)
@@ -1266,6 +1384,15 @@ def advect_v_flux(
 ) -> jax.Array:
     """WRF flux-form coupled v advection tendency (h=5, v=3).  v on y-faces."""
 
+    if _native_advection_enabled():
+        dtype = _advection_dtype(v, vel, rdzw, fzm, fzp)
+        if dtype != jnp.float32:
+            result = advect_v_flux(v.astype(jnp.float32), _real_velocities(vel),
+                rdx=rdx, rdy=rdy, rdzw=rdzw.astype(jnp.float32),
+                fzm=fzm.astype(jnp.float32), fzp=fzp.astype(jnp.float32))
+            return result.astype(dtype)
+
+
     ny = vel.rv.shape[-2]
     if bool(getattr(vel, "specified", False)) and vel.ru_full is not None and vel.rv_full is not None:
         # v0.14 SPECIFIED degraded path (advect_v order-5 degrade blocks; the
@@ -1284,6 +1411,10 @@ def advect_v_flux(
 
         msfvy_f = _v_factor(vel.msfvy)
         msfvx_f = _v_factor(vel.msfvx)
+        if _glue_fused_enabled(v, vel.ru_full, vel.rv_full, vel.rom, msfvy_f, msfvx_f, rdzw, fzm, fzp):
+            from gpuwrf.kernels.dyn_momflux_fp32 import advect_v_fp32
+            return advect_v_fp32(v, vel.ru_full, vel.rv_full, vel.rom, msfvy_f, msfvx_f, rdzw, fzm, fzp,
+                                 float(rdx), float(rdy), interpret=_glue_interpret())
         # x-flux: vel = 0.5*(ru(j)+ru(j-1)) onto the v stagger; scalar tier map
         # along x, divergence cells [ids+1, ide-2].
         ru_pad = jnp.pad(vel.ru_full, ((0, 0), (1, 1), (0, 0)))
@@ -1336,6 +1467,7 @@ def advect_w_flux(
     fzm: jax.Array,
     fzp: jax.Array,
     top_lid: bool = True,
+    wrf_top_extrapolation: bool = False,
 ) -> jax.Array:
     """WRF flux-form coupled w advection tendency (h=5, v=3).
 
@@ -1355,10 +1487,30 @@ def advect_w_flux(
     w(kde-1))`` and the lid pickup ``tend(kde) += 2*rdn(ktf)*vflux(kde)``.
     """
 
+    if _native_advection_enabled():
+        dtype = _advection_dtype(w, vel, rdn, fzm, fzp)
+        if dtype != jnp.float32:
+            result = advect_w_flux(w.astype(jnp.float32), _real_velocities(vel),
+                rdx=rdx, rdy=rdy, rdn=rdn.astype(jnp.float32),
+                fzm=fzm.astype(jnp.float32), fzp=fzp.astype(jnp.float32),
+                top_lid=False, wrf_top_extrapolation=True)
+            return result.astype(dtype)
+        wrf_top_extrapolation = True
+        # Pristine advect_w always picks up the flux at ktf+1 (:6025-6028).
+        # This operator rule also applies with the acoustic rigid-lid boundary.
+        top_lid = False
+
+
     msftx = _mass_factor_or_one(vel.msftx, w)
+    if (bool(getattr(vel, "specified", False)) and wrf_top_extrapolation and not top_lid
+            and _native_advection_enabled() and _glue_fused_enabled(w, vel.ru, vel.rv, vel.rom, msftx, rdn, fzm, fzp)
+            and vel.ru.shape[-1] == w.shape[-1] and vel.rv.shape[-2] == w.shape[-2]):
+        from gpuwrf.kernels.dyn_momflux_fp32 import advect_w_fp32
+        return advect_w_fp32(w, vel.ru, vel.rv, vel.rom, msftx, rdn, fzm, fzp,
+                             float(rdx), float(rdy), interpret=_glue_interpret())
     # ru/rv on mass levels -> interpolate to w (full) levels: rw(k)=fzm(k)*r(k)+fzp(k)*r(k-1).
-    ru_w = _mass_to_full_levels(vel.ru, fzm, fzp)  # (nz+1, ny, nx)
-    rv_w = _mass_to_full_levels(vel.rv, fzm, fzp)
+    ru_w = _mass_to_full_levels(vel.ru, fzm, fzp, extrapolate_top=wrf_top_extrapolation)  # (nz+1, ny, nx)
+    rv_w = _mass_to_full_levels(vel.rv, fzm, fzp, extrapolate_top=wrf_top_extrapolation)
     if bool(getattr(vel, "specified", False)):
         # v0.14 SPECIFIED degraded path: w is mass-located horizontally, so the
         # scalar tier map + cell bounds apply (advect_w degrade blocks mirror
@@ -1368,6 +1520,10 @@ def advect_w_flux(
         fqy = specified_flux_faces(w, rv_w, axis=1)
         tend = tend - msftx[None, :, :] * rdy * _specified_div(fqy, axis=1)
         tend = tend + _vertical_flux_div_w(w, vel.rom, rdn, top_lid=top_lid)
+        if _native_advection_enabled():
+            # Pristine advect_w horizontal loops start at kts+1.
+            # The terrain surface face is diagnosed by the lower boundary.
+            tend = tend.at[0, :, :].set(0.0)
         return tend
     # x-flux of w by ru_w (w and ru_w both on full levels, mass-located in x).
     fqx = ru_w * flux5_face_periodic(w, ru_w, axis=2)
@@ -1378,10 +1534,12 @@ def advect_w_flux(
     # vertical flux of w lives on MASS levels (between w faces): vel = mass-level rom
     # average 0.5*(rom(k)+rom(k+1)); flux3 of the w faces; tend on faces via rdn.
     tend = tend + _vertical_flux_div_w(w, vel.rom, rdn, top_lid=top_lid)
+    if _native_advection_enabled():
+        tend = tend.at[0, :, :].set(0.0)
     return tend
 
 
-def _mass_to_full_levels(field_mass: jax.Array, fzm: jax.Array, fzp: jax.Array) -> jax.Array:
+def _mass_to_full_levels(field_mass: jax.Array, fzm: jax.Array, fzp: jax.Array, *, extrapolate_top: bool = False) -> jax.Array:
     """Interpolate a mass-level (nz,..) field to full/w levels (nz+1,..).
 
     Interior face k: fzm(k)*field(k)+fzp(k)*field(k-1).  Bottom/top faces use the
@@ -1397,7 +1555,12 @@ def _mass_to_full_levels(field_mass: jax.Array, fzm: jax.Array, fzp: jax.Array) 
     interior = fzm[1:nz, None, None] * field_mass[1:nz, :, :] + fzp[1:nz, None, None] * field_mass[: nz - 1, :, :]
     out = out.at[1:nz, :, :].set(interior)
     out = out.at[0, :, :].set(field_mass[0, :, :])
-    out = out.at[nz, :, :].set(field_mass[nz - 1, :, :])
+    top = field_mass[nz - 1, :, :]
+    if extrapolate_top and nz >= 2:
+        # Pristine advect_w order5: k=ktf+1, ru/rv are extrapolated from
+        # the last two mass levels (module_advect_em.F:4855/5032).
+        top = (2.0 - fzm[nz - 1]) * top - fzp[nz - 1] * field_mass[nz - 2, :, :]
+    out = out.at[nz, :, :].set(top)
     return out
 
 

@@ -81,6 +81,7 @@ from __future__ import annotations
 
 import logging
 import os
+import functools
 import re
 import subprocess
 from pathlib import Path
@@ -205,29 +206,31 @@ def _backend_tag() -> str:
     return "cpu"
 
 
+@functools.lru_cache(maxsize=1)
 def _cuda_tag() -> str:
     """``cuda`` plus the first device's compute capability (``cuda_sm120``).
 
-    Reads the compute capability via ``nvidia-smi`` (cheap, no JAX backend init).
-    Returns the coarse ``cuda`` if ``nvidia-smi`` is absent / errors / times out.
+    Reads the compute capability via ``nvidia-smi`` (no JAX backend init), once
+    per process: the GPU cannot change in-process, the tag addresses every AOT
+    and cache lookup, and a mid-run probe failure would otherwise flip the
+    address (AOT miss, re-lower). One retry before falling back to ``cuda``.
     """
-    try:
-        proc = subprocess.run(
-            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
-            capture_output=True,
-            text=True,
-            timeout=5.0,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return "cuda"
-    if proc.returncode != 0:
-        return "cuda"
-    line = (proc.stdout or "").strip().splitlines()
-    if not line:
-        return "cuda"
-    # "12.0" -> "sm120"; keep only the digits so the tag is a clean component.
-    digits = re.sub(r"\D", "", line[0].strip())
-    return f"cuda_sm{digits}" if digits else "cuda"
+    for _attempt in range(2):
+        try:
+            proc = subprocess.run(
+                ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+                capture_output=True,
+                text=True,
+                timeout=5.0,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        line = (proc.stdout or "").strip().splitlines() if proc.returncode == 0 else []
+        # "12.0" -> "sm120"; keep only the digits so the tag is a clean component.
+        digits = re.sub(r"\D", "", line[0].strip()) if line else ""
+        if digits:
+            return f"cuda_sm{digits}"
+    return "cuda"
 
 
 def version_cache_tag() -> str:

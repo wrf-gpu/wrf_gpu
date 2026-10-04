@@ -16,6 +16,16 @@ import jax.numpy as jnp
 FP64 = jnp.float64
 FP32_GATED = jnp.float32
 INT32 = jnp.int32
+# B39: WRF stores these as REAL in every configuration. They are REAL-locked
+# (float32, never gated, never upcast): runtime.operational_mode's force_fp64
+# enforcement skips SURFACE_LAYER_CARRY_LEAVES; producers cast to the seeded
+# leaf dtype on write (b-carry REAL-carry seeding rule).
+FP32_REAL = jnp.float32
+SURFACE_LAYER_CARRY_LEAVES: tuple[str, ...] = ("mol", "hfx", "qfx", "qsfc", "pblh")
+MYNN_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("el_pbl", "maxmf", "maxwidth", "ztop_plume")
+GWDO_VOLUME_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("dtaux3d", "dtauy3d")
+GWDO_SURFACE_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("dusfcg", "dvsfcg")
+GWDO_DIAGNOSTIC_LEAVES = GWDO_VOLUME_DIAGNOSTIC_LEAVES + GWDO_SURFACE_DIAGNOSTIC_LEAVES
 
 
 def force_fp64_island(*arrays):
@@ -208,6 +218,10 @@ STATE_FIELD_ORDER = (
     "qg_bdy",
     "Ni_bdy",
     "Nr_bdy",
+    # --- B39 MYNN surface-layer carry (REAL-locked, append-only) ---
+    *SURFACE_LAYER_CARRY_LEAVES,
+    *MYNN_DIAGNOSTIC_LEAVES,
+    *GWDO_DIAGNOSTIC_LEAVES,
 )
 
 
@@ -338,6 +352,23 @@ PRECISION_MATRIX = {
     # accumulator (rain/snow/graupel/ice), never gated -- accumulation fields
     # remain FP64 (ADR-007).
     "hail_acc": (FP64, False),
+    # --- B39 MYNN surface-layer carry (WRF grid%mol/hfx/qfx/qsfc/pblh) ---
+    # Previous-step inputs WRF's surface_driver passes to SFCLAY_mynn: MOL (z/L
+    # warm seed), HFX/QFX (WSTAR convective velocity, module_sf_mynn.F:570-584;
+    # blended LSM land / sfclay water), QSFC (LSM land specific humidity) and
+    # PBLH (MYNN GET_PBLH). REAL-locked, see FP32_REAL above.
+    "mol": (FP32_REAL, False),
+    "hfx": (FP32_REAL, False),
+    "qfx": (FP32_REAL, False),
+    "qsfc": (FP32_REAL, False),
+    "pblh": (FP32_REAL, False),
+    # Held WRF MYNN outputs, never prognostic inputs or output-time solves.
+    **{name: (FP32_REAL, False) for name in MYNN_DIAGNOSTIC_LEAVES},
+    # Held WRF REAL GWDO stress tendencies on mass points.
+    "dtaux3d": (FP32_REAL, False),
+    "dtauy3d": (FP32_REAL, False),
+    "dusfcg": (FP32_REAL, False),
+    "dvsfcg": (FP32_REAL, False),
 }
 
 

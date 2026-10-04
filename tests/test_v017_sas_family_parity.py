@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import importlib.util
 from pathlib import Path
+from _historical_artifacts import require_historical
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +14,7 @@ RUNNER = ROOT / "proofs" / "v017" / "run_sas_family_parity.py"
 
 
 def _load_runner_main():
+    require_historical(RUNNER)
     spec = importlib.util.spec_from_file_location("run_sas_family_parity", RUNNER)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

@@ -50,6 +50,7 @@ import os
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.state import State
+from gpuwrf.coupling.boundary_apply import couple_scalar_real4
 from gpuwrf.nesting.interp import (
     InterpWeights,
     build_bilinear_weights,
@@ -60,6 +61,7 @@ from gpuwrf.nesting.interp import (
     slice_weights_cols,
     slice_weights_rows,
 )
+from gpuwrf.nesting.sint_kernel import sint_kernel_enabled, sint_sides
 
 
 def _edge_only_enabled() -> bool:
@@ -357,7 +359,50 @@ def _fit(strips: jax.Array, z_target: int, side_target: int, dtype) -> jax.Array
     return out
 
 
-def couple_state_for_forcedown(state: State, metrics: DycoreMetrics) -> dict[str, jax.Array]:
+# Keep the eager arithmetic boundaries: fused interpolation contracts fp64
+# multiplies/adds and changes the forcing records. These small executables group
+# dispatch without changing rounding or committing unrelated child State leaves.
+_FORCEDOWN_COMPILE_OPTIONS = {
+    "xla_disable_hlo_passes": (
+        "fusion,priority-fusion,multi_output_fusion,"
+        "horizontal-loop-fusion,horizontal-input-fusion"
+    ),
+}
+_compiled_ring3d = jax.jit(_child_ring_3d, static_argnums=(2, 3, 4), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_ring2d = jax.jit(_child_ring_2d, static_argnums=(2, 3, 4), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_ring3d_edgeonly = jax.jit(_child_ring_3d_edgeonly, static_argnums=(2, 3, 4), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_ring2d_edgeonly = jax.jit(_child_ring_2d_edgeonly, static_argnums=(2, 3, 4), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_sides3d = jax.jit(field_sides_3d, static_argnums=(1, 2), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_sides2d = jax.jit(field_sides_2d, static_argnums=(1, 2), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_fit = jax.jit(_fit, static_argnums=(1, 2, 3), compiler_options=_FORCEDOWN_COMPILE_OPTIONS)
+_compiled_sint = jax.jit(
+    interp_sint_full,
+    static_argnames=("parent_grid_ratio", "xstag", "ystag"),
+    compiler_options=_FORCEDOWN_COMPILE_OPTIONS,
+)
+
+
+def initialize_child_scalar_boundaries(state: State) -> State:
+    """Materialize live-child scalar records before carry/JIT construction.
+
+    The represented Thompson moist/number families have Registry ``f``/``d``
+    flags just like QV.  The parent overwrites these templates at the first
+    force-down; allocating them here keeps that operation's carry interface
+    fixed instead of silently skipping absent optional boundary leaves.
+    """
+
+    shape = (2, *state.qv_bdy.shape[1:])
+    updates = {
+        f"{name}_bdy": jnp.zeros(shape, dtype=state.qv_bdy.dtype)
+        for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr")
+        if getattr(state, f"{name}_bdy", None) is None
+    }
+    return state.replace(**updates) if updates else state
+
+
+def couple_state_for_forcedown(
+    state: State, metrics: DycoreMetrics, *, no_contract: bool = False
+) -> dict[str, jax.Array]:
     """Return pristine-WRF coupled forcedown operands without mutating ``state``.
 
     This is the algebra in WRF v4.7.1
@@ -369,16 +414,22 @@ def couple_state_for_forcedown(state: State, metrics: DycoreMetrics) -> dict[str
 
     The returned arrays are transient operands to SINT.  No new resident or carry
     leaf is introduced.
+
+    ``no_contract`` materializes the four ``c1*mu`` products behind an
+    optimization barrier: they are the only multiply-add pairs here, so a
+    fusing compiler cannot turn them into FMAs and every value keeps the
+    separately rounded (eager) result.
     """
 
+    hold = jax.lax.optimization_barrier if bool(no_contract) else (lambda x: x)
     mu_total = jnp.asarray(state.mu_total)
     dtype = mu_total.dtype
     c1h = metrics.c1h.astype(dtype)[:, None, None]
     c2h = metrics.c2h.astype(dtype)[:, None, None]
     c1f = metrics.c1f.astype(dtype)[:, None, None]
     c2f = metrics.c2f.astype(dtype)[:, None, None]
-    mass_h = c1h * mu_total[None, :, :] + c2h
-    mass_f = c1f * mu_total[None, :, :] + c2f
+    mass_h = hold(c1h * mu_total[None, :, :]) + c2h
+    mass_f = hold(c1f * mu_total[None, :, :]) + c2f
 
     # WRF calculate_full/couple_or_uncouple_em: centered interior faces and the
     # sole adjacent mass point at the outer stagger boundary.
@@ -390,8 +441,8 @@ def couple_state_for_forcedown(state: State, metrics: DycoreMetrics) -> dict[str
         jnp.concatenate((mu_total[:1, :], mu_total), axis=0)
         + jnp.concatenate((mu_total, mu_total[-1:, :]), axis=0)
     )
-    mass_u = c1h * muu[None, :, :] + c2h
-    mass_v = c1h * muv[None, :, :] + c2h
+    mass_u = hold(c1h * muu[None, :, :]) + c2h
+    mass_v = hold(c1h * muv[None, :, :]) + c2h
 
     return {
         "u": jnp.asarray(state.u) * mass_u / metrics.msfuy.astype(dtype)[None, :, :],
@@ -415,6 +466,7 @@ def build_child_boundary_package(
     child_metrics: DycoreMetrics | None = None,
     coupled_forcedown: bool = False,
     parent_grid_ratio: int | None = None,
+    _compiled_producers: bool = False,
 ) -> State:
     """Construct the child specified+relaxation ``*_bdy`` package from a parent.
 
@@ -435,11 +487,69 @@ def build_child_boundary_package(
     filled.  Returns a new ``child_state``.
     """
 
+    if bool(coupled_forcedown) and bool(_compiled_producers) and _single_jit_enabled():
+        # One executable for the whole coupled force-down: same unfused
+        # per-operation arithmetic as the per-producer path, one dispatch.
+        # Only the updated *_bdy leaves leave the jit, so every untouched
+        # child leaf keeps its placement (E43).
+        if parent_grid_ratio is None or parent_metrics is None or child_metrics is None:
+            raise ValueError("coupled forcedown requires parent_grid_ratio and both metrics")
+        sint_kernel = sint_kernel_enabled()
+        fused = sint_kernel and _forcedown_fused_enabled()
+        program = _compiled_coupled_updates_fused if fused else _compiled_coupled_updates
+        updates = program(
+            child_state,
+            parent_state,
+            weights,
+            parent_metrics,
+            child_metrics,
+            bdy_width=int(bdy_width),
+            parent_grid_ratio=int(parent_grid_ratio),
+            sint_kernel=sint_kernel,
+            no_contract=fused,
+        )
+        return child_state.replace(**updates)
+    return child_state.replace(**_package_updates(
+        child_state,
+        parent_state,
+        weights,
+        bdy_width=bdy_width,
+        parent_metrics=parent_metrics,
+        child_metrics=child_metrics,
+        coupled_forcedown=coupled_forcedown,
+        parent_grid_ratio=parent_grid_ratio,
+        _compiled_producers=_compiled_producers,
+        _sint_kernel=(
+            bool(coupled_forcedown) and bool(_compiled_producers) and sint_kernel_enabled()
+        ),
+    ))
+
+
+def _package_updates(
+    child_state: State,
+    parent_state: State,
+    weights: NestForceWeights,
+    *,
+    bdy_width: int,
+    parent_metrics: DycoreMetrics | None,
+    child_metrics: DycoreMetrics | None,
+    coupled_forcedown: bool,
+    parent_grid_ratio: int | None,
+    _compiled_producers: bool,
+    _sint_kernel: bool,
+    _no_contract: bool = False,
+) -> dict[str, jax.Array]:
+    """Updated ``*_bdy`` leaves of :func:`build_child_boundary_package`."""
+
     if int(bdy_width) <= 0:
         raise ValueError(f"bdy_width must be positive, got {bdy_width}")
     reg = weights.registration
     side_len = int(max(child_state.u_bdy.shape[-1], child_state.v_bdy.shape[-1]))
     w = int(bdy_width)
+    sides3d = _compiled_sides3d if _compiled_producers else field_sides_3d
+    sides2d = _compiled_sides2d if _compiled_producers else field_sides_2d
+    fit = _compiled_fit if _compiled_producers else _fit
+    sint = _compiled_sint if _compiled_producers else interp_sint_full
 
     if bool(coupled_forcedown) and (parent_metrics is None or child_metrics is None):
         raise ValueError("coupled forcedown requires parent_metrics and child_metrics")
@@ -452,17 +562,21 @@ def build_child_boundary_package(
     child_fields = None
     parent_fields = None
     if bool(coupled_forcedown):
-        child_fields = couple_state_for_forcedown(child_state, child_metrics)
-        parent_fields = couple_state_for_forcedown(parent_state, parent_metrics)
+        child_fields = couple_state_for_forcedown(
+            child_state, child_metrics, no_contract=_no_contract
+        )
+        parent_fields = couple_state_for_forcedown(
+            parent_state, parent_metrics, no_contract=_no_contract
+        )
 
     def two_time(old_leaf_full, child_field, new_strips, *, is_2d=False):
         ref = old_leaf_full[-1]
         zt, st = int(ref.shape[-2]), int(ref.shape[-1])
         if is_2d:
-            old = _fit(field_sides_2d(child_field, w, side_len), zt, st, ref.dtype)
+            old = fit(sides2d(child_field, w, side_len), zt, st, ref.dtype)
         else:
-            old = _fit(field_sides_3d(child_field, w, side_len), zt, st, ref.dtype)
-        new = _fit(new_strips, zt, st, ref.dtype)
+            old = fit(sides3d(child_field, w, side_len), zt, st, ref.dtype)
+        new = fit(new_strips, zt, st, ref.dtype)
         return jnp.stack([old, new], axis=0)
 
     # Edge-only (ring-only) gather is DEFAULT-ON: it is a precision-safe restriction
@@ -472,37 +586,59 @@ def build_child_boundary_package(
     # reference/fallback (``GPUWRF_EDGE_ONLY_BOUNDARY=0``) and as the A/B target the
     # parent bit-compares on GPU.
     if _edge_only_enabled():
-        ring3d = _child_ring_3d_edgeonly
-        ring2d = _child_ring_2d_edgeonly
+        ring3d = _compiled_ring3d_edgeonly if _compiled_producers else _child_ring_3d_edgeonly
+        ring2d = _compiled_ring2d_edgeonly if _compiled_producers else _child_ring_2d_edgeonly
     else:
-        ring3d = _child_ring_3d
-        ring2d = _child_ring_2d
+        ring3d = _compiled_ring3d if _compiled_producers else _child_ring_3d
+        ring2d = _compiled_ring2d if _compiled_producers else _child_ring_2d
 
     # The released path above remains its exact ring-only/full-grid linear
     # gather.  The default-off live-nest candidate must execute pristine SINT's
     # full five-point x/y stencils; interpolating the full child grid first also
     # preserves the exact WRF corner/subcell ownership without inventing an
     # edge-local registration.  All operations remain JAX-resident.
+    # The compiled producer path evaluates the same ring cells in one Pallas
+    # kernel with explicitly rounded operations (nesting/sint_kernel.py).
+    sint_kernel = bool(coupled_forcedown) and bool(_sint_kernel)
+
     def new_ring3d(parent_field, field_weights, *, xstag=False, ystag=False):
+        if sint_kernel:
+            return sint_sides(
+                parent_field,
+                field_weights,
+                parent_grid_ratio=int(parent_grid_ratio),
+                xstag=bool(xstag),
+                ystag=bool(ystag),
+                width=w,
+                side_len=side_len,
+            )
         if bool(coupled_forcedown):
-            child = interp_sint_full(
+            child = sint(
                 parent_field,
                 field_weights,
                 parent_grid_ratio=int(parent_grid_ratio),
                 xstag=bool(xstag),
                 ystag=bool(ystag),
             )
-            return field_sides_3d(child, w, side_len)
+            return sides3d(child, w, side_len)
         return ring3d(parent_field, field_weights, reg, w, side_len)
 
     def new_ring2d(parent_field, field_weights):
+        if sint_kernel:
+            return sint_sides(
+                parent_field,
+                field_weights,
+                parent_grid_ratio=int(parent_grid_ratio),
+                width=w,
+                side_len=side_len,
+            )
         if bool(coupled_forcedown):
-            child = interp_sint_full(
+            child = sint(
                 parent_field,
                 field_weights,
                 parent_grid_ratio=int(parent_grid_ratio),
             )
-            return field_sides_2d(child, w, side_len)
+            return sides2d(child, w, side_len)
         return ring2d(parent_field, field_weights, reg, w, side_len)
 
     theta_parent = parent_fields["theta"] if parent_fields is not None else parent_state.theta
@@ -536,9 +672,9 @@ def build_child_boundary_package(
     # ``base + perturbation``, so the base leaves are packed from the CHILD's OWN
     # static base: the spec/relax application becomes an identity and the child
     # base stays exactly the WRF ``start_domain`` base, matching CPU-WRF.
-    pb_new = field_sides_3d(child_pb, w, side_len)
-    phb_new = field_sides_3d(child_phb, w, side_len)
-    mub_new = field_sides_2d(child_mub, w, side_len)
+    pb_new = sides3d(child_pb, w, side_len)
+    phb_new = sides3d(child_phb, w, side_len)
+    mub_new = sides2d(child_mub, w, side_len)
 
     child_u = child_fields["u"] if child_fields is not None else child_state.u
     child_v = child_fields["v"] if child_fields is not None else child_state.v
@@ -565,19 +701,68 @@ def build_child_boundary_package(
     # every boundary leaf this State interface can represent; absent optional
     # leaves stay absent and therefore do not alter the carry interface.
     if bool(coupled_forcedown):
-        parent_mass_h = parent_fields["mass_h"]
-        child_mass_h = child_fields["mass_h"]
         for field_name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr"):
             leaf_name = f"{field_name}_bdy"
             leaf = getattr(child_state, leaf_name, None)
             if leaf is None:
                 continue
-            child_scalar = jnp.asarray(getattr(child_state, field_name)) * child_mass_h
-            parent_scalar = jnp.asarray(getattr(parent_state, field_name)) * parent_mass_h
+            child_scalar = couple_scalar_real4(
+                getattr(child_state, field_name), child_state.mu_total, child_metrics
+            )
+            parent_scalar = couple_scalar_real4(
+                getattr(parent_state, field_name), parent_state.mu_total, parent_metrics
+            )
             scalar_new = new_ring3d(parent_scalar, weights.mass)
             updates[leaf_name] = two_time(leaf, child_scalar, scalar_new)
 
-    return child_state.replace(**updates)
+    return updates
+
+
+def _single_jit_enabled() -> bool:
+    """``GPUWRF_FORCEDOWN_SINGLE_JIT=0`` restores the per-producer dispatch."""
+
+    flag = os.environ.get("GPUWRF_FORCEDOWN_SINGLE_JIT", "1").strip().lower()
+    return flag not in ("0", "false", "off", "no")
+
+
+def _forcedown_fused_enabled() -> bool:
+    """Fusion-enabled single jit (contraction-safe); ``GPUWRF_FORCEDOWN_FUSED=0`` opts out."""
+
+    flag = os.environ.get("GPUWRF_FORCEDOWN_FUSED", "1").strip().lower()
+    return flag not in ("0", "false", "off", "no")
+
+
+def _coupled_updates(
+    child_state, parent_state, weights, parent_metrics, child_metrics,
+    *, bdy_width, parent_grid_ratio, sint_kernel, no_contract=False,
+):
+    return _package_updates(
+        child_state,
+        parent_state,
+        weights,
+        bdy_width=bdy_width,
+        parent_metrics=parent_metrics,
+        child_metrics=child_metrics,
+        coupled_forcedown=True,
+        parent_grid_ratio=parent_grid_ratio,
+        _compiled_producers=False,
+        _sint_kernel=sint_kernel,
+        _no_contract=no_contract,
+    )
+
+
+_compiled_coupled_updates = jax.jit(
+    _coupled_updates,
+    static_argnames=("bdy_width", "parent_grid_ratio", "sint_kernel", "no_contract"),
+    compiler_options=_FORCEDOWN_COMPILE_OPTIONS,
+)
+# Same program with XLA fusion ON.  Only valid with the SINT kernel (explicit
+# .rn ops) and no_contract=True (the c1*mu products materialized), which leave
+# no fusable multiply-add pair, so fusion changes launches, not rounding.
+_compiled_coupled_updates_fused = jax.jit(
+    _coupled_updates,
+    static_argnames=("bdy_width", "parent_grid_ratio", "sint_kernel", "no_contract"),
+)
 
 
 def interp_parent_field_to_child(
@@ -602,6 +787,7 @@ __all__ = [
     "NestForceWeights",
     "build_nest_force_weights",
     "build_child_boundary_package",
+    "initialize_child_scalar_boundaries",
     "couple_state_for_forcedown",
     "interp_parent_field_to_child",
     "field_sides_3d",

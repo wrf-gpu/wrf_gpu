@@ -32,6 +32,20 @@ from gpuwrf.physics.wrf_clwrf_ghg import CLWRFGreenhouseGases
 jax.config.update("jax_enable_x64", True)
 
 
+def _tol(actual, rtol, atol):
+    """Original bound on the legacy fp64 view; WRF REAL rounding (a few REAL ops) when the view
+    is REAL under the release fast paths (MYNN/RRTMG REAL columns, GPUWRF_CARRY_REAL_ALL dz8w)."""
+    if np.asarray(actual).dtype == np.float32:
+        return dict(rtol=8 * float(np.finfo(np.float32).eps), atol=0.0)
+    return dict(rtol=rtol, atol=atol)
+
+
+def _real_all() -> bool:
+    from gpuwrf.kernels import dyn_carry_fp32
+
+    return bool(getattr(dyn_carry_fp32, "real_all_enabled", lambda: False)())
+
+
 def _grid(ny: int = 3, nx: int = 3, nz: int = 8) -> GridSpec:
     eta = jnp.linspace(1.0, 0.0, nz + 1, dtype=jnp.float64)
     terrain_height = jnp.zeros((ny, nx), dtype=jnp.float64)
@@ -117,7 +131,7 @@ def test_grid_backed_surface_column_view_uses_wrf_phy_prep_inputs() -> None:
 
     rv_over_rd = 461.6 / 287.0
     dry_theta = np.asarray(state.theta / (1.0 + rv_over_rd * state.qv), dtype=np.float64)
-    t_air = dry_theta * (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (287.0 / 1004.0)
+    t_air = dry_theta * (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (2.0 / 7.0)   # WRF rcp (P0 closure K1)
     dz = np.asarray((state.ph[1:] - state.ph[:-1]) / 9.81, dtype=np.float64)
 
     qtot = sum(np.asarray(getattr(state, field), dtype=np.float32) for field in ("qv", "qc", "qr", "qi", "qs", "qg"))
@@ -132,13 +146,15 @@ def test_grid_backed_surface_column_view_uses_wrf_phy_prep_inputs() -> None:
         faces[k] = faces[k + 1] - (np.float32(1.0) + qtot[k]) * (c1h[k] * mut + c2h[k]) * dnw[k]
     p_hyd = (np.float32(0.5) * (faces[:-1] + faces[1:])).astype(np.float64)
 
-    np.testing.assert_allclose(np.asarray(view.theta), np.moveaxis(dry_theta, 0, -1), rtol=0.0, atol=1.0e-12)
-    np.testing.assert_allclose(np.asarray(view.t_air), np.moveaxis(t_air, 0, -1), rtol=0.0, atol=1.0e-12)
-    np.testing.assert_allclose(np.asarray(view.p), np.moveaxis(p_hyd, 0, -1), rtol=0.0, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(view.psfc), faces[0].astype(np.float64), rtol=0.0, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(view.dz), np.moveaxis(dz, 0, -1), rtol=0.0, atol=1.0e-12)
+    # dz8w is WRF REAL exactly under GPUWRF_CARRY_REAL_ALL (legacy fp64 otherwise).
+    assert (np.asarray(view.dz).dtype == np.float32) == _real_all(), np.asarray(view.dz).dtype
+    np.testing.assert_allclose(np.asarray(view.theta), np.moveaxis(dry_theta, 0, -1), **_tol(np.asarray(view.theta), 0.0, 1.0e-12))
+    np.testing.assert_allclose(np.asarray(view.t_air), np.moveaxis(t_air, 0, -1), **_tol(np.asarray(view.t_air), 0.0, 1.0e-12))
+    np.testing.assert_allclose(np.asarray(view.p), np.moveaxis(p_hyd, 0, -1), **_tol(np.asarray(view.p), 0.0, 1.0e-6))
+    np.testing.assert_allclose(np.asarray(view.psfc), faces[0].astype(np.float64), **_tol(np.asarray(view.psfc), 0.0, 1.0e-6))
+    np.testing.assert_allclose(np.asarray(view.dz), np.moveaxis(dz, 0, -1), **_tol(np.asarray(view.dz), 0.0, 1.0e-12))
 
-    np.testing.assert_allclose(np.asarray(fallback.theta), np.moveaxis(np.asarray(state.theta), 0, -1))
+    np.testing.assert_allclose(np.asarray(fallback.theta), np.moveaxis(np.asarray(state.theta), 0, -1), **_tol(np.asarray(fallback.theta), 1.0e-7, 0.0))
     assert fallback.t_air is None
     assert fallback.psfc is None
 
@@ -177,13 +193,15 @@ def test_grid_backed_mynn_column_view_uses_wrf_phy_prep_inputs() -> None:
     alt = dph / p_mid / np.log(p_down / p_up)
     rho = ((np.float32(1.0) + np.asarray(state.qv, dtype=np.float32)) / alt).astype(np.float64)
 
-    np.testing.assert_allclose(np.asarray(_from_columns(column.theta)), dry_theta, rtol=0.0, atol=1.0e-12)
-    np.testing.assert_allclose(np.asarray(_from_columns(column.p)), p_hyd, rtol=0.0, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(_from_columns(column.rho)), rho, rtol=0.0, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(_from_columns(column.dz)), dz, rtol=0.0, atol=1.0e-12)
+    # The grid-backed MYNN view is WRF REAL exactly when the native MYNN columns are.
+    assert np.asarray(column.theta).dtype == np.dtype(physics_couplers._mynn_real_dtype())
+    np.testing.assert_allclose(np.asarray(_from_columns(column.theta)), dry_theta, **_tol(np.asarray(_from_columns(column.theta)), 0.0, 1.0e-12))
+    np.testing.assert_allclose(np.asarray(_from_columns(column.p)), p_hyd, **_tol(np.asarray(_from_columns(column.p)), 0.0, 1.0e-6))
+    np.testing.assert_allclose(np.asarray(_from_columns(column.rho)), rho, **_tol(np.asarray(_from_columns(column.rho)), 0.0, 1.0e-6))
+    np.testing.assert_allclose(np.asarray(_from_columns(column.dz)), dz, **_tol(np.asarray(_from_columns(column.dz)), 0.0, 1.0e-12))
 
-    np.testing.assert_allclose(np.asarray(_from_columns(fallback.theta)), np.asarray(state.theta))
-    np.testing.assert_allclose(np.asarray(_from_columns(fallback.p)), np.asarray(state.p))
+    np.testing.assert_allclose(np.asarray(_from_columns(fallback.theta)), np.asarray(state.theta), **_tol(np.asarray(_from_columns(fallback.theta)), 1.0e-7, 0.0))
+    np.testing.assert_allclose(np.asarray(_from_columns(fallback.p)), np.asarray(state.p), **_tol(np.asarray(_from_columns(fallback.p)), 1.0e-7, 0.0))
 
 
 def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature(monkeypatch) -> None:
@@ -230,7 +248,7 @@ def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature(monkeypatch
     assert sw_fallback.ozone_vmr is None
 
     rv_over_rd = 461.6 / 287.0
-    exner = (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (287.0 / 1004.0)
+    exner = (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (2.0 / 7.0)   # WRF rcp (P0 closure K1)
     dry_theta = np.asarray(state.theta / (1.0 + rv_over_rd * state.qv), dtype=np.float64)
     expected_t = dry_theta * exner
     moist_t = np.asarray(state.theta, dtype=np.float64) * exner
@@ -251,8 +269,10 @@ def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature(monkeypatch
         ) * dnw[k]
     p_hyd = (np.float32(0.5) * (faces[:-1] + faces[1:])).astype(np.float64)
 
-    np.testing.assert_allclose(np.asarray(_from_columns(sw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
-    np.testing.assert_allclose(np.asarray(_from_columns(lw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
+    # REAL RRTMG preparation exactly when both radiation fast flags are on.
+    assert (np.asarray(sw_column.T).dtype == np.float32) == bool(physics_couplers._rrtmg_real_enabled())
+    np.testing.assert_allclose(np.asarray(_from_columns(sw_column.T)), expected_t, **_tol(np.asarray(_from_columns(sw_column.T)), 0.0, 1.0e-12))
+    np.testing.assert_allclose(np.asarray(_from_columns(lw_column.T)), expected_t, **_tol(np.asarray(_from_columns(lw_column.T)), 0.0, 1.0e-12))
     np.testing.assert_array_equal(np.asarray(_from_columns(sw_column.p)), p_hyd)
     np.testing.assert_array_equal(np.asarray(_from_columns(lw_column.p)), p_hyd)
     np.testing.assert_array_equal(
@@ -261,8 +281,8 @@ def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature(monkeypatch
     np.testing.assert_array_equal(
         np.asarray(_from_columns(lw_column.pressure_interfaces)), faces
     )
-    np.testing.assert_allclose(np.asarray(_from_columns(sw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
-    np.testing.assert_allclose(np.asarray(_from_columns(lw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_allclose(np.asarray(_from_columns(sw_fallback.T)), moist_t, **_tol(np.asarray(_from_columns(sw_fallback.T)), 0.0, 1.0e-12))
+    np.testing.assert_allclose(np.asarray(_from_columns(lw_fallback.T)), moist_t, **_tol(np.asarray(_from_columns(lw_fallback.T)), 0.0, 1.0e-12))
 
 
 def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None:
@@ -326,7 +346,11 @@ def test_mynn_source_leaves_are_dry_theta_but_state_returns_theta_m() -> None:
     dry_after = np.asarray(_from_columns(before_column.theta)) + 10.0 * np.asarray(mynn.rthblten)
     expected_theta_m = dry_after * (1.0 + (461.6 / 287.0) * np.asarray(mynn.state.qv))
 
-    np.testing.assert_allclose(np.asarray(mynn.state.theta), expected_theta_m, rtol=1.0e-12, atol=1.0e-12)
+    # The native MYNN columns compute in WRF REAL and write the state back at its own dtype:
+    # REAL rounding whenever the MYNN view is REAL, the fp64 bound otherwise.
+    mynn_real = np.dtype(physics_couplers._mynn_real_dtype()) == np.float32
+    np.testing.assert_allclose(np.asarray(mynn.state.theta), expected_theta_m,
+                               **_tol(np.zeros(1, np.float32 if mynn_real else np.float64), 1.0e-12, 1.0e-12))
     assert not np.allclose(
         np.asarray(mynn.rthblten),
         (np.asarray(mynn.state.theta) - np.asarray(state.theta)) / 10.0,

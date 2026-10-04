@@ -1,14 +1,23 @@
 # Port-completion roadmap — closing every gap toward a complete WRF v4 port
 
-**Goal (v0.24 and beyond): make the support matrix all-green.** v0.23.4 closes the
+> **FROZEN 2026-07-27 by principal direction.** The **v0.25 fp32-native +
+> kernel-granularity performance rewrite** is the manager's only project-development program
+> until its full completion bar is met and the performance version is released. No missing-scheme
+> port, support-matrix expansion, or other item in this document may run in parallel or consume an
+> agent sprint before then. After that release, this inventory may inform the following version
+> only through a fresh explicit roadmap/contract decision; it does not auto-resume. Performance
+> work on already operational schemes remains governed by `.agent/decisions/V0250-ROADMAP.md`.
+
+**Historical/future goal (formerly "v0.24 and beyond"): make the support matrix all-green.**
+This is an inventory, not a current execution plan. v0.23.4 closes the
 project's first fully functional nine-nest correctness goal for the accepted
 all-physics fixture; it does not make every WRF scheme operational. Today the operational
 scan wires **51 physics-scheme codes**; **25 are reference-only** (a WRF oracle is staged
 but no JAX kernel is scan-wired yet) and **32 fail closed** (recognized WRF option, refused
 before any compute). This file is the *complete, code-grounded inventory* of everything that
 is **not yet operational** — every scheme, every dynamics closure (3-D TKE / 3-D Smagorinsky /
-SMS-3DTKE), and every out-of-scope feature — so that successive releases can drive the
-**"Fail-closed" and "Reference-only" columns to zero**.
+SMS-3DTKE), and every out-of-scope feature. A future post-performance roadmap may use this
+inventory to drive the **"Fail-closed" and "Reference-only" columns to zero**.
 
 > This roadmap is generated against the authoritative scheme registry
 > (`src/gpuwrf/io/scheme_catalog.py` + `contracts/physics_registry.py`); reproduce the live
@@ -25,7 +34,7 @@ SMS-3DTKE), and every out-of-scope feature — so that successive releases can d
 | 🔴 **Fail-closed** | 32 codes | Recognized WRF option, refused with a named reason; **needs oracle + kernel + wiring** | shrink hard |
 | ⚫ **Out-of-scope** | features | Whole subsystems deliberately not ported (Chem/Fire/Hydro/DA/…) | scope decisions per subsystem |
 
-## v0.24-and-beyond roadmap at a glance (top level)
+## Frozen post-performance feature inventory at a glance
 
 Effort: **S** ≈ 1–2 sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. Full per-scheme detail
 is in the [physics-scheme tables](#physics-schemes-not-yet-operational-the-full-list) and the
@@ -81,7 +90,7 @@ the tracked fixture. The residual dry-mass mismatch was not closed by a
 four-substep discriminator. These are explicit future dynamics/parity work, not
 v0.23.4 capabilities.
 
-## Priority tiers for v0.24 and beyond
+## Historical priority tiers for a future post-performance version
 
 - **Tier A — graduate the reference-only tail (25 codes).** Oracles already exist; each is
   "port the kernel + wire it." Highest value-per-effort. Start with the ones with the widest

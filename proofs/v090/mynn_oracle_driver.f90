@@ -2,10 +2,11 @@ PROGRAM mynn_driver
   USE module_sf_mynn, ONLY: sfclay1d_mynn, mynn_sf_init_driver
   IMPLICIT NONE
   ! WRF constants (module_model_constants / SFCLAY_mynn defaults)
-  REAL, PARAMETER :: CP=1004.5, G=9.81, R=287., XLV=2.5E6
+  ! B39b: exact WRF share/module_model_constants.F values (r_d=287, r_v=461.6, cp=7*r_d/2)
+  REAL, PARAMETER :: R=287., CP=7.*R/2., G=9.81, XLV=2.5E6
   REAL, PARAMETER :: SVP1=0.6112, SVP2=17.67, SVP3=29.65, SVPT0=273.15
-  REAL, PARAMETER :: EP1=0.60776, EP2=0.62175  ! ep1=r_v/r_d-1, ep2=r_d/r_v
-  REAL, PARAMETER :: KARMAN=0.4, ROVCP=287./1004.5
+  REAL, PARAMETER :: EP1=461.6/R-1., EP2=R/461.6  ! EP_1=R_v/R_d-1, EP_2=R_d/R_v
+  REAL, PARAMETER :: KARMAN=0.4, ROVCP=R/CP
 
   INTEGER, PARAMETER :: N=512   ! max columns
   INTEGER :: ncol, i, itimestep, isfflx, isftcflx, iz0tlnd, spp_pbl

@@ -51,5 +51,15 @@ def test_static_model_uses_precision_registry_for_known_fields() -> None:
 
     assert fields["u"]["dtype"] == "float32"
     assert fields["theta"]["dtype"] == "float32"
-    assert fields["p"]["dtype"] == "float64"
-    assert fields["mu"]["dtype"] == "float64"
+    assert fields["p_total"]["dtype"] == "float64"
+    assert fields["mu_total"]["dtype"] == "float64"
+
+
+def test_optional_fields_are_counted_with_their_real_geometry() -> None:
+    shapes = m7_1km_memory_audit.field_shapes_for(nz=3, ny=4, nx=6)
+    for field in ("qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa"):
+        assert shapes[field] == (3, 4, 6)
+    for field in ("hail_acc", "mol", "hfx", "qfx", "qsfc", "pblh"):
+        assert shapes[field] == (4, 6)
+    for field in ("qc_bdy", "qr_bdy", "qi_bdy", "qs_bdy", "qg_bdy", "Ni_bdy", "Nr_bdy"):
+        assert shapes[field] == (1, 4, 5, 3, 7)

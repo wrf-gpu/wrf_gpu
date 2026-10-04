@@ -3,9 +3,16 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from pathlib import Path
+
+from _historical_artifacts import require_historical
 
 
 def test_coefficient_parity_clean_savepoint_passes(tmp_path):
+    require_historical(Path(
+        "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/"
+        "wrfout_d02_2026-05-22_00:00:00"
+    ))
     savepoint_dir = tmp_path / "patch16"
     output = tmp_path / "parity.json"
     subprocess.run(

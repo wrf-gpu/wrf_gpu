@@ -1,0 +1,1607 @@
+{
+ "schema": "p0c_aero_column_manifest/3",
+ "contract": "P0_CLOSURE_CONTRACT.md rev 2 \u00a73.4; L3B_DESIGN.md; P0_K7_REPAIR_CONTRACT.md; P0_K7_C1_FOLLOWUP_CONTRACT.md",
+ "tool_sha256": "f955e43ea61e54f787e5db799e8b1fa70c096c15fe4dc11847dd2891e4810651",
+ "l3a_tool_sha256": "64257156f6b72b2613a73b7a3d408adf3162a58af77d5eaff505d53708fd90a1",
+ "tables_sha256": "29d08004a8ba6e7c0cf5c0574e7b5145108afa5bf7666c409af166be1248b4ae",
+ "base": {
+  "driver_input.txt": {
+   "size": 9332,
+   "sha256": "23516cdacbc124f0f045ef8c173dab6269a0f94b7a967e6388f6ecb32e55d0ff"
+  },
+  "port_column.npz": {
+   "size": 14664,
+   "sha256": "56c3c3859a96175cef5686de2a571491f84d477c82138712b2d4cadb96491e37"
+  }
+ },
+ "nz": 44,
+ "dt_s": 18.0,
+ "frozen_tolerances_sha256": "5bdc03da9cd0099bce48e30de88e6c570114480728f0f12551cacaf137b48b41",
+ "nc_over_nwfa": 1.2,
+ "k6a_structural_gate": "K6a (unqualified limiter) is not a numeric negative (manager adjudication 0c27a1e2a, critic EXACT_REPAIR 870ed5d7b): covered by (a) the pinned WRF anchor -- the only rc(k)*0.99 in MPT fabf19e2 is at :3467 inside the :3423 aerosol evaporation elseif -- and (b) the structural live-path negative test_p0c_k6a_structural.py (passes the candidate, kills the literal pre-K6a line and M-a..M-d)",
+ "xdc_margin": 0.1,
+ "ssatw_margin": 1e-05,
+ "ccn_tensor": {
+  "wrf_file_sha256": "f2b8d3916560f9046f89f8ac5f32c5292a1800498fd75301e422f147c82a3dbd",
+  "equal": true,
+  "port_dtype": "float32",
+  "max_abs_diff": 0.0,
+  "layout": "one big-endian REAL(4) record, Fortran order (7,9,7,5,4)"
+ },
+ "columns": {
+  "A1_kept": {
+   "why": "C1 analogue: kept cloud at levels 1-3 -> ANY(L_qc) on.  K6b: level 1 is an ultra-clean marine drizzle layer (CCN 5e6 /kg, Nc 5e5 /kg, qc 5e-4, 0.999 saturation: evaporation branch, no activation, bottom face w 0) whose fall-stage xDc > 2 D0r.  K6c: level 3 is a polluted plume (Nc 2.5e9 /kg > Nt_c_max) sedimenting into the normal-droplet level 2 (its own nc is erased by the writeback cap, so the signal must be read below it).  P0 K7 (manager 34dc94bbc): both roles are WITHDRAWN -- the :2997-3019 stage pins the drizzle level to xDc = 2 D0r and caps the plume at Nt_c_max (k7/K6BC_REACHABILITY.md); A1 now carries gate_off only, K6b moves to the A6 pair, K6c to the pending structural substitute",
+   "candidate": 2,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": -0.0010000429766945373,
+      "2": 0.0009999907260129781,
+      "3": 0.0009999933589146526
+     },
+     "discriminators": {
+      "gate_off": {
+       "quantities": {},
+       "fall_stage": {
+        "reference_min_margin": 0.014129240675373356,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "UNDISCRIMINABLE",
+       "reason": "reference fall-stage xDc within 10% of a D0c/2 D0r edge at [1]",
+       "gate_correct": true,
+       "gate_mutant": false
+      }
+     }
+    },
+    {
+     "candidate": 1,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": -0.0010000429766945373,
+      "2": 0.0009999907260129781,
+      "3": 0.0009999933589146526
+     },
+     "discriminators": {
+      "gate_off": {
+       "quantities": {},
+       "fall_stage": {
+        "reference_min_margin": 0.014129240675373356,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "UNDISCRIMINABLE",
+       "reason": "reference fall-stage xDc within 10% of a D0c/2 D0r edge at [1]",
+       "gate_correct": true,
+       "gate_mutant": false
+      }
+     }
+    },
+    {
+     "candidate": 2,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": 0.0005000105231911522,
+      "2": 0.0009999907260129781,
+      "3": 0.0009999933589146526
+     },
+     "discriminators": {
+      "gate_off": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 1.5541624372075844e-07
+         },
+         "effect": {
+          "1": 1.5541624372075844e-06
+         },
+         "floor": {
+          "1": {
+           "fp64": 7.340861638138328e-09,
+           "production": 7.348137595752512e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 43640.45221361732,
+          "2": 23416.32730229497,
+          "3": 48905.8783005476
+         },
+         "effect": {
+          "1": 436404.5221361732,
+          "2": 234163.2730229497,
+          "3": 489058.783005476
+         },
+         "floor": {
+          "1": {
+           "fp64": 6.571437313221395,
+           "production": 6.821437313221395
+          },
+          "2": {
+           "fp64": 36.77430033683777,
+           "production": 68.77430033683777
+          },
+          "3": {
+           "fp64": 323.93799781799316,
+           "production": 451.93799781799316
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.5270873331590343,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": false
+      }
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 0,
+     "value": 0.009585895575582981
+    },
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qv",
+     "level_0based": 2,
+     "value": 0.014577249065041542
+    },
+    {
+     "field": "qc",
+     "level_0based": 0,
+     "value": 0.0005000000237487257
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "qc",
+     "level_0based": 2,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "nc",
+     "level_0based": 0,
+     "value": 500000.0
+    },
+    {
+     "field": "nc",
+     "level_0based": 2,
+     "value": 2500000000.0
+    },
+    {
+     "field": "nwfa",
+     "level_0based": 0,
+     "value": 5000000.0
+    },
+    {
+     "field": "w_face",
+     "level_0based": 0,
+     "value": 0.0
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 18.0,
+   "k6b_level_T": null,
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A1_kept.txt": {
+     "size": 11477,
+     "sha256": "545ecca6080df3b82c42445a707873aff0578e513df28fdd00ce10f6f115422c"
+    },
+    "port_column_A1_kept.npz": {
+     "size": 18226,
+     "sha256": "beea4d45241212d68d78292c3e5177cb1f9e058d4f079d564cbf2060c9dc2706"
+    }
+   },
+   "model": {
+    "gate": true,
+    "activation_T_bin_margin_K_min": 2.1758020056935568,
+    "activation_levels_1based": [
+     1
+    ],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "1": 0.0005000105231911522,
+     "2": 0.0009999907260129781,
+     "3": 0.0009999933589146526
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "gate_off": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 1.5541624372075844e-07
+       },
+       "effect": {
+        "1": 1.5541624372075844e-06
+       },
+       "floor": {
+        "1": {
+         "fp64": 7.340861638138328e-09,
+         "production": 7.348137595752512e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 43640.45221361732,
+        "2": 23416.32730229497,
+        "3": 48905.8783005476
+       },
+       "effect": {
+        "1": 436404.5221361732,
+        "2": 234163.2730229497,
+        "3": 489058.783005476
+       },
+       "floor": {
+        "1": {
+         "fp64": 6.571437313221395,
+         "production": 6.821437313221395
+        },
+        "2": {
+         "fp64": 36.77430033683777,
+         "production": 68.77430033683777
+        },
+        "3": {
+         "fp64": 323.93799781799316,
+         "production": 451.93799781799316
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.5270873331590343,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": false
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [
+     1,
+     2,
+     3
+    ],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": true
+   }
+  },
+  "A2_full_evap": {
+   "why": "C2 analogue: thin cloud (1e-6) fully evaporates -> L_qc cleared, gate OFF; the fresh level-1 condensate (activated nc) must stay unsedimented in mass AND number",
+   "candidate": 0,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": 0.001000028356486382,
+      "4": -0.31284547341754676
+     },
+     "discriminators": {
+      "post_branch": {
+       "quantities": {
+        "nc": {
+         "bound": {
+          "1": 1008.6435728048906
+         },
+         "effect": {
+          "1": 10086.435728048906
+         },
+         "floor": {
+          "1": {
+           "fp64": 1.8306168615818024,
+           "production": 2.8306168615818024
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": null,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": false,
+       "gate_mutant": true
+      },
+      "drop_cloud_sed_on": {
+       "quantities": {
+        "nc": {
+         "bound": {
+          "1": 1008.6435728048906
+         },
+         "effect": {
+          "1": 10086.435728048906
+         },
+         "floor": {
+          "1": {
+           "fp64": 1.8306168615818024,
+           "production": 2.8306168615818024
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": null,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": false,
+       "gate_mutant": true
+      },
+      "vtc_only_mask": {
+       "quantities": {
+        "nc": {
+         "bound": {
+          "1": 1008.6435728043318
+         },
+         "effect": {
+          "1": 10086.435728043318
+         },
+         "floor": {
+          "1": {
+           "fp64": 1.8306168615818024,
+           "production": 2.8306168615818024
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": null,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": false,
+       "gate_mutant": false
+      }
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 0,
+     "value": 0.009590686298906803
+    },
+    {
+     "field": "qc",
+     "level_0based": 3,
+     "value": 9.999999974752427e-07
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 18.0,
+   "k6b_level_T": null,
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A2_full_evap.txt": {
+     "size": 11477,
+     "sha256": "30fe8bab66761cf1fa935f98f15d69b319cb61ed71b845cda643a0397a8e717b"
+    },
+    "port_column_A2_full_evap.npz": {
+     "size": 18226,
+     "sha256": "c82e14d1affc647d3a3a94f1593d3651fe8f8a02e4a1107d6688e481743eba46"
+    }
+   },
+   "model": {
+    "gate": false,
+    "activation_T_bin_margin_K_min": 2.1758020056935568,
+    "activation_levels_1based": [
+     1
+    ],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "1": 0.001000028356486382,
+     "4": -0.31284547341754676
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "post_branch": {
+     "quantities": {
+      "nc": {
+       "bound": {
+        "1": 1008.6435728048906
+       },
+       "effect": {
+        "1": 10086.435728048906
+       },
+       "floor": {
+        "1": {
+         "fp64": 1.8306168615818024,
+         "production": 2.8306168615818024
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": null,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": false,
+     "gate_mutant": true
+    },
+    "drop_cloud_sed_on": {
+     "quantities": {
+      "nc": {
+       "bound": {
+        "1": 1008.6435728048906
+       },
+       "effect": {
+        "1": 10086.435728048906
+       },
+       "floor": {
+        "1": {
+         "fp64": 1.8306168615818024,
+         "production": 2.8306168615818024
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": null,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": false,
+     "gate_mutant": true
+    },
+    "vtc_only_mask": {
+     "quantities": {
+      "nc": {
+       "bound": {
+        "1": 1008.6435728043318
+       },
+       "effect": {
+        "1": 10086.435728043318
+       },
+       "floor": {
+        "1": {
+         "fp64": 1.8306168615818024,
+         "production": 2.8306168615818024
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": null,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": false,
+     "gate_mutant": false
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": false
+   }
+  },
+  "A3_mixed": {
+   "why": "C3 analogue: kept cloud at level 2 + fresh condensation at level 1 -> ANY(L_qc) through level 2 only",
+   "candidate": 0,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": 0.001000028356486382,
+      "2": 0.0009999907260129781
+     },
+     "discriminators": {
+      "all_lqc": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 9.3102362562599e-08
+         },
+         "effect": {
+          "1": 9.310236256259901e-07
+         },
+         "floor": {
+          "1": {
+           "fp64": 7.70959495982366e-09,
+           "production": 7.710049707174546e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 47138.348620844816,
+          "2": 38123.658915132284
+         },
+         "effect": {
+          "1": 471383.4862084482,
+          "2": 381236.58915132284
+         },
+         "floor": {
+          "1": {
+           "fp64": 6.447878951206803,
+           "production": 7.447878951206803
+          },
+          "2": {
+           "fp64": 39.15854239463806,
+           "production": 71.15854239463806
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.8444253187888261,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": false
+      },
+      "gate_off": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 9.3102362562599e-08
+         },
+         "effect": {
+          "1": 9.310236256259901e-07
+         },
+         "floor": {
+          "1": {
+           "fp64": 7.70959495982366e-09,
+           "production": 7.710049707174546e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 47138.348620844816,
+          "2": 38123.658915132284
+         },
+         "effect": {
+          "1": 471383.4862084482,
+          "2": 381236.58915132284
+         },
+         "floor": {
+          "1": {
+           "fp64": 6.447878951206803,
+           "production": 7.447878951206803
+          },
+          "2": {
+           "fp64": 39.15854239463806,
+           "production": 71.15854239463806
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.8444253187888261,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": false
+      }
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 0,
+     "value": 0.009590686298906803
+    },
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 18.0,
+   "k6b_level_T": null,
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A3_mixed.txt": {
+     "size": 11477,
+     "sha256": "355cc90d47d82da608cc35701831e100b619bf2597da26108936ec9250a34c50"
+    },
+    "port_column_A3_mixed.npz": {
+     "size": 18226,
+     "sha256": "5fa6b54b4f1bc5a3af16eadc5f7d96ec70f41f67b942305d49352e4bd8dab11b"
+    }
+   },
+   "model": {
+    "gate": true,
+    "activation_T_bin_margin_K_min": 2.1758020056935568,
+    "activation_levels_1based": [
+     1
+    ],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "1": 0.001000028356486382,
+     "2": 0.0009999907260129781
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "all_lqc": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 9.3102362562599e-08
+       },
+       "effect": {
+        "1": 9.310236256259901e-07
+       },
+       "floor": {
+        "1": {
+         "fp64": 7.70959495982366e-09,
+         "production": 7.710049707174546e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 47138.348620844816,
+        "2": 38123.658915132284
+       },
+       "effect": {
+        "1": 471383.4862084482,
+        "2": 381236.58915132284
+       },
+       "floor": {
+        "1": {
+         "fp64": 6.447878951206803,
+         "production": 7.447878951206803
+        },
+        "2": {
+         "fp64": 39.15854239463806,
+         "production": 71.15854239463806
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.8444253187888261,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": false
+    },
+    "gate_off": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 9.3102362562599e-08
+       },
+       "effect": {
+        "1": 9.310236256259901e-07
+       },
+       "floor": {
+        "1": {
+         "fp64": 7.70959495982366e-09,
+         "production": 7.710049707174546e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 47138.348620844816,
+        "2": 38123.658915132284
+       },
+       "effect": {
+        "1": 471383.4862084482,
+        "2": 381236.58915132284
+       },
+       "floor": {
+        "1": {
+         "fp64": 6.447878951206803,
+         "production": 7.447878951206803
+        },
+        "2": {
+         "fp64": 39.15854239463806,
+         "production": 71.15854239463806
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.8444253187888261,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": false
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [
+     1,
+     2
+    ],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": true
+   }
+  },
+  "A5_band_w": {
+   "why": "C4/C5 analogue: kept cloud at level 2 (bottom face w 0 < 0.1 <= mass-point w 0.125) and a thin in-band cloud (R1 < rc <= R2) above ksed1(5).  The thin level sits at ssatw ~ +1e-5 (manager adjudication item 4): ssatw ~ +2e-5, >= 10 half-ulp ssatw noise from both branch edges 0 and -1e-6",
+   "candidate": 0,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "2": 0.0009999907260129781,
+      "4": 1.9968181309559796e-05
+     },
+     "discriminators": {
+      "no_ksed": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "3": 1.9726182793931687e-12
+         },
+         "effect": {
+          "3": 1.9726182793931686e-11
+         },
+         "floor": {
+          "3": {
+           "fp64": 1.401298464324817e-45,
+           "production": 2.802596928649634e-45
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "3": 428.27080148097923
+         },
+         "effect": {
+          "3": 4282.708014809792
+         },
+         "floor": {
+          "3": {
+           "fp64": 1.401298464324817e-45,
+           "production": 2.802596928649634e-45
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.39995352429043796,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": true
+      },
+      "mass_w": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 9.476875120748886e-08
+         },
+         "effect": {
+          "1": 9.476875120748886e-07
+         },
+         "floor": {
+          "1": {
+           "fp64": 7.639416555078882e-09,
+           "production": 7.755831876905817e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 48830.278453129155,
+          "2": 38123.658915132284
+         },
+         "effect": {
+          "1": 488302.7845312916,
+          "2": 381236.58915132284
+         },
+         "floor": {
+          "1": {
+           "fp64": 7.252668445929885,
+           "production": 8.252668445929885
+          },
+          "2": {
+           "fp64": 39.15854239463806,
+           "production": 71.15854239463806
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.39995352429043796,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": true
+      }
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.01312265545129776
+    },
+    {
+     "field": "qv",
+     "level_0based": 3,
+     "value": 0.0161989014595747
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.0003000000142492354
+    },
+    {
+     "field": "qc",
+     "level_0based": 3,
+     "value": 4.999999987376214e-07
+    },
+    {
+     "field": "w_face",
+     "level_0based": 1,
+     "value": 0.0
+    },
+    {
+     "field": "w_face",
+     "level_0based": 2,
+     "value": 0.25
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 18.0,
+   "k6b_level_T": null,
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A5_band_w.txt": {
+     "size": 11477,
+     "sha256": "8285e91393cab5ec823359f9e33b59283f818ed3a695a629e88a83b498383b87"
+    },
+    "port_column_A5_band_w.npz": {
+     "size": 18226,
+     "sha256": "e7d24d82b137074f922b227822aea51b22f74b6c964bda7e84ad2d0409efc019"
+    }
+   },
+   "model": {
+    "gate": true,
+    "activation_T_bin_margin_K_min": 2.1758020056935568,
+    "activation_levels_1based": [
+     1
+    ],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "2": 0.0009999907260129781,
+     "4": 1.9968181309559796e-05
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "no_ksed": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "3": 1.9726182793931687e-12
+       },
+       "effect": {
+        "3": 1.9726182793931686e-11
+       },
+       "floor": {
+        "3": {
+         "fp64": 1.401298464324817e-45,
+         "production": 2.802596928649634e-45
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "3": 428.27080148097923
+       },
+       "effect": {
+        "3": 4282.708014809792
+       },
+       "floor": {
+        "3": {
+         "fp64": 1.401298464324817e-45,
+         "production": 2.802596928649634e-45
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.39995352429043796,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": true
+    },
+    "mass_w": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 9.476875120748886e-08
+       },
+       "effect": {
+        "1": 9.476875120748886e-07
+       },
+       "floor": {
+        "1": {
+         "fp64": 7.639416555078882e-09,
+         "production": 7.755831876905817e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 48830.278453129155,
+        "2": 38123.658915132284
+       },
+       "effect": {
+        "1": 488302.7845312916,
+        "2": 381236.58915132284
+       },
+       "floor": {
+        "1": {
+         "fp64": 7.252668445929885,
+         "production": 8.252668445929885
+        },
+        "2": {
+         "fp64": 39.15854239463806,
+         "production": 71.15854239463806
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.39995352429043796,
+      "mutant_levels_within_margin_1based": [],
+      "mutant_exempt_levels_1based": []
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": true
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [
+     1,
+     2
+    ],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": true
+   }
+  },
+  "A6a_k6b_rh090": {
+   "why": "K6b diagnostic 1: level 1 at RH_w 0.90, qc 2.3e-3, Nc 2.0e8 /kg, bottom face w 0",
+   "candidate": 0,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "1": -0.09999997741786704
+     },
+     "discriminators": {
+      "entry_rebalance_nc": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 1.9498610171709293e-05
+         },
+         "effect": {
+          "1": 0.00019498610171709294
+         },
+         "floor": {
+          "1": {
+           "fp64": 4.842135011961374e-09,
+           "production": 4.9585503337883086e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 52170.43141806316
+         },
+         "effect": {
+          "1": 521704.31418063166
+         },
+         "floor": {
+          "1": {
+           "fp64": 12.894123494625092,
+           "production": 13.144123494625092
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.3646974176173954,
+        "mutant_levels_within_margin_1based": [
+         1
+        ],
+        "mutant_exempt_levels_1based": [
+         1
+        ]
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": true
+      }
+     },
+     "k6b_necessary": {
+      "level_1based": 1,
+      "evaporating": true,
+      "D_mv_3217_um": 27.95417746887137,
+      "xdc_fs_upper_um": 184.14121709159568,
+      "needed_um": 110.00000000000001,
+      "feasible": true
+     },
+     "k6b_target": {
+      "level_1based": 1,
+      "quantities": [
+       "nc",
+       "qc"
+      ],
+      "accepted": true,
+      "column_status_before_target_rule": "DISCRIMINATING"
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "qv",
+     "level_0based": 0,
+     "value": 0.008622994646430016
+    },
+    {
+     "field": "qc",
+     "level_0based": 0,
+     "value": 0.002300000051036477
+    },
+    {
+     "field": "nc",
+     "level_0based": 0,
+     "value": 200000000.0
+    },
+    {
+     "field": "w_face",
+     "level_0based": 0,
+     "value": 0.0
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 18.0,
+   "k6b_level_T": {
+    "level_1based": 1,
+    "T_K": 285.97419799430645
+   },
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A6a_k6b_rh090.txt": {
+     "size": 11477,
+     "sha256": "f4036b168a7d411e408898faa204f88802c3aa447d56e8d43441773fb0b8fb4b"
+    },
+    "port_column_A6a_k6b_rh090.npz": {
+     "size": 18226,
+     "sha256": "0580d6b8a3a8e0f79ee9e790c8545be8c4c181d7e4f27008742da711fe6c1d01"
+    }
+   },
+   "model": {
+    "gate": true,
+    "activation_T_bin_margin_K_min": null,
+    "activation_levels_1based": [],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "1": -0.09999997741786704
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "entry_rebalance_nc": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 1.9498610171709293e-05
+       },
+       "effect": {
+        "1": 0.00019498610171709294
+       },
+       "floor": {
+        "1": {
+         "fp64": 4.842135011961374e-09,
+         "production": 4.9585503337883086e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 52170.43141806316
+       },
+       "effect": {
+        "1": 521704.31418063166
+       },
+       "floor": {
+        "1": {
+         "fp64": 12.894123494625092,
+         "production": 13.144123494625092
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.3646974176173954,
+      "mutant_levels_within_margin_1based": [
+       1
+      ],
+      "mutant_exempt_levels_1based": [
+       1
+      ]
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": true
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [
+     1
+    ],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": true
+   },
+   "k6b_target": {
+    "level_1based": 1,
+    "quantities": [
+     "nc",
+     "qc"
+    ],
+    "accepted": true,
+    "column_status_before_target_rule": "DISCRIMINATING"
+   }
+  },
+  "A6b_k6b_rh095": {
+   "why": "K6b diagnostic 2: level 2 at RH_w 0.95, qc 2.3e-3, Nc 2.0e8 /kg (D_mv 28.0 um), bottom face w 0; independence edits (manager 8c734cc66): column dt 12 s (base 18 s) and level-2 T 283.15 K (activation bin 5 centre), qv recomputed for RH at that T.  Fallback: RH 0.80, T 303.15 K (bin 7 centre), dt 30 s, qc 5e-3 (D_mv 36.3 um)",
+   "candidate": 1,
+   "candidates_tried": [
+    {
+     "candidate": 0,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "2": -0.0500000260675415
+     },
+     "discriminators": {
+      "entry_rebalance_nc": {
+       "quantities": {},
+       "fall_stage": {
+        "reference_min_margin": 0.39995352429043773,
+        "mutant_levels_within_margin_1based": [],
+        "mutant_exempt_levels_1based": []
+       },
+       "status": "UNDISCRIMINABLE",
+       "reason": "best effect/floor = 1.6e-09 < 100 (nc level 1: effect 3.725e-09, floor 2.335e+00)",
+       "gate_correct": true,
+       "gate_mutant": true
+      }
+     },
+     "k6b_necessary": {
+      "level_1based": 2,
+      "evaporating": true,
+      "D_mv_3217_um": 27.970998566060217,
+      "xdc_fs_upper_um": 184.25202190109576,
+      "needed_um": 110.00000000000001,
+      "feasible": true
+     },
+     "k6b_target": {
+      "level_1based": 2,
+      "quantities": [],
+      "accepted": false,
+      "column_status_before_target_rule": "UNDISCRIMINABLE"
+     }
+    },
+    {
+     "candidate": 1,
+     "ssatw_margin_ok": true,
+     "ssatw_edited": {
+      "2": -0.20000002407852335
+     },
+     "discriminators": {
+      "entry_rebalance_nc": {
+       "quantities": {
+        "qc": {
+         "bound": {
+          "1": 9.386482811475461e-05,
+          "2": 7.698240631143148e-05
+         },
+         "effect": {
+          "1": 0.000938648281147546,
+          "2": 0.0007698240631143149
+         },
+         "floor": {
+          "1": {
+           "fp64": 1.633161794516169e-08,
+           "production": 1.656444858881556e-08
+          },
+          "2": {
+           "fp64": 3.116002950673616e-09,
+           "production": 3.2324182725005507e-09
+          }
+         }
+        },
+        "nc": {
+         "bound": {
+          "1": 41494.091629256305,
+          "2": 205973.929090349
+         },
+         "effect": {
+          "1": 414940.9162925631,
+          "2": 2059739.29090349
+         },
+         "floor": {
+          "1": {
+           "fp64": 3.7387346029281616,
+           "production": 4.738734602928162
+          },
+          "2": {
+           "fp64": 8.5256889751181,
+           "production": 9.0256889751181
+          }
+         }
+        }
+       },
+       "fall_stage": {
+        "reference_min_margin": 0.39995352429043796,
+        "mutant_levels_within_margin_1based": [
+         2
+        ],
+        "mutant_exempt_levels_1based": [
+         2
+        ]
+       },
+       "status": "DISCRIMINATING",
+       "gate_correct": true,
+       "gate_mutant": true
+      }
+     },
+     "k6b_necessary": {
+      "level_1based": 2,
+      "evaporating": true,
+      "D_mv_3217_um": 35.33369044641991,
+      "xdc_fs_upper_um": 232.75193020387368,
+      "needed_um": 110.00000000000001,
+      "feasible": true
+     },
+     "k6b_target": {
+      "level_1based": 2,
+      "quantities": [
+       "nc",
+       "qc"
+      ],
+      "accepted": true,
+      "column_status_before_target_rule": "DISCRIMINATING"
+     }
+    }
+   ],
+   "edits": [
+    {
+     "field": "dt_s",
+     "value": 30.0,
+     "base_dt_s": 18.0
+    },
+    {
+     "field": "th",
+     "level_0based": 1,
+     "value": 305.84033203125,
+     "T_target_K": 303.15,
+     "pii": 0.9912034273147583,
+     "T_model_K": 303.14998532045865
+    },
+    {
+     "field": "qv",
+     "level_0based": 1,
+     "value": 0.022766955196857452
+    },
+    {
+     "field": "qc",
+     "level_0based": 1,
+     "value": 0.004999999888241291
+    },
+    {
+     "field": "nc",
+     "level_0based": 1,
+     "value": 200000000.0
+    },
+    {
+     "field": "w_face",
+     "level_0based": 1,
+     "value": 0.0
+    }
+   ],
+   "nwfa2d": 53290.4140625,
+   "dt_s": 30.0,
+   "k6b_level_T": {
+    "level_1based": 2,
+    "T_K": 303.14998532045865
+   },
+   "nifa2d": 0.0,
+   "files": {
+    "driver_input_A6b_k6b_rh095.txt": {
+     "size": 11477,
+     "sha256": "f1abc3c2a523e073a6065deccb85eba6754c6898084c1f1f378fe538fe2bdcd3"
+    },
+    "port_column_A6b_k6b_rh095.npz": {
+     "size": 18226,
+     "sha256": "1f1c3b80a6924cdb6ca0d8c64cad370ff4972f9ec6f6925e8b3e756e8b8898c3"
+    }
+   },
+   "model": {
+    "gate": true,
+    "activation_T_bin_margin_K_min": 2.1758020056935568,
+    "activation_levels_1based": [
+     1
+    ],
+    "not_modelled_nc_levels_1based": [],
+    "ssatw_edited": {
+     "2": -0.20000002407852335
+    },
+    "unedited_cloudy_ssatw_min_abs": null
+   },
+   "discriminators": {
+    "entry_rebalance_nc": {
+     "quantities": {
+      "qc": {
+       "bound": {
+        "1": 9.386482811475461e-05,
+        "2": 7.698240631143148e-05
+       },
+       "effect": {
+        "1": 0.000938648281147546,
+        "2": 0.0007698240631143149
+       },
+       "floor": {
+        "1": {
+         "fp64": 1.633161794516169e-08,
+         "production": 1.656444858881556e-08
+        },
+        "2": {
+         "fp64": 3.116002950673616e-09,
+         "production": 3.2324182725005507e-09
+        }
+       }
+      },
+      "nc": {
+       "bound": {
+        "1": 41494.091629256305,
+        "2": 205973.929090349
+       },
+       "effect": {
+        "1": 414940.9162925631,
+        "2": 2059739.29090349
+       },
+       "floor": {
+        "1": {
+         "fp64": 3.7387346029281616,
+         "production": 4.738734602928162
+        },
+        "2": {
+         "fp64": 8.5256889751181,
+         "production": 9.0256889751181
+        }
+       }
+      }
+     },
+     "fall_stage": {
+      "reference_min_margin": 0.39995352429043796,
+      "mutant_levels_within_margin_1based": [
+       2
+      ],
+      "mutant_exempt_levels_1based": [
+       2
+      ]
+     },
+     "status": "DISCRIMINATING",
+     "gate_correct": true,
+     "gate_mutant": true
+    }
+   },
+   "k6c_dstar": {
+    "sedimenting_levels_1based": [
+     1,
+     2
+    ],
+    "violations_1based": {
+     "T3189_gt_275K": [],
+     "not_omitted": [],
+     "pre3193_tten_qvten_zero": [],
+     "not_omit_affected": [],
+     "nccn3211_in_11p1e6_9999e6": []
+    },
+    "receiving_levels_omit_affected_1based": [],
+    "ssatw_margin_ok": true,
+    "admissible": true
+   },
+   "k6b_target": {
+    "level_1based": 2,
+    "quantities": [
+     "nc",
+     "qc"
+    ],
+    "accepted": true,
+    "column_status_before_target_rule": "DISCRIMINATING"
+   }
+  }
+ },
+ "coverage": {
+  "drop_cloud_sed_on": [
+   "A2_full_evap"
+  ],
+  "vtc_only_mask": [
+   "A2_full_evap"
+  ],
+  "entry_rebalance_nc": [
+   "A6a_k6b_rh090",
+   "A6b_k6b_rh095"
+  ],
+  "raw_sed_n": [
+   "A1_kept",
+   "A3_mixed",
+   "A5_band_w",
+   "A6a_k6b_rh090",
+   "A6b_k6b_rh095"
+  ],
+  "mass_w": [
+   "A5_band_w"
+  ],
+  "gate_off": [
+   "A1_kept",
+   "A3_mixed"
+  ],
+  "post_branch": [
+   "A2_full_evap"
+  ],
+  "all_lqc": [
+   "A3_mixed"
+  ],
+  "no_ksed": [
+   "A5_band_w"
+  ]
+ },
+ "k6c_structural": {
+  "decision": "MANAGER_K6C_DSTAR_ACTIVATION.md",
+  "gate_test_sha256": "50a88595007739f7aad66ba14dfac06eb10e99c891fcae90229a516ef51f5c8d",
+  "gate_log_sha256": "04f71c85815f525ad0ad5c66ee268a8c0f733d64fe1d6d3ef31e20edfc386702",
+  "lemma_json_sha256": "a2f454749839f64742a0312e191b7c851dd6460b3743de5b83b5364757159f4a",
+  "lemma_B_m3": 720049997.3148,
+  "tables_sha256": "29d08004a8ba6e7c0cf5c0574e7b5145108afa5bf7666c409af166be1248b4ae",
+  "admissible_columns": [
+   "A1_kept",
+   "A3_mixed",
+   "A5_band_w",
+   "A6a_k6b_rh090",
+   "A6b_k6b_rh095"
+  ],
+  "wrf_anchor": {
+   "mpt_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802",
+   "pre3193_sites": [
+    1668,
+    1669,
+    2982,
+    3165,
+    3176
+   ],
+   "branch_T0_lines": [
+    2554,
+    3164
+   ]
+  },
+  "claim": "structural evidence on the corrected D* only; not WRF parity, not a numerical negative"
+ },
+ "k6b_pair": {
+  "columns": [
+   "A6a_k6b_rh090",
+   "A6b_k6b_rh095"
+  ],
+  "both_discriminating": true,
+  "independence": {
+   "A6a_k6b_rh090": {
+    "dt_s": 18.0,
+    "T_K": 285.97419799430645,
+    "T_bin_1based": 5,
+    "T_bin_margin_K": 2.1758020056935568
+   },
+   "A6b_k6b_rh095": {
+    "dt_s": 30.0,
+    "T_K": 303.14998532045865,
+    "T_bin_1based": 7,
+    "T_bin_margin_K": 4.999985320458649
+   }
+  },
+  "independent": true,
+  "nature": "constructed WRF-object diagnostic input, not an observed/operational state"
+ },
+ "blockers": [],
+ "status": "COMPLETE"
+}

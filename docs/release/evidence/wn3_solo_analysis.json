@@ -1,0 +1,72 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n1/parallel_run.json",
+ "content": {
+  "schema": "gpuwrf-parallel-cases-v1",
+  "start_utc": "2026-10-04T11:26:03Z",
+  "argv": [
+   "~/wrf_gpu2_lanes/wn3/W9/source/scripts/parallel_cases.py",
+   "--out-root",
+   "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n1",
+   "--gpu-log-interval",
+   "1",
+   "--compress",
+   "--compress-cpus",
+   "8,9,24,25",
+   "~/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+   "--",
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "6"
+  ],
+  "cli_args": [
+   "--max-dom",
+   "3",
+   "--emit-initial-history",
+   "--hours",
+   "6"
+  ],
+  "vram_total_bytes": 33664532480,
+  "vram_free_bytes_at_start": 30249320448,
+  "vram_capacity_bytes": 30249320448,
+  "cpu_affinity": [
+   10,
+   11,
+   12,
+   13,
+   26,
+   27,
+   28,
+   29
+  ],
+  "events": [
+   {
+    "t_s": 0.0,
+    "start": "20260227_18z_a1",
+    "running": 1
+   }
+  ],
+  "gpu_lock": {
+   "required": true,
+   "policy": "dev GPU lock infrastructure present (/tmp/wrf_gpu2_gpu.lock)",
+   "held": true
+  },
+  "end_utc": "2026-10-04T11:27:43Z",
+  "wall_s": 99.806,
+  "peak_concurrency": 1,
+  "stop_reason": null,
+  "cases": {
+   "20260227_18z_a1": {
+    "rc": 0,
+    "note": "",
+    "wall_s": 84.411,
+    "vram_peak_mib": 3916,
+    "vmhwm_kb": 6169604
+   }
+  },
+  "case_hours": 6,
+  "wall_s_per_case_hour": 16.634,
+  "compress_rc": 0
+ }
+}

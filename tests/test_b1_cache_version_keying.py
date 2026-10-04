@@ -33,7 +33,7 @@ from gpuwrf.runtime import xla_autotune as at
 
 
 @pytest.fixture(autouse=True)
-def restore_cache_globals():
+def restore_cache_globals(monkeypatch, tmp_path):
     """Save + restore the process-global JAX compile-cache dir + CACHE_STATUS.
 
     AUTOUSE so EVERY test in this file is self-contained: many B1 tests
@@ -44,21 +44,32 @@ def restore_cache_globals():
     JAX writing to a deleted dir while it counts entries in the real dir, so its
     warm-hit/entry-count assertions break. Mirrors the fixture in
     test_v013_compile_perf2.py. Captured at setup (before any per-test monkeypatch
-    of the cache env), so saved_dir is always the real persistent dir."""
+    of the cache env), including when the ambient cache is disabled. Reset the
+    file-cache singleton when restoring the directory (FINDINGS E136)."""
+    import jax
+    from jax._src import compilation_cache as jcc
+
     saved_status = dict(cc.CACHE_STATUS)
-    saved_dir = cc.resolve_cache_dir()
+    saved_dir = jax.config.jax_compilation_cache_dir
+    saved_enabled = jax.config.jax_enable_compilation_cache
+    # These tests exercise cache activation, including explicit opt-outs below.
+    # The suite's ambient cache-off policy must not bypass their setup.
+    monkeypatch.setenv("GPUWRF_JAX_CACHE", "1")
+    # Full-suite collection also imports modules that disable JAX's own cache
+    # through the environment; spawned cache-ON workers inherit that switch.
+    monkeypatch.setenv("JAX_ENABLE_COMPILATION_CACHE", "true")
+    jax.config.update("jax_enable_compilation_cache", True)
+    monkeypatch.delenv("JAX_COMPILATION_CACHE_DIR", raising=False)
+    monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(tmp_path / "jit"))
+    jcc.reset_cache()
     try:
         yield
     finally:
         cc.CACHE_STATUS.clear()
         cc.CACHE_STATUS.update(saved_status)
-        if saved_dir is not None:
-            try:
-                from jax import config as _jc
-
-                _jc.update("jax_compilation_cache_dir", str(saved_dir))
-            except Exception:
-                pass
+        jcc.reset_cache()
+        jax.config.update("jax_compilation_cache_dir", saved_dir)
+        jax.config.update("jax_enable_compilation_cache", saved_enabled)
 
 
 # --------------------------------------------------------------------------- #
@@ -156,6 +167,7 @@ def test_cpu_and_cuda_backends_resolve_to_different_dirs(monkeypatch, tmp_path):
     ):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("GPUWRF_CACHE", str(tmp_path))
+    monkeypatch.setattr(cc, "_cuda_tag", lambda: "cuda_sm120")
 
     monkeypatch.setenv("JAX_PLATFORMS", "cpu")
     d_cpu = cc.resolve_cache_dir()
@@ -262,7 +274,35 @@ def test_backend_tag_never_raises_without_nvidia_smi(monkeypatch):
         raise FileNotFoundError("nvidia-smi not found")
 
     monkeypatch.setattr(subprocess, "run", boom)
-    assert cc._cuda_tag() == "cuda"
+    getattr(cc._cuda_tag, "cache_clear", lambda: None)()
+    try:
+        assert cc._cuda_tag() == "cuda"
+    finally:
+        getattr(cc._cuda_tag, "cache_clear", lambda: None)()
+
+
+def test_cuda_tag_probes_once_per_process_and_never_flips(monkeypatch):
+    """One nvidia-smi probe per process; a later probe failure cannot flip the tag."""
+    import subprocess
+    from types import SimpleNamespace
+
+    calls = []
+
+    def probe(*a, **k):
+        calls.append(a)
+        if len(calls) == 1:
+            raise subprocess.TimeoutExpired("nvidia-smi", 5.0)  # transient first failure
+        if len(calls) == 2:
+            return SimpleNamespace(returncode=0, stdout="12.0\n")
+        raise FileNotFoundError("nvidia-smi vanished")
+
+    monkeypatch.setattr(subprocess, "run", probe)
+    getattr(cc._cuda_tag, "cache_clear", lambda: None)()
+    try:
+        assert [cc._cuda_tag() for _ in range(5)] == ["cuda_sm120"] * 5
+        assert len(calls) == 2  # retry once, then cached
+    finally:
+        getattr(cc._cuda_tag, "cache_clear", lambda: None)()
 
 
 # --------------------------------------------------------------------------- #
@@ -420,6 +460,7 @@ def test_lock_timeout_env_reaches_lru_cache(monkeypatch, tmp_path):
 
     d = tmp_path / "jit"
     monkeypatch.setenv("GPUWRF_JAX_CACHE_DIR", str(d))
+    monkeypatch.setenv("GPUWRF_JAX_CACHE_LOCK", "1")
     monkeypatch.setenv("GPUWRF_JAX_CACHE_LOCK_TIMEOUT", "42.5")
     monkeypatch.setenv("JAX_PLATFORMS", "cpu")
     st = cc.configure_compilation_cache()

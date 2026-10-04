@@ -50,6 +50,7 @@ deployment would keep the tracker reduction on-device.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, Callable, Mapping
@@ -138,6 +139,13 @@ _NEAREST_FILL_FIELDS = ("xland", "lakemask")
 def validate_moving_nest_config(config: MovingNestConfig) -> None:
     """Fail closed on malformed moving-nest configuration (named reasons)."""
 
+    if os.environ.get("GPUWRF_DYN_RK_FP32", "0") == "1":
+        raise MovingNestError(
+            f"moving nest {config.child}: moving nests are not supported with the v0.3 fast "
+            "defaults -- the native RK path carries a base_state that the moving-nest shift "
+            "registry does not move. Run moving-nest cases with GPUWRF_FAST_DEFAULTS=0 "
+            "(or GPUWRF_DYN_RK_FP32=0)."
+        )
     if config.mode not in _MODES:
         raise MovingNestError(
             f"moving nest {config.child}: unknown mode {config.mode!r}; supported: {_MODES}"

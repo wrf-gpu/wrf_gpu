@@ -1,0 +1,378 @@
+{
+ "candidate_state": "candidate/compile-thunks: product converter in aot_executable.serialize (compact legacy -> compiled thunks), no global flag, no key change",
+ "source_commit": "0eca552da9b139575d2fd31eca98c91ca6094e6c",
+ "source_model_tree": "4454640cfa79b9a5d3b695ad88222062230e055a",
+ "jaxlib": "0.10.0",
+ "xla_commit": "b6f37ab7767f428fd6f993de5e211643d47d4deb",
+ "gate": "Tier-S: native/PTX/options/allocations/HLO math exact + raw carry bit-exact on real PROD chunk calls; cached readiness <=60 s",
+ "CP69_private_compact_conversion": {
+  "source": "0eca552da9b139575d2fd31eca98c91ca6094e6c",
+  "platform": "gpu",
+  "conversions": {
+   "d01": {
+    "legacy_s": 22.69332152797142,
+    "conversion_load_s": 0.0,
+    "export_s": 0.0,
+    "new_s": 1.502928032015916,
+    "legacy_bytes": 174476029,
+    "new_bytes": 191490812,
+    "native_exact": true,
+    "options_exact": true,
+    "allocations_exact": true,
+    "hlo_math_exact": true,
+    "thunks": 183,
+    "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005"
+   },
+   "d02": {
+    "legacy_s": 17.724395962024573,
+    "conversion_load_s": 0.0,
+    "export_s": 0.0,
+    "new_s": 1.5119899740093388,
+    "legacy_bytes": 171248322,
+    "new_bytes": 188087234,
+    "native_exact": true,
+    "options_exact": true,
+    "allocations_exact": true,
+    "hlo_math_exact": true,
+    "thunks": 152,
+    "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00"
+   }
+  },
+  "calls": [
+   {
+    "domain": "d01",
+    "leaves": 142,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "948ac9b9ef3018c763f3e911b76ea23a44529ad79baf81bae0ce64d1337c1508"
+   },
+   {
+    "domain": "d02",
+    "leaves": 126,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "4e422b163138128f92bcc870badf656f9c3bb6970379cf261be52233e74932b2"
+   },
+   {
+    "domain": "d01",
+    "leaves": 142,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "f5d891af64af10576c9de6ba76466f42717512d7a3c70145ee8cb007b5d6d823"
+   },
+   {
+    "domain": "d02",
+    "leaves": 126,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "e504e3ab2b7fde1595018d53943ab809ac407bbe2eb593a76f1c9ec0369ac801"
+   }
+  ],
+  "scope": "private historical LW7 format-only regression; no WRF fidelity/S1 claim; no cache publication/native compilation",
+  "input_sha256": {
+   "d01": "f63e9341389ba441d6d6a936c6ba452284338753b358b9a08d1a293088318d26",
+   "d02": "701bdb1ad8ab7ed8ae506f5bf9433ef06e58a97a99537acac08b6855e564dff1"
+  },
+  "last_kind": "radiation",
+  "work": {
+   "root_steps_per_mode": 1,
+   "d01_ownsteps_per_root": 1,
+   "d02_ownsteps_per_root": 3,
+   "modes": [
+    "ordinary",
+    "radiation"
+   ],
+   "compiled_calls": 4
+  },
+  "process_s": 78.19518393400358,
+  "xla_flags": "--xla_gpu_enable_command_buffer=+CONDITIONAL --xla_enable_command_buffers_during_profiling=true --xla_gpu_per_fusion_autotune_cache_dir=<USER_HOME>/wrf_gpu2_lanes/integrate/LW7/cache/4454640cfa79b9a5d3b695ad88222062230e055a/autotune --xla_gpu_force_compilation_parallelism=2",
+  "aot": {
+   "enabled": true,
+   "verify": false,
+   "load_count": 2,
+   "load_wall_seconds": 54.52921123796841,
+   "cache_hit_count": 2,
+   "domains": {
+    "d01": {
+     "name": "d01",
+     "loaded": true,
+     "source": "aot_memory_cache",
+     "error": null,
+     "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005",
+     "cached": true,
+     "real_load": false,
+     "load_attempt_count": 1,
+     "load_attempt_wall_seconds": 30.183086686010938,
+     "load_count": 1,
+     "load_wall_seconds": 30.183086686010938,
+     "cache_hit_count": 1,
+     "keys": {
+      "cheap_key:36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005": {
+       "load_attempt_count": 1,
+       "load_attempt_wall_seconds": 30.183086686010938,
+       "load_count": 1,
+       "load_wall_seconds": 30.183086686010938,
+       "cache_hit_count": 1
+      }
+     }
+    },
+    "d02": {
+     "name": "d02",
+     "loaded": true,
+     "source": "aot_memory_cache",
+     "error": null,
+     "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00",
+     "cached": true,
+     "real_load": false,
+     "load_attempt_count": 1,
+     "load_attempt_wall_seconds": 24.346124551957473,
+     "load_count": 1,
+     "load_wall_seconds": 24.346124551957473,
+     "cache_hit_count": 1,
+     "keys": {
+      "cheap_key:dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00": {
+       "load_attempt_count": 1,
+       "load_attempt_wall_seconds": 24.346124551957473,
+       "load_count": 1,
+       "load_wall_seconds": 24.346124551957473,
+       "cache_hit_count": 1
+      }
+     }
+    }
+   }
+  },
+  "pass_gate": true
+ },
+ "CP69_fresh_ready": {
+  "process_ready_s": 8.211179276986513,
+  "platform": "gpu",
+  "source": "0eca552da",
+  "rows": [
+   {
+    "domain": "d01",
+    "load_s": 1.947448093967978,
+    "bytes": 191490812,
+    "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005",
+    "trace_metadata": "compact"
+   },
+   {
+    "domain": "d02",
+    "load_s": 1.619441284041386,
+    "bytes": 188087234,
+    "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00",
+    "trace_metadata": "compact"
+   }
+  ],
+  "scope": "fresh-process cached-callable readiness including Python/JAX/runtime wrapper imports; no model initialization/input reads/first step; private converted paid LW7 blobs no publication"
+ },
+ "CP78_rich_vs_compact": {
+  "rich_global_flag_export": {
+   "load_s": [
+    7.873701493022963,
+    7.7920702009578235
+   ],
+   "process_ready_s": 21.977594471012708
+  },
+  "compact_conversion": {
+   "load_s": [
+    2.027357336017303,
+    2.154822848038748
+   ],
+   "process_ready_s": 9.038179817027412
+  },
+  "rich_legacy_load_s": [
+   26.51621042302577,
+   31.0374543099897
+  ]
+ },
+ "CP81_flag435_runtime": "no effect: interleaved ABAB fori2000 12.6/12.5 and 10.4/10.3 ms; thunk-loaded within 3 % of JIT",
+ "CP82_product_mini": {
+  "platform": "gpu",
+  "rows": {
+   "regular": {
+    "conversion": "converted",
+    "conversion_s": 0.0027622890193015337,
+    "executable_format": "xla-gpu-thunks-riegeli-v1",
+    "trace_metadata": "compact",
+    "export_s": 0.00419382902327925,
+    "load_s": 0.0005139730055816472,
+    "raw_exact": true,
+    "jit_stats": {
+     "argument_size_in_bytes": 16384,
+     "output_size_in_bytes": 16384,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 0,
+     "generated_code_size_in_bytes": 8912
+    },
+    "reloaded_stats": {
+     "argument_size_in_bytes": 16384,
+     "output_size_in_bytes": 16384,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 0,
+     "generated_code_size_in_bytes": 8912
+    },
+    "legacy_bytes": 16684,
+    "bytes": 8858
+   },
+   "pallas_loop": {
+    "conversion": "converted",
+    "conversion_s": 0.013138881011400372,
+    "executable_format": "xla-gpu-thunks-riegeli-v1",
+    "trace_metadata": "compact",
+    "export_s": 0.014914812985807657,
+    "load_s": 0.0007092750165611506,
+    "raw_exact": true,
+    "jit_stats": {
+     "argument_size_in_bytes": 16384,
+     "output_size_in_bytes": 16384,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 16648,
+     "generated_code_size_in_bytes": 15000
+    },
+    "reloaded_stats": {
+     "argument_size_in_bytes": 16384,
+     "output_size_in_bytes": 16384,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 16648,
+     "generated_code_size_in_bytes": 15000
+    },
+    "legacy_bytes": 27133,
+    "bytes": 10075
+   }
+  },
+  "gate": true
+ },
+ "product_PROD_gate": {
+  "conversions": {
+   "d01": {
+    "product_status": {
+     "reason": "converted",
+     "legacy_bytes": 174476029,
+     "thunk_bytes": 191490812,
+     "seconds": 32.263135346991476
+    },
+    "memory_stats": {
+     "argument_size_in_bytes": 535779136,
+     "output_size_in_bytes": 518466420,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 490386008,
+     "generated_code_size_in_bytes": 128327260
+    },
+    "legacy_s": 26.831963947974145,
+    "conversion_load_s": 32.263135346991476,
+    "export_s": 0.0,
+    "new_s": 2.6956956760259345,
+    "legacy_bytes": 174476029,
+    "new_bytes": 191490812,
+    "native_exact": true,
+    "options_exact": true,
+    "allocations_exact": true,
+    "hlo_math_exact": true,
+    "thunks": 183,
+    "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005"
+   },
+   "d02": {
+    "product_status": {
+     "reason": "converted",
+     "legacy_bytes": 171248322,
+     "thunk_bytes": 188087234,
+     "seconds": 25.52387096604798
+    },
+    "memory_stats": {
+     "argument_size_in_bytes": 516572688,
+     "output_size_in_bytes": 455512916,
+     "alias_size_in_bytes": 0,
+     "temp_size_in_bytes": 964519776,
+     "generated_code_size_in_bytes": 132335179
+    },
+    "legacy_s": 21.183589545020368,
+    "conversion_load_s": 25.52387096604798,
+    "export_s": 0.0,
+    "new_s": 2.130661895032972,
+    "legacy_bytes": 171248322,
+    "new_bytes": 188087234,
+    "native_exact": true,
+    "options_exact": true,
+    "allocations_exact": true,
+    "hlo_math_exact": true,
+    "thunks": 152,
+    "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00"
+   }
+  },
+  "calls": [
+   {
+    "domain": "d01",
+    "leaves": 142,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "948ac9b9ef3018c763f3e911b76ea23a44529ad79baf81bae0ce64d1337c1508"
+   },
+   {
+    "domain": "d02",
+    "leaves": 126,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "4e422b163138128f92bcc870badf656f9c3bb6970379cf261be52233e74932b2"
+   },
+   {
+    "domain": "d01",
+    "leaves": 142,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "f5d891af64af10576c9de6ba76466f42717512d7a3c70145ee8cb007b5d6d823"
+   },
+   {
+    "domain": "d02",
+    "leaves": 126,
+    "raw_exact": true,
+    "finite": true,
+    "sha256": "e504e3ab2b7fde1595018d53943ab809ac407bbe2eb593a76f1c9ec0369ac801"
+   }
+  ],
+  "fresh_ready": [
+   {
+    "process_ready_s": 9.820884768967517,
+    "rows": [
+     {
+      "domain": "d01",
+      "load_s": 2.296442164981272,
+      "bytes": 191490812,
+      "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005",
+      "trace_metadata": "compact"
+     },
+     {
+      "domain": "d02",
+      "load_s": 2.0387754809926264,
+      "bytes": 188087234,
+      "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00",
+      "trace_metadata": "compact"
+     }
+    ]
+   },
+   {
+    "process_ready_s": 10.163397275027819,
+    "rows": [
+     {
+      "domain": "d01",
+      "load_s": 2.3311080670100637,
+      "bytes": 191490812,
+      "cheap_key": "36eb873c5c80c8137ac393bac3abf6f776e0f375a294980d8daab79a2ab22005",
+      "trace_metadata": "compact"
+     },
+     {
+      "domain": "d02",
+      "load_s": 2.095047898008488,
+      "bytes": 188087234,
+      "cheap_key": "dec7f370ccebcca45e8830da272bf6a68f41355cef8b954627ee7b061f634a00",
+      "trace_metadata": "compact"
+     }
+    ]
+   }
+  ],
+  "process_wall_s": [
+   10.96,
+   11.42
+  ]
+ },
+ "artifact_root": "<USER_HOME>/wrf_gpu2_lanes/compile/phase3"
+}

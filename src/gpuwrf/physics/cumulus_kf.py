@@ -36,6 +36,7 @@ from __future__ import annotations
 from gpuwrf._x64_config import configure_jax_x64
 
 from functools import partial
+import os
 
 import jax
 from jax import config
@@ -71,25 +72,43 @@ def _safe(x, eps=1e-30):
     return jnp.where(jnp.abs(x) < eps, jnp.sign(x) * eps + (x == 0) * eps, x)
 
 
-def _collapse_w_to_mass_levels(w, kx):
+def kf_real_enabled() -> bool:
+    """Native WRF-REAL KF (kernel + W0AVG/NCA/held-rate carry), GPUWRF_KF_COLUMN_FP32=1."""
+
+    return os.environ.get("GPUWRF_KF_COLUMN_FP32", "0") == "1"
+
+
+def kf_carry_dtype():
+    """module_cu_kfeta.F declares no DOUBLE: REAL on the native path, legacy f64 otherwise."""
+
+    return jnp.float32 if kf_real_enabled() else jnp.float64
+
+
+def _collapse_w_to_mass_levels(w, kx, dtype=jnp.float64):
     """Return WRF's mass-level W0 = 0.5 * (w(k) + w(k+1))."""
 
-    w = jnp.asarray(w, jnp.float64)
+    w = jnp.asarray(w, dtype)
     return 0.5 * (w[:kx] + w[1 : kx + 1])
 
 
 # ----------------------------------------------------------------------------
 # Lookup-table helpers (TPMIX2 / TPMIX2DD share the bilinear interpolation).
 # ----------------------------------------------------------------------------
+def _resident_tables_enabled():
+    """Trace-time opt-in for shared WRF REAL lookup tables."""
+    return os.environ.get("GPUWRF_KF_RESIDENT_TABLES", "0") == "1"
+
+
 def _table_interp(p, thes):
     """Bilinear lookup of (temp, qs) from (THES, P). Mirrors TPMIX2/TPMIX2DD
     index arithmetic. Returns (temp, qs, qq, pp)."""
     plutop = _T.PLUTOP
     rdpr = _T.RDPR
     rdthk = _T.RDTHK
-    the0k = jnp.asarray(_T.THE0K)
-    ttab = jnp.asarray(_T.TTAB)
-    qstab = jnp.asarray(_T.QSTAB)
+    resident = _resident_tables_enabled()
+    the0k = jnp.asarray(_T.THE0K_R4 if resident else _T.THE0K)
+    ttab = jnp.asarray(_T.TTAB_R4 if resident else _T.TTAB)
+    qstab = jnp.asarray(_T.QSTAB_R4 if resident else _T.QSTAB)
 
     tp = (p - plutop) * rdpr
     qq = tp - jnp.floor(tp)
@@ -319,13 +338,14 @@ GDRY = -G / CP
 
 
 
-def _empty_col(KX, nca):
-    z = jnp.zeros(KX)
+def _empty_col(KX, nca, dtype=jnp.float64):
+    z = jnp.zeros(KX, dtype)
+    s = lambda v: jnp.asarray(v, dtype)  # noqa: E731
     return dict(DTDT=z, DQDT=z, DQCDT=z, DQRDT=z, DQIDT=z, DQSDT=z,
                 RTHCUTEN=z, RQVCUTEN=z, RQCCUTEN=z, RQRCUTEN=z, RQICUTEN=z, RQSCUTEN=z,
-                RAINCV=jnp.float64(0.0), PRATEC=jnp.float64(0.0), NCA=jnp.float64(nca),
-                CUTOP=jnp.float64(1.0), CUBOT=jnp.float64(KX + 1), ISHALL=jnp.int32(2),
-                TIMEC=jnp.float64(0.0))
+                RAINCV=s(0.0), PRATEC=s(0.0), NCA=s(nca),
+                CUTOP=s(1.0), CUBOT=s(KX + 1), ISHALL=jnp.int32(2),
+                TIMEC=s(0.0))
 
 
 def _run_updraft(NUcand, KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0,
@@ -631,6 +651,11 @@ def _search_usl(KCHECK, NCHECK, lev, idx, Z0, DZA, DP, T0p, Q0, TV0, P0p, W0Ap,
         )
 
     def body(st):
+        if _resident_tables_enabled():
+            # vmap(cond) broadcasts branch constants (including both lookup
+            # tables) across columns. Select only the small candidate state;
+            # the table gathers then read a single shared rank-two array.
+            return _tree_where(st["nu"] <= NCHECK, run_current(st), exhausted(st))
         return jax.lax.cond(st["nu"] <= NCHECK, run_current, exhausted, st)
 
     def cond(st):
@@ -647,6 +672,11 @@ def kf_eta_para(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx,
 
     Faithful translation of the validated NumPy reference. All control flow is
     masked / lax-based; vmappable; GPU-resident."""
+    if os.environ.get("GPUWRF_KF_COLUMN_FP32", "0") == "1":
+        from gpuwrf.kernels.phys_kf_column import kf_column
+        return kf_column(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx,
+                         KX, warm_rain, f_qi, f_qs)
+
     N = KX + 3
     KL = KX
     DXSQ = dx * dx
@@ -699,18 +729,18 @@ def kf_eta_para(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx,
     return out
 
 
-def update_w0avg(w0avg, w, dt, *, stepcu=5, cudt=0.0, adapt_step_flag=False):
+def update_w0avg(w0avg, w, dt, *, stepcu=5, cudt=0.0, adapt_step_flag=False, dtype=jnp.float64):
     """WRF ``KF_eta_CPS`` running-mean vertical velocity recurrence.
 
     ``w`` may be a full-level column of length ``KX+1`` or an already collapsed
     mass-level ``W0`` column of length ``KX``. ``cudt`` is WRF namelist minutes.
     """
 
-    w0avg = jnp.asarray(w0avg, jnp.float64)
+    w0avg = jnp.asarray(w0avg, dtype)
     kx = int(w0avg.shape[0])
-    w_arr = jnp.asarray(w, jnp.float64)
+    w_arr = jnp.asarray(w, dtype)
     if w_arr.shape[0] == kx + 1:
-        w0 = _collapse_w_to_mass_levels(w_arr, kx)
+        w0 = _collapse_w_to_mass_levels(w_arr, kx, dtype)
     elif w_arr.shape[0] == kx:
         w0 = w_arr
     else:
@@ -752,22 +782,26 @@ def step_kf_column(
     full-level ``w`` so this function updates the carry before the trigger gate.
     """
 
-    w0avg_in = jnp.asarray(w0avg, jnp.float64)
+    real = kf_carry_dtype()
+    w0avg_in = jnp.asarray(w0avg, real)
     kx = int(w0avg_in.shape[0])
     w0avg_call = (
         w0avg_in
         if w is None
-        else update_w0avg(w0avg_in, w, dt, stepcu=stepcu, cudt=cudt, adapt_step_flag=adapt_step_flag)
+        else update_w0avg(w0avg_in, w, dt, stepcu=stepcu, cudt=cudt, adapt_step_flag=adapt_step_flag,
+                          dtype=real)
     )
-    nca_in = jnp.asarray(nca, jnp.float64)
+    nca_in = jnp.asarray(nca, real)
 
     def run(_):
         return kf_eta_para(T0, QV0, P0, DZQ, RHOE, w0avg_call, U0, V0, dt, dx, kx, warm_rain, f_qi, f_qs)
 
     def skip(_):
-        return _empty_col(kx, nca_in)
+        return _empty_col(kx, nca_in, real)
 
     out = jax.lax.cond(nca_in < 0.5 * float(dt), run, skip, operand=None)
+    # module_cu_kfeta.F:2573: shallow convection lives for CUDT minutes.
+    out["NCA"] = jnp.where(out["ISHALL"] == 1, float(cudt) * 60.0, out["NCA"])
     zeros = jnp.zeros_like(out["RTHCUTEN"])
     state_tendencies = {
         "u": zeros,
@@ -1399,6 +1433,10 @@ def _kf_closure_iter(UMF, UER, UDR, DMF, DER, DDR, DETLQ, DETIC, PPTLIQ, PPTICE,
 
     # bounded iteration: at most _MAX_CLOSURE_ITERS; shallow exits after first adv
     def iter_body(i, c):
+        if _resident_tables_enabled():
+            # As in the source-layer search, select the small state instead
+            # of batching a conditional that captures the shared tables.
+            return _tree_where(c["done"], c, body(c))
         return jax.lax.cond(c["done"], lambda x: x, body, c)
     carry = jax.lax.fori_loop(0, _MAX_CLOSURE_ITERS, iter_body, carry)
     # if shallow: we still need ONE advection pass (body did it). For shallow, body

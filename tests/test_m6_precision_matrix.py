@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import jax.numpy as jnp
 
+from gpuwrf.contracts import precision as precision_contract
 from gpuwrf.contracts.grid import GridSpec
-from gpuwrf.contracts.precision import FP32_GATED, FP64, INT32, PRECISION_MATRIX
+from gpuwrf.contracts.precision import FP32_GATED, FP64, INT32, PRECISION_MATRIX, SURFACE_LAYER_CARRY_LEAVES
 from gpuwrf.contracts.state import State
 
 
@@ -73,7 +74,20 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "nifa",
     }
     integer_static = {"lu_index"}
-    locked = set(State.__slots__) - gated - integer_static
+    # B39: WRF-REAL surface-layer carry, float32 in every configuration (not gated).
+    mynn_history = getattr(precision_contract, "MYNN_DIAGNOSTIC_LEAVES", ())
+    assert mynn_history in ((), ("el_pbl", "maxmf", "maxwidth", "ztop_plume"))
+    gwdo_history = getattr(precision_contract, "GWDO_DIAGNOSTIC_LEAVES", ())
+    assert gwdo_history in ((), ("dtaux3d", "dtauy3d", "dusfcg", "dvsfcg"))
+    real_locked = set(SURFACE_LAYER_CARRY_LEAVES) | set(mynn_history) | set(gwdo_history)
+    # The matrix also covers derived/legacy p/ph/mu/pgeop aliases.
+    assert set(State.__slots__) <= set(PRECISION_MATRIX)
+    locked = set(State.__slots__) - gated - integer_static - real_locked
+
+    for field in real_locked:
+        dtype, gate_required = PRECISION_MATRIX[field]
+        assert dtype == jnp.float32
+        assert gate_required is False
 
     for field in gated:
         dtype, gate_required = PRECISION_MATRIX[field]

@@ -34,6 +34,8 @@ from gpuwrf._x64_config import configure_jax_x64
 from typing import NamedTuple, Optional
 
 import jax.numpy as jnp
+
+from gpuwrf.physics.noahmp.precision import real_dtype, real_tree
 from jax import config
 
 configure_jax_x64()
@@ -46,6 +48,8 @@ from gpuwrf.contracts.noahmp_state import (
     NoahMPStatic,
 )
 from gpuwrf.physics.noahmp.energy import (
+    TFRZ,
+    _history_firewall,
     EnergyParams,
     noahmp_energy_canopy,
     thermoprop_full,
@@ -72,14 +76,14 @@ class ClosureResiduals(NamedTuple):
 
 def _gather_vec(table, index, ncat_axis0=True):
     """Gather a 1-based per-category table (axis-0 length ncat+1) to (ny, nx)."""
-    arr = jnp.asarray(table, dtype=jnp.float64)
+    arr = jnp.asarray(table, dtype=real_dtype())
     idx = jnp.clip(jnp.asarray(index, dtype=jnp.int32), 0, arr.shape[0] - 1)
     return arr[idx]
 
 
 def _gather_band(table, index):
     """Gather a (ncat+1, MBAND) table -> (MBAND, ny, nx)."""
-    arr = jnp.asarray(table, dtype=jnp.float64)
+    arr = jnp.asarray(table, dtype=real_dtype())
     idx = jnp.clip(jnp.asarray(index, dtype=jnp.int32), 0, arr.shape[0] - 1)
     g = arr[idx]                       # (ny, nx, MBAND)
     return jnp.moveaxis(g, -1, 0)      # (MBAND, ny, nx)
@@ -159,7 +163,7 @@ def build_energy_params(static: NoahMPStatic, scalar_shape) -> tuple[EnergyParam
         extra_growth=jnp.broadcast_to(jnp.asarray(float(p.extra_growth)), scalar_shape),
         dirt_soot=jnp.broadcast_to(jnp.asarray(float(p.dirt_soot)), scalar_shape),
     )
-    return energy, rad
+    return real_tree((energy, rad))
 
 
 def noah_mp_step(
@@ -171,15 +175,18 @@ def noah_mp_step(
     energy_params: Optional[EnergyParams] = None,
     rad_params: Optional[TwoStreamParams] = None,
     return_diag: bool = False,
+    output_only: bool = False,
+    history: bool = False,
 ):
     """One Noah-MP physics-timestep over all land columns (vectorised, jit-friendly).
 
-    Returns ``(land_state', NoahMPFluxes)`` (the coupler-facing API); pass
-    ``return_diag=True`` to also get a third element ``ClosureResiduals`` for the
-    integration ERROR-check gate. ``energy_params``/``rad_params`` may be supplied
-    pre-gathered (parity harnesses do this); otherwise they are gathered from
-    ``static.parameters``.
+    Returns ``(land_state', NoahMPFluxes)`` (the coupler-facing API); ``return_diag=True`` adds
+    ``ClosureResiduals`` (integration ERROR-check gate); ``output_only=True`` returns just the
+    history ``(HFX, LH, TSK, T2)`` after ENERGY. ``energy_params``/``rad_params`` may be supplied
+    pre-gathered (parity harnesses do this); otherwise they come from ``static.parameters``.
     """
+    land_state, forcing, static = real_tree((land_state, forcing, static))
+    energy_params, rad_params = real_tree((energy_params, rad_params))
     fveg_shape = jnp.asarray(land_state.tv).shape
 
     if energy_params is None or rad_params is None:
@@ -188,6 +195,12 @@ def noah_mp_step(
     # ----- 1. PHENOLOGY (S5): LAI/SAI/ELAI/ESAI/FVEG(=SHDMAX)/IGS -----
     phen = noahmp_phenology_table(land_state, forcing, static)
     land_state = land_state.replace(lai=phen.lai, sai=phen.sai)
+
+    # FICEOLD = start-of-step snow-layer ice fraction (module_sf_noahmpdrv.F:1027-1028), taken
+    # before ENERGY/PHASECHANGE change SNICE/SNLIQ; SNOWWATER's melt compaction reads it.
+    wx0 = land_state.snice + land_state.snliq
+    frozen_canopy0 = land_state.tv <= TFRZ   # ENERGY's FROZEN_CANOPY (:2210-2216) for CANWATER
+    ficeold0 = jnp.where(wx0 > 0.0, land_state.snice / jnp.where(wx0 > 0.0, wx0, 1.0), 0.0)
 
     # ----- 2. PRECIP_HEAT (S6a): PAH + canopy interception + ground precip -----
     ch2op = _gather_vec(getattr(static.parameters, "ch2op"),
@@ -200,7 +213,10 @@ def noah_mp_step(
     # FWET feeds ENERGY radiation; CANLIQ/CANICE feed WATER. Write them now.
     land_state = land_state.replace(
         fwet=precip.fwet, canliq=canliq_new, canice=canice_new)
-    forcing_e = forcing._replace(pahv=precip.pahv, pahg=precip.pahg, pahb=precip.pahb)
+    # WRF ENERGY consumes ground QSNOW after ATM/PRECIP_HEAT partitioning,
+    # including canopy interception, rather than the raw MP snow channel.
+    forcing_e = forcing._replace(pahv=precip.pahv, pahg=precip.pahg, pahb=precip.pahb,
+                                 prcpsnow=precip.qsnow)
 
     # ----- 3. RADIATION + ENERGY (S1) (ENERGY calls S2 TSNOSOI STC update) -----
     rad, rad_extras = radiation_twostream(
@@ -218,8 +234,9 @@ def noah_mp_step(
         o2air=o2, co2air=co2, foln=foln_v,
         pahv_kw=precip.pahv, pahg_kw=precip.pahg, pahb_kw=precip.pahb,
         isurban=isurban,
+        history=history,
     )
-
+    if output_only: return ef.fsh, ef.fcev + ef.fgev + ef.fctr, ef.trad, ef.t2  # noqa: E701
     # ----- 4. PHASECHANGE (S2): melt/freeze -> IMELT/QMELT for SNOW bookkeeping --
     urban = (jnp.asarray(static.ivgtyp, dtype=jnp.int32) == isurban)
     df_full, hcpct_full, _df_top, _stc_top, _dz_top = thermoprop_full(
@@ -236,17 +253,37 @@ def noah_mp_step(
         tsno=stc_pc[:NSNOW], tslb=stc_pc[NSNOW:], snice=snice_pc, snliq=snliq_pc,
         smois=smc_pc, sh2o=sh2o_pc, sneqv=sneqv_pc, snowh=snowh_pc)
 
-    # ----- 5. WATER (S4 Schaake): consumes ET (transpiration/evap sinks) -----
-    # Route the real precip rates from PRECIP_HEAT into the water forcing, and the
-    # phase-change melt into the ET qmelt sink so infiltration sees real melt.
-    et_w = et._replace(qsnow=precip.qsnow, qmelt=qmelt, imelt=imelt)
+    # ----- 5. WATER in WRF order (module_sf_noahmplsm.F WATER :6095-6160) -----
+    # QSNSUB/QSNFRO split from the ground vapour/dew flux on the pre-SNOWWATER SNEQV
+    # (:6116-6126), SNOWWATER first (QRAIN = ground rain from PRECIP_HEAT, FICEOLD), then
+    # SOILWATER with QINSUR = (PONDING+PONDING1+PONDING2)/DT + QSNBOT + QSDEW [+ QRAIN].
     forcing_w = forcing._replace(prcpnonc=precip.qrain, prcpconv=jnp.zeros_like(precip.qrain),
                                  prcpsnow=precip.qsnow)
-    land_state = noahmp_water_hydro(land_state, forcing_w, static, et_w, dt)
+    ground_et = jnp.where(jnp.abs(et.edir) > 0.0, et.edir, et.qseva)
+    qvap_g = jnp.maximum(ground_et, 0.0)
+    qdew_g = jnp.maximum(-ground_et, 0.0)
+    sneqv_pre = land_state.sneqv
+    has_snow = sneqv_pre > 0.0
+    qsnsub = jnp.where(has_snow, jnp.minimum(qvap_g, sneqv_pre / dt), 0.0)
+    qsnfro = jnp.where(has_snow, qdew_g, 0.0)
 
-    # ----- 6. SNOW (S3): SNOWWATER + albedo aging; consumes QSNOW + IMELT/QMELT --
     forcing_s = forcing._replace(prcpsnow=precip.qsnow)
-    land_state = noahmp_snow(land_state, forcing_s, static, precip.qsnow, imelt, qmelt, dt)
+    land_state, qsnbot, ponding1, ponding2 = noahmp_snow(
+        land_state, forcing_s, static, precip.qsnow, imelt, qmelt, dt, ficeold=ficeold0,
+        qrain=precip.qrain, qsnsub=qsnsub, qsnfro=qsnfro, return_fluxes=True)
+    snow_ponding = ponding1 + ponding2
+
+    # SOILWATER's snow-to-soil input (:6149-6152) rides in the qmelt slot of the ET fluxes.
+    et_w = et._replace(qsnow=precip.qsnow, qmelt=(_ponding + ponding1 + ponding2) / dt + qsnbot,
+                       imelt=imelt)
+    water_result = noahmp_water_hydro(
+        land_state, forcing_w, static, et_w, dt, sneqv_before_snow=sneqv_pre, qrain_ground=precip.qrain,
+        frozen_canopy=frozen_canopy0,
+        **({"history": True} if history else {}))
+    if history:
+        land_state, runoff = water_result
+    else:
+        land_state = water_result
 
     # ----- coupler-facing fluxes (module_sf_noahmpdrv.F flux mapping) -----
     # QFX = ECAN+ESOIL+ETRAN (mass, :1205); LH = FCEV+FGEV+FCTR (:1206).
@@ -256,7 +293,31 @@ def noah_mp_step(
         hfx=ef.fsh, lh=lh, qfx=qfx, grdflx=ef.ssoil, tsk=ef.trad,
         qsfc=land_state.qsfc, znt=ef.z0wrf, emiss=ef.emissi,
         albedo=land_state.albedo, chs=0.5 * (ef.chv + ef.chb),
-        t2=ef.t2, t2mv=ef.t2mv, t2mb=ef.t2mb,
+        t2=ef.t2, t2mv=ef.t2mv, t2mb=ef.t2mb, q2=ef.q2,
+        # Water/snow exports (RUNSF/RUNSB, SNOM_INCREMENT) leave noahmp_water_hydro/noahmp_snow for
+        # the same carry accumulators as ef.history -> same firewall (A22/A23, BD74).
+        history=(_history_firewall({
+            **ef.history,
+            "SAV": rad.sav, "SAG": rad.sag, "FSA": rad.fsa, "FIRA": ef.fira,
+            "FVEG": phen.fveg, "ECAN": et.ecan, "ETRAN": et.etran, "EDIR": et.edir,
+            "GRDFLX": ef.ssoil, "TRAD": ef.trad, "CANHS": ef.canhs,
+            "CHV": ef.chv, "CHB": ef.chb, "SNOWC": rad.fsno,
+            # ENERGY:2047-2051 resets skipped canopy diagnostics to zero.
+            "T2V": jnp.where(phen.fveg > 0, ef.t2mv, 0), "T2B": ef.t2mb,
+            "Q2V": jnp.where(phen.fveg > 0, ef.q2v / (1 - ef.q2v), 0),
+            "Q2B": ef.q2b / (1 - ef.q2b),
+            "FORCTLSM": forcing.sfctmp, "FORCQLSM": forcing.qair,
+            "FORCPLSM": forcing.sfcprs, "FORCZLSM": forcing.zlvl,
+            "FORCWLSM": jnp.sqrt(forcing.uu**2 + forcing.vv**2),
+            "SOILENERGY": jnp.sum(_dzsnso_from_zsnso(land_state.zsnso)[NSNOW:]
+                * hcpct_full[NSNOW:] * (land_state.tslb - 273.16) * .001, axis=0),
+            "SNOWENERGY": jnp.sum(jnp.where(
+                jnp.arange(-NSNOW + 1, 1).reshape((-1,) + (1,) * land_state.isnow.ndim) > land_state.isnow,
+                _dzsnso_from_zsnso(land_state.zsnso)[:NSNOW] * hcpct_full[:NSNOW]
+                * (land_state.tsno - 273.16) * .001, 0), axis=0),
+            "RUNSF": runoff[0], "RUNSB": runoff[1],
+            "SNOM_INCREMENT": qmelt * dt + _ponding + snow_ponding,
+        }) if history else None),
     )
 
     if not return_diag:
@@ -286,7 +347,7 @@ def _dzsnso_from_zsnso(zsnso):
 
     DZSNSO(k) = ZSNSO(k-1) - ZSNSO(k) with ZSNSO(-1) = 0 (WRF SNOWWATER convention).
     """
-    z = jnp.asarray(zsnso, dtype=jnp.float64)
+    z = jnp.asarray(zsnso, dtype=real_dtype())
     prev = jnp.concatenate([jnp.zeros_like(z[:1]), z[:-1]], axis=0)
     return prev - z
 

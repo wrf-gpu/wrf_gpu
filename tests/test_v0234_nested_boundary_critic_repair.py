@@ -65,6 +65,9 @@ from v0234_wrf_scalar_boundary_oracle import (
     rk_scalar_sequence,
     scalar_boundary_tendency,
 )
+from v0234_wrf_scalar_boundary_real4_oracle import (
+    scalar_boundary_tendency as scalar_boundary_tendency_real4,
+)
 from v0234_wrf_sint_source_oracle import sint_full, wrf_sides
 
 
@@ -483,6 +486,14 @@ def test_candidate_moving_fill_uses_full_sint_for_state_and_persistent_scratch(
     assert checked_scratch_names == expected_scratch_names
 
 
+def _species_boundary_oracle(name: str, *args, **kwargs) -> np.ndarray:
+    """B36: Thompson qc..Nr records/coupling are WRF REAL; QV keeps fp64 algebra."""
+
+    if name == "qv":
+        return scalar_boundary_tendency(*args, **kwargs)
+    return scalar_boundary_tendency_real4(*args, **kwargs)
+
+
 def _scalar_fixture(*, cadence_s: float):
     grid0 = build_flat_grid(nx=14, ny=13, nz=3, dx_m=1000.0)
     y, x = np.indices((grid0.ny, grid0.nx), dtype=np.float64)
@@ -557,7 +568,8 @@ def test_scalar_rk1_frozen_tendencies_match_source_oracle_all_families_corners(
         config,
     )
     for name, tendency in zip(NESTED_BOUNDARY_SCALAR_SPECIES, actual, strict=True):
-        expected = scalar_boundary_tendency(
+        expected = _species_boundary_oracle(
+            name,
             np.asarray(getattr(state, name)),
             np.asarray(state.mu_total),
             np.asarray(grid.metrics.c1h),
@@ -579,7 +591,8 @@ def test_three_stage_scalar_update_matches_source_oracle_with_changing_mass(
     grid, origin, records, config = _scalar_fixture(cadence_s=6.0)
     frozen = nested_scalar_boundary_tendencies(origin, 6.0, grid.metrics, 2.0, config)
     frozen_oracle = tuple(
-        scalar_boundary_tendency(
+        _species_boundary_oracle(
+            name,
             np.asarray(getattr(origin, name)),
             np.asarray(origin.mu_total),
             np.asarray(grid.metrics.c1h),
@@ -720,7 +733,8 @@ def test_live_moist_and_number_helpers_apply_nonunit_map_at_rk1_rk2_rk3(
         config,
     )
     frozen_oracle = tuple(
-        scalar_boundary_tendency(
+        _species_boundary_oracle(
+            name,
             np.asarray(getattr(origin, name)),
             np.asarray(origin.mu_total),
             np.asarray(grid.metrics.c1h),

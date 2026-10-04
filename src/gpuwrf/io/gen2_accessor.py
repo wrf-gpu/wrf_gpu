@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -11,7 +12,7 @@ import re
 from typing import Any, Iterable
 
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 try:  # JAX is present in project test environments but keep import-time behavior narrow.
     import jax
@@ -303,6 +304,34 @@ class Gen2Run:
         self._grid_cache: dict[str, Gen2GridSpec] = {}
         self._variable_cache: dict[str, list[str]] = {}
         self._device_cache: dict[tuple[str, str, int | None], Any] = {}
+        self._input_handles: dict[Path, Dataset] = {}
+
+    @contextmanager
+    def input_read_scope(self, domain: str):
+        """Keep one read-only input handle during init; always close on exit.
+
+        Device-array caching and lazy materialization retain their usual behavior.
+        Nested scopes reuse the outer handle, which remains the outer owner's.
+        """
+        path = self.wrfinput_file(domain)
+        if path in self._input_handles:
+            yield self
+            return
+        with Dataset(path, "r") as dataset:
+            self._input_handles[path] = dataset
+            try:
+                yield self
+            finally:
+                del self._input_handles[path]
+
+    @contextmanager
+    def _read_dataset(self, path: Path):
+        dataset = self._input_handles.get(path)
+        if dataset is not None:
+            yield dataset
+        else:
+            with Dataset(path, "r") as opened:
+                yield opened
 
     @property
     def namelist(self) -> dict[str, dict[str, Any]]:
@@ -347,7 +376,7 @@ class Gen2Run:
     def wrfinput_variables(self, domain: str) -> list[str]:
         """Return variables present in the domain's `wrfinput` file."""
 
-        with Dataset(self.wrfinput_file(domain), "r") as dataset:
+        with self._read_dataset(self.wrfinput_file(domain)) as dataset:
             return list(dataset.variables.keys())
 
     def time_axis(self, domain: str) -> list[datetime]:
@@ -416,7 +445,7 @@ class Gen2Run:
 
     def load(self, domain: str, var: str, time: int | str | datetime | None = None, lazy: bool = True):
         path = self._file_for_time(domain, time)
-        with Dataset(path, "r") as dataset:
+        with self._read_dataset(path) as dataset:
             if var not in dataset.variables:
                 raise KeyError(f"{var!r} not present in {path}")
             time_index = 0 if "Time" in dataset.variables[var].dimensions else None
@@ -427,7 +456,7 @@ class Gen2Run:
         """Load one variable from `wrfinput_<domain>` through the shared cache."""
 
         path = self.wrfinput_file(domain)
-        with Dataset(path, "r") as dataset:
+        with self._read_dataset(path) as dataset:
             if var not in dataset.variables:
                 raise KeyError(f"{var!r} not present in {path}")
             time_index = 0 if "Time" in dataset.variables[var].dimensions else None
@@ -501,7 +530,7 @@ class Gen2Run:
         raise FileNotFoundError(f"no {domain} wrfout history file for time {time!r}")
 
     def _read_variable(self, path: Path, variable: str, time_index: int | None) -> np.ndarray:
-        with Dataset(path, "r") as dataset:
+        with self._read_dataset(path) as dataset:
             netcdf_var = dataset.variables[variable]
             data = netcdf_var[time_index] if time_index is not None else netcdf_var[:]
             return np.asarray(np.ma.filled(data, np.nan))

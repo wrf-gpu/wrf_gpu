@@ -4,7 +4,14 @@
 # version-keys its cache dir by ``gpuwrf.__version__`` (B1), so the attribute
 # must already exist when ``configure_compilation_cache()`` runs at import. (It
 # is re-exported via ``__all__`` at the foot of the module.)
-__version__ = "0.23.4"
+__version__ = "0.3.0"
+
+# v0.3 release defaults: the validated fp32 fast paths are ON unless opted out
+# (explicit =0 per flag, or GPUWRF_FAST_DEFAULTS=0 for all). MUST run first:
+# submodules and the import hooks below read these switches at import time.
+from gpuwrf._fast_defaults import apply_fast_path_defaults as _apply_fast_path_defaults
+
+_FAST_DEFAULTS_STATUS = _apply_fast_path_defaults()
 
 # ADR-002: the dynamical core + physics are validated in float64.  JAX defaults
 # to float32 and SILENTLY canonicalises float64->float32 unless x64 is enabled
@@ -35,6 +42,12 @@ __version__ = "0.23.4"
 from gpuwrf._x64_config import configure_jax_x64 as _configure_jax_x64
 
 _JAX_X64_FORCE_STATUS = _configure_jax_x64()
+
+# Keep launch/profiler command-buffer settings together, before backend init.
+# Whole-step GPU byte gate passes; capture removes radiation host round trips.
+from gpuwrf.runtime.xla_autotune import configure_command_buffers as _configure_command_buffers
+
+_COMMAND_BUFFER_STATUS = _configure_command_buffers(default_on=True)
 
 # Persistent JIT/XLA compilation cache (v0.12.0 first-run usability win): the
 # v0.12.0 critique measured a ~4 min 55 s cold JIT compile on EVERY fresh

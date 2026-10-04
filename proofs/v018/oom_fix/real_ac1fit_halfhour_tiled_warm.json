@@ -25,7 +25,7 @@
   },
   "forecast_seconds_requested": 1800.0,
   "forecast_wall_s": 867.3437208429677,
-  "input_dir": "ac1fit_9_3_1/run_cpu",
+  "input_dir": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu",
   "load_wall_s": 79.97963027493097,
   "memory_stats_after_forecast": {},
   "metadata_domains": {
@@ -53,7 +53,7 @@
         "noahmp_rad_params_loaded": true,
         "noahmp_static_loaded": true,
         "noahmp_yearlen": 365.0,
-        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d01",
+        "provenance": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu/wrfinput_d01",
         "sf_surface_physics": 4,
         "use_noahmp": true
       },
@@ -78,7 +78,7 @@
         "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
       },
       "standalone_native_init": true,
-      "wrfbdy_path": "ac1fit_9_3_1/run_cpu/wrfbdy_d01"
+      "wrfbdy_path": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu/wrfbdy_d01"
     },
     "d02": {
       "grid": {
@@ -104,7 +104,7 @@
         "noahmp_rad_params_loaded": true,
         "noahmp_static_loaded": true,
         "noahmp_yearlen": 365.0,
-        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d02",
+        "provenance": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu/wrfinput_d02",
         "sf_surface_physics": 4,
         "use_noahmp": true
       },
@@ -211,7 +211,7 @@
         "noahmp_rad_params_loaded": true,
         "noahmp_static_loaded": true,
         "noahmp_yearlen": 365.0,
-        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d03",
+        "provenance": "<DATA_ROOT>/wrf_downscale/nested_canary_training/ac1fit_20260614T220802Z/run_cpu/wrfinput_d03",
         "sf_surface_physics": 4,
         "use_noahmp": true
       },

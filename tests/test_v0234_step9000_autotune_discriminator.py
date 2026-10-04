@@ -10,7 +10,10 @@ flags.
 
 from __future__ import annotations
 
+from _historical_artifacts import require_historical
+
 import hashlib
+import json
 import re
 import subprocess
 import sys
@@ -25,7 +28,12 @@ if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from scripts import v0234_nested_frozen_wrf_boundary_window as runner  # noqa: E402
+# The discriminator configures its launch candidate by mutating the imported
+# runner. Its constants tests must not change another file's launch authority
+# during collection, so restore the shared runner immediately after import.
+_runner_candidate = (runner.CANDIDATE_COMMIT, runner.CANDIDATE_TREE)
 from scripts import v0234_step9000_autotune_discriminator as disc  # noqa: E402
+runner.CANDIDATE_COMMIT, runner.CANDIDATE_TREE = _runner_candidate
 
 SPRINT = REPO_ROOT / ".agent/sprints/2026-07-17-v0234-step9000-v-v10-kimi"
 LAUNCHER = SPRINT / "autotune-discriminator-launch-command.sh"
@@ -68,25 +76,27 @@ def test_authority_constants_match_terminal_proof() -> None:
 
 
 def test_runner_and_model_bytes_unchanged() -> None:
-    runner_sha = hashlib.sha256(
-        (REPO_ROOT / "scripts/v0234_nested_frozen_wrf_boundary_window.py")
-        .read_bytes()
-    ).hexdigest()
+    # This is an archival provenance gate: authenticate the commit that produced
+    # the proof, not an unrelated later checkout's HEAD.
+    proof = json.loads((
+        REPO_ROOT / ".agent/sprints/2026-07-17-v0234-post-fable-corner-window/proof.json"
+    ).read_text())
+    head = proof["immutable_code"]["head_before_closeout"]
+    runner_source = subprocess.check_output([
+        "git", "-C", str(REPO_ROOT), "show",
+        f"{head}:scripts/v0234_nested_frozen_wrf_boundary_window.py",
+    ])
+    runner_sha = hashlib.sha256(runner_source).hexdigest()
     assert runner_sha == PROOF_CONSTANTS["runner_source_sha256"]
     tree = subprocess.run(
-        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD:src/gpuwrf"],
+        ["git", "-C", str(REPO_ROOT), "rev-parse", f"{head}:src/gpuwrf"],
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
     assert tree == PROOF_CONSTANTS["model_tree"]
-    diff = subprocess.run(
-        ["git", "-C", str(REPO_ROOT), "diff", "--name-only", "--", "src/gpuwrf"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    assert diff == ""
+    assert proof["immutable_code"]["runner_source_sha256"] == runner_sha
+    assert proof["immutable_code"]["src_gpuwrf_tree"] == tree
 
 
 def test_retained_8800_carry_still_authenticates() -> None:
@@ -95,7 +105,6 @@ def test_retained_8800_carry_still_authenticates() -> None:
     # scheme is re-verified here as contract-mandated evidence hygiene.
     import pickle as _pickle
 
-    runtime = runner._import_runtime()
     carry_path = Path(
         "<DATA_ROOT>/wrf_downscale/artifacts/cpu_oracles/"
         "tenerife_operational_v2_fullbuffer_111x93/20250228_18z/"
@@ -103,6 +112,8 @@ def test_retained_8800_carry_still_authenticates() -> None:
         "nested_stage_omega_transport_470e6111_post_fable_corner_window_gpt56"
         "_resource_retry1/checkpoints/authenticated-d03-step-8800.pkl"
     )
+    require_historical(carry_path)
+    runtime = runner._import_runtime()
     raw = carry_path.read_bytes()
     file_sha = hashlib.sha256(raw).hexdigest()
     assert file_sha == PROOF_CONSTANTS["carry_8800_file_sha256"]

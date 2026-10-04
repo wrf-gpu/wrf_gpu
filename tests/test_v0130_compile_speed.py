@@ -34,6 +34,22 @@ import pytest
 from gpuwrf.runtime import aot_precompile as aot
 from gpuwrf.runtime import compile_cache as cc
 from gpuwrf.runtime import xla_autotune as at
+from tests._jax_cache_isolation import private_jax_cache
+
+
+@pytest.fixture(autouse=True)
+def _isolate_cache_configuration(monkeypatch, tmp_path):
+    """Cache-on mechanism checks use a private cache despite the suite opt-out."""
+    saved_status = dict(cc.CACHE_STATUS)
+    monkeypatch.setenv("XLA_FLAGS", os.environ.get("XLA_FLAGS", ""))
+    monkeypatch.setenv("GPUWRF_XLA_AUTOTUNE_CACHE_DIR", str(tmp_path / "autotune"))
+    monkeypatch.setattr(cc, "_cuda_tag", lambda: "cuda_sm120")
+    try:
+        with private_jax_cache(monkeypatch, tmp_path / "jit"):
+            yield
+    finally:
+        cc.CACHE_STATUS.clear()
+        cc.CACHE_STATUS.update(saved_status)
 
 
 # --------------------------------------------------------------------------- #
@@ -403,6 +419,7 @@ def test_configure_compilation_cache_autotune_opt_out_honored(monkeypatch, tmp_p
     not-opted-in even with a GPU detected and the compile cache on. XLA_FLAGS must
     be byte-unchanged by the autotune path (the regression-guard invariant)."""
     monkeypatch.setenv("GPUWRF_XLA_AUTOTUNE_CACHE", "0")  # explicit opt-out
+    monkeypatch.setenv("GPUWRF_XLA_PARALLEL_COMPILE", "0")  # independent B2 hook
     monkeypatch.delenv("JAX_PLATFORMS", raising=False)
     monkeypatch.delenv("JAX_PLATFORM_NAME", raising=False)
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0")  # GPU "present"
@@ -430,7 +447,7 @@ def test_configure_compilation_cache_autotune_opt_out_honored(monkeypatch, tmp_p
 # an UNKNOWN flag from ever aborting; we still assert rc=0 here as the definitive
 # no-abort proof, and assert the opt-out (=0) path injects nothing (next test).
 # --------------------------------------------------------------------------- #
-def _import_gpuwrf_child(extra_env):
+def _import_gpuwrf_child(extra_env, cache_dir):
     import subprocess
     import sys
 
@@ -448,10 +465,14 @@ def _import_gpuwrf_child(extra_env):
     )
     env = dict(os.environ)
     env["PYTHONPATH"] = repo_src + os.pathsep + env.get("PYTHONPATH", "")
-    env.pop("JAX_PLATFORMS", None)
+    env["JAX_PLATFORMS"] = "cpu"
     env.pop("JAX_PLATFORM_NAME", None)
     env.pop("XLA_FLAGS", None)
-    env["CUDA_VISIBLE_DEVICES"] = "0"
+    env["CUDA_VISIBLE_DEVICES"] = ""
+    env["GPUWRF_JAX_CACHE"] = "1"
+    env["GPUWRF_JAX_CACHE_DIR"] = str(cache_dir)
+    env.pop("JAX_COMPILATION_CACHE_DIR", None)
+    env.pop("GPUWRF_XLA_AUTOTUNE_CACHE", None)
     env.update(extra_env)
     proc = subprocess.run(
         [sys.executable, "-c", child],
@@ -460,16 +481,12 @@ def _import_gpuwrf_child(extra_env):
     return proc
 
 
-def test_package_import_never_aborts_default_autotune_on():
-    """B1: with the autotune cache at its new default (unset => on-with-compile-
-    cache) and a GPU "detected", `import gpuwrf` must STILL return rc=0 (never the
-    v0.12.0 fatal abort), because every injected flag is probe-validated first. We
-    assert no abort, and that the autotune cache reports itself opted-in by the
-    default-on path (a flag may or may not be injected depending on whether THIS
-    box's build accepts it, which the dedicated probe tests cover)."""
-    env = {}
-    env.pop("GPUWRF_XLA_AUTOTUNE_CACHE", None)  # unset => default-on
-    proc = _import_gpuwrf_child(env)
+def test_package_import_never_aborts_default_autotune_on(tmp_path):
+    """Real CPU import opts into autotuning and respects the platform guard.
+
+    Simulated GPU-target tests above separately exercise accepted/rejected flags.
+    """
+    proc = _import_gpuwrf_child({}, tmp_path / "child-jit")
     assert proc.returncode == 0, (
         f"import gpuwrf aborted rc={proc.returncode}\n"
         f"STDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
@@ -479,18 +496,21 @@ def test_package_import_never_aborts_default_autotune_on():
     # rejected/unknown one -- a rejected flag is dropped, not injected).
     flag_line = next(l for l in out.splitlines() if l.startswith("XLA_FLAGS="))
     injected = flag_line[len("XLA_FLAGS="):]
-    if "xla_gpu" in injected:
-        assert "xla_gpu_per_fusion_autotune_cache_dir" in injected
+    # CPU import exercises the real hook without creating a CUDA client.
+    # Command-buffer flags are independent of the autotune cache.
+    assert "xla_gpu_per_fusion_autotune_cache_dir" not in injected
+    assert "xla_gpu_experimental_autotune_cache_mode" not in injected
+    assert "AUTOTUNE_ENABLED=False" in out
     # Default-on means the autotune path reports opted_in=True at import.
     assert "AUTOTUNE_OPTED_IN=True" in out
 
 
-def test_package_import_opt_out_injects_no_autotune_flags():
+def test_package_import_opt_out_injects_no_autotune_flags(tmp_path):
     """The GPUWRF_XLA_AUTOTUNE_CACHE=0 opt-out at import: `import gpuwrf` must NOT
     inject any --xla_gpu_* autotune flag and the autotune cache must report itself
     disabled + not-opted-in. (No-abort + zero autotune injection -- the operator's
     explicit opt-out is honoured end-to-end through the real import hook.)"""
-    proc = _import_gpuwrf_child({"GPUWRF_XLA_AUTOTUNE_CACHE": "0"})
+    proc = _import_gpuwrf_child({"GPUWRF_XLA_AUTOTUNE_CACHE": "0"}, tmp_path / "child-jit")
     assert proc.returncode == 0, (
         f"import gpuwrf aborted rc={proc.returncode}\n"
         f"STDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"

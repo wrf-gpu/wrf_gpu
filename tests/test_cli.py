@@ -207,15 +207,17 @@ def test_run_accepts_implemented_radiation_at_validation(
     fake.DailyPipelineConfig = _Config
     fake.detect_init_mode = _detect_init_mode
     fake.execute_daily_pipeline = _execute
+    fake.NestedPipelineConfig = _Config
+    fake.execute_nested_pipeline = _execute
     monkeypatch.setitem(sys.modules, "gpuwrf.integration.daily_pipeline", fake)
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.nested_pipeline", fake)
 
     case = tmp_path / "case"
     case.mkdir()
     (case / "namelist.input").write_text(
         "&physics\n mp_physics = 8,\n ra_lw_physics = 4,\n ra_sw_physics = 4,\n/\n"
     )
-    with pytest.raises(RuntimeError) as excinfo:
-        main(
+    rc = main(
             [
                 "run",
                 "--namelist", str(case / "namelist.input"),
@@ -224,8 +226,9 @@ def test_run_accepts_implemented_radiation_at_validation(
             ]
         )
     # Reached the pipeline => validation accepted the implemented RRTMG suite.
-    assert str(excinfo.value) == sentinel
+    assert rc == 1
     err = capsys.readouterr().err
+    assert sentinel in err
     assert "SILENTLY" not in err
     assert "NOT operationally wired" not in err
     assert "Unsupported namelist" not in err
@@ -257,15 +260,17 @@ def test_run_accepts_wired_dudhia_sw_at_validation(
         raise RuntimeError(sentinel)
 
     fake.execute_daily_pipeline = _execute
+    fake.NestedPipelineConfig = _Config
+    fake.execute_nested_pipeline = _execute
     monkeypatch.setitem(sys.modules, "gpuwrf.integration.daily_pipeline", fake)
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.nested_pipeline", fake)
 
     case = tmp_path / "case"
     case.mkdir()
     (case / "namelist.input").write_text(
         "&physics\n mp_physics = 8,\n ra_lw_physics = 4,\n ra_sw_physics = 1,\n/\n"
     )
-    with pytest.raises(RuntimeError) as excinfo:
-        main(
+    rc = main(
             [
                 "run",
                 "--namelist", str(case / "namelist.input"),
@@ -274,20 +279,21 @@ def test_run_accepts_wired_dudhia_sw_at_validation(
             ]
         )
     # Reached the pipeline => validation accepted the wired Dudhia-SW suite.
-    assert str(excinfo.value) == sentinel
+    assert rc == 1
     err = capsys.readouterr().err
+    assert sentinel in err
     assert "SILENTLY" not in err
     assert "NOT operationally wired" not in err
 
 
-def test_run_real_canary_cudt_namelist_proceeds_with_warning(
+def test_run_real_canary_cudt_namelist_proceeds_with_wrf_cadence(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """A real Canary/WRF namelist with cudt=5 (and gwd_opt=1, radt=30, cu=1,
     bldt=0) must PROCEED through the pre-JAX validation gate -- NOT be rejected --
-    and emit a non-fatal cudt cadence WARNING. The naive-user out-of-box fix.
+    and accept the implemented WRF cumulus cadence (SI13, 2aa398868).
 
     Uses the same fake-pipeline injection as the implemented-radiation test so the
     run reaches the pipeline (proving validation accepted the namelist) without
@@ -311,7 +317,10 @@ def test_run_real_canary_cudt_namelist_proceeds_with_warning(
         raise RuntimeError(sentinel)
 
     fake.execute_daily_pipeline = _execute
+    fake.NestedPipelineConfig = _Config
+    fake.execute_nested_pipeline = _execute
     monkeypatch.setitem(sys.modules, "gpuwrf.integration.daily_pipeline", fake)
+    monkeypatch.setitem(sys.modules, "gpuwrf.integration.nested_pipeline", fake)
 
     case = tmp_path / "case"
     case.mkdir()
@@ -324,8 +333,7 @@ def test_run_real_canary_cudt_namelist_proceeds_with_warning(
         "&dynamics\n diff_opt = 1,\n km_opt = 4,\n gwd_opt = 1,\n"
         " moist_adv_opt = 1,\n scalar_adv_opt = 1,\n/\n"
     )
-    with pytest.raises(RuntimeError) as excinfo:
-        main(
+    rc = main(
             [
                 "run",
                 "--namelist", str(case / "namelist.input"),
@@ -334,13 +342,13 @@ def test_run_real_canary_cudt_namelist_proceeds_with_warning(
             ]
         )
     # Reached the pipeline => validation did NOT reject the real cudt=5 namelist.
-    assert str(excinfo.value) == sentinel
+    assert rc == 1
     err = capsys.readouterr().err
+    assert sentinel in err
     assert "Unsupported namelist" not in err
-    # The cudt approximation surfaces as a non-fatal warning (run proceeds).
-    assert "gpuwrf: warning:" in err
-    assert "cudt" in err
-    assert "every dynamics step" in err.lower()
+    # CUDT is implemented; the old approximation warning must no longer appear.
+    assert "every dynamics step" not in err.lower()
+    assert "cudt" not in err.lower()
 
 
 # --------------------------------------------------------------------------- #

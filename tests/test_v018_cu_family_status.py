@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from _historical_artifacts import require_historical
 
 
 def test_v018_tail_cu_schemes_are_not_accepted_without_oracles() -> None:
@@ -13,7 +14,9 @@ def test_v018_tail_cu_schemes_are_not_accepted_without_oracles() -> None:
 
 
 def test_v018_cu_family_status_has_no_scoped_oracle_gaps() -> None:
-    report = json.loads(Path("proofs/v018/cu_family_status.json").read_text())
+    path = Path(__file__).resolve().parents[1] / "proofs/v018/cu_family_status.json"
+    require_historical(path)
+    report = json.loads(path.read_text())
 
     assert report["step1_honesty_gate_met"] is True
     assert report["full_v018_cu_ship_gate_met"] is True

@@ -10,7 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.config import paths
 from gpuwrf.io.data_inventory import parse_wrfout_valid_time

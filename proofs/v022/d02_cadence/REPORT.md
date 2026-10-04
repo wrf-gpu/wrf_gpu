@@ -55,7 +55,7 @@ Attempted real GPU smoke:
 
 - Command used proof-local `history_interval=20` AC1FIT input and `hours=1.17`.
 - First attempt failed before integration because `GPUWRF_WRF_ROOT` was unset.
-- Second attempt set `GPUWRF_WRF_ROOT=<DATA_ROOT>/src/wrf_pristine/WRF` but hit an AOT miss and cold compile; it was terminated after >4 minutes to obey the wall-clock-smart rule. This aborted smoke is not used as proof.
+- Second attempt set `GPUWRF_WRF_ROOT=<USER_HOME>/src/wrf_pristine/WRF` but hit an AOT miss and cold compile; it was terminated after >4 minutes to obey the wall-clock-smart rule. This aborted smoke is not used as proof.
 
 ## Validation Commands
 
@@ -90,7 +90,7 @@ scripts/with_gpu_lock.sh --timeout 7200 --label d02-cadence-release-gate -- bash
 
 Environment:
 
-- `GPUWRF_WRF_ROOT=<DATA_ROOT>/src/wrf_pristine/WRF`
+- `GPUWRF_WRF_ROOT=<USER_HOME>/src/wrf_pristine/WRF`
 - proof-local input copied from AC1FIT with only `history_interval = 20, 20, 20`
 - `GPUWRF_TRAINING_OUTPUT_SUBSET` unset
 - `GPUWRF_FULL_WRFOUT_VARIABLES` unset

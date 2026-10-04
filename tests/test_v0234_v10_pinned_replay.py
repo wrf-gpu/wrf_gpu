@@ -238,6 +238,10 @@ def test_launcher_is_one_locked_dump_then_pin_command() -> None:
 
 
 def test_profile_static_schedule_and_launcher_audits_are_green() -> None:
+    from scripts.v0234_v10_pinned_replay_profile import RUNTIME_AUTHORITY_ROOT, CPU_DOMAIN_LOAD_PREFLIGHT
+    from _historical_artifacts import require_historical
+
+    require_historical(RUNTIME_AUTHORITY_ROOT / "run/MPTABLE.TBL", CPU_DOMAIN_LOAD_PREFLIGHT)
     code = """
 import json
 from scripts import v0234_nested_frozen_wrf_boundary_window as runner
@@ -255,7 +259,7 @@ print(json.dumps({
     ]),
 }, sort_keys=True))
 """
-    environment = dict(os.environ)
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("GPUWRF_")}
     environment.update({
         "PYTHONPATH": f"{REPO}:{REPO / 'src'}",
         "GPUWRF_V10_PINNED_REPLAY": "1",

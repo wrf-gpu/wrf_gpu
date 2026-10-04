@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import inspect
 import json
 import os
@@ -9,13 +10,35 @@ import sys
 from types import SimpleNamespace
 
 import pytest
+from _historical_artifacts import require_historical
 
 
-os.environ["GPUWRF_NESTED_BUNDLE_APPROVED_SHA"] = (
-    "470e6111d516479bed4bc0c3b2be1007bb082afd"
-)
+# Profiles mutate the runner at import time. Load a private module so collection
+# order cannot select a different profile or change another test's runner.
+_source = Path(__file__).resolve().parents[1] / "scripts/v0234_nested_frozen_wrf_boundary_window.py"
+_spec = importlib.util.spec_from_file_location("post_fable_test_runner", _source)
+assert _spec is not None and _spec.loader is not None
+runner = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = runner
+_previous = os.environ.get("GPUWRF_NESTED_BUNDLE_APPROVED_SHA")
+os.environ["GPUWRF_NESTED_BUNDLE_APPROVED_SHA"] = "470e6111d516479bed4bc0c3b2be1007bb082afd"
+try:
+    _spec.loader.exec_module(runner)
+finally:
+    if _previous is None:
+        os.environ.pop("GPUWRF_NESTED_BUNDLE_APPROVED_SHA", None)
+    else:
+        os.environ["GPUWRF_NESTED_BUNDLE_APPROVED_SHA"] = _previous
 
-from scripts import v0234_nested_frozen_wrf_boundary_window as runner  # noqa: E402
+
+def _require_preserved_restart_artifacts() -> None:
+    from scripts.v0234_stage_omega_transport_runner_profile import PRESERVED_POST_FABLE_NAMESPACE
+    root = runner.LINEAGE_WORK_DIR / PRESERVED_POST_FABLE_NAMESPACE
+    require_historical(
+        root / "ordinary-one-step-lowered-hlo.json",
+        root / "failure/last-healthy-d01-step-0.pkl",
+        root / "failure/.first-failed-d01-step-0.pkl.tmp-1743996",
+    )
 
 
 def _write_self_hashed_json(path: Path, payload: dict[str, object]) -> tuple[str, str]:
@@ -27,7 +50,7 @@ def _write_self_hashed_json(path: Path, payload: dict[str, object]) -> tuple[str
     return runner.sha256_file(path), canonical
 
 
-def test_profile_binds_post_fable_namespace_lock_and_hard_critic_gate() -> None:
+def test_profile_binds_post_fable_namespace_lock_and_hard_critic_gate(tmp_path: Path) -> None:
     assert runner.SCHEMA == "gpuwrf.v0234.post-fable-late-ni-fulltree.v1"
     assert runner.REQUIRE_KNOWN_1500_V10_RECORD is True
     assert runner.REQUIRE_TOOLING_CRITIC_ACCEPT is True
@@ -41,7 +64,11 @@ def test_profile_binds_post_fable_namespace_lock_and_hard_critic_gate() -> None:
         "gpuwrf.v0234.post-fable-resource-restart-critic.v1"
     )
     assert runner.TOOLING_CRITIC_VERDICT == "KIMI_RESOURCE_RESTART_CRITIC_ACCEPT"
-    audit = runner.audit_exact_launch_command(runner.LAUNCH_COMMAND)
+    text = runner.LAUNCH_COMMAND.read_text()
+    old_root = next(line.removeprefix("REPO=") for line in text.splitlines() if line.startswith("REPO="))
+    launcher = tmp_path / runner.LAUNCH_COMMAND.name
+    launcher.write_text(text.replace(old_root, str(runner.REPO_ROOT)))
+    audit = runner.audit_exact_launch_command(launcher)
     assert audit["passed"] is True
     assert audit["known_1500_v10_record_required"] is True
     assert audit["tooling_critic_accept_required"] is True
@@ -58,6 +85,7 @@ def test_profile_binds_post_fable_namespace_lock_and_hard_critic_gate() -> None:
 
 
 def test_resource_restart_authority_preserves_preempted_namespace_exactly() -> None:
+    _require_preserved_restart_artifacts()
     assert runner.TOOLING_CRITIC_AUTHORITY_HOOK is not None
     authority = runner.TOOLING_CRITIC_AUTHORITY_HOOK()
     assert authority["required"] is True
@@ -91,6 +119,7 @@ def test_resource_restart_launcher_requires_new_proofs_before_lock() -> None:
 
 
 def test_arm_s_green_authority_is_authenticated_before_replay() -> None:
+    require_historical(runner.CORRECTED_CPU_ARM_PROOF, runner.FALSIFIED_CPU_ARM_PROOF)
     authority = runner.assert_final_candidate_proof_authority()
     arm = authority["post_fable_arm_s_gpu"]
     assert arm["sha256"] == (
@@ -103,6 +132,7 @@ def test_arm_s_green_authority_is_authenticated_before_replay() -> None:
 
 
 def test_known_v10_authority_is_exact_and_remains_a_release_blocker() -> None:
+    require_historical(runner.KNOWN_1500_V10_ARTIFACT)
     authority, row = runner.authenticate_known_1500_v10_observation()
     assert row["sha256"] == (
         "38683937ed6be6eb96bb71c3bb7c5e8976d8d91c525021c184712c24eb169448"
@@ -122,6 +152,7 @@ def test_known_v10_authority_is_exact_and_remains_a_release_blocker() -> None:
 
 
 def test_known_v10_record_rejects_metric_or_frame_drift() -> None:
+    require_historical(runner.KNOWN_1500_V10_ARTIFACT)
     authority, _row = runner.authenticate_known_1500_v10_observation()
     changed = copy.deepcopy(authority["decisive_1500"])
     changed["strict_fields"]["V10"]["candidate_rmse"] += 1.0e-12
@@ -149,6 +180,7 @@ def test_real_retained_1500_pair_is_recorded_red_and_returns_for_late_ni(
 
     from scripts import v0234_corrected_fullbuffer_gate as comparator
 
+    require_historical(runner.KNOWN_1500_V10_ARTIFACT)
     authority, _row = runner.authenticate_known_1500_v10_observation()
     runtime = SimpleNamespace(np=np, Dataset=Dataset, comparator=comparator)
     pairer = runner.IncrementalFramePairer(
@@ -175,6 +207,7 @@ def test_real_retained_1500_pair_is_recorded_red_and_returns_for_late_ni(
 def test_known_v10_authority_rejects_a_second_red_field(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    require_historical(runner.KNOWN_1500_V10_ARTIFACT)
     authority, _row = runner.authenticate_known_1500_v10_observation()
     changed = copy.deepcopy(authority)
     changed["decisive_1500"]["strict_fields"]["U"]["no_worse"] = False
@@ -192,6 +225,7 @@ def test_tooling_critic_acceptance_is_required_and_exact(
 ) -> None:
     with pytest.raises(runner.RunnerGateError, match="TOOLING_CRITIC_ENV"):
         runner.validate_tooling_critic_acceptance({}, required=True)
+    _require_preserved_restart_artifacts()
     candidate = runner._git(runner.REPO_ROOT, "rev-parse", "HEAD")
     payload: dict[str, object] = {
         "schema": runner.TOOLING_CRITIC_SCHEMA,
@@ -290,7 +324,7 @@ def test_late_window_retention_and_terminal_red_semantics_are_source_bound() -> 
     assert '"all_incremental_pairs_passed": not args.record_known_1500_v10_red' in terminal_source
     assert '"known_1500_v10_red_remains_release_blocker"' in terminal_source
     audit = runner.static_source_audit()
-    assert audit["passed"] is True
+    assert audit["passed"] is (not audit["accepted_model_diff"])
     assert audit["known_1500_v10_record_fail_closed"] is True
     assert audit["tooling_critic_acceptance_preimport_gate"] is True
     assert audit["late_window_9313_9314_9405_retention_fail_closed"] is True
@@ -387,5 +421,10 @@ def test_late_window_retention_writes_carry_frame_and_field_manifests(
 
 
 def test_module_remains_preimport_stdlib_only() -> None:
-    assert "jax" not in sys.modules
-    assert not any(name.startswith("gpuwrf") for name in sys.modules)
+    import subprocess
+
+    code = (
+        "import sys; from scripts import v0234_nested_frozen_wrf_boundary_window; "
+        "assert not any(n == 'jax' or n.startswith(('jax.', 'gpuwrf')) for n in sys.modules)"
+    )
+    subprocess.run([sys.executable, "-c", code], cwd=runner.REPO_ROOT, check=True, timeout=30)

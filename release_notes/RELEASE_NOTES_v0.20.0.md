@@ -25,7 +25,7 @@ identity / fit / VRAM gates are robust regardless. Larger structural multipliers
 (acoustic-substep config, fused megakernel, fp32-relaxed) are an explicit **future
 wave, not in v0.20**.
 
-*MEASURED: [`proofs/v020/lowhang/COMBINED_SPEEDUP.md`](proofs/v020/lowhang/COMBINED_SPEEDUP.md) §4–§8.*
+*MEASURED: [`proofs/v020/lowhang/COMBINED_SPEEDUP.md`](../proofs/v020/lowhang/COMBINED_SPEEDUP.md) §4–§8.*
 
 ### fp64 default stays byte-identical and same-speed
 
@@ -34,7 +34,7 @@ byte-identical** across all 9 domain files; warm fp64 forecast-only time is
 **HEAD ≈ baseline** (within noise). v0.20 adds no numerics risk on the default
 path.
 
-*MEASURED: [`proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md`](proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md) §4.1/§4.1b.*
+*MEASURED: [`proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md`](../proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md) §4.1/§4.1b.*
 
 ### Opt-in fp32 mixed-precision mode for capability + VRAM (not speed)
 
@@ -49,7 +49,7 @@ scope:** fp32 tolerance is checked at the **1 h lead** (19/19 fields green) — 
 but **not stringent**; the **24–120 h skill gate is future work, out of v0.20
 scope**. fp32 is strictly opt-in; `fp64_default` remains the default.
 
-*MEASURED VRAM/capability + 1 h tolerance: [`FP32_INTEGRATION_REPORT.md`](proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md) §4.2. INCONCLUSIVE single-card speed: [`proofs/v020/benchmark/T2T3_REPORT.md`](proofs/v020/benchmark/T2T3_REPORT.md) R∞ ratio ≈0.91.*
+*MEASURED VRAM/capability + 1 h tolerance: [`FP32_INTEGRATION_REPORT.md`](../proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md) §4.2. INCONCLUSIVE single-card speed: [`proofs/v020/benchmark/T2T3_REPORT.md`](../proofs/v020/benchmark/T2T3_REPORT.md) R∞ ratio ≈0.91.*
 
 ### Compile cache hits across forecast dates, zero config
 
@@ -63,7 +63,7 @@ hit with 0 new cache entries**. The **default RRTMG path stays bit-identical**
 SW+LW). One documented non-default residual: GSFC SW (`ra_sw=2`) keeps a seasonal
 ozone-band index, so its HLO still date-varies.
 
-*MEASURED: [`proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md`](proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md).*
+*MEASURED: [`proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md`](../proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md).*
 
 ### Single-domain scaling re-certified honestly
 
@@ -76,7 +76,7 @@ On a tiny single-domain 129² grid the GPU is **~2.3× slower** than 24-rank CPU
 0.56 m/s, PSFC corr 0.999996). The harness is parametrized to lift to H200/GB300
 (those results are **PROJECTED**).
 
-*MEASURED: [`proofs/v020/benchmark/T2T3_REPORT.md`](proofs/v020/benchmark/T2T3_REPORT.md) G-series + Swiss-CPU-match + identity.*
+*MEASURED: [`proofs/v020/benchmark/T2T3_REPORT.md`](../proofs/v020/benchmark/T2T3_REPORT.md) G-series + Swiss-CPU-match + identity.*
 
 ### All-7 24 h GPU-vs-CPU identity (fp64 vs CPU-WRF, 9 domains)
 
@@ -90,7 +90,7 @@ field on complex terrain, **byte-identical to the validated v0.19 output (this i
 NOT a v0.20 regression)**, with divergence growing with lead time. Logged as a
 v0.20.1 characterization item.
 
-*MEASURED: [`proofs/v020/validation/identity/identity_metrics.json`](proofs/v020/validation/identity/identity_metrics.json) — 24 h, init 2026-02-14 18Z, fp64 GPU vs CPU-WRF, 9 domains, 10 fields.*
+*MEASURED: [`proofs/v020/validation/identity/identity_metrics.json`](../proofs/v020/validation/identity/identity_metrics.json) — 24 h, init 2026-02-14 18Z, fp64 GPU vs CPU-WRF, 9 domains, 10 fields.*
 
 ## Opt-outs (explicit)
 

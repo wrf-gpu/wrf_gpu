@@ -16,7 +16,7 @@ Status: PASS.
 
 ## HLO Root Cause
 
-Initial dump: `<xla-dump-dir>/module_7887.jit__advance_chunk.before_optimizations.txt`.
+Initial dump: `/tmp/d9dump/module_7887.jit__advance_chunk.before_optimizations.txt`.
 
 Evidence:
 
@@ -33,7 +33,7 @@ Interpretation: the all-7 max_dom=9 compile was not a scheduler or nested-pipeli
 
 ### max_dom=9 all-7 compile bounded
 
-Input: `<all7-staging-input>`, `max_dom=9`, `history_interval=20`.
+Input: `<DATA_ROOT>/wrf_downscale/staging/20260512/real`, `max_dom=9`, `history_interval=20`.
 
 Cold cache proof artifacts:
 
@@ -147,7 +147,7 @@ PYTHONPATH=src python -m py_compile \
 - `proofs/v018/maxdom9_fix/bit_identity_compare.json`
 - `proofs/v018/maxdom9_fix/maxdom9_run.stderr`
 - `proofs/v018/maxdom9_fix/maxdom9_warm_run.stderr`
-- `<xla-dump-dir>/module_7887.jit__advance_chunk.before_optimizations.txt`
+- `/tmp/d9dump/module_7887.jit__advance_chunk.before_optimizations.txt`
 
 ## Remaining Notes
 

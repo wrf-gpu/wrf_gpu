@@ -15,7 +15,7 @@ import re
 from typing import Any, Iterable, Sequence
 
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.validation.tier4_probtest import DEFAULT_ENDING_CYCLE, DEFAULT_HELDOUT_CYCLE
 

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 try:
     import jax.numpy as jnp

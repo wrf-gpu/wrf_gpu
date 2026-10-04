@@ -1,0 +1,16 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/wn3/W9/finalb_r4w_n4/dmon.log",
+ "summary": {
+  "samples": 231,
+  "has_power": true,
+  "energy_j": 68880.0,
+  "mean_w": 296.8965517241379,
+  "span_s": 232.0,
+  "max_gap_s": 2.0,
+  "integration_method": "trapezoidal integral between timestamped power samples; unlogged tails excluded",
+  "median_w": 460.0,
+  "valid_power_samples": 231,
+  "fb_peak_mib": 20956.0
+ },
+ "note": "nvidia-smi board power; integration method and sample span recorded above"
+}

@@ -10,17 +10,21 @@ The file carries two layers:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dataclass_fields
 from datetime import date, datetime
 import json
+import jax
+import os
+import tempfile
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import jax.numpy as jnp
 import numpy as np
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 
 from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
+from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES
 from gpuwrf.io.wrfout_writer import (
     DATE_STR_LEN,
     MAPFAC_U_XY,
@@ -73,7 +77,8 @@ except Exception:  # pragma: no cover - optional package surface
     NoahClassicRadiation = None  # type: ignore
 
 
-SCHEMA_VERSION = "v0.11.0-wrfrst-netcdf-2"
+SCHEMA_VERSION = "v0.25-wrfrst-netcdf-5"
+LEGACY_SCHEMA_VERSION = "v0.11.0-wrfrst-netcdf-2"
 THETA_BASE_OFFSET_K = 300.0
 STATE_EXTENSION_PREFIX = "GPUWRF_STATE_"
 CARRY_EXTENSION_PREFIX = "GPUWRF_CARRY_"
@@ -99,10 +104,10 @@ def _validate_state_field_order(field_order: tuple[str, ...]) -> None:
     if field_order != tuple(field for field in STATE_FIELD_ORDER if field in field_order):
         raise ValueError("wrfrst State field order does not match current State.__slots__")
     missing = tuple(field for field in STATE_FIELD_ORDER if field not in field_order)
-    if any(field not in CONDITIONAL_STATE_LEAVES for field in missing):
+    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES) for field in missing):
         raise ValueError(
             "wrfrst State field order is missing non-conditional leaves: "
-            f"{[field for field in missing if field not in CONDITIONAL_STATE_LEAVES]}"
+            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES)]}"
         )
 
 
@@ -255,6 +260,24 @@ OPTIONAL_CARRY_FIELDS: tuple[str, ...] = (
     "cumulus_carry",
     "noahclassic_land",
     "noahclassic_rad",
+    "slab_land", "slab_rad", "px_land", "px_rad", "base_state",
+    "radiation_diagnostics", "cumulus_tendencies", "census", "h_diabatic", "history_diagnostics",
+    "land_history", "energy_accumulators",
+    "noahmp_precipitation",
+)
+PYTREE_CARRY_FIELDS = OPTIONAL_CARRY_FIELDS[5:]
+# Pytree groups appended after the current schema: files written before them
+# carry no manifest entry and resume with the group absent.
+_LATE_PYTREE_CARRY_FIELDS: tuple[str, ...] = ("h_diabatic", "history_diagnostics")
+
+# ``OperationalCarry`` fields this schema has no variables for.  A populated
+# (non-``None``) unsupported field is REFUSED at write time instead of being
+# silently dropped, so a resume can never lose carry state without a loud error.
+# Derived from the dataclass so a future carry field lands here automatically.
+UNSUPPORTED_CARRY_FIELDS: tuple[str, ...] = tuple(
+    field.name
+    for field in dataclass_fields(OperationalCarry)
+    if field.name != "state" and field.name not in CARRY_ARRAY_FIELDS and field.name not in OPTIONAL_CARRY_FIELDS
 )
 
 
@@ -491,6 +514,20 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "qg_bdy": ("Time", "gpuwrf_qg_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "Ni_bdy": ("Time", "gpuwrf_Ni_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "Nr_bdy": ("Time", "gpuwrf_Nr_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    # B39 MYNN surface-layer carry (WRF restart MOL/HFX/QFX/QSFC/PBLH).
+    "mol": XY,
+    "hfx": XY,
+    "qfx": XY,
+    "qsfc": XY,
+    "pblh": XY,
+    "el_pbl": XYZ,
+    "maxmf": XY,
+    "maxwidth": XY,
+    "ztop_plume": XY,
+    "dtaux3d": XYZ,
+    "dtauy3d": XYZ,
+    "dusfcg": XY,
+    "dvsfcg": XY,
 }
 
 CARRY_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
@@ -640,7 +677,7 @@ def read_wrfrst_state(path: str | Path) -> tuple[State, dict[str, Any]]:
             var_name = state_extension_name(leaf)
             fields[leaf] = jnp.asarray(_read_exact_variable(dataset, var_name, expected_shapes[leaf]))
         metadata = _read_metadata(dataset)
-    return State(**fields), metadata
+    return _state_from_exact_fields(fields), metadata
 
 
 def read_wrfrst_carry(path: str | Path) -> tuple[OperationalCarry, dict[str, Any]]:
@@ -654,7 +691,7 @@ def read_wrfrst_carry(path: str | Path) -> tuple[OperationalCarry, dict[str, Any
         fields: dict[str, Any] = {}
         for leaf in field_order:
             fields[leaf] = jnp.asarray(_read_exact_variable(dataset, state_extension_name(leaf), expected_shapes[leaf]))
-        state = State(**fields)
+        state = _state_from_exact_fields(fields)
         carry_fields: dict[str, Any] = {"state": state}
         for name in CARRY_ARRAY_FIELDS:
             shape = _shape_for_dimensions(CARRY_EXACT_DIMENSIONS[name], _dataset_dimension_sizes(dataset))
@@ -662,6 +699,20 @@ def read_wrfrst_carry(path: str | Path) -> tuple[OperationalCarry, dict[str, Any
         carry_fields.update(_read_optional_carry_groups(dataset))
         metadata = _read_metadata(dataset)
     return OperationalCarry(**carry_fields), metadata
+
+
+def _state_from_exact_fields(fields: Mapping[str, Any]) -> State:
+    """Rebuild the State exactly as stored.
+
+    ``State.__init__`` re-canonicalises leaves (``_as_dtype`` to the fp32-gated
+    default matrix, ``None`` -> zeros), which would silently DOWNCAST the fp64
+    lateral-boundary/number leaves an ``force_fp64`` operational run carries.  A
+    restart is an exact snapshot, so the leaves are assigned verbatim through the
+    pytree inverse (``tree_unflatten``); the manifest already guarantees every
+    non-conditional leaf is present and inactive conditional leaves stay ``None``.
+    """
+
+    return State.tree_unflatten(None, tuple(fields.get(name) for name in State.__slots__))
 
 
 def read_wrfrst_stochastic_seeds(path: str | Path) -> dict[str, jnp.ndarray]:
@@ -748,10 +799,26 @@ def _write_wrfrst(
         lead_hours = (valid_dt - run_start_dt).total_seconds() / 3600.0
     nx, ny, nz = _grid_extent(grid)
     dimensions = _restart_dimension_sizes(state=state, nx=nx, ny=ny, nz=nz, namelist=namelist)
+    _validate_exact_shapes(
+        "State",
+        {leaf: getattr(state, leaf) for leaf in state.active_field_names()},
+        STATE_EXACT_DIMENSIONS,
+        dimensions,
+    )
+    if carry is not None:
+        _reject_unsupported_carry(carry)
+        _validate_exact_shapes(
+            "OperationalCarry",
+            {name: getattr(carry, name) for name in CARRY_ARRAY_FIELDS},
+            CARRY_EXACT_DIMENSIONS,
+            dimensions,
+        )
     coordinate_fields = _grid_coordinate_payload(state, grid, namelist, dimensions)
     seed_arrays = _normalize_stochastic_seed_arrays(stochastic_seed_arrays)
 
-    with Dataset(target, "w", format="NETCDF4") as dataset:
+    with tempfile.NamedTemporaryFile(dir=target.parent, prefix=target.name + ".", suffix=".tmp", delete=False) as handle:
+        temporary = Path(handle.name)
+    with Dataset(temporary, "w", format="NETCDF4") as dataset:
         _create_restart_dimensions(dataset, dimensions)
         _write_global_attrs(dataset, grid, namelist, dimensions, run_start_dt, valid_dt)
         _write_restart_global_attrs(dataset, state, carry, step_index, seed_arrays)
@@ -782,6 +849,11 @@ def _write_wrfrst(
             for name in CARRY_ARRAY_FIELDS:
                 _write_exact_carry_variable(dataset, name, getattr(carry, name), dimensions)
             _write_optional_carry_variables(dataset, carry, dimensions)
+    with temporary.open("rb") as handle:
+        os.fsync(handle.fileno())
+    temporary.replace(target)
+    from gpuwrf.runtime.restart_store import _sync_dir
+    _sync_dir(target.parent)
     return target
 
 
@@ -806,10 +878,50 @@ def _restart_dimension_sizes(
             BDY_SURFACE: 1,
         }
     )
-    for leaf in STATE_FIELD_ORDER:
-        if leaf.endswith("_bdy"):
-            dimensions[_bdy_time_dimension(leaf)] = int(np.asarray(getattr(state, leaf)).shape[0])
+    for leaf in _active_boundary_leaves(state):
+        shape = np.asarray(getattr(state, leaf)).shape
+        if len(shape) != 5:
+            raise ValueError(f"{leaf} must be 5-D (time, side, bdy_width, z, side_index), got {shape}")
+        dimensions[_bdy_time_dimension(leaf)] = int(shape[0])
     return dimensions
+
+
+def _active_boundary_leaves(state: State) -> tuple[str, ...]:
+    """Lateral-boundary leaves that currently hold an array.
+
+    The v0.22 optional scalar wrfbdy leaves (``qc_bdy`` .. ``Nr_bdy``) are ``None``
+    unless the wrfbdy file carried them; a ``None`` leaf has no time axis and no
+    restart variable, exactly like the other conditional leaves.
+    """
+
+    return tuple(leaf for leaf in state.active_field_names() if leaf.endswith("_bdy"))
+
+
+def _validate_exact_shapes(
+    label: str,
+    arrays: Mapping[str, Any],
+    exact_dimensions: Mapping[str, tuple[str, ...]],
+    dimensions: Mapping[str, int | None],
+) -> None:
+    """Refuse a write whose exact ``GPUWRF_*`` payload cannot round-trip bit-identically.
+
+    Runs before the file is created: an exact variable is never broadcast,
+    squeezed or filled, so a wrong-shaped leaf is a schema violation, not data.
+    """
+
+    mismatched = {
+        name: (np.asarray(value).shape, _shape_for_dimensions(exact_dimensions[name], dimensions))
+        for name, value in arrays.items()
+        if np.asarray(value).shape != _shape_for_dimensions(exact_dimensions[name], dimensions)
+    }
+    if mismatched:
+        raise ValueError(f"{label} leaves do not match their exact wrfrst shapes (actual, expected): {mismatched}")
+
+
+def _reject_unsupported_carry(carry: OperationalCarry) -> None:
+    populated = [name for name in UNSUPPORTED_CARRY_FIELDS if getattr(carry, name) is not None]
+    if populated:
+        raise ValueError(f"wrfrst has no variables for populated OperationalCarry fields {populated}; refusing to drop them")
 
 
 def _create_restart_dimensions(dataset: Dataset, dimensions: Mapping[str, int | None]) -> None:
@@ -817,10 +929,9 @@ def _create_restart_dimensions(dataset: Dataset, dimensions: Mapping[str, int | 
     for name in (BDY_TIME, BDY_SIDE, BDY_WIDTH, BDY_SIDE_INDEX, BDY_SURFACE):
         dataset.createDimension(name, dimensions[name])
     for leaf in STATE_FIELD_ORDER:
-        if leaf.endswith("_bdy"):
-            name = _bdy_time_dimension(leaf)
-            if name not in dataset.dimensions:
-                dataset.createDimension(name, dimensions[name])
+        name = _bdy_time_dimension(leaf)
+        if leaf.endswith("_bdy") and name in dimensions and name not in dataset.dimensions:
+            dataset.createDimension(name, dimensions[name])
 
 
 def _bdy_time_dimension(leaf: str) -> str:
@@ -847,6 +958,9 @@ def _write_restart_global_attrs(
     dataset.TITLE = "OUTPUT FROM GPUWRF WRF-COMPATIBLE NETCDF RESTART"
     dataset.RESTART_STATUS = "RESTART"
     dataset.GPUWRF_WRFRST_SCHEMA_VERSION = SCHEMA_VERSION
+    from gpuwrf.io.restart import RADIATION_DIAGNOSTICS_SCHEMA_VERSION, GWDO_DIAGNOSTICS_SCHEMA_VERSION
+    dataset.GPUWRF_RADIATION_DIAGNOSTICS_SCHEMA_VERSION = RADIATION_DIAGNOSTICS_SCHEMA_VERSION
+    dataset.GPUWRF_GWDO_DIAGNOSTICS_SCHEMA_VERSION = GWDO_DIAGNOSTICS_SCHEMA_VERSION
     dataset.GPUWRF_STATE_FIELD_ORDER = json.dumps(list(active_state_order), separators=(",", ":"))
     dataset.GPUWRF_STATE_FIELD_COUNT = np.int32(len(active_state_order))
     dataset.GPUWRF_STANDARD_RESTART_VARIABLES = json.dumps(active_standard_variables, separators=(",", ":"))
@@ -953,9 +1067,14 @@ def _write_restart_variable(
     spec: RestartVariableSpec,
     data: Any,
     dimensions: Mapping[str, int | None],
+    *,
+    exact: bool = False,
 ) -> None:
     expected_shape = _shape_for_dimensions(spec.dimensions, dimensions)
-    array = _coerce_preserving_dtype(spec.name, data, expected_shape)
+    if exact:
+        array = _exact_array(spec.name, data, expected_shape)
+    else:
+        array = _coerce_preserving_dtype(spec.name, data, expected_shape)
     dtype = spec.dtype or _netcdf_dtype(array.dtype)
     variable = dataset.createVariable(spec.name, dtype, spec.dimensions)
     _set_variable_attrs(variable, _as_wrfout_spec(spec, dtype=dtype))
@@ -979,7 +1098,7 @@ def _write_exact_state_variable(
         stagger=stagger,
         coordinates=_coordinates_for_dimensions(dims),
     )
-    _write_restart_variable(dataset, spec, data, dimensions)
+    _write_restart_variable(dataset, spec, data, dimensions, exact=True)
     dataset.variables[spec.name].gpuwrf_state_leaf = leaf
 
 
@@ -999,7 +1118,7 @@ def _write_exact_carry_variable(
         stagger=_stagger_for_dimensions(dims),
         coordinates=_coordinates_for_dimensions(dims),
     )
-    _write_restart_variable(dataset, spec, data, dimensions)
+    _write_restart_variable(dataset, spec, data, dimensions, exact=True)
     dataset.variables[spec.name].gpuwrf_carry_field = name
 
 
@@ -1058,6 +1177,25 @@ def _write_optional_carry_variables(
     carry: OperationalCarry,
     dimensions: Mapping[str, int | None],
 ) -> None:
+    import base64
+    import pickle
+    import jax
+    for group in PYTREE_CARRY_FIELDS:
+        value = getattr(carry, group)
+        if value is None:
+            continue
+        leaves, structure = jax.tree.flatten(value)
+        dataset.setncattr("GPUWRF_TREE_" + group.upper(), base64.b64encode(pickle.dumps(structure, protocol=5)).decode("ascii"))
+        for index, leaf in enumerate(leaves):
+            data = np.asarray(leaf)
+            field = f"leaf_{index:03d}"
+            dims = []
+            for axis, extent in enumerate(data.shape):
+                dimension = f"gpuwrf_{group}_{index}_{axis}"
+                dataset.createDimension(dimension, extent)
+                dims.append(dimension)
+            variable = dataset.createVariable(_optional_variable_name(group, field), data.dtype, tuple(dims))
+            variable[...] = data
     if carry.noahmp_land is not None:
         for field in _object_field_order(carry.noahmp_land):
             _write_optional_variable(
@@ -1133,7 +1271,7 @@ def _write_optional_variable(
         stagger=_stagger_for_dimensions(dims),
         coordinates=_coordinates_for_dimensions(dims),
     )
-    _write_restart_variable(dataset, spec, data, dimensions)
+    _write_restart_variable(dataset, spec, data, dimensions, exact=True)
     variable = dataset.variables[spec.name]
     variable.gpuwrf_optional_carry_group = group
     variable.gpuwrf_optional_carry_field = field
@@ -1143,6 +1281,7 @@ def _optional_carry_field_order(carry: OperationalCarry | None) -> dict[str, lis
     if carry is None:
         return {name: [] for name in OPTIONAL_CARRY_FIELDS}
     return {
+        **{group: [f"leaf_{index:03d}" for index, _ in enumerate(jax.tree.leaves(getattr(carry, group)))] for group in PYTREE_CARRY_FIELDS},
         "noahmp_land": list(_object_field_order(carry.noahmp_land)) if carry.noahmp_land is not None else [],
         "noahmp_rad": list(RAD_FIELD_NAMES) if carry.noahmp_rad is not None else [],
         "cumulus_carry": [name for name, _ in _cumulus_items(carry.cumulus_carry)],
@@ -1158,6 +1297,7 @@ def _optional_carry_kind(carry: OperationalCarry | None) -> dict[str, str]:
     if carry.cumulus_carry is not None:
         cumulus_kind = "tuple" if isinstance(carry.cumulus_carry, tuple) else "array"
     return {
+        **{group: "pytree" if getattr(carry, group) is not None else "none" for group in PYTREE_CARRY_FIELDS},
         "noahmp_land": "object" if carry.noahmp_land is not None else "none",
         "noahmp_rad": "tuple" if carry.noahmp_rad is not None else "none",
         "cumulus_carry": cumulus_kind,
@@ -1204,7 +1344,32 @@ def _read_optional_carry_groups(dataset: Dataset) -> dict[str, Any]:
 
     field_order = _optional_carry_manifest(dataset)
     kind = _optional_carry_kind_manifest(dataset)
+    if kind["radiation_diagnostics"] != "none":
+        from gpuwrf.io.restart import RADIATION_DIAGNOSTICS_SCHEMA_VERSION
+        if getattr(dataset, "GPUWRF_RADIATION_DIAGNOSTICS_SCHEMA_VERSION", None) != RADIATION_DIAGNOSTICS_SCHEMA_VERSION:
+            raise ValueError("wrfrst radiation diagnostics schema predates held cloud_fraction (E78)")
     carry_fields: dict[str, Any] = {name: None for name in OPTIONAL_CARRY_FIELDS}
+    import base64
+    import pickle
+    import jax
+    for group in PYTREE_CARRY_FIELDS:
+        if kind[group] == "none":
+            continue
+        if kind[group] != "pytree":
+            raise ValueError(f"wrfrst {group} must have kind=pytree")
+        fields = field_order[group]
+        if fields != [f"leaf_{index:03d}" for index in range(len(fields))]:
+            raise ValueError(f"wrfrst {group} leaf order differs from schema")
+        structure = pickle.loads(base64.b64decode(dataset.getncattr("GPUWRF_TREE_" + group.upper())))
+        if structure.num_leaves != len(fields):
+            raise ValueError(f"wrfrst {group} tree/leaf counts differ")
+        leaves = [jnp.asarray(np.asarray(dataset.variables[_optional_variable_name(group, field)][...])) for field in fields]
+        carry_fields[group] = jax.tree.unflatten(structure, leaves)
+    if carry_fields["land_history"] is not None or carry_fields["energy_accumulators"] is not None:
+        # Files written before the packed history families hold per-name dicts.
+        from gpuwrf.runtime.history_accumulators import ENERGY_ACCUMULATORS, LAND_FLUX_FIELDS, as_packed
+        carry_fields["land_history"] = as_packed(carry_fields["land_history"], LAND_FLUX_FIELDS)
+        carry_fields["energy_accumulators"] = as_packed(carry_fields["energy_accumulators"], ENERGY_ACCUMULATORS)
 
     noahmp_land_fields = tuple(field_order["noahmp_land"])
     if noahmp_land_fields:
@@ -1307,6 +1472,11 @@ def _optional_carry_manifest(dataset: Dataset) -> dict[str, list[str]]:
     payload = json.loads(str(raw))
     if not isinstance(payload, dict):
         raise ValueError("wrfrst optional carry field-order manifest is not an object")
+    if str(dataset.GPUWRF_WRFRST_SCHEMA_VERSION) == LEGACY_SCHEMA_VERSION:
+        for group in PYTREE_CARRY_FIELDS:
+            payload.setdefault(group, [])
+    for group in _LATE_PYTREE_CARRY_FIELDS:
+        payload.setdefault(group, [])
     missing = [name for name in OPTIONAL_CARRY_FIELDS if name not in payload]
     if missing:
         raise ValueError(f"wrfrst optional carry manifest missing groups: {missing}")
@@ -1329,10 +1499,15 @@ def _optional_carry_kind_manifest(dataset: Dataset) -> dict[str, str]:
     payload = json.loads(str(raw))
     if not isinstance(payload, dict):
         raise ValueError("wrfrst optional carry kind manifest is not an object")
+    if str(dataset.GPUWRF_WRFRST_SCHEMA_VERSION) == LEGACY_SCHEMA_VERSION:
+        for group in PYTREE_CARRY_FIELDS:
+            payload.setdefault(group, "none")
+    for group in _LATE_PYTREE_CARRY_FIELDS:
+        payload.setdefault(group, "none")
     missing = [name for name in OPTIONAL_CARRY_FIELDS if name not in payload]
     if missing:
         raise ValueError(f"wrfrst optional carry kind manifest missing groups: {missing}")
-    allowed = {"none", "object", "tuple", "array"}
+    allowed = {"none", "object", "tuple", "array", "pytree"}
     kinds: dict[str, str] = {}
     for group in OPTIONAL_CARRY_FIELDS:
         value = payload[group]
@@ -1343,6 +1518,8 @@ def _optional_carry_kind_manifest(dataset: Dataset) -> dict[str, str]:
 
 
 def _optional_variable_name(group: str, field: str) -> str:
+    if group in PYTREE_CARRY_FIELDS:
+        return "GPUWRF_" + group.upper() + "_" + field.upper()
     if group == "noahmp_land":
         return noahmp_land_extension_name(field)
     if group == "noahmp_rad":
@@ -1396,6 +1573,15 @@ def _assign_variable(variable: Any, dimensions: tuple[str, ...], array: np.ndarr
         variable[0, ...] = array
     else:
         variable[...] = array
+
+
+def _exact_array(name: str, value: Any, shape: tuple[int, ...]) -> np.ndarray:
+    """Host copy of an exact ``GPUWRF_*`` payload: the stored shape IS the leaf shape."""
+
+    array = np.asarray(value)
+    if array.shape != shape:
+        raise ValueError(f"{name} shape {array.shape} != exact wrfrst shape {shape}")
+    return array
 
 
 def _coerce_preserving_dtype(name: str, value: Any, shape: tuple[int, ...]) -> np.ndarray:
@@ -1508,6 +1694,10 @@ def _units_for_leaf(leaf: str) -> str:
         return "kg2 kg-2"
     if leaf in {"qc_bl", "qi_bl"}:
         return "kg kg-1"
+    if leaf in ("dtaux3d", "dtauy3d"):
+        return "m s-2"
+    if leaf in ("dusfcg", "dvsfcg"):
+        return "Pa"
     if leaf == "cldfra_bl":
         return ""
     if leaf in {"ustar", "roughness_m"}:
@@ -1522,6 +1712,16 @@ def _units_for_leaf(leaf: str) -> str:
         return "kg m-3"
     if leaf in {"rain_acc", "snow_acc", "graupel_acc", "ice_acc", "rainc_acc", "hail_acc"}:
         return "mm"
+    if leaf == "mol":
+        return "K"
+    if leaf == "hfx":
+        return "W m-2"
+    if leaf == "qfx":
+        return "kg m-2 s-1"
+    if leaf == "qsfc":
+        return "kg kg-1"
+    if leaf == "pblh":
+        return "m"
     if leaf.endswith("_bdy"):
         return "WRF lateral boundary tendency/history units"
     return ""
@@ -1543,7 +1743,11 @@ def _units_for_carry(name: str) -> str:
 
 def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
     schema = str(getattr(dataset, "GPUWRF_WRFRST_SCHEMA_VERSION", ""))
-    if schema != SCHEMA_VERSION:
+    from gpuwrf.io.restart import _validate_gwdo_diagnostics_schema
+    _validate_gwdo_diagnostics_schema({
+        "gwdo_diagnostics_schema_version": getattr(dataset, "GPUWRF_GWDO_DIAGNOSTICS_SCHEMA_VERSION", None)
+    })
+    if schema not in (SCHEMA_VERSION, LEGACY_SCHEMA_VERSION):
         raise ValueError(f"unsupported wrfrst schema {schema!r}; expected {SCHEMA_VERSION!r}")
     field_order = _state_field_order_from_dataset(dataset)
     standard_manifest = json.loads(str(getattr(dataset, "GPUWRF_STANDARD_RESTART_VARIABLES", "[]")))
@@ -1580,6 +1784,8 @@ def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
         if np.dtype(variable.dtype) != np.dtype("int32"):
             raise ValueError(f"wrfrst stochastic seed variable {name} dtype {np.dtype(variable.dtype)} != int32")
     optional_order = _optional_carry_manifest(dataset)
+    if schema == LEGACY_SCHEMA_VERSION and optional_order.get("noahmp_land"):
+        raise ValueError("wrfrst schema predates held Noah-MP precipitation (E78)")
     optional_kind = _optional_carry_kind_manifest(dataset)
     for group, fields in optional_order.items():
         if fields and optional_kind[group] == "none":
@@ -1646,6 +1852,8 @@ def _json_safe_attr(value: Any) -> Any:
 
 __all__ = [
     "CARRY_ARRAY_FIELDS",
+    "OPTIONAL_CARRY_FIELDS",
+    "UNSUPPORTED_CARRY_FIELDS",
     "DEFERRED_REGISTRY_RESTART_FIELDS",
     "SCHEMA_VERSION",
     "STATE_FIELD_ORDER",

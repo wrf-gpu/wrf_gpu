@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "domains": {
+    "d01": {
+      "raw_hlo_exact": true,
+      "SHA": "cd712d7c625cdc386d3cfab80bcf98ad1e2dd5c8dc696300d41f30723fc2adb9",
+      "outputs_exact": true,
+      "leaves": 89
+    },
+    "d02": {
+      "raw_hlo_exact": true,
+      "SHA": "6b583bad80aa94ee7fcaad308400d0de6730b837873bbedaf346a2f4827a5129",
+      "outputs_exact": true,
+      "leaves": 160
+    }
+  },
+  "output_leaves_exact": 249,
+  "candidate": "edbed04ff (lane/b-diff rebased)",
+  "baseline": "main 1d9f7b418 (merge base)",
+  "source_import_alias": "<USER_HOME>/wrf_gpu2_lanes/b-diff/OFF25/source",
+  "only_src_difference": [
+    "src/gpuwrf/coupling/boundary_apply.py",
+    "src/gpuwrf/kernels/dyn_boundary_fp32.py (not imported when OFF)"
+  ],
+  "flags": "integrate/LW7/flags_lw6t.env (LW7 product set)",
+  "boundary_fp32": "0",
+  "no_hlo_normalization": true,
+  "runtime": "cpu; CUDA hidden; CompileOnly RTX target lower",
+  "success": [
+    true,
+    true
+  ]
+}

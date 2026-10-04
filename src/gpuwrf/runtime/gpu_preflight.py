@@ -19,6 +19,7 @@ LOCK_FILE = Path("/tmp/wrf_gpu2_gpu.lock")
 HOLDER_FILE = Path(f"{LOCK_FILE}.holder")
 DEFAULT_MIN_FREE_VRAM_GIB = 24.0
 DEFAULT_MIN_FREE_VRAM_FRACTION = 0.50
+REQUIRE_GPU_LOCK_ENV = "GPUWRF_REQUIRE_GPU_LOCK"
 
 _FALSEY = {"0", "false", "no", "off", ""}
 _TRUTHY = {"1", "true", "yes", "on"}
@@ -104,6 +105,25 @@ def min_free_vram_fraction(environ: Mapping[str, str] | None = None) -> float:
         return DEFAULT_MIN_FREE_VRAM_FRACTION
 
 
+def _c_auto_threshold(env: Mapping[str, str]) -> VramThreshold | None:
+    """Case-sized need when the CLI applied a C-auto plan (budget admitted pre-re-exec).
+
+    cuda_async preallocates the pool at backend initialization, which precedes
+    this check on the CLI path; a reserved pool then needs only the outside room.
+    """
+    try:
+        budget = int(env["_GPUWRF_C_AUTO_BUDGET"])
+        headroom = int(env["_GPUWRF_C_AUTO_HEADROOM"])
+    except (KeyError, ValueError):
+        return None
+    bridge = sys.modules.get("jax._src.xla_bridge")
+    reserved = any(name != "cpu" for name in (getattr(bridge, "_backends", None) or {}))
+    need = (headroom + (0 if reserved else budget)) / 1024.0**3
+    source = "C-auto plan: outside-pool headroom" + ("" if reserved else " + pool budget")
+    return VramThreshold(min_free_gib=need, absolute_floor_gib=need, fraction=0.0,
+                         fractional_gib=None, source=source)
+
+
 def resolve_min_free_vram_threshold(
     environ: Mapping[str, str] | None = None,
     *,
@@ -121,6 +141,9 @@ def resolve_min_free_vram_threshold(
             fractional_gib=None,
             source="GPUWRF_MIN_FREE_VRAM_GIB explicit override",
         )
+    planned = _c_auto_threshold(env)
+    if planned is not None:
+        return planned
     fraction = min_free_vram_fraction(env)
     fractional_gib = None if total_gib is None else max(0.0, fraction * max(0.0, total_gib))
     min_free = DEFAULT_MIN_FREE_VRAM_GIB
@@ -149,6 +172,26 @@ def force_gpu_run_enabled(environ: Mapping[str, str] | None = None) -> bool:
     """Whether the operator explicitly bypassed lock/headroom failures."""
 
     return env_bool("GPUWRF_FORCE_GPU_RUN", False, environ)
+
+
+def gpu_lock_required(
+    environ: Mapping[str, str] | None = None,
+    *,
+    lock_file: Path = LOCK_FILE,
+) -> tuple[bool, str]:
+    """Whether the nested preflight demands the ``scripts/with_gpu_lock.sh`` holder proof.
+
+    Only where the shared dev lock infrastructure exists (``lock_file``) or when
+    ``GPUWRF_REQUIRE_GPU_LOCK=1``: a public machine without it runs the VRAM /
+    C-auto headroom check only. ``GPUWRF_REQUIRE_GPU_LOCK=0`` cannot switch the
+    proof off where the lock file exists (unlocked GPU use breaks locked runs).
+    """
+    env = os.environ if environ is None else environ
+    if env_bool(REQUIRE_GPU_LOCK_ENV, False, env):
+        return True, f"{REQUIRE_GPU_LOCK_ENV}=1"
+    if Path(lock_file).exists():
+        return True, f"dev GPU lock infrastructure present ({lock_file})"
+    return False, f"no dev GPU lock infrastructure ({lock_file} absent), {REQUIRE_GPU_LOCK_ENV} unset"
 
 
 def read_gpu_lock_holder(holder_file: Path = HOLDER_FILE) -> str:
@@ -368,12 +411,19 @@ def run_nested_gpu_preflight(
     lock_file: Path = LOCK_FILE,
     stderr: TextIO | None = None,
 ) -> dict[str, object]:
-    """Fail closed unless the nested forecast owns the GPU lock and has headroom."""
+    """Fail closed without free-VRAM headroom, and without the GPU-lock proof where it is required.
+
+    The lock proof applies only where :func:`gpu_lock_required` says so (dev lock
+    infrastructure present or ``GPUWRF_REQUIRE_GPU_LOCK=1``); a public machine runs
+    the VRAM / C-auto headroom check only.
+    """
 
     env = os.environ if environ is None else environ
     err = sys.stderr if stderr is None else stderr
     force = bool(force or force_gpu_run_enabled(env))
-    lock = gpu_lock_status(env, holder_file=holder_file, lock_file=lock_file)
+    lock_required, lock_policy = gpu_lock_required(env, lock_file=lock_file)
+    lock = dict(gpu_lock_status(env, holder_file=holder_file, lock_file=lock_file),
+                required=lock_required, policy=lock_policy)
 
     snapshot: VramSnapshot | None = None
     memory_error: str | None = None
@@ -397,9 +447,9 @@ def run_nested_gpu_preflight(
         "lock": lock,
         "vram": _snapshot_payload(snapshot, memory_error),
         "action": (
-            "Run nested GPU forecasts through "
-            "`scripts/with_gpu_lock.sh --label <name> -- <cmd>`; set "
-            "GPUWRF_MIN_FREE_VRAM_GIB for an explicit GiB threshold override or "
+            ("Run nested GPU forecasts through `scripts/with_gpu_lock.sh --label <name> -- <cmd>`; "
+             if lock_required else "Free GPU memory used by other processes; ")
+            + "set GPUWRF_MIN_FREE_VRAM_GIB for an explicit GiB threshold override or "
             "GPUWRF_MIN_FREE_VRAM_FRACTION to tune the card-relative threshold; set "
             "GPUWRF_FORCE_GPU_RUN=1 or pass --force-gpu-run only for a deliberate override."
         ),
@@ -408,7 +458,7 @@ def run_nested_gpu_preflight(
     lock_held = bool(lock.get("ok"))
     failures: list[str] = []
     advisories: list[str] = []
-    if not lock_held:
+    if lock_required and not lock_held:
         failures.append(str(lock.get("reason") or "GPU lock is not held"))
     if snapshot is None:
         failures.append(f"could not query free VRAM before the run ({memory_error})")
@@ -468,6 +518,7 @@ __all__ = [
     "VramThreshold",
     "env_bool",
     "force_gpu_run_enabled",
+    "gpu_lock_required",
     "gpu_lock_status",
     "min_free_vram_fraction",
     "min_free_vram_gib",

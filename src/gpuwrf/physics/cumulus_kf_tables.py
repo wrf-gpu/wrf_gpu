@@ -7,9 +7,10 @@ the base saturation theta_e curve (THE0K). They depend ONLY on the four SVP
 constants, so they are deterministic and are built once at import time in
 float64 numpy, then frozen.
 
-This is a verbatim transcription of the Fortran iteration (secant solve, 11
-iterations, tolerance 1e-3) so the JAX scheme indexes the SAME table the
-Fortran oracle uses.
+The iteration follows the Fortran equations (secant solve, 11 iterations,
+tolerance 1e-3). Host float64 generation and subsequent REAL storage rounding
+need not reproduce WRF's float32 table generation bitwise; the scheme is
+validated against the independent Fortran oracle at its frozen tolerances.
 """
 from __future__ import annotations
 
@@ -119,3 +120,14 @@ ALU = _TABLES["ALU"]
 RDPR = _TABLES["RDPR"]
 RDTHK = _TABLES["RDTHK"]
 PLUTOP = _TABLES["PLUTOP"]
+
+
+# WRF module_cu_kfeta.F:19-20 declares these arrays REAL (RWORDSIZE=4).
+# Keep the historical fp64 reference tables above; the resident-table path
+# reads these immutable fp32 storage arrays without per-column replication.
+TTAB_R4 = TTAB.astype(np.float32)
+QSTAB_R4 = QSTAB.astype(np.float32)
+THE0K_R4 = THE0K.astype(np.float32)
+for _real_table in (TTAB_R4, QSTAB_R4, THE0K_R4):
+    _real_table.setflags(write=False)
+del _real_table

@@ -104,3 +104,14 @@ cache/
 *.orig
 .DS_Store
 Thumbs.db
+
+# Step 1 DRY-RUN artifacts. Regenerable on demand with
+#   python scripts/v025/step1_dryrun.py <out-root>
+# and derived entirely from CPU stubs, so they are not evidence about anything.
+# They were tracked briefly, and an independent reviewer running the dry run to
+# verify it left the worktree dirty through no fault of their own. Run metadata
+# (pid, timestamps, elapsed, receipt fingerprint) varies per run by nature, so
+# the fix is not to normalise harder but to stop tracking a stub product.
+proofs/v025/m0/step1_attribution_dryrun.json
+proofs/v025/m0/step1_orchestration_dryrun.json
+northstar/data/

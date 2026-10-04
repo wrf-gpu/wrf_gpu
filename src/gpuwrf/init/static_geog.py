@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from netCDF4 import Dataset
+from gpuwrf.io.netcdf_lock import Dataset
 import numpy as np
 
 from gpuwrf.init.metgrid_schema import (

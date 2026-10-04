@@ -5,8 +5,8 @@
 - **Tag date:** 2026-06-01 (annotated tag on branch `release/v0.1.0`; promoted to `main` by the principal — Option B).
 - **Source HEAD basis:** HFX/surface-layer fix `d1c373b`; proofs executed on branch
   `worker/opus/final-verdict` (RTX 5090).
-- **Binding proof contract:** [`publish/VERIFICATION.md`](publish/VERIFICATION.md) (11 rows).
-- **Authoritative outcome record:** [`proofs/PROOF_TABLE.md`](proofs/PROOF_TABLE.md).
+- **Binding proof contract:** [`publish/VERIFICATION.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.1.0/publish/VERIFICATION.md) (11 rows).
+- **Authoritative outcome record:** [`proofs/PROOF_TABLE.md`](../proofs/PROOF_TABLE.md).
 - **Tally:** **9 PASS / 1 FAIL (comparator-harness gap, not a production defect) / 1 INCONCLUSIVE.**
 
 Every number in these notes traces to a row in `proofs/PROOF_TABLE.md`. Nothing here is rounded,
@@ -22,8 +22,8 @@ It is a **single-domain REPLAY path**: the lateral boundaries and the land/SST f
 from existing CPU-WRF / Gen2 corpus artifacts. It is **not yet** a self-contained, multi-domain,
 live-nesting WRF, and it does **not** yet do native WPS/real.exe initialization. That is the honest
 scope, and the gap chain to a full standalone WRF replacement is inventoried in
-[`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and sequenced in
-[`.agent/decisions/V0.2.0-PLAN.md`](.agent/decisions/V0.2.0-PLAN.md).
+[`publish/GPU_PORT_GAPS_TODO.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.1.0/publish/GPU_PORT_GAPS_TODO.md) and sequenced in
+[`.agent/decisions/V0.2.0-PLAN.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.1.0/.agent/decisions/V0.2.0-PLAN.md).
 
 ## Validated capabilities (the PASS rows)
 
@@ -100,7 +100,7 @@ Each row also has a standalone `scripts/verify/<row>.sh` that re-runs that singl
 ## v0.2.0 roadmap
 
 The next release line closes the gap chain in
-[`.agent/decisions/V0.2.0-PLAN.md`](.agent/decisions/V0.2.0-PLAN.md) — all gap items **except**
+[`.agent/decisions/V0.2.0-PLAN.md`](https://github.com/wrf-gpu/wrf_gpu/blob/v0.1.0/.agent/decisions/V0.2.0-PLAN.md) — all gap items **except**
 native WPS/real.exe initialization (deliberately last). The 0.1.x cadence starts with **0.1.1 =
 faithful MYNN/HFX parity + moisture/PBL no-regression + fp64-mode declaration**, then Thompson
 precip/water + conservation budgets, real-terrain/map-factor/boundary dynamics closure, output

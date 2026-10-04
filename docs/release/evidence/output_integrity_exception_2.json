@@ -1,0 +1,83 @@
+{
+ "source_path": "~/wrf_gpu2_lanes/release-docs/RD34/release_exception_20260502_18z_a1.json",
+ "content": {
+  "case": "20260502_18z_a1",
+  "fields": {
+   "integrity_24h": {
+    "d01": {
+     "CANLIQ": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        0.002831104677170515
+       ]
+      }
+     ],
+     "CANWAT": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        0.002831104677170515
+       ]
+      }
+     ],
+     "ECAN": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -1.1075167094531935e-06,
+        0.0
+       ]
+      }
+     ],
+     "EVC": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        -2.7803099155426025,
+        0.0
+       ]
+      }
+     ],
+     "FWET": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        0.17413301765918732
+       ]
+      }
+     ],
+     "QICE": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        1.2287557068419025e-18
+       ]
+      }
+     ],
+     "QSNOW": [
+      {
+       "file": "wrfout_d01_2026-05-04_00:00:00",
+       "gpu_value": 0.0,
+       "cpu_range": [
+        0.0,
+        2.022225648865128e-17
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "report_sha256": "1a18eeb972b6ed0c9cfb83fc139eac20939fdc3f44af0815dcb8487b4597ed4d"
+ }
+}
