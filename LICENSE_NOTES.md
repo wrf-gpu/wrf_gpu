@@ -1,18 +1,13 @@
-# License Notes
+# License and naming notes
 
-This file is not legal advice. No project license file is published with this release yet (decision
-pending); these notes cover the WRF-derived-material question.
+wrf_gpu is released under the [MIT License](LICENSE). Files that translate, contain or derive from
+third-party code and data keep their upstream terms: AER's RRTMG/RRTM terms (these files may not be
+sold), NCAR's BSD 3-Clause notice for the MMM physics translations, the UCAR public-domain notice for
+WRF-derived material, and the data-source attributions. They are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-- **wrf_gpu is a clean reimplementation**, not a Fortran-source port of WRF. It
-  validates against WRF as an oracle and does not redistribute WRF source.
-- **WRF naming.** Do not brand the project as WRF. Use *WRF-compatible*,
-  *WRF-like*, or *WRF-derived fixture* language. WRF is a registered name of
-  UCAR/NCAR.
-- **WRF-derived material.** Where any copied WRF-derived content survives
-  (variable mappings, fixture metadata, documentation excerpts, lookup tables
-  regenerated from WRF data files), preserve the required upstream notices.
-  WRF source is in the public domain (UCAR/NCAR); confirm the current terms from
-  the official UCAR/NCAR sources before relying on that for redistribution.
-- **Third-party data.** Observation datasets (e.g. AEMET station data) and any
-  met_em/CPU-WRF reference outputs are **not** redistributed in this repository;
-  users supply their own (see `docs/quickstart.md`).
+- **WRF naming.** wrf_gpu is not WRF and is not affiliated with or endorsed by UCAR/NCAR. Do not brand
+  this project, or work built on it, as WRF; describe it as *WRF-compatible*. WRF® is a registered
+  trademark of the University Corporation for Atmospheric Research (UCAR).
+- **Third-party data.** Observation datasets (for example station data) and CPU-WRF reference outputs
+  used for validation are not redistributed here; users supply their own.

@@ -1,95 +1,121 @@
 # wrf_gpu
 
-**WRF-compatible forecasts on one NVIDIA GPU.**
+**A WRF-compatible regional weather model, rewritten for GPU hardware.**
 
-`wrf_gpu` is a GPU rewrite of WRF v4's ARW dynamics and physics, validated against the
-original Fortran. It reads standard WRF inputs and writes WRF history for existing
-preparation and analysis tools.
+`wrf_gpu` rewrites WRF v4's ARW dynamics and physics in **JAX/XLA/Pallas** so
+WRF-class regional forecasts can run efficiently on GPU hardware. It reads
+standard WRF inputs, writes WRF history, and is validated against the original
+Fortran CPU-WRF.
 
-On an RTX 5090, v0.3 is **22.4× faster than CPU-WRF on the two-domain Canary
-case**, and delivers **12.75× its throughput with 4 Tenerife
-forecasts sharing one GPU**.
+This is an independent implementation, **not WRF itself**, and is not affiliated
+with or endorsed by UCAR/NCAR. It supports a tested subset of WRF options.
+MPI and multi-GPU domain decomposition are **not
+implemented**.
 
-| Forecast | CPU-WRF, 12 cores | One RTX 5090 |
+Supported forecasts use Thompson microphysics, RRTMG radiation, MYNN turbulence,
+Noah-MP land physics, outer-domain Kain–Fritsch and GWDO, with one-way nesting.
+
+## Measured performance
+
+These cached v0.3.0 results [M] were measured on an **NVIDIA RTX 5090**, with an
+**AMD Ryzen 9 9950X host**. CPU-WRF uses twelve cores: 12 ranks or 3 × 4 ranks.
+
+| Forecast | CPU-WRF, 12 cores | RTX 5090 |
 |---|---:|---:|
-| Canary, 9/3 km, 24 h | 92.3 s/forecast hour | **4.12 s/forecast hour** |
-| Tenerife, six-hour parallel benchmark | 123.4 s/case-hour, 3 × 4 cores | **9.68 s/case-hour**, 4 cases |
+| Canary, 9/3 km, 24 h | 92.3 s/forecast hour | **4.12 s/forecast hour**, 22.4× |
+| Tenerife, six-hour parallel benchmark | 123.4 s/case-hour, 3 × 4 cores | **9.68 s/case-hour**, 4 cases, 12.75× |
 | Tenerife, 72 h production batch: six cases, two waves of three | 123.4 s/case-hour, 3 × 4 cores | **6.28 s/case-hour**, 19.6× |
 
-Rates are measured [M], including startup and output; parallel rates include
-compression and launcher completion. N=3 and N=4 are within 0.5%: the GPU is saturated.
+GPU rates include startup and output; parallel rates also include compression
+and launcher completion. The Canary CPU reference measures its main loop.
+The production batch is a separate bulk rate, not the controlled six-hour
+benchmark. Three and four cases perform within 0.5%.
+[Methods](docs/release/METHODS.md) define the clocks;
+[receipts](docs/release/PROVENANCE.md) identify the runs.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/release/img/parallel_dark.png"><img src="docs/release/img/parallel.png" width="100%" alt="Forecast throughput, GPU memory and energy as more Tenerife cases share one RTX 5090"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/release/img/parallel_dark.png"><img src="docs/release/img/parallel.png" width="100%" alt="Measured Tenerife throughput, GPU memory and board energy on RTX 5090"></picture></p>
 
-## Try the bundled example
+Tested hardware: RTX 5090 (sm_120, CUDA 13). Other hardware and multi-GPU
+scaling are untested.
 
-Tested on RTX 5090 (sm_120, CUDA 13); other recent NVIDIA GPUs should work but are
-untested. With Python 3.11+ and the matching NVIDIA driver:
+## Design direction
 
-```bash
-pip install "jax[cuda13]==0.10.*"
-pip install -e .
-export GPUWRF_WRF_ROOT=/path/to/WRF   # WRF v4 radiation and land-model tables
-python -m gpuwrf.cli run --input-dir examples/switzerland_d01 \
-  --output-dir runs/switzerland --domain d01 --hours 24 \
-  --scratch-dir runs/switzerland_scratch
-```
+JAX was chosen as a foundation for scalable operation. Future
+development will target multi-GPU execution and data-centre GPUs, including
+B200/B300. Multi-GPU execution is not implemented; B200/B300 operation is untested.
+B200 projections are **inferences [I]**, confined to the [methods](docs/release/METHODS.md),
+rather than release results.
 
-The [Switzerland example](examples/switzerland_d01/README.md) includes the CPU-WRF
-comparison and benchmark. The first run compiles; later runs reuse the executable.
+## Capability: independent cases in parallel
 
-For your own WPS/`real.exe` case, use `--domains-from-namelist`. For several cases:
+The launcher runs independent forecasts on one GPU, checking GPU and host
+memory and queuing remaining cases:
 
 ```bash
 scripts/run_parallel_cases.sh --out-root runs/batch CASE_A CASE_B CASE_C -- \
   --domains-from-namelist --hours 24
 ```
 
-The launcher checks GPU and host memory. See the
-[User's Guide](https://wrf-gpu.github.io/wrf_gpu/) for setup, or
-[AI_OPERATOR.md](AI_OPERATOR.md) to have an AI assistant help run a forecast.
+This runs independent cases; it does not distribute one domain across GPUs.
+The [User's Guide](https://wrf-gpu.github.io/wrf_gpu/) explains setup and operation.
 
-## What's new in v0.3
+## Quickstart
 
-- Fused fp32 kernels default on; 1.4× the throughput of the late v0.23.4 development baseline. Previous public release: v0.23.4.
-- WRF-order corrections to snow, water and albedo updates.
-- Full WRF history is the default.
+Use Python 3.11+, CUDA 13-compatible drivers, and WRF v4's runtime tables:
 
-See [CHANGELOG.md](CHANGELOG.md) and [release notes](release_notes/README.md).
+```bash
+git clone https://github.com/wrf-gpu/wrf_gpu.git
+cd wrf_gpu
+pip install "jax[cuda13]==0.10.*"
+pip install -e .
+export GPUWRF_WRF_ROOT=/path/to/WRF   # directory containing run/ and its tables
+python -m gpuwrf.cli run --input-dir examples/switzerland_d01 \
+  --output-dir runs/switzerland --domain d01 --hours 24 \
+  --scratch-dir runs/switzerland_scratch
+```
 
-## How the rewrite works
+The first run compiles; later runs reuse the executable. The
+[Switzerland example](examples/switzerland_d01/README.md) includes the original
+four-core CPU-WRF comparison. Use `--domains-from-namelist` for nested cases;
+[AI-assisted setup](AI_OPERATOR.md) is available.
 
-**JAX/XLA and Pallas** compile expensive dynamics and physics into fused fp32 GPU
-kernels. State stays on the GPU; WRF's update order and required double precision
-are preserved. [Methods](docs/release/METHODS.md) cover architecture, timing,
-energy and B200 extrapolation.
+## Validation and known limits
 
-## Checked against CPU-WRF
+The release gate covers **6 Tenerife cases × three domains × 24 h**:
+375 fields compared with original CPU-WRF, 62 with frozen per-variable numerical
+limits (D6), **zero bound failures**, and all compared numeric values finite.
+Strict output-integrity checks retain their raw failures; every trace-level,
+canopy-onset and known writer exception is [disclosed](docs/release/VALIDATION.md#wn3-output-integrity).
 
-The release gate covers **6 Tenerife cases × three domains × 24 h**.
-375 output fields are compared with original CPU-WRF; 62 have
-frozen per-variable numerical limits, called D6. There are **0 bound failures**;
-all compared numeric values finite. Output integrity: a strict check flags a few trace-level fields (ice/snow traces, canopy dew onset, one known writer field); every exception is [listed](docs/release/VALIDATION.md#wn3-output-integrity).
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/release/img/identity_curves_wn3_heatmap_dark.png"><img src="docs/release/img/identity_curves_wn3_heatmap.png" width="100%" alt="GPU versus CPU-WRF error relative to frozen limits across six cases, three domains and 24 hours"></picture></p>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/release/img/identity_curves_wn3_heatmap_dark.png"><img src="docs/release/img/identity_curves_wn3_heatmap.png" width="100%" alt="GPU minus CPU-WRF RMSE as a share of the frozen limit across all six cases, three domains and the 24-hour release window"></picture></p>
+Beyond 24 h, two of six Tenerife cases exceed those 24-hour-designed limits on
+the 1 km domain. A complete six-case comparison on earlier internal build
+1fece48da (before the albedo/snow-aging fix) records 0227 U10/V10 from +41 h,
+V at +67 h, W at +69–70 h and RAINNC at +67–72 h; 0120 U10 at +58 h.
+The scored v0.3.0 0227 case agrees with the displaced wake/convection pattern.
+Our analysis attributes it to a displaced lee-wake/convection feature with small
+mean bias; a CPU-vs-CPU control that would quantify natural predictability has
+not been run.
+The Canary **162 h** comparison stays within its limits.
+[Validation](docs/release/VALIDATION.md) preserves exact failures and signed biases.
 
-Component tests compare with pristine WRF Fortran. Station verification is done
-separately by the ALISIOS forecasting project.
-Beyond 24 h, a complete six-case comparison on an earlier internal build of v0.3.0 (1fece48da; identical except the Noah-MP albedo/snow-aging fix) exceeds limits on the 1 km domain: 0227 U10/V10 from +41 h, V at +67 h, W at +69–70 h and RAINNC at +67–72 h; 0120 U10 at +58 h. The scored v0.3.0 0227 case agrees with that displaced wake/convection pattern. [Exact hours and signed biases](docs/release/VALIDATION.md) preserve every failure. The Canary 162 h comparison stays within its limits.
-
-Tested physics: Thompson, RRTMG, MYNN, Noah-MP, outer-domain Kain–Fritsch and GWDO,
-with one-way nesting. Execution is single-GPU; MPI/multi-GPU are unsupported.
-Glacier cells use ordinary Noah-MP; the dedicated glacier runtime is unported.
-[Validation](docs/release/VALIDATION.md), [fidelity fixes](docs/release/FIDELITY_FIXES.md)
-and [known issues](KNOWN_ISSUES.md) disclose fill, trace-ice and canopy differences.
-
-Measurements: v0.3.0 (internal build dead7d004), 2026-10-04. CPU energy uses **≈200 W on 12 cores
-(maintainer measurement)**; GPU energy is board power, excluding host CPU.
-[Receipts](docs/release/PROVENANCE.md) identify every figure's source.
+Component tests use pristine WRF Fortran; ALISIOS performs station verification
+separately. The dedicated glacier runtime is unported. [Known issues](KNOWN_ISSUES.md)
+cover glacier, writer and allocation limitations.
+Version 0.3 adds default fused fp32 kernels, WRF-order snow/water/albedo fixes,
+and full history; see the [changelog](CHANGELOG.md) and [release notes](release_notes/README.md).
 
 ## Get involved
 
 Interested in the rewrite? Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the
-[methods](docs/release/METHODS.md); questions and [issues](https://github.com/wrf-gpu/wrf_gpu/issues) are welcome.
+[methods](docs/release/METHODS.md). Questions and
+[issues](https://github.com/wrf-gpu/wrf_gpu/issues) are welcome.
 
-See [LICENSE_NOTES.md](LICENSE_NOTES.md) for attribution and licensing information.
+## License
+
+wrf_gpu's own code is released under the [MIT License](LICENSE). Some files keep
+upstream terms: AER's RRTMG/RRTM code and data may not be sold; NCAR MMM physics
+translations carry NCAR's BSD 3-Clause notice; WRF-derived material carries the
+UCAR public-domain notice. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+wrf_gpu is not affiliated with UCAR/NCAR; WRF® is a registered trademark of UCAR.

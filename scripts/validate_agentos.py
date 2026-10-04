@@ -27,6 +27,8 @@ REQUIRED_FILES = [
     "INTERFACE_CONTRACTS.md",
     "PRECISION_POLICY.md",
     "RISK_REGISTER.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
     "LICENSE_NOTES.md",
     "CONTRIBUTING_AGENT.md",
     "pyproject.toml",

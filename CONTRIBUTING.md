@@ -73,6 +73,7 @@ JSON or `compare_wrfout_grid.py` output if you have it.
 
 ## License
 
-The project license file is not published yet (decision pending); contributions
-will be licensed under it once it is. See [`LICENSE_NOTES.md`](LICENSE_NOTES.md) for the
-WRF-derived-material notes.
+By contributing you agree that your contributions are released under the project's
+[MIT License](LICENSE). Files that keep upstream terms (AER RRTMG/RRTM, NCAR MMM physics, the UCAR
+WRF notice) are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); changes to those files
+stay under their upstream terms. See [LICENSE_NOTES.md](LICENSE_NOTES.md) for WRF naming guidance.

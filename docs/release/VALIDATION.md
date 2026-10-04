@@ -48,7 +48,8 @@ rain differences have opposite signs in other domains/cases (for example 0227 d0
 −10%, 0120 d02/d03 −11%/−8%, and 0614 d02/d03 +7%/−9%). This classification does
 not change any numerical failure, and must be checked against FINAL-b's census.
 CPU lag-sensitivity evidence uses only three clusters with low support; it does
-not establish equivalence to a separately perturbed CPU ensemble.
+not establish equivalence to a separately perturbed CPU ensemble. A CPU-vs-CPU
+control that would quantify natural predictability has not been run.
 
 <p><img src="img/identity_curves_wn3.png" alt="Tenerife RMSE curves through 72 h"></p>
 <p><img src="img/identity_curves_wn3_bias.png" alt="Tenerife GPU minus CPU-WRF bias"></p>
