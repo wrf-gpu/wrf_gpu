@@ -1,0 +1,1071 @@
+{
+  "candidate_source_attribution": {
+    "candidate_merged_wholesale": false,
+    "candidate_terminal_commit": "6ff0984984eddf697be2b675784ad18003770c01",
+    "candidate_terminal_implementation_commit": "7d0bf38188feea37f0055d86fee55255454d8968",
+    "excluded_r3_r4": {
+      "scripts/v025/build_m0_final_r1_r4_evidence.py": {
+        "implementation_blob_oid": null,
+        "manager_base_blob_oid": null,
+        "unchanged_or_absent_from_manager_base": true
+      },
+      "scripts/v025/m0_postlock_census.py": {
+        "implementation_blob_oid": "af61e10bed89e85e97b3a8990a7361101da16fe4",
+        "manager_base_blob_oid": "af61e10bed89e85e97b3a8990a7361101da16fe4",
+        "unchanged_or_absent_from_manager_base": true
+      },
+      "scripts/v025/m0_w2_attribution.py": {
+        "implementation_blob_oid": null,
+        "manager_base_blob_oid": null,
+        "unchanged_or_absent_from_manager_base": true
+      },
+      "tests/v025/test_m0_final_r1_r4_repair.py": {
+        "implementation_blob_oid": null,
+        "manager_base_blob_oid": null,
+        "unchanged_or_absent_from_manager_base": true
+      }
+    },
+    "manager_candidate_merge_base": "164b85d9b82d130f52e1a81fc761bfbf4cf9d844",
+    "replayed_r1_r2": {
+      "scripts/v025/gpu_window_registry.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "e10a0322f953d3d2ff45836d9a0c79ff796ed706",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "e10a0322f953d3d2ff45836d9a0c79ff796ed706"
+      },
+      "scripts/v025/m0_core_session_protocol.py": {
+        "attribution": "R1/R2-replay-with-Review11-or-C0-repair",
+        "candidate_blob_oid": "eaea3e14808d1fbc6f1745ed9b8e6dd5c2cfd9d2",
+        "exact_candidate_blob": false,
+        "implementation_blob_oid": "633a50fb82b79f2c8e6ad71a6397d0d0441a7030"
+      },
+      "scripts/v025/m0_cpu_boundary_preflight.py": {
+        "attribution": "R1/R2-replay-with-Review11-or-C0-repair",
+        "candidate_blob_oid": "a734196d8dc3ff9c092235f1b42bf24a314f7ea2",
+        "exact_candidate_blob": false,
+        "implementation_blob_oid": "c91aa01e7dc645936e8fef0338f9b079f3191274"
+      },
+      "scripts/v025/m0_exact_boundary_child.py": {
+        "attribution": "R1/R2-replay-with-Review11-or-C0-repair",
+        "candidate_blob_oid": "7249d2b0536b8f987a6d65b7e7c2f7a8d51a2c70",
+        "exact_candidate_blob": false,
+        "implementation_blob_oid": "1f90ce3dbce2b6edd45ca72687ae50e6bfd4c018"
+      },
+      "scripts/v025/m0_exact_boundary_contract.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "901f1a33b4a57a4d04ea27831588eb1a38e21ea5",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "901f1a33b4a57a4d04ea27831588eb1a38e21ea5"
+      },
+      "scripts/v025/m0_three_window_executor.py": {
+        "attribution": "R1/R2-replay-with-Review11-or-C0-repair",
+        "candidate_blob_oid": "2bd4d06f100e09656a21629bbf73d4b7d83e063b",
+        "exact_candidate_blob": false,
+        "implementation_blob_oid": "4a4e1c73948e3ccc27c1f1807a0e00ebc3493f6d"
+      },
+      "scripts/v025/m0_window_parent.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "b1a123656c58c568eaeb932a8ac2d8748681740c",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "b1a123656c58c568eaeb932a8ac2d8748681740c"
+      },
+      "scripts/v025/real_state.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "01664e136abac61076997f5b5784f1411ef5825f",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "01664e136abac61076997f5b5784f1411ef5825f"
+      },
+      "scripts/v025/run_gpu_arm.py": {
+        "attribution": "R1/R2-replay-with-Review11-or-C0-repair",
+        "candidate_blob_oid": "578767b2ff21b5fe10f42ebff872e587b390a0b5",
+        "exact_candidate_blob": false,
+        "implementation_blob_oid": "dd6e8b566b22a8919c6c893ff7a6077be38d53a0"
+      },
+      "scripts/v025/run_shape_sweep.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "de1a8ef8fde53108a4152b5802eca670ff2c7e90",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "de1a8ef8fde53108a4152b5802eca670ff2c7e90"
+      },
+      "scripts/v025/step1_dryrun.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "51d7f36ade62e7829c89f56accdf421375c4aee0",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "51d7f36ade62e7829c89f56accdf421375c4aee0"
+      },
+      "scripts/v025/wrf_source_authority.py": {
+        "attribution": "exact-R1/R2-replay",
+        "candidate_blob_oid": "5d73df26e662be9e2d8609998d57e110e21b70eb",
+        "exact_candidate_blob": true,
+        "implementation_blob_oid": "5d73df26e662be9e2d8609998d57e110e21b70eb"
+      }
+    }
+  },
+  "canonical_lock_action": false,
+  "complete_changed_tree": {
+    "changed_tree_sha256": "a2375338aa43d58ddbbfb1858e7ce4258a8f1d2c870a0df219e694aa68725949",
+    "entries": [
+      {
+        "blob_oid": "4abea5692523e0db7a45c58df3421c3bc549c4ec",
+        "path": "scripts/v025/build_m0_review10_fallback_evidence.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "e10a0322f953d3d2ff45836d9a0c79ff796ed706",
+        "path": "scripts/v025/gpu_window_registry.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "633a50fb82b79f2c8e6ad71a6397d0d0441a7030",
+        "path": "scripts/v025/m0_core_session_protocol.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "c91aa01e7dc645936e8fef0338f9b079f3191274",
+        "path": "scripts/v025/m0_cpu_boundary_preflight.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "1f90ce3dbce2b6edd45ca72687ae50e6bfd4c018",
+        "path": "scripts/v025/m0_exact_boundary_child.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "901f1a33b4a57a4d04ea27831588eb1a38e21ea5",
+        "path": "scripts/v025/m0_exact_boundary_contract.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "404199ce4fb8b55dc7d4c62c9b2c788b52c0e36f",
+        "path": "scripts/v025/m0_review10_fallback_capability.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "4a4e1c73948e3ccc27c1f1807a0e00ebc3493f6d",
+        "path": "scripts/v025/m0_three_window_executor.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "b1a123656c58c568eaeb932a8ac2d8748681740c",
+        "path": "scripts/v025/m0_window_parent.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "01664e136abac61076997f5b5784f1411ef5825f",
+        "path": "scripts/v025/real_state.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "dd6e8b566b22a8919c6c893ff7a6077be38d53a0",
+        "path": "scripts/v025/run_gpu_arm.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "de1a8ef8fde53108a4152b5802eca670ff2c7e90",
+        "path": "scripts/v025/run_shape_sweep.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "51d7f36ade62e7829c89f56accdf421375c4aee0",
+        "path": "scripts/v025/step1_dryrun.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "5d73df26e662be9e2d8609998d57e110e21b70eb",
+        "path": "scripts/v025/wrf_source_authority.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "efa55d3a052ae159a6c3937719972e411da3ddb8",
+        "path": "tests/v025/test_gpu_arm.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "9248d81f488b55470fc6b789a08d5ca75c90c783",
+        "path": "tests/v025/test_m0_c1_c2_cpu_closure.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "2777d6eb2702061ec310e3d3c157125225b4de87",
+        "path": "tests/v025/test_m0_exact_boundary.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "17bdebb5cae0393a1780a7e16bc3bf9e90fbd317",
+        "path": "tests/v025/test_m0_held_session_repair.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "4112f068c108cb4bcbffbc427a97dc34f5dc6f59",
+        "path": "tests/v025/test_m0_review10_fallback_assembly.py",
+        "status": "A"
+      },
+      {
+        "blob_oid": "69eece7401d69cf33e420521231d2b3531a90fe5",
+        "path": "tests/v025/test_m0_step1_evidence_boundary.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "30468f8709a5375a3bd13d473e7e02baf8fddf24",
+        "path": "tests/v025/test_receipt_spending.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "599a7cc1cd2bd50f4cbdf2284f616d861827cab1",
+        "path": "tests/v025/test_step1_boundary.py",
+        "status": "M"
+      },
+      {
+        "blob_oid": "ee09b174064c8843157ba194b1cd3f7bea8f658b",
+        "path": "tests/v025/test_step1_driver.py",
+        "status": "M"
+      }
+    ],
+    "manager_base": "940f00381b486f16970a6cf8b9dccdded25a1ea8",
+    "set_equality_with_frozen_manifest": true,
+    "terminal_implementation_commit": "0b850500e44a71387879959f4db88301f524bc16",
+    "terminal_implementation_tree": "e1150097819fe0c953d3c7d13fa1b1ed404131ea"
+  },
+  "coordination_action": false,
+  "device_action": false,
+  "gates": {
+    "C0": {
+      "declaration": {
+        "accepted_residual": "CPU lower() proves exact argument/tracing reachability but cannot prove later device compile/link or measured device values",
+        "available": {
+          "event_level_family_join": {
+            "provider": "W2 CUDA-kernel event/name join",
+            "status": "AVAILABLE"
+          },
+          "exact_kernels_per_step_denominator": {
+            "provider": "same exact FAST StableHLO plus W2 integration-clipped kernel events",
+            "status": "AVAILABLE"
+          },
+          "integration_clipped_gpu_busy": {
+            "provider": "W2 NVTX/CUDA projection for GPUWRF_M0_FORECAST_INTEGRATION",
+            "status": "AVAILABLE"
+          },
+          "inter_kernel_gap_distribution": {
+            "provider": "W2 integration-clipped event gaps",
+            "status": "AVAILABLE"
+          },
+          "kernel_duration_distribution": {
+            "provider": "W2 kernel event durations",
+            "status": "AVAILABLE"
+          },
+          "launch_latency_distribution": {
+            "provider": "W2 runtime-to-kernel correlation",
+            "status": "AVAILABLE"
+          },
+          "peak_vram": {
+            "provider": "W2 same-process allocator plus lock-owner sampler",
+            "status": "AVAILABLE"
+          },
+          "profiler_perturbation": {
+            "provider": "W2 profiled / W3 clean matched pair",
+            "status": "AVAILABLE"
+          },
+          "transfer_audit": {
+            "provider": "W2 CUDA memcpy/memset event audit",
+            "status": "AVAILABLE"
+          }
+        },
+        "boundary": {
+          "content_sha256": "bd3e471783d77f4ab3bbe511252a1bf92042f13a8da5087f2f647293d14ced24",
+          "file_sha256": "1dd00d2edcc8b7626ac3289118250d3f50db32b8133ae1bf6bceaa8ad8206e05",
+          "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/.agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/cpu_real_boundary_preflight.json",
+          "stablehlo_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5"
+        },
+        "content_address": {
+          "algorithm": "sha256",
+          "sha256": "25d243a59ec9c516d681e1840e022ef8b0574772739e0217e56784e9aa7a9ec2"
+        },
+        "coordination_action": false,
+        "denominator": {
+          "configured_cross_check": {
+            "derivation": "Fraction(str(hours))*3600/Fraction(str(dt_s))",
+            "exact_steps": 360,
+            "forecast_interval_seconds": 3600.0,
+            "hours": 1.0,
+            "integral": true,
+            "timestep_seconds": 10.0
+          },
+          "count_matches_configuration": true,
+          "entry_function": "main",
+          "loop_count": 4,
+          "method": "exact-lowered-trip-count",
+          "segment_trip_counts": [
+            179,
+            1,
+            179,
+            1
+          ],
+          "segments": [
+            {
+              "comparison": "LT",
+              "condition_bound": 179,
+              "end_step": 179,
+              "index": 0,
+              "index_ssa": "%60",
+              "iota_ssa": "%58",
+              "start_step": 1,
+              "trip_count": 179
+            },
+            {
+              "comparison": "LT",
+              "condition_bound": 1,
+              "end_step": 180,
+              "index": 1,
+              "index_ssa": "%64",
+              "iota_ssa": "%62",
+              "start_step": 180,
+              "trip_count": 1
+            },
+            {
+              "comparison": "LT",
+              "condition_bound": 179,
+              "end_step": 359,
+              "index": 2,
+              "index_ssa": "%68",
+              "iota_ssa": "%66",
+              "start_step": 181,
+              "trip_count": 179
+            },
+            {
+              "comparison": "LT",
+              "condition_bound": 1,
+              "end_step": 360,
+              "index": 3,
+              "index_ssa": "%72",
+              "iota_ssa": "%70",
+              "start_step": 360,
+              "trip_count": 1
+            }
+          ],
+          "stablehlo_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5",
+          "status": "PASS",
+          "steps": 360
+        },
+        "device_action": false,
+        "fallback_invariants": {
+          "insufficient_w2_w3_time_stops_before_w2": {
+            "mechanism": "the live graph requires the combined 2,000-second W2+W3 reservation before invoking W2",
+            "sources": [
+              "executor"
+            ],
+            "status": "PASS"
+          },
+          "no_extra_device_arm_after_w2_hash_and_w3_stop": {
+            "mechanism": "the immutable held graph ends at W3; all subsequent stages are post-lock CPU analysis of the hash-bound W2 capture",
+            "sources": [
+              "executor",
+              "postlock"
+            ],
+            "status": "PASS"
+          },
+          "postcapture_analysis_after_lock_release": {
+            "mechanism": "the outer owner creates the session lock-release proof before either POSTLOCK analysis stage",
+            "sources": [
+              "executor"
+            ],
+            "status": "PASS"
+          },
+          "postcapture_failure_preserves_raw_capture_and_readonly_sqlite": {
+            "mechanism": "one private SQLite is created after release; subsequent reports use READ_EXISTING and bind both raw-report and SQLite hashes",
+            "sources": [
+              "export",
+              "postlock"
+            ],
+            "status": "PASS"
+          },
+          "raw_capture_hash_bound_before_postlock_analysis": {
+            "mechanism": "analyze_w2 passes the W2 manager-bound .nsys-rep SHA-256 as expected_source_sha256 before export",
+            "sources": [
+              "postlock",
+              "export"
+            ],
+            "status": "PASS"
+          }
+        },
+        "integration_clip": {
+          "GPUWRF_M0_EVIDENCE": "UNSET",
+          "emitter": "scripts/v025/m0_exact_boundary_child.py",
+          "emitter_source": {
+            "all_required_tokens_present": true,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/m0_exact_boundary_child.py",
+            "required_tokens": [
+              "RANGE_NAME = \"GPUWRF_M0_FORECAST_INTEGRATION\"",
+              "with jax.profiler.TraceAnnotation(RANGE_NAME):",
+              "jax.block_until_ready(result)"
+            ],
+            "sha256": "ea50b8c06dbce27e5ebd859adbf4633d01f25867e88200da563abb66db505488"
+          },
+          "emitter_symbol": "run_boundary",
+          "parent_source": {
+            "all_required_tokens_present": true,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/m0_window_parent.py",
+            "required_tokens": [
+              "\"GPUWRF_M0_EVIDENCE\",",
+              "*EVIDENCE_ENV,",
+              "step1.nsys_command(inner, out_root=stage_root)"
+            ],
+            "sha256": "1e4f2e981e6abd6b21f009c2b52a7078d8e1791d825c967fc2119605c602a852"
+          },
+          "parent_strips_production_evidence_environment": true,
+          "production_operational_mode_emitter": false,
+          "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+          "status": "AVAILABLE"
+        },
+        "invariant_source_identities": {
+          "executor": {
+            "all_required_tokens_present": true,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/m0_three_window_executor.py",
+            "required_tokens": [
+              "if stage == \"W2_PROFILED_CAPTURE\":",
+              "\"W2_AND_W3_REMAINING_BUDGET\"",
+              "core_session.W2_W3_REQUIRED_SECONDS",
+              "build_session_lock_release_proof(",
+              "stage = \"POSTLOCK_W3_PAIR\"",
+              "stage = \"POSTLOCK_W2_EXPORT_CENSUS\""
+            ],
+            "sha256": "e78648ecb6f7ff2a0299969d2a8a68d7021ddf7b452ff41364379baae33459ef"
+          },
+          "export": {
+            "all_required_tokens_present": true,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/nsys_export.py",
+            "required_tokens": [
+              "\"--force-export=true\"",
+              "\"READ_EXISTING\"",
+              "\"private_sqlite_sha256\"",
+              "expected_source_sha256"
+            ],
+            "sha256": "f83b7d61a37f695ed38655e4ea65dd8922efff66b6b917f156d87afa4925bc25"
+          },
+          "postlock": {
+            "all_required_tokens_present": true,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/m0_postlock_census.py",
+            "required_tokens": [
+              "expected_source_sha256=artifacts[\"source_rep\"][\"sha256\"]",
+              "analyze_w2("
+            ],
+            "sha256": "aebcad92605170d81040b94d17fe9e906eb6779a1162dc71681857821dc62ad1"
+          }
+        },
+        "missing": {
+          "achieved_dram_gb_per_s": {
+            "reason": "the frozen nsys capture has no achieved-DRAM-throughput counter",
+            "status": "MISSING"
+          },
+          "occupancy_and_stall_counters": {
+            "reason": "the frozen capture has no Nsight Compute occupancy/stall counters",
+            "status": "MISSING"
+          },
+          "run_physics_false": {
+            "reason": "the frozen FAST call has run_physics=True and no second device arm is authorized",
+            "status": "MISSING"
+          }
+        },
+        "schema": "wrf_gpu2.v025.m0.review10_fallback_capability.v1",
+        "signature": {
+          "scheme": "sha256-canonical-json-content-signature",
+          "signed_sha256": "25d243a59ec9c516d681e1840e022ef8b0574772739e0217e56784e9aa7a9ec2"
+        },
+        "status": "PASS"
+      },
+      "declaration_content_sha256": "25d243a59ec9c516d681e1840e022ef8b0574772739e0217e56784e9aa7a9ec2",
+      "status": "PASS"
+    },
+    "R1": {
+      "accepted_residual": "lower() cannot prove later device compile/link",
+      "authority_sha256": "d8504722a019f05e242901790d2b754658b42ad65c9a8bd4dd5b9f718e90416b",
+      "boundary_content_sha256": "bd3e471783d77f4ab3bbe511252a1bf92042f13a8da5087f2f647293d14ced24",
+      "native_bundle_field_count": 29,
+      "observations": {
+        "compile_calls": 0,
+        "device_invocations": 0,
+        "exact_lower_calls": 1,
+        "fast_argument_builder_calls": 1,
+        "ledger_reads": 0,
+        "ledger_writes": 0,
+        "lock_checks": 0,
+        "native_loader_calls": 1,
+        "receipt_reads": 0,
+        "wrapper_calls": 0,
+        "wrapper_preparation_calls": 1
+      },
+      "platforms": [
+        "cpu"
+      ],
+      "status": "PASS"
+    },
+    "R2": {
+      "committed_ledger": {
+        "bytes": 1605,
+        "path": ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_spent.json",
+        "sha256": "b4544ff8e3f2ef8b087a16a9e2f8743cbf8a22d59d456ff7845b9af9daed4ce0"
+      },
+      "positive_control": {
+        "label_matched": true,
+        "ledger_created": false,
+        "receipt_spent": false,
+        "status": "PASS",
+        "token_matched": true
+      },
+      "registered_session_label": "m0-core-w1-w2-w3-session",
+      "registry_fingerprint": "ffff57e09cbab06253cdcab708a9aa87ac240f323777b2b8dc8ecf0adc0bb29c",
+      "registry_schema": "wrf_gpu2.v025.m0.gpu_window_registry.v2",
+      "single_production_spend_caller": "run_gpu_arm.authorise",
+      "status": "PASS"
+    }
+  },
+  "generated_at_utc": "2026-07-30T05:37:00.140268+00:00",
+  "gpu_receipt_lock_or_coordination_prohibited_and_absent": true,
+  "hard_gate_mutations": {
+    "all_refused": true,
+    "expected": {
+      "C0": [
+        "missing_lowered_trip_count",
+        "lowered_configured_count_mismatch",
+        "wrong_denominator_method",
+        "stablehlo_hash_mismatch",
+        "duplicate_production_integration_range",
+        "available_set_drift",
+        "missing_set_drift",
+        "integration_clip_wrong_emitter",
+        "raw_capture_hash_binding_removed",
+        "postlock_order_removed",
+        "postcapture_readonly_preservation_removed",
+        "w2_w3_reservation_removed",
+        "extra_device_arm_after_w3"
+      ],
+      "R1": [
+        "unset_wrf_roots",
+        "split_wrf_roots",
+        "mutated_authority_content_hash",
+        "mutated_authoritative_source_file",
+        "product_import_before_authority",
+        "non_cpu_preflight_platform",
+        "visible_cuda_device_in_preflight",
+        "lock_environment_leaks_into_preflight",
+        "native_loader_not_executed_once",
+        "exact_lower_not_executed_once",
+        "compile_or_device_call_during_preflight",
+        "authority_drift_before_spend",
+        "authority_drift_at_stage_entry"
+      ],
+      "R2": [
+        "one_character_token",
+        "strict_prefix_token",
+        "strict_suffix_token",
+        "token_only_inside_cmd",
+        "wrong_holder_label",
+        "missing_exported_label",
+        "mutated_registry",
+        "stale_spend_ledger"
+      ]
+    },
+    "observed": {
+      "C0": [
+        "missing_lowered_trip_count",
+        "lowered_configured_count_mismatch",
+        "wrong_denominator_method",
+        "stablehlo_hash_mismatch",
+        "duplicate_production_integration_range",
+        "available_set_drift",
+        "missing_set_drift",
+        "integration_clip_wrong_emitter",
+        "raw_capture_hash_binding_removed",
+        "postlock_order_removed",
+        "postcapture_readonly_preservation_removed",
+        "w2_w3_reservation_removed",
+        "extra_device_arm_after_w3"
+      ],
+      "R1": [
+        "unset_wrf_roots",
+        "split_wrf_roots",
+        "mutated_authority_content_hash",
+        "mutated_authoritative_source_file",
+        "product_import_before_authority",
+        "non_cpu_preflight_platform",
+        "visible_cuda_device_in_preflight",
+        "lock_environment_leaks_into_preflight",
+        "native_loader_not_executed_once",
+        "exact_lower_not_executed_once",
+        "compile_or_device_call_during_preflight",
+        "authority_drift_before_spend",
+        "authority_drift_at_stage_entry"
+      ],
+      "R2": [
+        "one_character_token",
+        "strict_prefix_token",
+        "strict_suffix_token",
+        "token_only_inside_cmd",
+        "wrong_holder_label",
+        "missing_exported_label",
+        "mutated_registry",
+        "stale_spend_ledger"
+      ]
+    },
+    "outcomes": {
+      "C0": {
+        "available_set_drift": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "duplicate_production_integration_range": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "GPUWRF_M0_EVIDENCE must remain unset; a production range would duplicate and invalidate the harness integration clip",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "extra_device_arm_after_w3": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "integration_clip_wrong_emitter": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "lowered_configured_count_mismatch": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "exact lowered trip count is missing, mislabeled, or disagrees with the exact configured interval/timestep derivation",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "missing_lowered_trip_count": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "exact lowered integration trip count is absent",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "missing_set_drift": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "postcapture_readonly_preservation_removed": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "postlock_order_removed": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "raw_capture_hash_binding_removed": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "stablehlo_hash_mismatch": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "exact lowered trip count is missing, mislabeled, or disagrees with the exact configured interval/timestep derivation",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "w2_w3_reservation_removed": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "fallback capability declaration schema, exact sets, invariant statuses, or content signature is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "wrong_denominator_method": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "exact lowered trip count is missing, mislabeled, or disagrees with the exact configured interval/timestep derivation",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        }
+      },
+      "R1": {
+        "authority_drift_at_stage_entry": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "source authority changed after binding",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "authority_drift_before_spend": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "source authority changed after binding",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "compile_or_device_call_during_preflight": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "real CPU boundary schema, platform, native loader, observations, or source-authority binding is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "exact_lower_not_executed_once": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "real CPU boundary schema, platform, native loader, observations, or source-authority binding is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "lock_environment_leaks_into_preflight": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CpuBoundaryRefusal",
+          "message": "lock environment leaked into CPU preflight: ['GPUWRF_GPU_LOCK_TOKEN']",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "mutated_authoritative_source_file": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "source authority changed after binding",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "mutated_authority_content_hash": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "source authority hash mismatch",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "native_loader_not_executed_once": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CapabilityRefusal",
+          "message": "real CPU boundary schema, platform, native loader, observations, or source-authority binding is invalid",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "non_cpu_preflight_platform": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CpuBoundaryRefusal",
+          "message": "JAX_PLATFORMS must equal cpu",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "product_import_before_authority": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "accelerator/product import preceded authority: ['jax']",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "split_wrf_roots": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "GPUWRF_WRF_SRC conflicts with GPUWRF_WRF_ROOT",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "unset_wrf_roots": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "SourceAuthorityRefusal",
+          "message": "GPUWRF_WRF_ROOT is unset; checkout-relative fallback is forbidden",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "visible_cuda_device_in_preflight": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "CpuBoundaryRefusal",
+          "message": "CUDA_VISIBLE_DEVICES must be empty",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        }
+      },
+      "R2": {
+        "missing_exported_label": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the exported canonical-lock label differs from the exact authorized label: '' != 'm0-core-w1-w2-w3-session'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "mutated_registry": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "spending identity: unknown window label 'm0-core-w1-w2-w3-session' is not registered; registered labels are ('baseline-census', 'pallas-sm120', 'reproduction', 'm0-core-w1-w2-w3-session', 'm0-autotune0-qualification', 'm0-autotune0-profiled-census', 'm0-autotune0-clean-matched-arm')",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "one_character_token": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the holder file does not carry this process's lock token: the lock is held by someone else. holder='holder=m0-core-w1-w2-w3-session pid=1 token=exact-tokem cmd=cpu-only'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "stale_spend_ledger": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "this coordination content was already spent at 2026-07-30T05:36:59.988957+00:00 (CPU mutation). The fingerprint covers window/request-time/replies only, so removing the spend marker or copying the file does not un-spend it.",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "strict_prefix_token": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the holder file does not carry this process's lock token: the lock is held by someone else. holder='holder=m0-core-w1-w2-w3-session pid=1 token=exact-token-extra cmd=cpu-only'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "strict_suffix_token": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the holder file does not carry this process's lock token: the lock is held by someone else. holder='holder=m0-core-w1-w2-w3-session pid=1 token=prefix-exact-token cmd=cpu-only'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "token_only_inside_cmd": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the holder file does not carry this process's lock token: the lock is held by someone else. holder='holder=m0-core-w1-w2-w3-session pid=1 token=different-token cmd=cpu token=exact-token'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        },
+        "wrong_holder_label": {
+          "coordination_action": false,
+          "device_action": false,
+          "exception_type": "WindowNotAuthorised",
+          "message": "the holder record does not carry the exact authorized label: 'holder=baseline-census pid=1 token=exact-token cmd=cpu-only'",
+          "real_receipt_or_lock_touched": false,
+          "status": "REFUSED"
+        }
+      }
+    },
+    "set_equality": {
+      "C0": true,
+      "R1": true,
+      "R2": true
+    }
+  },
+  "known_preterminal_falsifications": [
+    {
+      "failure": "initial exact-trip extractor required direct iota carry",
+      "repair": "bound iota through static broadcast/add index vector into the while"
+    },
+    {
+      "failure": "initial condition parser accepted only i32 bounds",
+      "repair": "bound the emitted i64 scan-counter condition"
+    },
+    {
+      "failure": "JSON sort order invalidated tuple-order set validation",
+      "repair": "enforced mathematical set equality"
+    }
+  ],
+  "manager_base": "940f00381b486f16970a6cf8b9dccdded25a1ea8",
+  "production_tree": {
+    "expected": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "read_only": true,
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7"
+  },
+  "proof_content_sha256": "b10984159dd5444071639b5027e490d985d5d882581ed15944a098386ece178e",
+  "raw_artifacts": {
+    "capture_capability_declaration": {
+      "bytes": 8362,
+      "path": ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/capture_capability_declaration.json",
+      "sha256": "95f6eb59586e8f1b78a6c4e9972ad0f2fd966003184063e81704f69ea338b178"
+    },
+    "cpu_real_boundary_preflight": {
+      "bytes": 29323,
+      "path": ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/cpu_real_boundary_preflight.json",
+      "sha256": "1dd00d2edcc8b7626ac3289118250d3f50db32b8133ae1bf6bceaa8ad8206e05"
+    },
+    "wrf_source_authority": {
+      "bytes": 4248,
+      "path": ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/wrf_source_authority.json",
+      "sha256": "bb86498be86db9090dda41a2eff6a6540666e789b5ecf955fc5022cb558f0488"
+    }
+  },
+  "real_receipt_check_or_spend": false,
+  "retained_first_session_read_only_bindings": {
+    "cpu_preflight": {
+      "bytes": 9387,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.json",
+      "sha256": "eef1efff946556defbf479a845a16bbf4605e581751cf2e758a13d0e9f583c9c"
+    },
+    "held_wrapper_log": {
+      "bytes": 11544,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/held_wrapper.log",
+      "sha256": "7c77343af5c59704379684081efe25b0950852f77143f408de0f98ecbb87e0b3"
+    },
+    "lock_release": {
+      "bytes": 2218,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/session_lock_release.json",
+      "sha256": "702e2f021522fbda7e15bcc20df3c1a707c4f29f83f2042fd8ed3772d85fe935"
+    },
+    "owner": {
+      "bytes": 4893,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/session_owner.json",
+      "sha256": "2292f4ab8f88368e650d5b9605aff0eac4ea60d9de765b0054bade218c2c3f7f"
+    },
+    "prelock_revalidation": {
+      "bytes": 3009,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/prelock_revalidation.json",
+      "sha256": "64ea9e3214f73c2683f53141eb0b4ff9798118b24467875164ccb22820514da5"
+    },
+    "receipt": {
+      "bytes": 2696,
+      "path": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_CORE_W1_W2_W3_SESSION_RECEIPT.json",
+      "sha256": "ef935e9600c71981c3f5dc560997a8bbcd288ac0d0ba271799674b15fc13ce27"
+    },
+    "session": {
+      "bytes": 10828,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/m0_core_session.json",
+      "sha256": "e76955f53022335b9372f50b19b8e0e8c3fffc6386ff63554faf204be4f0d1ea"
+    },
+    "session_identity": {
+      "bytes": 4330,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/session_preflight_identity.json",
+      "sha256": "50ec7772dcc65a7f149cf9cfb8eb5fb0dcb5dede81ddd2d1a338f1bb21dd9a1f"
+    },
+    "terminal": {
+      "bytes": 705,
+      "path": "proofs/v025/m0/autotune0_three_window/held_session/m0_core_terminal.json",
+      "sha256": "8d260b4f1a02bc5dcf7f3c71c5c8745dd723c32f1ec1830af33574c1a1743e8f"
+    }
+  },
+  "schema": "wrf_gpu2.v025.m0.review10_fallback_cpu_evidence.v1",
+  "source_test_command_manifest": {
+    "focused_command": "systemd-run --user --scope -p DevicePolicy=closed -p MemoryMax=16G taskset -c 0-3 env JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= GPUWRF_JAX_CACHE=0 GPUWRF_JAX_CACHE_LOCK=0 XLA_FLAGS=--xla_cpu_multi_thread_eigen=false pytest -q tests/v025/test_m0_review10_fallback_assembly.py",
+    "proof_command": "scripts/v025/build_m0_review10_fallback_evidence.py --manager-base 940f00381b486f16970a6cf8b9dccdded25a1ea8 --implementation-commit 0b850500e44a71387879959f4db88301f524bc16 --raw-root .agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw --focused-junit .agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/focused-junit.xml --relevant-junit .agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/relevant-v025-junit.xml --output proofs/v025/m0/m0_review10_fallback_cpu_evidence.json --report .agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/REPORT.md --patch-proposals .agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/PATCH_PROPOSALS.md",
+    "raw_boundary_command": [
+      "<USER_HOME>/miniconda3/bin/python",
+      "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-fallback-assembly/scripts/v025/m0_cpu_boundary_preflight.py",
+      "--authority",
+      ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/wrf_source_authority.json",
+      "--run-dir",
+      "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+      "--output",
+      ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/raw/cpu_real_boundary_preflight.json"
+    ],
+    "relevant_command": "systemd-run --user --scope -p DevicePolicy=closed -p MemoryMax=16G taskset -c 0-3 env JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= GPUWRF_JAX_CACHE=0 GPUWRF_JAX_CACHE_LOCK=0 XLA_FLAGS=--xla_cpu_multi_thread_eigen=false pytest -q tests/v025/test_gpu_arm.py tests/v025/test_receipt_spending.py tests/v025/test_step1_boundary.py tests/v025/test_step1_driver.py tests/v025/test_m0_step1_evidence_boundary.py tests/v025/test_m0_exact_boundary.py tests/v025/test_m0_c1_c2_cpu_closure.py tests/v025/test_m0_held_session_repair.py",
+    "source_manifest": [
+      "scripts/v025/build_m0_review10_fallback_evidence.py",
+      "scripts/v025/gpu_window_registry.py",
+      "scripts/v025/m0_core_session_protocol.py",
+      "scripts/v025/m0_cpu_boundary_preflight.py",
+      "scripts/v025/m0_exact_boundary_child.py",
+      "scripts/v025/m0_exact_boundary_contract.py",
+      "scripts/v025/m0_review10_fallback_capability.py",
+      "scripts/v025/m0_three_window_executor.py",
+      "scripts/v025/m0_window_parent.py",
+      "scripts/v025/real_state.py",
+      "scripts/v025/run_gpu_arm.py",
+      "scripts/v025/run_shape_sweep.py",
+      "scripts/v025/step1_dryrun.py",
+      "scripts/v025/wrf_source_authority.py",
+      "tests/v025/test_gpu_arm.py",
+      "tests/v025/test_m0_c1_c2_cpu_closure.py",
+      "tests/v025/test_m0_exact_boundary.py",
+      "tests/v025/test_m0_held_session_repair.py",
+      "tests/v025/test_m0_review10_fallback_assembly.py",
+      "tests/v025/test_m0_step1_evidence_boundary.py",
+      "tests/v025/test_receipt_spending.py",
+      "tests/v025/test_step1_boundary.py",
+      "tests/v025/test_step1_driver.py"
+    ]
+  },
+  "system_policy": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/run-p2891443-i6867478.scope",
+    "lock_environment_absent": true,
+    "memory_max_cgroup": "17179869184",
+    "required_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "unit": "run-p2891443-i6867478.scope",
+    "unit_properties": {
+      "DevicePolicy": "closed",
+      "MemoryMax": "17179869184"
+    }
+  },
+  "terminal_disposition": "critic-ready CPU evidence only; no GPU coordination authorized",
+  "terminal_implementation_commit": "0b850500e44a71387879959f4db88301f524bc16",
+  "tests": {
+    "focused": {
+      "bytes": 7071,
+      "cases_sha256": "047061f6d462dab1008106342bf66ddfaddd418cc037306791f0a168e021fd8a",
+      "errors": 0,
+      "failures": 0,
+      "path": ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/focused-junit.xml",
+      "sha256": "740a25ff91ecd3f31a080aba62355cbab73a2ad301d020d4deb64cb9a6a042db",
+      "skipped": 0,
+      "tests": 43
+    },
+    "relevant_v025": {
+      "bytes": 41261,
+      "cases_sha256": "50b072c1dc45c08a8f4c3e25e1becd5638da6b5fdfc90e23be16c0e4abde35d9",
+      "errors": 0,
+      "failures": 0,
+      "path": ".agent/sprints/2026-07-30-v0250-m0-review10-fallback-assembly/relevant-v025-junit.xml",
+      "sha256": "e5434790bbc6afb4a40e4c27a1651076dca4bad867708b7ead44659f648a1631",
+      "skipped": 0,
+      "tests": 301
+    }
+  },
+  "verdict": "CPU_REVIEW10_FALLBACK_ASSEMBLY_GREEN"
+}

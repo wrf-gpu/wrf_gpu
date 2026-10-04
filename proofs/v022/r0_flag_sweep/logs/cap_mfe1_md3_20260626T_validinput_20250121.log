@@ -1,0 +1,15 @@
+MARKER:PROCESS_START epoch=1782480103.271 tag=r0_mfe1_cap maxdom=3 kwarm=6 mode=fixed fixed_root_steps=1 fixed_repeats=3 defuse=0 fuse=(unset) aot=1 parallel=0
+MARKER:LOADED wall_s=164.5 root_dt=18.0 names=('d01', 'd02', 'd03')
+MARKER:PREWARM_DONE wall_s=0.0 active=False source=skip:fused-default
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:missing path=/tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_9a972234f887143785ba69d6e30ccd5b9f8baed5721bb9557ea8f09e22253b95.xlaexec error=missing AOT artifact(s): /tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_9a972234f887143785ba69d6e30ccd5b9f8baed5721bb9557ea8f09e22253b95.xlaexec, /tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_9a972234f887143785ba69d6e30ccd5b9f8baed5721bb9557ea8f09e22253b95.meta
+E0626 14:29:31.911532 2015577 slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0626 14:29:55.240658 2015426 slow_operation_alarm.cc:140] The operation took 2m23.329226414s
+
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:jit-compiled+aot-captured hlo=d4195d3eff4c
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=/tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_0aa9988ebf7b3b01a1c827f0f16f12fc13714899f0ec4bc44709e37b9df948ee.xlaexec cheap_key=0aa9988ebf7b error=missing AOT artifact(s): /tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_0aa9988ebf7b3b01a1c827f0f16f12fc13714899f0ec4bc44709e37b9df948ee.xlaexec, /tmp/gpuwrf_r0_mfe1_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_0aa9988ebf7b3b01a1c827f0f16f12fc13714899f0ec4bc44709e37b9df948ee.meta

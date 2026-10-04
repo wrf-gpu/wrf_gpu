@@ -1,0 +1,369 @@
+{
+  "run_dir": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run",
+  "namelist": "<DATA_ROOT>/wrf_downscale/canary_all7/run/namelist.input",
+  "max_dom": 9,
+  "config": {
+    "time_step": 18.0,
+    "dx": [
+      9000.0,
+      3000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0
+    ],
+    "dy": [
+      9000.0,
+      3000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0
+    ],
+    "parent_time_step_ratio": [
+      1.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0,
+      3.0
+    ],
+    "parent_id": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "acoustic_substeps": 10,
+    "acoustic_substeps_source": "runtime_default_10",
+    "max_dom": 9
+  },
+  "domains": {
+    "d01": {
+      "dt_s": 18.0,
+      "dx_m": 9000.0,
+      "dy_m": 9000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 30.338862419128418,
+        "ring": 32.99592971801758
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.060677724838256834,
+        "ring": 0.06599185943603515
+      },
+      "min_dz_m": 48.16879025536082,
+      "max_w_ms": {
+        "interior": 0.34921780228614807,
+        "ring": 0.2910820245742798
+      },
+      "cfl_vert_advective": {
+        "interior": 0.13049778513902144,
+        "ring": 0.10877326199309982
+      },
+      "sound_speed_ms": 342.712589992374,
+      "dt_acoustic_s": 1.8,
+      "cfl_acoustic_horiz": 0.0685425179984748,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d01_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 15.153384198384105,
+        "vert_advective_dt_headroom_x": 7.662965305768857,
+        "acoustic_dt_headroom_x": 7.294742221333712
+      }
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 26.993266105651855,
+        "ring": 27.30280303955078
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.053986532211303714,
+        "ring": 0.05460560607910157
+      },
+      "min_dz_m": 46.57569266969631,
+      "max_w_ms": {
+        "interior": 1.0766478776931763,
+        "ring": 0.11555894464254379
+      },
+      "cfl_vert_advective": {
+        "interior": 0.13869653666712023,
+        "ring": 0.014886599170351827
+      },
+      "sound_speed_ms": 342.66243872288686,
+      "dt_acoustic_s": 0.6,
+      "cfl_acoustic_horiz": 0.06853248774457736,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d02_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 18.313138005489805,
+        "vert_advective_dt_headroom_x": 7.209985368272449,
+        "acoustic_dt_headroom_x": 7.295809862667105
+      }
+    },
+    "d03": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 24.201613426208496,
+        "ring": 24.426132202148438
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.04840322685241699,
+        "ring": 0.04885226440429687
+      },
+      "min_dz_m": 45.941731397529566,
+      "max_w_ms": {
+        "interior": 1.7614046335220337,
+        "ring": 0.4014226794242859
+      },
+      "cfl_vert_advective": {
+        "interior": 0.07667994130568401,
+        "ring": 0.01747529608541796
+      },
+      "sound_speed_ms": 342.445670675263,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.0684891341350526,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d03_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 20.469880202974654,
+        "vert_advective_dt_headroom_x": 13.041220206644493,
+        "acoustic_dt_headroom_x": 7.3004281089911025
+      }
+    },
+    "d04": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 23.86457920074463,
+        "ring": 24.05375099182129
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.04772915840148926,
+        "ring": 0.04810750198364258
+      },
+      "min_dz_m": 48.25224492406505,
+      "max_w_ms": {
+        "interior": 1.8315494060516357,
+        "ring": 0.12928368151187897
+      },
+      "cfl_vert_advective": {
+        "interior": 0.0759156142448485,
+        "ring": 0.005358659756259372
+      },
+      "sound_speed_ms": 342.4821838468035,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.0684964367693607,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d04_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 20.78677875105671,
+        "vert_advective_dt_headroom_x": 13.172520698768611,
+        "acoustic_dt_headroom_x": 7.299649785923699
+      }
+    },
+    "d05": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 24.198030471801758,
+        "ring": 24.409905433654785
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.04839606094360351,
+        "ring": 0.04881981086730957
+      },
+      "min_dz_m": 47.46386637867545,
+      "max_w_ms": {
+        "interior": 2.1029155254364014,
+        "ring": 0.6125834584236145
+      },
+      "cfl_vert_advective": {
+        "interior": 0.08861121884420266,
+        "ring": 0.025812623587649228
+      },
+      "sound_speed_ms": 342.1138975177617,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.06842277950355234,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d05_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 20.483487793878652,
+        "vert_advective_dt_headroom_x": 11.285252737107841,
+        "acoustic_dt_headroom_x": 7.307507874245904
+      }
+    },
+    "d06": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 25.03439426422119,
+        "ring": 25.20614528656006
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.05006878852844238,
+        "ring": 0.05041229057312012
+      },
+      "min_dz_m": 48.56647263973127,
+      "max_w_ms": {
+        "interior": 1.3511067628860474,
+        "ring": 0.27065396308898926
+      },
+      "cfl_vert_advective": {
+        "interior": 0.055639484996517274,
+        "ring": 0.011145712191071196
+      },
+      "sound_speed_ms": 342.36437596832667,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.06847287519366534,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d06_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 19.83643251737506,
+        "vert_advective_dt_headroom_x": 17.97284788064797,
+        "acoustic_dt_headroom_x": 7.302161601741192
+      }
+    },
+    "d07": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 26.513659477233887,
+        "ring": 26.569881439208984
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.05302731895446777,
+        "ring": 0.05313976287841797
+      },
+      "min_dz_m": 48.62997335031491,
+      "max_w_ms": {
+        "interior": 1.8260588645935059,
+        "ring": 0.35606294870376587
+      },
+      "cfl_vert_advective": {
+        "interior": 0.07510013840390808,
+        "ring": 0.014643764911767533
+      },
+      "sound_speed_ms": 342.63729449775536,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.06852745889955107,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d07_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 18.81830000423538,
+        "vert_advective_dt_headroom_x": 13.315554688085125,
+        "acoustic_dt_headroom_x": 7.296345261144296
+      }
+    },
+    "d08": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 23.047951698303223,
+        "ring": 23.26052951812744
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.04609590339660644,
+        "ring": 0.046521059036254885
+      },
+      "min_dz_m": 49.85896746317542,
+      "max_w_ms": {
+        "interior": 1.7561441659927368,
+        "ring": 0.4872486889362335
+      },
+      "cfl_vert_advective": {
+        "interior": 0.07044446587425947,
+        "ring": 0.01954507739439663
+      },
+      "sound_speed_ms": 342.43885089218,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.068487770178436,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d08_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 21.495641344292657,
+        "vert_advective_dt_headroom_x": 14.195579277795359,
+        "acoustic_dt_headroom_x": 7.300573499433765
+      }
+    },
+    "d09": {
+      "dt_s": 2.0,
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "n_sound": 10,
+      "max_wind_ms": {
+        "interior": 21.50883960723877,
+        "ring": 21.668564796447754
+      },
+      "cfl_horiz_advective": {
+        "interior": 0.043017679214477536,
+        "ring": 0.043337129592895506
+      },
+      "min_dz_m": 49.926713774328164,
+      "max_w_ms": {
+        "interior": 1.7395808696746826,
+        "ring": 0.3422718644142151
+      },
+      "cfl_vert_advective": {
+        "interior": 0.06968537434839776,
+        "ring": 0.013710971082987961
+      },
+      "sound_speed_ms": 341.85230453530494,
+      "dt_acoustic_s": 0.2,
+      "cfl_acoustic_horiz": 0.06837046090706099,
+      "status": "OK",
+      "wrfout": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run/wrfout_d09_2026-04-29_02:00:00",
+      "time_index": 0,
+      "headroom": {
+        "horiz_advective_dt_headroom_x": 23.074901577328635,
+        "vert_advective_dt_headroom_x": 14.350213503918594,
+        "acoustic_dt_headroom_x": 7.313099741709688
+      }
+    }
+  },
+  "binding_constraint": {
+    "domain": "d02",
+    "constraint": "vert_advective_dt_headroom_x",
+    "dt_headroom_x": 7.209985368272449
+  },
+  "n_domains_probed": 9
+}

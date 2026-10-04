@@ -1,0 +1,6 @@
+G0 decision artifacts (<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z):
+  manifest : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/g0_manifest.json
+  verdict  : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/G0_VERDICT.json
+  fp64 arm : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/fp64_arm.json   log <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/fp64.log
+  fp32 arm : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/fp32_arm.json   log <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/fp32.log
+  NOTE: DRY-RUN verdict is from the TEMPLATE (null metrics) — NOT a real decision.

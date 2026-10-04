@@ -1,0 +1,13 @@
+# GATE (b) — LIVENESS: hot carry no longer holds the legacy total-alias leaves
+# OperationalCarry pytree leaves dropped 74 -> 71 (legacy p/ph/mu removed); full-grid 3D leaves 37 -> 35.
+# _advance_chunk HLO convert ops unchanged (no new converts from S2 islands on fp64 path).
+# Command: python proofs/v020/s1s2/harness.py liveness
+
+[liveness] OperationalCarry total pytree leaves: 71
+[liveness] State p/ph/mu total-family leaves present in carry:
+    ('p_total', (40, 1, 80), 'float64')
+    ('ph_total', (41, 1, 80), 'float64')
+    ('mu_total', (1, 80), 'float64')
+[liveness] _advance_chunk HLO convert ops: convert(=0  alt=2
+[liveness] carry leaf shapes (sample full-grid):
+   full-grid 3D leaves in carry: 35

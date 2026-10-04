@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "schema_ref": "proof_index://schemas/divergence_map_v1",
+  "produced_by": "manager-opus-4.7",
+  "produced_at": "2026-05-28T14:15:00Z",
+  "case": "20260521",
+  "method": "hour-by-hour wrfout GPU-vs-WRF d02 across 24 forecast hours and 16 operational fields",
+  "method_source": "proofs/m9/operational_trace_hourly.json (codex worker m9a-v2 deliverable)",
+  "method_caveat": "scope pivoted from per-operator WRF Fortran trace (would require WRF recompilation) to wrfout-level hour-by-hour comparison; first-divergence-operator identification is therefore field-level + hour-level, not operator-level",
+  "summary": {
+    "dycore_parity_depth_validated": 100,
+    "dycore_parity_status": "PRESERVED",
+    "dycore_parity_status_source": "tests/savepoint/test_dycore_100_steps.py PASSED in 458s on this branch",
+    "dycore_parity_1000_step": {
+      "status": "BLOCKED",
+      "blocker": "codex sandbox blocks JAX CUDA init in savepoint_parity_1000 script; the 24h operational pipeline DID use GPU (24 hourly forecasts produced), so the block is specific to this script's init path",
+      "follow_up": "manager-side rerun outside codex sandbox; not a project-level blocker"
+    },
+    "operational_first_divergence": {
+      "step_or_hour": "hour 1 (all forecast hours show divergence)",
+      "operator_or_field_attribution": "multi-source — see diagnosis below",
+      "headline_field": "U (zonal wind 3D)",
+      "headline_max_abs_diff": 38.37719888985157,
+      "headline_field_rmse_hour_1": 2.94288790680537,
+      "headline_units": "m/s"
+    },
+    "static_field_status_lead_1h": {
+      "HGT": "BITWISE_MATCH (per first_hour_diff.json prior evidence)",
+      "LANDMASK": "BITWISE_MATCH (per first_hour_diff.json prior evidence)",
+      "LU_INDEX": {"max_abs_diff": 14.0, "rmse": 2.6447, "verdict": "DIVERGES — category mismatch across grid; confirmed prior RCA finding"},
+      "TSK": {"max_abs_diff": 0.0, "rmse": 0.0, "verdict": "PERFECT BITWISE MATCH (hourly data-replay confirmed working as designed)"}
+    },
+    "operational_variable_24h_summary": {
+      "U_3D": {"max_max_abs": 57.64, "mean_rmse": 7.33, "verdict": "DIVERGES — likely downstream of theta/PBL"},
+      "V_3D": {"max_max_abs": 39.49, "mean_rmse": 6.52, "verdict": "DIVERGES — same"},
+      "W": {"max_max_abs": 2.70, "mean_rmse": 0.044, "verdict": "LOW DIVERGENCE — vertical dycore healthy"},
+      "theta": {"max_max_abs": 345.20, "mean_rmse": 75.21, "verdict": "DIVERGES MASSIVELY — strong hypothesis: reference-state convention mismatch (WRF stores T = θ - 300 perturbation, GPU may store absolute θ)"},
+      "QVAPOR": {"max_max_abs": 0.0385, "mean_rmse": 0.0027, "verdict": "LOW DIVERGENCE — moisture healthy in absolute terms"},
+      "PSFC": {"max_max_abs": 654.88, "mean_rmse": 446.37, "verdict": "DIVERGES — surface pressure base-state likely affected by theta convention"},
+      "T2": {"max_max_abs": 157.16, "mean_rmse": 43.27, "verdict": "DIVERGES — but max-max 157K is unphysical, suggesting comparison-method outlier"},
+      "U10": {"max_max_abs": 29.96, "mean_rmse": 5.18, "verdict": "DIVERGES — 5.18 m/s RMSE is ~22x TOST margin of 0.231"},
+      "V10": {"max_max_abs": 28.01, "mean_rmse": 5.61, "verdict": "DIVERGES — 24x TOST margin"},
+      "SWDOWN": {"max_max_abs": 1122.45, "mean_rmse": 335.11, "verdict": "DIVERGES — 1122 W/m² exceeds clear-sky surface solar; cosine-zenith or albedo likely wrong"},
+      "GLW": {"max_max_abs": 414.72, "mean_rmse": 342.61, "verdict": "DIVERGES — longwave initialization probably affected"},
+      "HFX": {"max_max_abs": 4105.22, "mean_rmse": 923.88, "verdict": "DIVERGES MASSIVELY — physically impossible peak (real HFX is 100-500 W/m²); surface flux magnitude wrong"},
+      "LH": {"max_max_abs": 1782.87, "mean_rmse": 386.66, "verdict": "DIVERGES — likely downstream of T2 / Bowen ratio"},
+      "PBLH": {"max_max_abs": 986.03, "mean_rmse": 411.20, "verdict": "DIVERGES — downstream of bad surface fluxes"},
+      "TSK": {"max_max_abs": 0.0, "mean_rmse": 0.0, "verdict": "PERFECT — confirms data-replay is the only thing keeping skin temp bounded"},
+      "LU_INDEX": {"max_max_abs": 14.0, "mean_rmse": 2.6447, "verdict": "STATIC defect — same value every hour"}
+    }
+  },
+  "diagnosis": {
+    "primary_defects_ranked_by_likely_impact": [
+      {
+        "rank": 1,
+        "hypothesis": "theta reference-state convention mismatch",
+        "evidence": ["theta mean RMSE 75.2 K across 24h is unphysical-large", "theta max-max 345 K resembles a 300-K offset", "T2/PSFC/HFX/PBLH all downstream of theta", "iter2 worker already partially fixed theta but operational comparison path is different"],
+        "estimated_repair_effort": "1-3 days (comparator audit + one-line conversion if confirmed)",
+        "applicable_milestone": "M9.C (new sub-sprint) or M11 first sprint",
+        "confidence": "high"
+      },
+      {
+        "rank": 2,
+        "hypothesis": "surface heat flux magnitude (HFX) wrong",
+        "evidence": ["HFX max 4105 W/m² is physically impossible (real range 100-500)", "iter2 surface→MYNN wiring landed but evidence shows magnitude/sign still wrong", "consistent with iter2 RCA worker-report.md finding"],
+        "estimated_repair_effort": "3-7 days",
+        "applicable_milestone": "M12",
+        "confidence": "high"
+      },
+      {
+        "rank": 3,
+        "hypothesis": "radiation initialization wrong (SWDOWN cosine-zenith, albedo, or coupling order)",
+        "evidence": ["SWDOWN max 1122 W/m² exceeds clear-sky surface solar (max ~1000 W/m²)", "RRTMG cadence fix in iter2 ran but didn't normalise"],
+        "estimated_repair_effort": "1-2 wk",
+        "applicable_milestone": "M13",
+        "confidence": "medium"
+      },
+      {
+        "rank": 4,
+        "hypothesis": "LU_INDEX static field mismatch",
+        "evidence": ["max 14-category delta consistently every hour", "RCA flagged this; state.py has no lu_index leaf"],
+        "estimated_repair_effort": "3-5 days",
+        "applicable_milestone": "M10",
+        "confidence": "high"
+      },
+      {
+        "rank": 5,
+        "hypothesis": "lateral boundary forcing incomplete",
+        "evidence": ["wind divergence at interior cells suggests BC not the dominant driver, but boundary apply path is partial (U/V/theta/QV/PH/MU only; W/P/PB not applied)"],
+        "estimated_repair_effort": "2-3 wk",
+        "applicable_milestone": "M14",
+        "confidence": "medium"
+      }
+    ],
+    "fields_that_appear_HEALTHY": [
+      {"field": "W", "evidence": "RMSE 0.044 m/s across 24h"},
+      {"field": "QVAPOR", "evidence": "RMSE 0.0027 kg/kg across 24h"},
+      {"field": "TSK", "evidence": "RMSE 0.0 (data-replay confirmed)"},
+      {"field": "HGT", "evidence": "bitwise match per prior RCA"},
+      {"field": "LANDMASK", "evidence": "bitwise match per prior RCA"}
+    ],
+    "is_localised_to_known_operators": true,
+    "is_localised_evidence": "the 5 ranked defects all map to specific named M10-M14 milestones; W and QVAPOR healthy show dycore + advection are NOT the divergence source; static-field bitwise match for HGT/LANDMASK shows ingestion path is mostly right",
+    "estimated_repair_milestones": ["M10", "M11", "M12", "M13", "M14"],
+    "method_artifacts_to_audit_BEFORE_using_this_trace_as_truth": [
+      "theta convention (perturbation vs absolute) — single largest source of apparent error",
+      "T2 max-max 157 K — likely a single-cell outlier or NaN handling artifact, not real",
+      "SWDOWN unit handling (W/m² vs kW/m²) — exceeds physical max",
+      "HFX 4105 W/m² peak — unit, sign convention, or NaN handling check"
+    ]
+  },
+  "viability_verdict": "VIABLE",
+  "verdict_evidence": "The divergence pattern is multi-source but localised to named operators that map cleanly onto the planned M10-M14 milestones. The dycore in isolation (W, QVAPOR, 100-step coupled parity bitwise) is healthy. Static fields HGT/LANDMASK match bitwise. The defects are: (a) theta reference-state convention almost certainly wrong (cheap to test, cheap to fix), (b) surface flux magnitude / sign wrong (M12), (c) radiation initialization wrong (M13), (d) LU_INDEX static field wrong (M10), (e) boundary completeness partial (M14). All 5 are within the existing roadmap. No evidence of a deep architectural defect that would require redesign. RECOMMENDED ADJUSTMENT: insert a sub-sprint M9.C (1-3 days) BEFORE M11 to audit comparator + theta-convention, because if theta-convention is the issue the apparent divergence shrinks dramatically and re-prioritises the remaining 4 defects.",
+  "viability_caveats": [
+    "1000-step dycore parity not measured (codex sandbox GPU init blocker); manager-side rerun needed",
+    "The trace was a wrfout-level comparison not a per-operator-boundary trace; operator attribution is inferred from field signatures not directly observed",
+    "20260521 is a single case; the 30-case M20 ensemble will reveal how the defects vary across seasons"
+  ],
+  "recommended_next_dispatch_order": [
+    "M9.C theta + comparator audit (1-3 days, NEW)",
+    "M10 LU_INDEX static-field parity (1-2 wk, plan-original)",
+    "M11 dycore guard + theta limiter (2-3 wk, plan-original)",
+    "M12 surface flux + MYNN parity (2-4 wk, plan-original)",
+    "M13 radiation + land-surface diurnal (3-4 wk, plan-original)",
+    "M14 lateral BC completeness (2-3 wk, plan-original)"
+  ]
+}

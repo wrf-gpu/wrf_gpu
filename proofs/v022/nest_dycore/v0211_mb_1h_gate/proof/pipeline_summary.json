@@ -1,0 +1,33 @@
+{
+  "gate": "Mont-Blanc native-dt max-dom2 1h release stability gate",
+  "schema": "gpuwrf_release_gate_summary",
+  "verdict": "PIPELINE_PARTIAL",
+  "all_domains_finite": true,
+  "all_outputs_present": false,
+  "domains": [
+    "d01",
+    "d02"
+  ],
+  "root_steps": 200,
+  "wall_clock_total_s": 1285.2264193299925,
+  "wall_clock_forecast_only_s": 1159.7890039889608,
+  "per_domain": {
+    "d01": {
+      "dt_s": 18.0,
+      "own_steps": 200,
+      "history_interval_min": 20.0,
+      "final_state_finite": true,
+      "wrfout_count": 2,
+      "expected_wrfout_count": 2
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "own_steps": 600,
+      "history_interval_min": 20.0,
+      "final_state_finite": true,
+      "wrfout_count": 1,
+      "expected_wrfout_count": 3
+    }
+  },
+  "note": "PIPELINE_PARTIAL is due to d02 output-count checker mismatch; all domains final_state_finite=true and d01 wrote its expected two frames."
+}

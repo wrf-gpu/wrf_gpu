@@ -1,0 +1,8 @@
+{
+  "gate": "a1_default_byte_identity",
+  "generated_utc": "2026-07-03T07:59:51.890577+00:00",
+  "message": "A1 commands staged only. Run without --dry-run when GPU lane is free.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

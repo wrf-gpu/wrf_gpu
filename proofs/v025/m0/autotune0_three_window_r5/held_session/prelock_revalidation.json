@@ -1,0 +1,71 @@
+{
+  "device_action": false,
+  "observed": {
+    "cache": {
+      "observed_absent": true,
+      "required_state": "ABSENT",
+      "w1_seed_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r5/m0-autotune0-qualify-20260728-r3/unique-empty-cache"
+    },
+    "capture_capability_content_sha256": "5b6b25706a8a1c39b304b74d8e0c5a8028307c0e2281093921270a9cc475f00e",
+    "capture_capability_file_sha256": "2b0d3807f54ea2b14867ed8487930a29b3cecd13599fb75ff02922046754691d",
+    "case_descriptor_sha256": "e919385108c4a2c8ba6be2a6e1de3d5b934752452107b3a60fe5848378d10e68",
+    "config_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032",
+    "cpu_real_boundary_content_sha256": "776b8bafa9d0d88a4362776760a62223ebdd92d6918ff24ffd9a5a561c33621c",
+    "cpu_real_boundary_file_sha256": "369c09ec21d09d90da89f805233a30765aa7d2dec072ca85837419552b91cf9d",
+    "input_manifest_sha256": "985d992220e3d79cbe896e6f02d961c198901b3faa27bceb037339b10a313b90",
+    "source_inputs": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    },
+    "source_inputs_sha256": "ef1440d9469e1afae0982916a9b199e88d5206b55239788ec50886d80fb39cf5",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "tools": {
+      "mpirun": {
+        "bytes": 190592,
+        "device": 66315,
+        "inode": 101595489,
+        "invoked_path": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+        "invoked_via_symlink": false,
+        "mtime_ns": 1776598360005129344,
+        "path": "<DATA_ROOT>/canairy_meteo/artifacts/envs/wrf-build/bin/mpirun",
+        "sha256": "155a11132d1b47ed9282978739bce46b478405266a0370110265beddb01dc84f"
+      },
+      "nsys": {
+        "bytes": 743,
+        "device": 66310,
+        "inode": 13767972,
+        "invoked_path": "/usr/local/cuda/bin/nsys",
+        "invoked_via_symlink": false,
+        "mtime_ns": 1775114631000000000,
+        "path": "/usr/local/cuda-13.1/bin/nsys",
+        "sha256": "9bfd9a841de644ca602f6a08d3b7db5cd8c99f67546141c25eca2547abbe99a2"
+      },
+      "python": {
+        "bytes": 32003680,
+        "device": 66310,
+        "inode": 24929485,
+        "invoked_path": "<USER_HOME>/miniconda3/bin/python",
+        "invoked_via_symlink": true,
+        "mtime_ns": 1769644101096190190,
+        "path": "<USER_HOME>/miniconda3/bin/python3.13",
+        "sha256": "3851f1998dcd3a08bd2554a3a0f1f439c9227e80afff2791d4df6da1b3456492"
+      },
+      "wrf_exe": {
+        "bytes": 42057744,
+        "device": 66315,
+        "inode": 104874085,
+        "invoked_path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe",
+        "invoked_via_symlink": true,
+        "mtime_ns": 1777370958000000000,
+        "path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+        "sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+      }
+    },
+    "wrf_source_authority_content_sha256": "f9dfe1bb6b8d691a4e8b2e0e1b33a61dbc94caa11b781fe74f9ec4a64fa5b321"
+  },
+  "revalidation_sha256": "524f2375b58e98b619948033052516e79e7b56c5576f0e16ace5fc7edc592250",
+  "schema": "wrf_gpu2.v025.m0.session_prelock_revalidation.v1",
+  "session_identity_content_sha256": "580116d686bc7ed08342858028a56bc0eb3c020de5f5aef67f62ffd95a046374",
+  "status": "PASS"
+}

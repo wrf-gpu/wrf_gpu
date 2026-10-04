@@ -1,0 +1,206 @@
+{
+  "cache_snapshots_created": [],
+  "device_imports": [],
+  "device_queries": [],
+  "device_touched": false,
+  "executed_stub_stage_keys": [
+    "W1:cold_empty_cache_readiness",
+    "W1:cached_readiness",
+    "W1:warm_integration_only",
+    "W1:native_pallas_if_headroom",
+    "CPU_PAIR:fresh_cpu_reference",
+    "CPU_PAIR:pair_comparator",
+    "W2:profiled_integration_census_vram_transfer",
+    "W2:profiled_artifact_integrity_after_release",
+    "W3:clean_cached_readiness",
+    "W3:clean_integration_only",
+    "W3:profiler_pair_compare_after_release",
+    "W3:native_pallas_if_suppressed_in_w1"
+  ],
+  "gpu_evidence_status": "MISSING",
+  "plan_sha256": "cc8192617deae60ea17d55e21979e82f2e44d66c6322b895f16325875e3a945c",
+  "receipts_consumed": [],
+  "receipts_read": [],
+  "results": [
+    {
+      "phase": "W1",
+      "result": {
+        "cpu_stages_suppressed": [],
+        "finished_at_utc": "2026-07-28T02:07:01.245898+00:00",
+        "first_failure": null,
+        "first_failure_status": null,
+        "gpu_stages_suppressed": [],
+        "label": "m0-autotune0-qualification",
+        "ok": true,
+        "schema": "wrf_gpu2.v025.m0.gpu_window.v1",
+        "stages": [
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W1:cold_empty_cache_readiness; no subprocess/device/receipt]",
+            "name": "cold_empty_cache_readiness",
+            "returncode": 0,
+            "seconds": 1.2700038496404886e-06,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W1:cached_readiness; no subprocess/device/receipt]",
+            "name": "cached_readiness",
+            "returncode": 0,
+            "seconds": 9.700015652924776e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W1:warm_integration_only; no subprocess/device/receipt]",
+            "name": "warm_integration_only",
+            "returncode": 0,
+            "seconds": 4.799949238076806e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W1:native_pallas_if_headroom; no subprocess/device/receipt]",
+            "name": "native_pallas_if_headroom",
+            "returncode": 0,
+            "seconds": 2.5999906938523054e-07,
+            "status": "OK"
+          }
+        ],
+        "started_at_utc": "2026-07-28T02:07:01.245879+00:00",
+        "suppression_rule": "Any stage that is not OK suppresses every later stage. GPU stages are never executed after a failure, so a coordinated window cannot be spent on a capture that cannot be scored. There is deliberately no override."
+      }
+    },
+    {
+      "phase": "CPU_PAIR",
+      "result": {
+        "cpu_stages_suppressed": [],
+        "finished_at_utc": "2026-07-28T02:07:01.245914+00:00",
+        "first_failure": null,
+        "first_failure_status": null,
+        "gpu_stages_suppressed": [],
+        "label": "cpu-pair-after-w1",
+        "ok": true,
+        "schema": "wrf_gpu2.v025.m0.gpu_window.v1",
+        "stages": [
+          {
+            "detail": "",
+            "gpu": false,
+            "log_tail": "[CPU stub success CPU_PAIR:fresh_cpu_reference; no subprocess/device/receipt]",
+            "name": "fresh_cpu_reference",
+            "returncode": 0,
+            "seconds": 8.100032573565841e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": false,
+            "log_tail": "[CPU stub success CPU_PAIR:pair_comparator; no subprocess/device/receipt]",
+            "name": "pair_comparator",
+            "returncode": 0,
+            "seconds": 3.500026650726795e-07,
+            "status": "OK"
+          }
+        ],
+        "started_at_utc": "2026-07-28T02:07:01.245909+00:00",
+        "suppression_rule": "Any stage that is not OK suppresses every later stage. GPU stages are never executed after a failure, so a coordinated window cannot be spent on a capture that cannot be scored. There is deliberately no override."
+      }
+    },
+    {
+      "phase": "W2",
+      "result": {
+        "cpu_stages_suppressed": [],
+        "finished_at_utc": "2026-07-28T02:07:01.245923+00:00",
+        "first_failure": null,
+        "first_failure_status": null,
+        "gpu_stages_suppressed": [],
+        "label": "m0-autotune0-profiled-census",
+        "ok": true,
+        "schema": "wrf_gpu2.v025.m0.gpu_window.v1",
+        "stages": [
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W2:profiled_integration_census_vram_transfer; no subprocess/device/receipt]",
+            "name": "profiled_integration_census_vram_transfer",
+            "returncode": 0,
+            "seconds": 4.1000021155923605e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": false,
+            "log_tail": "[CPU stub success W2:profiled_artifact_integrity_after_release; no subprocess/device/receipt]",
+            "name": "profiled_artifact_integrity_after_release",
+            "returncode": 0,
+            "seconds": 2.8000795282423496e-07,
+            "status": "OK"
+          }
+        ],
+        "started_at_utc": "2026-07-28T02:07:01.245920+00:00",
+        "suppression_rule": "Any stage that is not OK suppresses every later stage. GPU stages are never executed after a failure, so a coordinated window cannot be spent on a capture that cannot be scored. There is deliberately no override."
+      }
+    },
+    {
+      "phase": "W3",
+      "result": {
+        "cpu_stages_suppressed": [],
+        "finished_at_utc": "2026-07-28T02:07:01.245933+00:00",
+        "first_failure": null,
+        "first_failure_status": null,
+        "gpu_stages_suppressed": [],
+        "label": "m0-autotune0-clean-matched-arm",
+        "ok": true,
+        "schema": "wrf_gpu2.v025.m0.gpu_window.v1",
+        "stages": [
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W3:clean_cached_readiness; no subprocess/device/receipt]",
+            "name": "clean_cached_readiness",
+            "returncode": 0,
+            "seconds": 3.8000871427357197e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W3:clean_integration_only; no subprocess/device/receipt]",
+            "name": "clean_integration_only",
+            "returncode": 0,
+            "seconds": 3.1999661587178707e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": false,
+            "log_tail": "[CPU stub success W3:profiler_pair_compare_after_release; no subprocess/device/receipt]",
+            "name": "profiler_pair_compare_after_release",
+            "returncode": 0,
+            "seconds": 2.500019036233425e-07,
+            "status": "OK"
+          },
+          {
+            "detail": "",
+            "gpu": true,
+            "log_tail": "[CPU stub success W3:native_pallas_if_suppressed_in_w1; no subprocess/device/receipt]",
+            "name": "native_pallas_if_suppressed_in_w1",
+            "returncode": 0,
+            "seconds": 2.7001078706234694e-07,
+            "status": "OK"
+          }
+        ],
+        "started_at_utc": "2026-07-28T02:07:01.245928+00:00",
+        "suppression_rule": "Any stage that is not OK suppresses every later stage. GPU stages are never executed after a failure, so a coordinated window cannot be spent on a capture that cannot be scored. There is deliberately no override."
+      }
+    }
+  ],
+  "scenario": "ALL_STUBS_OK",
+  "schema": "wrf_gpu2.v025.m0.autotune0_three_window_dry_run.v1",
+  "status": "CPU_REPAIR_GREEN_GPU_WINDOWS_MISSING",
+  "suppression_verified": true
+}

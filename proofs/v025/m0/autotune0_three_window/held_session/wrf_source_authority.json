@@ -1,0 +1,120 @@
+{
+  "active_scheme_codes": {
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "sf_surface_physics": 4
+  },
+  "authority_sha256": "e33fb23d467a33ccf8101b3c014b85a0a0fcf5ab1f3efd04dea8fdbd7eb4d851",
+  "checkout_fallback_identity": {
+    "external_lw_present": false,
+    "relative_paths": [
+      "data/wrf_pristine/WRF",
+      "external/WRF"
+    ],
+    "repository_tree_identity": {
+      "algorithm": "git-tree-object-id",
+      "value": "4dfb7951d2b54d755f3eaea20e2975f2ab3cfd17"
+    }
+  },
+  "device_action": false,
+  "files": [
+    {
+      "bytes": 652002,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 26773645,
+      "is_symlink": false,
+      "loader": "gpuwrf.physics.rrtmg_lw._native_lw_tables",
+      "namelist_key": "ra_lw_physics",
+      "relpath": "phys/module_ra_rrtmg_lw.F",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_ra_rrtmg_lw.F",
+      "sha256": "c7a5238612aa8a4213c8d3af6708ec6a5248e6701e19758a80e563905d306de3"
+    },
+    {
+      "bytes": 607338,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 26773699,
+      "is_symlink": false,
+      "loader": "scripts.extract_rrtmg_tables SW source declaration",
+      "namelist_key": "ra_sw_physics",
+      "relpath": "phys/module_ra_rrtmg_sw.F",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F",
+      "sha256": "7f8af1da0ca1d25ce784a917bc68600300a7c569881c57e7de8501cd53496b59"
+    },
+    {
+      "bytes": 42780,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 26775198,
+      "is_symlink": true,
+      "loader": "gpuwrf.physics.wrf_clwrf_ghg.clwrf_ssp245_gases_for_time",
+      "namelist_key": "ra_lw_physics",
+      "relpath": "run/CAMtr_volume_mixing_ratio",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/run/CAMtr_volume_mixing_ratio.SSP245",
+      "sha256": "9a427fd106f8e36b30e0b29266bff1398b025b82af5b878e5a7a8e9dfe268ca7"
+    },
+    {
+      "bytes": 261,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 26775421,
+      "is_symlink": false,
+      "loader": "gpuwrf.physics.noahmp.tables.load_noahmp_parameters",
+      "namelist_key": "sf_surface_physics",
+      "relpath": "run/GENPARM.TBL",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/run/GENPARM.TBL",
+      "sha256": "9c02832a0e4a2ecaf47fcee485539aad95cd732c379c5c258161a88eb3d25ea2"
+    },
+    {
+      "bytes": 56140,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 27927255,
+      "is_symlink": true,
+      "loader": "gpuwrf.physics.noahmp.tables.load_noahmp_parameters",
+      "namelist_key": "sf_surface_physics",
+      "relpath": "run/MPTABLE.TBL",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/phys/noahmp/parameters/MPTABLE.TBL",
+      "sha256": "7fae6a77660c90ad80845565ecfb057093c100de41f35f25a7ffa63f41c19e5d"
+    },
+    {
+      "bytes": 6557,
+      "code": 4,
+      "device": 66309,
+      "evidence": "FILE_BINDING_AND_ACTIVE_LOADER_REACHABILITY_ONLY",
+      "inode": 26775626,
+      "is_symlink": false,
+      "loader": "gpuwrf.physics.noahmp.tables.load_noahmp_parameters",
+      "namelist_key": "sf_surface_physics",
+      "relpath": "run/SOILPARM.TBL",
+      "resolved_path": "<USER_HOME>/src/wrf_pristine/WRF/run/SOILPARM.TBL",
+      "sha256": "1e2275a32d8cd3b48ca693d22c0816df0013f83b6594ac632716361db337d58f"
+    }
+  ],
+  "namelist_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+  "portability": {
+    "status": "LIMITATION",
+    "text": "authority is pinned to <USER_HOME>/src/wrf_pristine/WRF"
+  },
+  "required_relpaths": [
+    "phys/module_ra_rrtmg_lw.F",
+    "phys/module_ra_rrtmg_sw.F",
+    "run/CAMtr_volume_mixing_ratio",
+    "run/GENPARM.TBL",
+    "run/MPTABLE.TBL",
+    "run/SOILPARM.TBL"
+  ],
+  "root": "<USER_HOME>/src/wrf_pristine/WRF",
+  "root_env_vars": [
+    "GPUWRF_WRF_ROOT",
+    "GPUWRF_WRF_SRC"
+  ],
+  "schema": "wrf_gpu2.v025.m0.wrf_source_authority.v2",
+  "status": "PASS"
+}

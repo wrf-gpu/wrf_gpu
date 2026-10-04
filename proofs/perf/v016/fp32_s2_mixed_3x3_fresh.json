@@ -1,0 +1,90 @@
+{
+  "schema": "ADR031S2MixedPerturbFp32Ladder",
+  "scope": "S2 MIXED_PERTURB_FP32 vs fp64 on real tiled Switzerland d01 operational step",
+  "device": "cuda:0",
+  "anchor": {
+    "run_root": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable",
+    "run_id": "run_h36",
+    "domain": "d01",
+    "base_grid": {
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384
+    },
+    "dt_s": 18.0,
+    "steps": 36
+  },
+  "precision_semantics": {
+    "fp64": "force_fp64=True, acoustic_precision_mode=fp64_default, all operational state leaves fp64",
+    "mixed_s2": "force_fp64=False, acoustic_precision_mode=mixed_perturb_fp32; p'/ph'/mu' and acoustic work arrays fp32, compact fp64 stage island for base/c2a/alb/coef_w"
+  },
+  "timing_method": "one cold compile+first execution, then best-of-2 warm executions at fixed N steps; estimated_compile_s = compile_plus_first_run_s - warm_min_s",
+  "config_notes": {
+    "run_boundary": false,
+    "gwd_opt": 0,
+    "use_noahmp": false,
+    "tiling": "same spatial tiling helpers as proofs/perf/v015/viability/fp32_fp64_ab_bench.py"
+  },
+  "records": [
+    {
+      "precision": "mixed_s2",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "ph_perturbation": "float32",
+        "mu_perturbation": "float32",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 24.753995695966296,
+      "warm_s": [
+        18.140336560027208,
+        18.121986257028766
+      ],
+      "warm_min_s": 18.121986257028766,
+      "estimated_compile_s": 6.63200943893753,
+      "ms_per_step": 503.388507139688,
+      "ms_per_forecast_hour": 100677.70142793759,
+      "peak_vram_gib": 23.66390061378479,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "ph_perturbation": "float32",
+        "mu_perturbation": "float32",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64"
+      }
+    }
+  ],
+  "mixed_s2_vs_fp64_ratios": [],
+  "largest_ok": {
+    "mixed_s2": {
+      "ncol": 147456,
+      "ny": 384,
+      "nx": 384,
+      "peak_vram_gib": 23.66390061378479,
+      "ms_per_step": 503.388507139688,
+      "estimated_compile_s": 6.63200943893753
+    }
+  }
+}

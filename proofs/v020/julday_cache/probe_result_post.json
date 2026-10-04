@@ -1,0 +1,44 @@
+{
+  "tag": "post",
+  "jax_version": "0.10.0",
+  "harness_ok": true,
+  "A_cold_wrote_one": true,
+  "A_warm_was_hit": true,
+  "B_other_date_warm_hit": true,
+  "C_leap_year_warm_hit": true,
+  "cross_date_cache_hits": true,
+  "results": [
+    {
+      "label": "A_cold",
+      "date": "2023-01-15T00:00:00+00:00",
+      "entries_before": 7,
+      "entries_after": 8,
+      "new_entries": 1,
+      "warm_hit": false
+    },
+    {
+      "label": "A_warm_again",
+      "date": "2023-01-15T00:00:00+00:00",
+      "entries_before": 8,
+      "entries_after": 8,
+      "new_entries": 0,
+      "warm_hit": true
+    },
+    {
+      "label": "B_other_date",
+      "date": "2023-07-15T00:00:00+00:00",
+      "entries_before": 8,
+      "entries_after": 8,
+      "new_entries": 0,
+      "warm_hit": true
+    },
+    {
+      "label": "C_leap_year",
+      "date": "2024-07-15T00:00:00+00:00",
+      "entries_before": 8,
+      "entries_after": 8,
+      "new_entries": 0,
+      "warm_hit": true
+    }
+  ]
+}

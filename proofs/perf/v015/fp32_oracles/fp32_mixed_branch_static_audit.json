@@ -1,0 +1,421 @@
+{
+  "case": "ADR-031 S2 -- FP32 MIXED-branch boundary-rule static audit",
+  "head": "c92732c8bbf4592384287e18c06ef18bdffe2b3c",
+  "extends": "proofs/v014/fp32_acoustic_static_audit.py",
+  "in_loop_modules_audited": [
+    "src/gpuwrf/dynamics/core/small_step_prep.py",
+    "src/gpuwrf/dynamics/core/small_step_finish.py",
+    "src/gpuwrf/dynamics/core/acoustic.py",
+    "src/gpuwrf/dynamics/core/advance_w.py",
+    "src/gpuwrf/dynamics/core/calc_p_rho.py",
+    "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+    "src/gpuwrf/dynamics/acoustic_wrf.py"
+  ],
+  "gate_A_boundary_rule": {
+    "rule": "ZERO in-loop `fp32(total) - fp32(perturbation)` base reconstructions in the timestep modules under MIXED_PERTURB_FP32; the base must come from carry.base.{pb,phb,mub} (fp64). Controlled-interface reconstructions (wrfout/restart/diagnostics) are exempt and live outside these modules.",
+    "in_loop_base_from_total_count": 0,
+    "in_loop_base_from_total_sites": [],
+    "PASS": true
+  },
+  "gate_B_mode_consumed": {
+    "rule": "The acoustic/dynamics path must CONSUME acoustic_precision_mode (refuting the v014 default_inert_claim) in the MIXED implementation.",
+    "dynamics_mode_consumer_count": 14,
+    "dynamics_mode_consumers": [
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 17,
+        "source": "AcousticPrecisionMode,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 18,
+        "source": "DEFAULT_ACOUSTIC_PRECISION_MODE,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 19,
+        "source": "acoustic_precision_mode_label,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 218,
+        "source": "acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 229,
+        "source": "acoustic_precision_mode_label(acoustic_precision_mode)"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 230,
+        "source": "== AcousticPrecisionMode.MIXED_PERTURB_FP32.value"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 233,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 small_step_prep_wrf requires BaseState\")"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 14,
+        "source": "AcousticPrecisionMode,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 15,
+        "source": "DEFAULT_ACOUSTIC_PRECISION_MODE,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 16,
+        "source": "acoustic_precision_mode_label,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 38,
+        "source": "acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 49,
+        "source": "acoustic_precision_mode_label(acoustic_precision_mode)"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 50,
+        "source": "== AcousticPrecisionMode.MIXED_PERTURB_FP32.value"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 53,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 small_step_finish_wrf requires BaseState\")"
+      }
+    ],
+    "PASS": true
+  },
+  "base_carry_threading": {
+    "note": "Uses of carry.base / BaseState (the fp64 base island); the S2 fix should grow this set as it replaces total-minus-pert.",
+    "count": 63,
+    "sites": [
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 22,
+        "source": "BaseState,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 217,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 233,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 small_step_prep_wrf requires BaseState\")"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "line": 261,
+        "source": "# ADR-031 S0/S1: read the carried fp64 ``BaseState`` when threaded; otherwise"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 19,
+        "source": "BaseState,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 37,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "line": 53,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 small_step_finish_wrf requires BaseState\")"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "line": 37,
+        "source": "BaseState,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "line": 140,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "line": 252,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 14,
+        "source": "BaseState,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 253,
+        "source": "def _base_pressure(base_state: BaseState | None, state: State) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 261,
+        "source": "def _base_geopotential(base_state: BaseState | None, state: State) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 269,
+        "source": "def _base_mu(base_state: BaseState | None, state: State) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 277,
+        "source": "def _base_theta(base_state: BaseState | None, state: State) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 305,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 312,
+        "source": "With an explicit ``BaseState``, this follows WRF's non-hydrostatic"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 421,
+        "source": "def _php_mass_levels(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 495,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 587,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 618,
+        "source": "def _replace_pressure(state: State, pressure_perturbation: jax.Array, base_state: BaseState | None) -> State:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 628,
+        "source": "def _replace_mu(state: State, mu_perturbation: jax.Array, base_state: BaseState | None) -> State:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 640,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 663,
+        "source": "def _column_height_m(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 671,
+        "source": "def _layer_thickness_m(state: State, base_state: BaseState | None, metrics: DycoreMetrics) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 677,
+        "source": "def _mpas_w_metric_faces(state: State, base_state: BaseState | None, metrics: DycoreMetrics) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 714,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 733,
+        "source": "def _vertical_buoyancy_acceleration(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 750,
+        "source": "def _sound_speed_squared_faces(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 757,
+        "source": "def _sound_speed_squared_mass(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 835,
+        "source": "def _density_perturbation_from_pressure(state: State, base_state: BaseState | None) -> jax.Array:"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 843,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 854,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 902,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 982,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1071,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1098,
+        "source": "base_state: BaseState | None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1116,
+        "source": "base_state: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1183,
+        "source": "base_state: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1199,
+        "source": "base_state: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+        "line": 1220,
+        "source": "base_state: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 133,
+        "source": "class BaseState:"
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 158,
+        "source": "def zeros(cls, grid: GridSpec) -> \"BaseState\":"
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 177,
+        "source": "def replace(self, **updates) -> \"BaseState\":"
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 197,
+        "source": "\"\"\"Rebuilds BaseState after JAX transformations.\"\"\""
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 387,
+        "source": "is the perturbation dry-column mass relative to `BaseState.mub`."
+      },
+      {
+        "file": "src/gpuwrf/contracts/state.py",
+        "line": 661,
+        "source": "maintains explicitly against the current ``BaseState.pb``. Updating"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 21,
+        "source": "from gpuwrf.contracts.state import BaseState, State, Tendencies"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1392,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 acoustic staging requires carried BaseState\")"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1430,
+        "source": "# identical to v0.14).  ADR-031 S2 swaps this for the carried fp64 ``BaseState``."
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1892,
+        "source": "# identical to v0.14); ADR-031 S2 swaps for the carried fp64 BaseState."
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1944,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1968,
+        "source": "raise ValueError(\"MIXED_PERTURB_FP32 pressure refresh requires BaseState\")"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 1971,
+        "source": "refresh_base = BaseState("
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_mode.py",
+        "line": 2311,
+        "source": "base: BaseState | None = None,"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 16,
+        "source": "from gpuwrf.contracts.state import BaseState, State"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 97,
+        "source": "# ``base`` is the read-only WRF ``BaseState`` (PB/PHB/MUB/t0/theta_base) loaded"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 131,
+        "source": "def base_state_from_state(state: State) -> BaseState:"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 132,
+        "source": "\"\"\"Reconstruct the carried WRF ``BaseState`` from an operational ``State``."
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 134,
+        "source": "ADR-031 S0.  When the pristine real.exe ``BaseState`` is not threaded into the"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 142,
+        "source": "pristine ``BaseState`` (with the real ``alb``-balanced ``theta_base``) directly"
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 147,
+        "source": "return BaseState("
+      },
+      {
+        "file": "src/gpuwrf/runtime/operational_state.py",
+        "line": 159,
+        "source": "base: BaseState | None = None,"
+      }
+    ]
+  },
+  "status": "PASS",
+  "GATE_PASS": true,
+  "interpretation": "OPEN_PRE_S2 is the EXPECTED state before the S2 kernel attack: the current code still reconstructs the base by subtraction and does not consume the mode in the loop. The joint Opus+GPT S2 work must flip BOTH gates to PASS -- this audit is the red->green target."
+}

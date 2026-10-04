@@ -1,0 +1,180 @@
+{
+  "adaptive_dt": {
+    "dt_events": [
+      [
+        "dt",
+        "d01",
+        1,
+        5.5
+      ],
+      [
+        "dt",
+        "d02",
+        1,
+        3.3333333333333335
+      ],
+      [
+        "dt",
+        "d01",
+        2,
+        6.6
+      ],
+      [
+        "dt",
+        "d02",
+        4,
+        3.3333333333333335
+      ]
+    ],
+    "dt_history": [
+      5.5,
+      6.6
+    ],
+    "first_step_decreased": true,
+    "nested_parent_divisor": {
+      "child_dt_s": 3.3333333333333335,
+      "num_small_steps": 3,
+      "parent_dt_s": 10.0
+    },
+    "second_step_increased": true
+  },
+  "argv": [
+    "scripts/v022_moving_nest_gate.py",
+    "--output",
+    "proofs/v022/feature_push/integration_gates/G2_MOVING_NEST_ADAPTIVE_GATE.json"
+  ],
+  "events": [
+    [
+      "dt",
+      "d01",
+      1,
+      5.5
+    ],
+    [
+      "advance",
+      "d01",
+      1,
+      1,
+      1
+    ],
+    [
+      "move",
+      "d01",
+      "d02",
+      1,
+      4,
+      4,
+      5,
+      4
+    ],
+    [
+      "force",
+      "d01",
+      "d02",
+      1
+    ],
+    [
+      "dt",
+      "d02",
+      1,
+      3.3333333333333335
+    ],
+    [
+      "advance",
+      "d02",
+      1,
+      3,
+      3
+    ],
+    [
+      "dt",
+      "d01",
+      2,
+      6.6
+    ],
+    [
+      "advance",
+      "d01",
+      2,
+      1,
+      2
+    ],
+    [
+      "force",
+      "d01",
+      "d02",
+      2
+    ],
+    [
+      "dt",
+      "d02",
+      4,
+      3.3333333333333335
+    ],
+    [
+      "advance",
+      "d02",
+      4,
+      3,
+      6
+    ]
+  ],
+  "global_nests": {
+    "periodic_x_start_after": 1,
+    "periodic_x_start_before": 10,
+    "periodic_x_wrap_exercised": true,
+    "status": "scaffold: metadata wrap only; polar filtering/full global runtime not landed"
+  },
+  "landed_vs_scaffold": {
+    "landed": [
+      "WRF one-parent-cell moving-nest decision primitive",
+      "DomainNest i_parent_start/j_parent_start reposition helper",
+      "resident child fine-grid state shift with exposed-cell fill hook",
+      "run_domain_tree_callbacks move hook before forcedown",
+      "WRF calc_dt-style adaptive timestep planner",
+      "run_domain_tree_callbacks adaptive_dt hook and dt audit events",
+      "periodic/global-x metadata wrap helper"
+    ],
+    "scaffold_deferred": [
+      "full operational dynamic-dt compiled dycore without recompilation churn",
+      "runtime rebuilding of NestForceWeights/feedback weights after every move",
+      "WRF terrain/base-state reblend and start_domain choreography after moves",
+      "full vortex-center diagnostics from PSFC/height/xlat/xlong fields",
+      "polar FFT/global-nest physics validation",
+      "375-variable wrfout/auxhist stream expansion"
+    ]
+  },
+  "moving_nest": {
+    "dx_parent": 1,
+    "dy_parent": 0,
+    "event_present": true,
+    "exposed_fill_ok": true,
+    "fine_cell_shift": 3,
+    "finite": true,
+    "initial_start": [
+      4,
+      4
+    ],
+    "moved_start": [
+      5,
+      4
+    ],
+    "shifted_overlap_ok": true
+  },
+  "schema": "gpuwrf.v022.moving_nest_adaptive_gate",
+  "schema_version": 1,
+  "transfer_audit": {
+    "gpu_used": false,
+    "host_device_transfer_inside_timestep_loop": false,
+    "note": "CPU small-grid JAX gate; production GPU runs must use scripts/with_gpu_lock.sh."
+  },
+  "verdict": "PASS",
+  "wrf_reference": {
+    "adaptive_dt": "WRF/dyn_em/adapt_timestep_em.F::adapt_timestep/calc_dt",
+    "domain_dims": "WRF/frame/module_domain.F::adjust_domain_dims_for_move",
+    "global_polar": "WRF/dyn_em/module_polarfft.F and periodic_x branches",
+    "moving_driver": "WRF/share/mediation_nest_move.F::med_nest_move/time_for_move2",
+    "root": "<USER_HOME>/src/wrf_pristine",
+    "state_shift": "WRF/dyn_em/shift_domain_em.F::shift_domain_em"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "retained_artifacts": {
+    "nsys_rep_or_sqlite_count": 0,
+    "nvtx_projection_csv": "proofs/perf/v015/nsys_steady50_nvtx_gpu_proj_sum.csv",
+    "nvtx_projection_rows": 513,
+    "trace_summary": "proofs/perf/v015/trace_kernel_summary.json",
+    "nsys_summary": "proofs/perf/v015/nsys_summary.json",
+    "phase_summary": "proofs/perf/v015/nvtx_phase_attribution.json"
+  },
+  "old_classifier_baseline": {
+    "top_80_busy_percent": 89.45,
+    "top_80_launches": 272242,
+    "unknown_launch_share": 1.0,
+    "unknown_device_time_share": 1.0
+  },
+  "existing_source_metadata": {
+    "mynn_range_rows": 9,
+    "thompson_range_rows": 29,
+    "mynn_example": "TSL:Thunk:#name=jit(_run_forecast_operational_jit)/while/body/closed_call/jit(step_mynn_pbl_column)/vmap(vmap())/while/body/closed_call/while/body/closed_call,hlo_op=loop_multiply_fusion.1#",
+    "thompson_example": "TSL:Thunk:#name=jit(_run_forecast_operational_jit)/while/body/closed_call/jit(step_thompson_column_with_precip),hlo_op=while.1915#",
+    "contains_source_callable_path": true,
+    "contains_hlo_op": true,
+    "candidate_blocking_reason_claimed_neither_exists": true,
+    "candidate_claim_is_falsified": true
+  },
+  "step_denominator": {
+    "perfetto_trace_device_events": 317634,
+    "perfetto_steps_field": "steps_assumed",
+    "perfetto_steps_value": 200,
+    "candidate_launches_per_step": 1588.2,
+    "analyzer_default": 200,
+    "analyzer_observes_step_count": false,
+    "contemporaneous_review_capture_window_steps_approx": 13.5,
+    "contemporaneous_review_device_events_per_step_approx": 23500,
+    "nsys_program_steps": 150,
+    "nsys_launch_calls": 2093742,
+    "nsys_launches_per_step": 13958.3,
+    "candidate_available_current_classification_supported": false
+  },
+  "busy_scope": {
+    "candidate_busy_ms": 2583.84,
+    "candidate_span_ms": 2639.43,
+    "candidate_busy_fraction": 0.9789,
+    "busy_method": "interval union",
+    "span_method": "last device-event end minus first device-event start",
+    "GPUWRF_M0_FORECAST_INTEGRATION_occurrences_in_retained_v015": 0,
+    "bound_to_forecast_integration_nvtx_scope": false,
+    "candidate_available_current_classification_supported": false
+  },
+  "attribution_mutations": {
+    "ambiguous_vendor_family_result": "REFUSED",
+    "ambiguous_vendor_family_detail": "vendor table has no ambiguous pair to exercise",
+    "classifier_relation_was_exercised": false,
+    "vendor_without_source_family": "dycore.vertical_implicit",
+    "same_vendor_with_source_family_physics_radiation": "physics.radiation",
+    "conflict_refused": false
+  },
+  "w2_quantity_truth": {
+    "kernels_per_step": "MISSING_UNTIL_OBSERVED_STEP_DENOMINATOR",
+    "device_busy_vs_integration_wall": "MISSING_UNTIL_INTEGRATION_SCOPED_INTERVAL_UNION",
+    "kernel_duration_distribution": "AVAILABLE_SAME_W2_WITH_POST_CAPTURE_PARSER",
+    "inter_kernel_gap_distribution": "AVAILABLE_SAME_W2_WITH_POST_CAPTURE_PARSER",
+    "dependent_launch_latency_distribution": "AVAILABLE_SAME_W2_IF_CUDA_KERN_EXEC_REPORT_IS_RETAINED",
+    "latency_bound_verdict": "MISSING",
+    "family_launch_and_device_time_shares": "MISSING_UNTIL_NESTED_RANGE_JOIN_AND_UNKNOWN_BUDGET_ARE_PROVEN",
+    "production_per_family_nvtx_instrumentation_necessity": "NOT_PROVEN_EXISTING_TSL_NVTX_AND_HLO_METADATA_MUST_BE_TRIED_FIRST",
+    "ordinary_vs_cadence_same_arm": "MISSING",
+    "achieved_dram_gbps": "MISSING_SEPARATE_PERMITTED_COUNTER",
+    "occupancy_and_stalls": "MISSING_SEPARATE_PERMITTED_COUNTER",
+    "run_physics_false": "SEPARATE_COMPILED_PROGRAM_AND_SEPARATE_DISCRIMINATOR"
+  },
+  "candidate_gate_c_omissions": [
+    "observed step denominator",
+    "forecast-integration NVTX scope binding",
+    "kernel-duration distribution",
+    "inter-kernel gap distribution",
+    "ordinary-versus-cadence shares in one arm",
+    "occupancy/stall status",
+    "nested/overlap attribution mutation"
+  ],
+  "device_action": false
+}

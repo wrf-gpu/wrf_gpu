@@ -1,0 +1,184 @@
+{
+  "command_identity": {
+    "bytes": 731,
+    "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stdout.log",
+    "sha256": "7c79951762db2b0ea7c92175b648f563e4dc0b634dcafe7f4f9eae017a6f75eb"
+  },
+  "cpu_closure_gate": "BLOCKED",
+  "device_action": false,
+  "files": [
+    {
+      "bytes": 109520,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_exact_boundary_cpu_evidence.json",
+      "sha256": "ac596a79680f1ce41b88e311d97507ed199bdb1feb587f323ca89baf7cfcd16e"
+    },
+    {
+      "bytes": 32357,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_c1_cpu_evidence.json",
+      "sha256": "e67bfca4997430d222575f61d3f6166e81b1259c73683aaf83531e30438004f6"
+    },
+    {
+      "bytes": 156748,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_c2_cpu_evidence.json",
+      "sha256": "55b0d7d29781ef847163c9efa121d254ba28373ad8fc7a5ac80cd9e328a08bea"
+    },
+    {
+      "bytes": 14707,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_c1_c2_cpu_closure_evidence.json",
+      "sha256": "8feb519f2588291b4da8048dde92a583fbf1309c8e096795bd6040d575f9306b"
+    },
+    {
+      "bytes": 106885,
+      "path": "proofs/v025/m0/m0_c1_c2_cpu_tests.xml",
+      "sha256": "4642e195f39e4702455641e69723807b8c74b5612720a3c643e18efead1911cd"
+    },
+    {
+      "bytes": 1653130,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stderr.log",
+      "sha256": "7761b21356c3e0d2461f42dff5454d968132632609d9fd556c6c6793e1f0ffc3"
+    },
+    {
+      "bytes": 731,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stdout.log",
+      "sha256": "7c79951762db2b0ea7c92175b648f563e4dc0b634dcafe7f4f9eae017a6f75eb"
+    },
+    {
+      "bytes": 1092,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.time",
+      "sha256": "8caff058bb58151d5de864da434a20fc286b49ffab98c572769856b1c2bea6a5"
+    },
+    {
+      "bytes": 1863,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/ineligible_precreated_wrfout_process_tree_rss.json",
+      "sha256": "3af95c06eaef969be35fe826c2627154fe8ae5b51da0cc9c482d985044e9042f"
+    },
+    {
+      "bytes": 1424,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.window.json",
+      "sha256": "52910421ec92f7958b2da496dbef53f4fc36c681a7b16d33281e7f5b7d6442b9"
+    },
+    {
+      "bytes": 932,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.lock-release.json",
+      "sha256": "42bd9d60e2ba041069f94e553c9e4b28af92d998ceb49a986ffd75bf14ab3778"
+    },
+    {
+      "bytes": 103532,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.post.json",
+      "sha256": "3d98f49351f60f2ff11d73632c8cfa23df7adc294ff850d3603f3223bfd6f001"
+    },
+    {
+      "bytes": 8941065,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+      "sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c"
+    }
+  ],
+  "generated_at_utc": "2026-07-28T19:34:12.859446+00:00",
+  "input_cache_machine_identity": {
+    "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+    "cpu_affinity": [
+      4
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "GPUWRF_JAX_CACHE": "1",
+      "GPUWRF_JAX_CACHE_DIR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+      "GPUWRF_JAX_CACHE_LOCK": "1",
+      "JAX_PLATFORMS": "cpu",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+    },
+    "hostname": "user-battlestation",
+    "observed_process_tree_pids": [
+      3333870,
+      3333872,
+      3333874
+    ],
+    "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "manifest_payload_sha256": "6b79ce430bf80e385b7492e6955412913f282fa3a3a587181c1cdd8858437a5e",
+  "milestone_partition": {
+    "M0_CORE": {
+      "fields": {
+        "accepted_exact_cpu_boundary": "PASS",
+        "c1_fresh_cpu_wrf_comparator": "MISSING_NOT_RUN",
+        "c1_same_result_wrfout_runtime": "BLOCKED_R8_PUBLICATION_REFUSED",
+        "c2_jax_free_postlock_cpu_path": "PASS",
+        "different_model_review": "MISSING_MANAGER_OWNED",
+        "fast_correctness_and_resource_gates": "MISSING_GPU_WINDOWS",
+        "frozen_command_source_input_cache_tool_manifest": "PASS_CPU_SCOPE",
+        "one_session_w1_w2_w3": "MISSING_NOT_AUTHORIZED"
+      },
+      "may_open_m1": false,
+      "required_before": "M1_MECHANISM_WORK",
+      "status": "BLOCKED"
+    },
+    "M0_DEFERRED": {
+      "fields": {
+        "instruction_counter_E_baseline_T_ceiling": "M2_ENTRY",
+        "multi_size_vram_scaling_fit": "RELEVANT_MILESTONE_AND_RELEASE",
+        "native_pallas_sm120": "M2_BACKEND_BAKEOFF_ENTRY",
+        "ncu_registers_occupancy_stalls_dram_l2": "M2",
+        "two_domain_rho_family_coverage_trace": "M1_M2_PRODUCTION_REPRESENTATIVENESS"
+      },
+      "status": "MISSING_BY_NAMED_FUTURE_MILESTONE",
+      "waived": false
+    }
+  },
+  "production_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+  "schema": "wrf_gpu2.v025.m0.c1_c2_cpu_closure_manifest.v1",
+  "source_identity": {
+    "scripts/v025/build_m0_c1_c2_cpu_closure_evidence.py": "6ad2baccee1c82adb175431d6e1538b670bac07fa072f6994c01b1fe82e962d3",
+    "scripts/v025/build_m0_c1_c2_cpu_residual_evidence.py": "b1039a8e491f93701087fa1775efc4b48dd58bdbcab3d7d887c63d60160b6aaf",
+    "scripts/v025/build_m0_exact_boundary_evidence.py": "aa3b76f52814949af4ce957bedd36822524629a01ee242ee57cb7bbbd4be984d",
+    "scripts/v025/m0_c1_c2_cpu_proofs.py": "0238183e99607c0ad971dc302de7444c568aaa71553dfb1ea423065af46d2803",
+    "scripts/v025/m0_core_session_protocol.py": "0777aaa58d0592c65aa5d000319de37edd12534459bdd788fe5ab82ea242880a",
+    "scripts/v025/m0_exact_boundary_child.py": "51eb70a5b5acc400f7f5c78960089c1a69e6d959821df437594db118fb0945e8",
+    "scripts/v025/m0_exact_boundary_contract.py": "49625fe1654cc012d4c4b0386bb82388f191124c90f71daf181d804442b33ade",
+    "scripts/v025/m0_host_rss_sampler.py": "751fccfa46e9e185fb8e0e3f3b7f4ee0dc4e729c061e6a8769704c0de8a59779",
+    "scripts/v025/m0_long_run_controls.py": "75b1a9036b849e2925a3c4ec7c66810f653952a0ecd8ed0efdf9c68104ee3a3e",
+    "scripts/v025/m0_parent_death_guard.py": "6b05573364958d03d8d5d5d9c473fd4f23b380ef53c92453366208c7ab006986",
+    "scripts/v025/m0_postlock_census.py": "e910282dd7f613df5ae32446e598bf5e6e98546e9b918d05e7e5e30974ed6878",
+    "scripts/v025/m0_three_window_executor.py": "c305d2bab0b5ea79b8b307deadd0d56de4b7b99e66760d2709bd42b0d5661c38",
+    "scripts/v025/m0_vram_sampler.py": "b28e750b291d01d52f9074ddaf2f673db5623c46a366227a9b34d22c884275f7",
+    "scripts/v025/m0_w1_fast_pair.py": "8545cfeb7fbfd9a8b64030363c25cb2faf62dc10ea115117ca33955ab54392a4",
+    "scripts/v025/m0_window_parent.py": "d1b338699631505f66e9872b78907e4c6656b7e90a27dcc94ecc5d86fe95d4be",
+    "scripts/v025/nsys_export.py": "d8de2f2de8cb29e6d7fca34f00294c24a5fc5853a69eb9e6ddb55959ef56318b",
+    "scripts/v025/pallas_sm120_spike.py": "39abfd9a983ff8fc3d16eca3f4ef00f02a9cd2458166ae171a1e35444f92d9a2",
+    "scripts/v025/prepare_m0_matched_pair.py": "034c7ec43fc5928646a061d290c41832c13870c4177d9f89f5388f6e519cc3b6",
+    "scripts/v025/prepare_pallas_fast_savepoint.py": "36cc1083c394b5531e32b3146f2155b23840e1033941494ec82a1ff7fe674eab",
+    "scripts/v025/refresh_m0_exact_boundary_evidence.py": "6bcaf339802baf9433584a6bc44360c0e1a162bcab9455934b4bc5278c0dda4f",
+    "scripts/v025/run_fast_pair.py": "be5d3481d851f14831df1a9a053581fd0e1122378be47838c29dd18f4a2199bd"
+  },
+  "status": "CPU_C1_C2_GREEN_GPU_WINDOWS_MISSING",
+  "tool_identity": {
+    "nsys_export": null,
+    "systemd_inhibit": {
+      "estimated_seconds": 5400.0,
+      "mode": "block",
+      "raw_command": [
+        "FUTURE_EXACT_ORACLE_COMMAND"
+      ],
+      "status": "PASS",
+      "systemd_inhibit_path": "/usr/bin/systemd-inhibit",
+      "systemd_inhibit_sha256": "0c718332ff86787e62f74f15bca1dfbb4e801ee73f391acb73511a23e2c548a7",
+      "threshold_seconds": 600.0,
+      "what": "sleep:idle:handle-lid-switch",
+      "who": "wrf_gpu2-v025-long-run",
+      "why": "protect a hash-bound M0 long-running evidence process",
+      "wrapped_command": [
+        "/usr/bin/systemd-inhibit",
+        "--what=sleep:idle:handle-lid-switch",
+        "--mode=block",
+        "--who=wrf_gpu2-v025-long-run",
+        "--why=protect a hash-bound M0 long-running evidence process",
+        "--",
+        "FUTURE_EXACT_ORACLE_COMMAND"
+      ]
+    }
+  }
+}

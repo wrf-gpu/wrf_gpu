@@ -1,0 +1,8 @@
+{
+  "gate": "c1_full_suite",
+  "generated_utc": "2026-07-03T07:59:52.614658+00:00",
+  "message": "Would run scripts/run_regression_suite.py under GPU lock.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

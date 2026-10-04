@@ -1,0 +1,242 @@
+{
+  "attribution": {
+    "by_site": [
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 1495120,
+        "from_dtype": "float64",
+        "function": "to_work.<locals>._reduce",
+        "rank": 3,
+        "shape": [
+          44,
+          70,
+          121
+        ],
+        "site": "precision.py:160",
+        "sites": 4,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 378000,
+        "from_dtype": "float64",
+        "function": "advance_w_wrf",
+        "rank": 3,
+        "shape": [
+          45,
+          70,
+          120
+        ],
+        "site": "advance_w.py:723",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 369600,
+        "from_dtype": "float64",
+        "function": "perturbation_delta",
+        "rank": 3,
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "site": "precision.py:195",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 134148,
+        "from_dtype": "float64",
+        "function": "to_work.<locals>._reduce",
+        "rank": 2,
+        "shape": [
+          70,
+          121
+        ],
+        "site": "precision.py:160",
+        "sites": 18,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 16920,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work.<locals>._physical_at",
+        "rank": 2,
+        "shape": [
+          45,
+          120
+        ],
+        "site": "acoustic.py:521",
+        "sites": 4,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 16920,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work.<locals>._physical_at",
+        "rank": 2,
+        "shape": [
+          45,
+          120
+        ],
+        "site": "acoustic.py:520",
+        "sites": 4,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 16920,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work.<locals>._work_for_physical",
+        "rank": 2,
+        "shape": [
+          45,
+          120
+        ],
+        "site": "acoustic.py:540",
+        "sites": 4,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 8400,
+        "from_dtype": "float64",
+        "function": "advance_w_wrf",
+        "rank": 2,
+        "shape": [
+          70,
+          120
+        ],
+        "site": "advance_w.py:546",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 8400,
+        "from_dtype": "float64",
+        "function": "advance_w_wrf",
+        "rank": 2,
+        "shape": [
+          70,
+          120
+        ],
+        "site": "advance_w.py:547",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 8400,
+        "from_dtype": "float64",
+        "function": "advance_w_wrf",
+        "rank": 2,
+        "shape": [
+          70,
+          120
+        ],
+        "site": "advance_w.py:548",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 8400,
+        "from_dtype": "float64",
+        "function": "advance_w_wrf",
+        "rank": 2,
+        "shape": [
+          70,
+          120
+        ],
+        "site": "advance_w.py:549",
+        "sites": 1,
+        "to_dtype": "float32"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 8024,
+        "from_dtype": "float32",
+        "function": "_advance_mu_t_specified_or_nested",
+        "rank": 2,
+        "shape": [
+          68,
+          118
+        ],
+        "site": "mu_t_advance.py:501",
+        "sites": 1,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 376,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work.<locals>._work_for_physical",
+        "rank": 2,
+        "shape": [
+          1,
+          120
+        ],
+        "site": "acoustic.py:538",
+        "sites": 4,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 90,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work",
+        "rank": 3,
+        "shape": [
+          45,
+          1,
+          1
+        ],
+        "site": "acoustic.py:490",
+        "sites": 2,
+        "to_dtype": "float64"
+      },
+      {
+        "consumes_lead_interpolated_boundary_data": false,
+        "elements_per_substep": 90,
+        "from_dtype": "float32",
+        "function": "_specified_w_zero_grad_work",
+        "rank": 3,
+        "shape": [
+          45,
+          1,
+          1
+        ],
+        "site": "acoustic.py:491",
+        "sites": 2,
+        "to_dtype": "float64"
+      }
+    ],
+    "elements_from_lead_interpolated_boundary_data": 0,
+    "float_convert_elements_per_substep": 2469808,
+    "float_convert_sites": 49,
+    "integer_convert_sites": 20,
+    "loop_body": "gpuwrf.dynamics.core.acoustic.acoustic_substep_core",
+    "mode": "mixed_perturb_fp32",
+    "residual_is_lead_interpolated_boundary_data": false,
+    "sites_by_rank": {
+      "2": 39,
+      "3": 10
+    },
+    "view": "traced jaxpr of the literal loop body (pre-XLA duplication)"
+  },
+  "environment": {
+    "device_count": 1,
+    "platforms": [
+      "cpu"
+    ]
+  },
+  "schema": "wrf_gpu2.v025.m1.round3_conversion_attribution.v1",
+  "seconds_total": 54.647874426009366,
+  "source_tree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m1-round3-gpt-final-critic/src"
+}

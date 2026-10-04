@@ -1,0 +1,11 @@
+gate=a4_feature_branch_inert-TEST
+session=proofs/v023/validation/results/dryrun_work/a4_feature_branch_inert_20260703T075952Z/TEST
+base_ref=v0.22.2
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=
+candidate_env=
+dryrun=1

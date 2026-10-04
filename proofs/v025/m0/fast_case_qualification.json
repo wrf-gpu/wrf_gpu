@@ -1,0 +1,278 @@
+{
+  "cadence_coverage": {
+    "cadence_seconds": {
+      "bldt": 0,
+      "cudt": 300,
+      "history_interval": 3600,
+      "radt": 1800
+    },
+    "d01_schemes_configured": {
+      "bl_pbl_physics": 5,
+      "cu_physics": 1,
+      "gwd_opt": 1,
+      "mp_physics": 8,
+      "ra_lw_physics": 4,
+      "ra_sw_physics": 4,
+      "sf_sfclay_physics": 5,
+      "sf_surface_physics": 4
+    },
+    "missing_events": null,
+    "missing_schemes": null,
+    "reason": "the d01 scheme/event inventory is enumerable from the namelist, but 'every event triggered in the hour present' must be confirmed against an executed trace, not asserted from configuration",
+    "status": "PENDING"
+  },
+  "case": {
+    "actual_model_advance_seconds": 3618,
+    "decomposition": [
+      4,
+      3
+    ],
+    "domains": 1,
+    "dt_seconds": 54,
+    "e_vert": 45,
+    "end_stamp_expected": "2026-07-26_01:00:18",
+    "expected_source_hashes": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    },
+    "grid_mass_we_sn": [
+      120,
+      70
+    ],
+    "grid_namelist_we_sn": [
+      121,
+      71
+    ],
+    "mass_levels": 44,
+    "mpirun": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+    "name": "FAST-v025",
+    "non_divisible_boundary_note": "3600/54 is not an integer; a one-hour job takes 67 steps and advances 3618s, overshooting the scheduled window by 18s (0.500%). Every rate normalises by the actual advance.",
+    "ranks": 12,
+    "scheduled_window_seconds": 3600,
+    "source_bundle": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+    "start_time": "2026-07-26_00:00:00",
+    "steps": 67,
+    "wrf_exe": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe"
+  },
+  "cpu_arm_evidence": [
+    {
+      "contention": {
+        "15m": 12.53,
+        "1m": 22.2,
+        "5m": 18.39
+      },
+      "label": "fastbind_r1",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+      "timing_classes": {
+        "first_step_seconds": 0.58764,
+        "integration_step_sum_seconds": 7.04638,
+        "io_write_seconds": 0.56138,
+        "launcher_minus_step_sum_seconds": 3.309058884005707,
+        "launcher_wallclock_seconds": 10.355438884005707,
+        "stage_seconds": 0.0439807570000994,
+        "step_sum_per_fc_hour": 7.011323383084578,
+        "step_sum_per_fc_hour_scheduled_window": 7.04638,
+        "step_sum_warm_per_fc_hour": 6.523979797979799,
+        "wallclock_per_fc_hour": 10.303919287567869,
+        "wrfinput_read_seconds": 0.15629
+      },
+      "wallclock_seconds": 10.355438884005707
+    },
+    {
+      "contention": {
+        "15m": 12.62,
+        "1m": 22.0,
+        "5m": 18.48
+      },
+      "label": "fastbind_r2",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r2",
+      "timing_classes": {
+        "first_step_seconds": 0.61673,
+        "integration_step_sum_seconds": 7.15703,
+        "io_write_seconds": 0.59599,
+        "launcher_minus_step_sum_seconds": 3.1157359750016758,
+        "launcher_wallclock_seconds": 10.272765975001676,
+        "stage_seconds": 0.04299746000469895,
+        "step_sum_per_fc_hour": 7.12142288557214,
+        "step_sum_per_fc_hour_scheduled_window": 7.15703,
+        "step_sum_warm_per_fc_hour": 6.606363636363636,
+        "wallclock_per_fc_hour": 10.221657686568832,
+        "wrfinput_read_seconds": 0.16106
+      },
+      "wallclock_seconds": 10.272765975001676
+    },
+    {
+      "contention": {
+        "15m": 12.64,
+        "1m": 20.88,
+        "5m": 18.35
+      },
+      "label": "fastbind_r3",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r3",
+      "timing_classes": {
+        "first_step_seconds": 0.60356,
+        "integration_step_sum_seconds": 7.11946,
+        "io_write_seconds": 0.5747800000000001,
+        "launcher_minus_step_sum_seconds": 4.164625004997905,
+        "launcher_wallclock_seconds": 11.284085004997905,
+        "stage_seconds": 0.07804920300259255,
+        "step_sum_per_fc_hour": 7.084039800995026,
+        "step_sum_per_fc_hour_scheduled_window": 7.11946,
+        "step_sum_warm_per_fc_hour": 6.581717171717172,
+        "wallclock_per_fc_hour": 11.227945278604881,
+        "wrfinput_read_seconds": 0.18513
+      },
+      "wallclock_seconds": 11.284085004997905
+    },
+    {
+      "contention": {
+        "15m": 12.7,
+        "1m": 20.46,
+        "5m": 18.34
+      },
+      "label": "fastbind_r4",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r4",
+      "timing_classes": {
+        "first_step_seconds": 0.59804,
+        "integration_step_sum_seconds": 7.20127,
+        "io_write_seconds": 0.58362,
+        "launcher_minus_step_sum_seconds": 3.067855205995806,
+        "launcher_wallclock_seconds": 10.269125205995806,
+        "stage_seconds": 0.04362896400562022,
+        "step_sum_per_fc_hour": 7.165442786069653,
+        "step_sum_per_fc_hour_scheduled_window": 7.20127,
+        "step_sum_warm_per_fc_hour": 6.669929292929294,
+        "wallclock_per_fc_hour": 10.2180350308416,
+        "wrfinput_read_seconds": 0.15839
+      },
+      "wallclock_seconds": 10.269125205995806
+    },
+    {
+      "contention": {
+        "15m": 12.81,
+        "1m": 20.47,
+        "5m": 18.42
+      },
+      "label": "fastbind_r5",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r5",
+      "timing_classes": {
+        "first_step_seconds": 0.60184,
+        "integration_step_sum_seconds": 7.14313,
+        "io_write_seconds": 0.58162,
+        "launcher_minus_step_sum_seconds": 3.3078161859997826,
+        "launcher_wallclock_seconds": 10.450946185999783,
+        "stage_seconds": 0.043491782998899,
+        "step_sum_per_fc_hour": 7.107592039800996,
+        "step_sum_per_fc_hour_scheduled_window": 7.14313,
+        "step_sum_warm_per_fc_hour": 6.607363636363637,
+        "wallclock_per_fc_hour": 10.398951428855506,
+        "wrfinput_read_seconds": 0.15888
+      },
+      "wallclock_seconds": 10.450946185999783
+    },
+    {
+      "contention": {
+        "15m": 12.93,
+        "1m": 20.93,
+        "5m": 18.59
+      },
+      "label": "fastbind_r6",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r6",
+      "timing_classes": {
+        "first_step_seconds": 0.61133,
+        "integration_step_sum_seconds": 7.49149,
+        "io_write_seconds": 0.60118,
+        "launcher_minus_step_sum_seconds": 3.0032398100014452,
+        "launcher_wallclock_seconds": 10.494729810001445,
+        "stage_seconds": 0.04391608599689789,
+        "step_sum_per_fc_hour": 7.454218905472637,
+        "step_sum_per_fc_hour_scheduled_window": 7.49149,
+        "step_sum_warm_per_fc_hour": 6.949656565656566,
+        "wallclock_per_fc_hour": 10.442517223882035,
+        "wrfinput_read_seconds": 0.15425
+      },
+      "wallclock_seconds": 10.494729810001445
+    }
+  ],
+  "cpu_determinism": {
+    "deterministic": true,
+    "n_repeats": 6,
+    "repeat_content_digests": [
+      "23b6d8da685c222fe3b32e1d74239270f4404e46bf75bc15d11c09fffd0152d1"
+    ]
+  },
+  "diagnostic_gates": {
+    "kernel_family_coverage": {
+      "comparison": "ge",
+      "reason": "computed against a matched short two-domain PRODUCTION GPU trace (\u00a75.3); needs the baseline-census GPU window",
+      "status": "PENDING",
+      "threshold": 0.95,
+      "value": null
+    },
+    "top_family_rank_spearman_rho": {
+      "comparison": "ge",
+      "reason": "computed against a matched short two-domain PRODUCTION GPU trace (\u00a75.3); needs the baseline-census GPU window",
+      "status": "PENDING",
+      "threshold": 0.8,
+      "value": null
+    }
+  },
+  "economy_gates": {
+    "cached_load_seconds": {
+      "comparison": "le",
+      "reason": "requires a coordinated GPU window (contract \u00a713: dual-manager coordination with 0:2 and 0:3, then scripts/with_gpu_lock.sh); not measured on CPU",
+      "status": "PENDING",
+      "threshold": 60.0,
+      "value": null
+    },
+    "cold_compile_seconds": {
+      "comparison": "le",
+      "reason": "requires a coordinated GPU window (contract \u00a713: dual-manager coordination with 0:2 and 0:3, then scripts/with_gpu_lock.sh); not measured on CPU",
+      "status": "PENDING",
+      "threshold": 600.0,
+      "value": null
+    },
+    "cpu_arm_seconds": {
+      "comparison": "le",
+      "envelope": "12 ranks, cores 16-27, --bind-to core",
+      "max": 11.284085004997905,
+      "min": 10.269125205995806,
+      "n_repeats": 6,
+      "threshold": 300.0,
+      "value": 10.403192535002745
+    },
+    "gpu_arm_seconds": {
+      "comparison": "le",
+      "reason": "requires a coordinated GPU window (contract \u00a713: dual-manager coordination with 0:2 and 0:3, then scripts/with_gpu_lock.sh); not measured on CPU",
+      "status": "PENDING",
+      "threshold": 300.0,
+      "value": null
+    },
+    "pair_seconds_excl_lock_wait": {
+      "comparison": "le",
+      "reason": "requires a coordinated GPU window (contract \u00a713: dual-manager coordination with 0:2 and 0:3, then scripts/with_gpu_lock.sh); not measured on CPU",
+      "status": "PENDING",
+      "threshold": 600.0,
+      "value": null
+    }
+  },
+  "finiteness": {
+    "arms_audited": 6,
+    "float_variables_checked": 355,
+    "non_finite_total": 0
+  },
+  "generated_at_utc": "2026-07-27T12:53:13.880767+00:00",
+  "note": "CPU-side gates are measured; every GPU-side gate is PENDING and must not be read as satisfied. FAST-v025 is NOT yet qualified.",
+  "pair_completeness": {
+    "arms_non_overlapping": null,
+    "comparator_result_present": null,
+    "completeness_percent": null,
+    "fresh_cpu_arm_this_invocation": true,
+    "fresh_gpu_arm_this_invocation": null,
+    "provenance_present": true,
+    "reason": "requires a coordinated GPU window (contract \u00a713: dual-manager coordination with 0:2 and 0:3, then scripts/with_gpu_lock.sh); not measured on CPU"
+  },
+  "schema": "wrf_gpu2.v025.m0.fast_case_qualification.v1",
+  "status": "PARTIAL_CPU_ONLY"
+}

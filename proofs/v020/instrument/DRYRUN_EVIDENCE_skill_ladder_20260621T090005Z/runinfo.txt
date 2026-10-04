@@ -1,0 +1,9 @@
+probe=stability_skill_ladder
+benchmark=nested_all7_max_dom9
+input=<DATA_ROOT>/wrf_downscale/canary_all7/run
+candidate_env=fp64_default
+candidate_namelist=<DATA_ROOT>/wrf_downscale/canary_all7/run/namelist.input
+rungs=substep step 1 6 24 120
+gates=no_blow_up(hard) + wind/temp/cloud divergence-growth skill(>=1h) vs oracle
+policy=pass each rung before climbing; STOP at first fail; never widen
+ref=FINAL_FP32_SPRINT_PLAN.md §4 + V0200-ROADMAP.md §8.5 (Gate C/D)

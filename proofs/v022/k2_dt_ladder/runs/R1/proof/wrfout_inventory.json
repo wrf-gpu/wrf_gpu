@@ -1,0 +1,66 @@
+{
+  "actual_wrfout_count": 2,
+  "all_minimum_variables_present": true,
+  "all_readable": true,
+  "expected_wrfout_count": 2,
+  "files": [
+    {
+      "dimensions": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 128,
+        "south_north_stag": 129,
+        "west_east": 128,
+        "west_east_stag": 129
+      },
+      "exists": true,
+      "file_format": "NETCDF4",
+      "minimum_variable_count": 42,
+      "missing_minimum_variables": [],
+      "name": "wrfout_d01_2023-01-15_01:00:00",
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R1/out/wrfout_d01_2023-01-15_01:00:00",
+      "present_minimum_variable_count": 42,
+      "readable": true,
+      "size_bytes": 88050309,
+      "valid_time_utc": "2023-01-15T01:00:00+00:00",
+      "variable_count": 113
+    },
+    {
+      "dimensions": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 128,
+        "south_north_stag": 129,
+        "west_east": 128,
+        "west_east_stag": 129
+      },
+      "exists": true,
+      "file_format": "NETCDF4",
+      "minimum_variable_count": 42,
+      "missing_minimum_variables": [],
+      "name": "wrfout_d01_2023-01-15_02:00:00",
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R1/out/wrfout_d01_2023-01-15_02:00:00",
+      "present_minimum_variable_count": 42,
+      "readable": true,
+      "size_bytes": 88050309,
+      "valid_time_utc": "2023-01-15T02:00:00+00:00",
+      "variable_count": 113
+    }
+  ],
+  "minimum_variable_count": 42,
+  "schema": "M7DailyPipelineWrfoutInventory",
+  "schema_version": 1,
+  "status": "PASS"
+}

@@ -1,0 +1,1159 @@
+{
+  "axes": {
+    "architecture_testability": "PLAUSIBLE_NOT_PROVEN: a bounded whole-step typed-work discriminator is specified separately; no Round 4 or GPU is authorized.",
+    "candidate_acceptance": "REJECTED: complete-step arena, conversion and launch gates fail.",
+    "mechanism_reality": "SUPPORTED_CPU_STATIC: the isolated acoustic sub-chain reduction and the complete-step arena delta reproduce.",
+    "proof_integrity": "REJECTED: stale commit/tree, false-passing binding gate, omitted required reproduction argument, unbound wrfbdy and incomparable typed-work floor."
+  },
+  "binding_audit": {
+    "actual_candidate_git_tree_src_gpuwrf": "7d3b86223794cd1eff02076f65b00ca677583347",
+    "all_raw_hashes_match": true,
+    "amendment": {
+      "commit": "23904a25",
+      "committed_sha256": "408acb72877b434deaa1b1a57ee3a924de55b7e970d7aefb298faf69f1a91a3c",
+      "in_exact_candidate_tree": false,
+      "matches_committed_content": true,
+      "recorded_sha256": "408acb72877b434deaa1b1a57ee3a924de55b7e970d7aefb298faf69f1a91a3c",
+      "recorded_source_path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-07-29-v0250-m1-round3-production-chain/AMENDMENT_1_REVIEW04_GATE_CORRECTION.md"
+    },
+    "author_proof": {
+      "actual_sha256": "46c23e7d860003dc615257c46ae72c59bd008f385619cd0d15aea1ff481a01c1",
+      "recorded_sha256": "46c23e7d860003dc615257c46ae72c59bd008f385619cd0d15aea1ff481a01c1",
+      "sidecar_matches": true
+    },
+    "candidate_is_ancestor_of_critic_head": true,
+    "contract": {
+      "matches_worktree": true,
+      "recorded_sha256": "3863657e1457423ad96146cacd4a2c395a699f3b4fe1319b944b5b5da4dadd4a",
+      "worktree_sha256": "3863657e1457423ad96146cacd4a2c395a699f3b4fe1319b944b5b5da4dadd4a"
+    },
+    "custom_python_tree_digest": {
+      "current_matches_recorded": true,
+      "limitation": "This is an unversioned Python-only content digest. It can corroborate source contents but cannot replace a commit/tree identity or bind non-Python assets.",
+      "pre_matches_recorded": true,
+      "recomputed_current_source": "6f253ddbedb68bd91020025ab9de3e83bcea96e1b22e2f167445c416995c1e00",
+      "recomputed_pre": "6ac5ae505c67644aa5f4e54701cc21e8eb97612cfd537b5fdd111660b6974378",
+      "recorded_candidate": "6f253ddbedb68bd91020025ab9de3e83bcea96e1b22e2f167445c416995c1e00",
+      "recorded_pre": "6ac5ae505c67644aa5f4e54701cc21e8eb97612cfd537b5fdd111660b6974378"
+    },
+    "exact_candidate": "3677e491f395dfd44bb87e6946a24e231435a399",
+    "production_diff_after_exact_candidate": [],
+    "raw_arms": {
+      "accuracy": {
+        "actual_sha256": "c3a4bba934ebe2d5dbe68dfabec04b1234adc6bc54d8858619cb449510491f4d",
+        "file": "proofs/v025/m1/round3_raw/accuracy.json",
+        "matches": true,
+        "recorded_sha256": "c3a4bba934ebe2d5dbe68dfabec04b1234adc6bc54d8858619cb449510491f4d"
+      },
+      "candidate_fp32": {
+        "actual_sha256": "2a2898da6c0f21e19a13dd926b130e5d0154ce15837d8a523f3c277a6691bfd0",
+        "file": "proofs/v025/m1/round3_raw/cand_fp32.json",
+        "matches": true,
+        "recorded_sha256": "2a2898da6c0f21e19a13dd926b130e5d0154ce15837d8a523f3c277a6691bfd0"
+      },
+      "ceiling": {
+        "actual_sha256": "42746e4f045d30e21fe80d7ebf9cc87f31a462013b993e6e02d4d7bee795c14c",
+        "file": "proofs/v025/m1/round3_raw/ceiling.json",
+        "matches": true,
+        "recorded_sha256": "42746e4f045d30e21fe80d7ebf9cc87f31a462013b993e6e02d4d7bee795c14c"
+      },
+      "conversion_attribution": {
+        "actual_sha256": "aa99858fe647099c86709aa568116582fc66b14fba920459794a8205e46470ae",
+        "file": "proofs/v025/m1/round3_raw/conversion_attribution.json",
+        "matches": true,
+        "recorded_sha256": "aa99858fe647099c86709aa568116582fc66b14fba920459794a8205e46470ae"
+      },
+      "fp64_control": {
+        "actual_sha256": "88f2fd9d7697e81e1b706f2663ceb47cd2f3c20359bebdff021a095c66e62130",
+        "file": "proofs/v025/m1/round3_raw/cand_fp64.json",
+        "matches": true,
+        "recorded_sha256": "88f2fd9d7697e81e1b706f2663ceb47cd2f3c20359bebdff021a095c66e62130"
+      },
+      "fp64_control_pre": {
+        "actual_sha256": "170f0ca3b1d687d0922b6c4c9b558b94ac224f97e09db000a3759a79bed8761d",
+        "file": "proofs/v025/m1/round3_raw/pre_fp64.json",
+        "matches": true,
+        "recorded_sha256": "170f0ca3b1d687d0922b6c4c9b558b94ac224f97e09db000a3759a79bed8761d"
+      },
+      "pre_candidate_fp32": {
+        "actual_sha256": "2b5acf384714c1220194a409ec9adcfd028993c547e3ae3ba539f43f8fd2f8d8",
+        "file": "proofs/v025/m1/round3_raw/pre_fp32.json",
+        "matches": true,
+        "recorded_sha256": "2b5acf384714c1220194a409ec9adcfd028993c547e3ae3ba539f43f8fd2f8d8"
+      },
+      "substep_scaling": {
+        "actual_sha256": "d4b2cac7317ee65e402a1c9ea3afff9f9aa4f28ff7bedf4ecf7c064715359c8d",
+        "file": "proofs/v025/m1/round3_raw/substep_scaling.json",
+        "matches": true,
+        "recorded_sha256": "d4b2cac7317ee65e402a1c9ea3afff9f9aa4f28ff7bedf4ecf7c064715359c8d"
+      }
+    },
+    "recorded_candidate_git_tree_src_gpuwrf": "384be90776a303aa362ee343068401ace4b28f4e",
+    "recorded_git_tree_is_exact_candidate": false,
+    "recorded_git_tree_resolves_to": {
+      "f95daee0_src_gpuwrf": "384be90776a303aa362ee343068401ace4b28f4e",
+      "matches_f95daee0": true
+    },
+    "recorded_head_commit": "f95daee0f8db87fb5f8a927007bce193991b2eeb",
+    "recorded_head_is_exact_candidate": false
+  },
+  "ceiling_attack": {
+    "accepted_fact": "The isolated sub-chain reduction is a real CPU/static mechanism signal, and the same-method complete-step candidate empirically misses both frozen arena gates.",
+    "arithmetic_recomputed": {
+      "deletion_ratio_percent": 13.75415688426536,
+      "isolated_over_complete_fraction": 0.1375415688426536,
+      "isolated_over_complete_percent": 13.75415688426536,
+      "matches_reported_measured_ceiling": true,
+      "matches_reported_share": true,
+      "measured_isolated_saving_over_complete_percent": 6.873565964514677
+    },
+    "bounds_adr037_scope": false,
+    "denominator_compatibility": {
+      "compatible": false,
+      "complete_program": "the enclosing full RK step with 1+2+4=7 acoustic substeps plus large-step/advection/boundary/scalar work",
+      "isolated_program": "one standalone final-RK3 acoustic sub-chain with 4 substeps",
+      "memory_quantity": "XLA compiled-memory temporary_bytes peak buffer-assignment arena",
+      "nonadditivity": "A standalone executable's peak arena is not an additive subset of an enclosing executable's peak arena. Fusion, liveness, scheduling, aliases and buffer reuse change the peak."
+    },
+    "independent_isolated_reproduction": {
+      "candidate": {
+        "argument_bytes": 104833320,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 239,
+          "computations_total": 888,
+          "in_loop": 57,
+          "in_loop_by_transition": {
+            "-> f32[68,118]": 48,
+            "-> f32[70,120]": 8,
+            "-> f64[68,118]": 1
+          },
+          "in_loop_converted_elements_per_substep": 460376,
+          "loop_bodies_detected": 3,
+          "outside_loop": 2260,
+          "total": 2317
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 2,
+            "f64->f32": 18
+          },
+          "f32_to_f64": 2,
+          "f64_to_f32": 18,
+          "other": 0,
+          "total": 20
+        },
+        "dtype_tokens_optimized": {
+          "f32": 30155,
+          "f64": 7346,
+          "pred": 348,
+          "s32": 359,
+          "s64": 128
+        },
+        "generated_code_bytes": 0,
+        "lower_and_compile_seconds": 8.132836488017347,
+        "meta": {
+          "acoustic_substeps": 4,
+          "dt_rk": 54.0,
+          "dts_rk": 13.5,
+          "h_sca_adv_order": 5,
+          "hypsometric_opt": 2,
+          "mode": "mixed_perturb_fp32",
+          "rk_step": 3,
+          "run_boundary": true,
+          "run_physics": false
+        },
+        "optimized_hlo_bytes": 3920229,
+        "output_bytes": 101331816,
+        "stablehlo_bytes": 1290608,
+        "static_launch_proxy": 878,
+        "temporary_bytes": 90744064
+      },
+      "pre_candidate": {
+        "argument_bytes": 104833320,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 239,
+          "computations_total": 883,
+          "in_loop": 0,
+          "in_loop_by_transition": {},
+          "in_loop_converted_elements_per_substep": 0,
+          "loop_bodies_detected": 3,
+          "outside_loop": 162,
+          "total": 162
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 4,
+            "f64->f32": 1
+          },
+          "f32_to_f64": 4,
+          "f64_to_f32": 1,
+          "other": 0,
+          "total": 5
+        },
+        "dtype_tokens_optimized": {
+          "f32": 369,
+          "f64": 36001,
+          "pred": 348,
+          "s32": 359,
+          "s64": 128
+        },
+        "generated_code_bytes": 0,
+        "lower_and_compile_seconds": 7.505089392012451,
+        "meta": {
+          "acoustic_substeps": 4,
+          "dt_rk": 54.0,
+          "dts_rk": 13.5,
+          "h_sca_adv_order": 5,
+          "hypsometric_opt": 2,
+          "mode": "mixed_perturb_fp32",
+          "rk_step": 3,
+          "run_boundary": true,
+          "run_physics": false
+        },
+        "optimized_hlo_bytes": 3680344,
+        "output_bytes": 102911016,
+        "stablehlo_bytes": 1292674,
+        "static_launch_proxy": 873,
+        "temporary_bytes": 181395480
+      },
+      "same_instrument_reproduces_author_values": true,
+      "scope_limit": "Standalone specified final-RK3 acoustic-chain executable: no production halo, lead interpolation or enclosing RK1/RK2 work.",
+      "temporary_delta_percent": -49.97446242872204
+    },
+    "proofs_fp32_scope_insufficient": false,
+    "reported": {
+      "acoustic_share_of_production_step": 0.1375415688426536,
+      "acoustic_share_percent": 13.75415688426536,
+      "acoustic_subchain": {
+        "candidate_static_launch_proxy": 878,
+        "candidate_temporary_bytes": 90744064,
+        "delta_bytes": -90651416,
+        "delta_percent": -49.97446242872204,
+        "instrument": "scripts/v025/m1_round2_gpt_critic_probe.py (specified branch, both trees)",
+        "pre_candidate_static_launch_proxy": 873,
+        "pre_candidate_temporary_bytes": 181395480
+      },
+      "conclusion": "The acoustic sub-chain is only 13.75% of the pre-candidate production step's temporary arena. Halving it -- which the mechanism demonstrably does, -49.97% measured on the identical specified sub-chain -- bounds the production-step reduction at 6.88%, below the 10% incremental gate; eliminating the sub-chain ENTIRELY bounds it at 13.75%, below the 20% fp64 CONTROL gate. The ADR-037 typed acoustic work state therefore cannot reach either frozen arena threshold on the real specified production step. This is an arithmetic ceiling on the MECHANISM'S SCOPE, not a failure to implement it.",
+      "gate_a2a_requirement_percent": 10.0,
+      "gate_a2b_requirement_percent": 20.0,
+      "maximum_reachable_reduction_percent_at_measured_50pc_mechanism": 6.873565964514678,
+      "maximum_reachable_reduction_percent_if_subchain_vanished": 13.75415688426536,
+      "production_rk_step": {
+        "candidate_temporary_bytes": 1256262880,
+        "delta_bytes": -62578264,
+        "delta_percent": -4.744943262097683,
+        "instrument": "scripts/v025/m1_round3_chain_probe.py (operational_mode._rk_scan_step)",
+        "pre_candidate_temporary_bytes": 1318841144
+      },
+      "question": "How much of the REAL specified production RK step's temporary arena can the ADR-037 typed acoustic work state reach at all?",
+      "schema": "wrf_gpu2.v025.m1.round3_mechanism_ceiling.v1"
+    }
+  },
+  "environment": {
+    "allowed_cpus": "0-3",
+    "cpu_guard_pinned": true,
+    "device_policy": "closed (contracted OS policy)",
+    "gpu_action": "NONE"
+  },
+  "generated_at_utc": "2026-07-29T10:22:24.462012+00:00",
+  "independent_reproduction": {
+    "attribution_limit": "The source tool classifies boundary dependence only from the conversion's source filename/function. It does not trace dataflow, so its zero boundary count is not proof of zero causal dependence.",
+    "default_identity": {
+      "core13_all_outputs_equal": true,
+      "core13_all_present": true,
+      "core13_all_stablehlo_equal": true,
+      "core13_comparison_to_immutable_pre": {
+        "advance_w": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "apply_smdiv_pressure": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "calc_coef_w": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "calc_p_rho": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "diagnose_pressure_al_alt": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "mu_continuity_tendency": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "pg_buoy_w_dry": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "pg_buoy_w_moist": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "rhs_ph": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "small_step_prep": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "thomas_solve_scan": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "x_face_pressure_dpn": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        },
+        "y_face_pressure_dpn": {
+          "outputs_equal": true,
+          "stablehlo_equal": true
+        }
+      },
+      "core13_count": 13,
+      "full_stage_stablehlo_sha256": "c3268a28ba36578f2ee6180be0b8e0a4faab7b4e5473a807b18ea7d17a0a0301",
+      "full_step_comparison_to_immutable_pre": {
+        "outputs_equal": true,
+        "stablehlo_equal": true
+      },
+      "full_step_output_state_count": 10,
+      "full_step_stablehlo_sha256": "e2bafc1b94aa7e19fcfdf698e1d1812bc3c460f4ea1f4e9efba9cd85d0c082b0"
+    },
+    "descriptor": {
+      "acoustic_substeps": 4,
+      "boundary_update_cadence_s": 21600.0,
+      "descriptor_source": "operational_mode._rk_stage_advancer stages[2]",
+      "dt_rk": 54.0,
+      "dts_rk": 13.5,
+      "entry": "operational_mode._rk_stage_advancer -> advance_stage",
+      "h_sca_adv_order": 5,
+      "hypsometric_opt": 2,
+      "lead_seconds": 3618.0,
+      "lead_seconds_traced": true,
+      "mode": "mixed_perturb_fp32",
+      "moist_adv_opt": 1,
+      "production_stage_descriptors": [
+        {
+          "dt_rk": 18.0,
+          "dts_rk": 18.0,
+          "number_of_small_timesteps": 1,
+          "rk_step": 1
+        },
+        {
+          "dt_rk": 27.0,
+          "dts_rk": 13.5,
+          "number_of_small_timesteps": 2,
+          "rk_step": 2
+        },
+        {
+          "dt_rk": 54.0,
+          "dts_rk": 13.5,
+          "number_of_small_timesteps": 4,
+          "rk_step": 3
+        }
+      ],
+      "rk_step": 3,
+      "run_boundary": true,
+      "run_physics": false,
+      "scalar_adv_opt": 1,
+      "specified_adv_degrade": true,
+      "specified_bdy_cadence": true,
+      "step_index": 67,
+      "use_flux_advection": true
+    },
+    "full_step_loop_conversion": {
+      "computations_reachable_from_loop": 546,
+      "computations_total": 3557,
+      "in_loop": 130,
+      "in_loop_by_transition": {
+        "-> f32[45,120]": 4,
+        "-> f32[45,68]": 4,
+        "-> f32[68,118]": 96,
+        "-> f32[70,120]": 16,
+        "-> f64[120,45]": 4,
+        "-> f64[68,118]": 2,
+        "-> f64[68,45]": 4
+      },
+      "in_loop_converted_elements_per_substep": 988432,
+      "loop_bodies_detected": 8,
+      "outside_loop": 8456,
+      "total": 8586
+    },
+    "isolated_acoustic_subchain": {
+      "candidate": {
+        "argument_bytes": 104833320,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 239,
+          "computations_total": 888,
+          "in_loop": 57,
+          "in_loop_by_transition": {
+            "-> f32[68,118]": 48,
+            "-> f32[70,120]": 8,
+            "-> f64[68,118]": 1
+          },
+          "in_loop_converted_elements_per_substep": 460376,
+          "loop_bodies_detected": 3,
+          "outside_loop": 2260,
+          "total": 2317
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 2,
+            "f64->f32": 18
+          },
+          "f32_to_f64": 2,
+          "f64_to_f32": 18,
+          "other": 0,
+          "total": 20
+        },
+        "dtype_tokens_optimized": {
+          "f32": 30155,
+          "f64": 7346,
+          "pred": 348,
+          "s32": 359,
+          "s64": 128
+        },
+        "generated_code_bytes": 0,
+        "lower_and_compile_seconds": 8.132836488017347,
+        "meta": {
+          "acoustic_substeps": 4,
+          "dt_rk": 54.0,
+          "dts_rk": 13.5,
+          "h_sca_adv_order": 5,
+          "hypsometric_opt": 2,
+          "mode": "mixed_perturb_fp32",
+          "rk_step": 3,
+          "run_boundary": true,
+          "run_physics": false
+        },
+        "optimized_hlo_bytes": 3920229,
+        "output_bytes": 101331816,
+        "stablehlo_bytes": 1290608,
+        "static_launch_proxy": 878,
+        "temporary_bytes": 90744064
+      },
+      "pre_candidate": {
+        "argument_bytes": 104833320,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 239,
+          "computations_total": 883,
+          "in_loop": 0,
+          "in_loop_by_transition": {},
+          "in_loop_converted_elements_per_substep": 0,
+          "loop_bodies_detected": 3,
+          "outside_loop": 162,
+          "total": 162
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 4,
+            "f64->f32": 1
+          },
+          "f32_to_f64": 4,
+          "f64_to_f32": 1,
+          "other": 0,
+          "total": 5
+        },
+        "dtype_tokens_optimized": {
+          "f32": 369,
+          "f64": 36001,
+          "pred": 348,
+          "s32": 359,
+          "s64": 128
+        },
+        "generated_code_bytes": 0,
+        "lower_and_compile_seconds": 7.505089392012451,
+        "meta": {
+          "acoustic_substeps": 4,
+          "dt_rk": 54.0,
+          "dts_rk": 13.5,
+          "h_sca_adv_order": 5,
+          "hypsometric_opt": 2,
+          "mode": "mixed_perturb_fp32",
+          "rk_step": 3,
+          "run_boundary": true,
+          "run_physics": false
+        },
+        "optimized_hlo_bytes": 3680344,
+        "output_bytes": 102911016,
+        "stablehlo_bytes": 1292674,
+        "static_launch_proxy": 873,
+        "temporary_bytes": 181395480
+      },
+      "same_instrument_reproduces_author_values": true,
+      "scope_limit": "Standalone specified final-RK3 acoustic-chain executable: no production halo, lead interpolation or enclosing RK1/RK2 work.",
+      "temporary_delta_percent": -49.97446242872204
+    },
+    "optimized_loop_conversion": {
+      "computations_reachable_from_loop": 269,
+      "computations_total": 1484,
+      "in_loop": 65,
+      "in_loop_by_transition": {
+        "-> f32[45,120]": 2,
+        "-> f32[45,68]": 2,
+        "-> f32[68,118]": 48,
+        "-> f32[70,120]": 8,
+        "-> f64[120,45]": 2,
+        "-> f64[68,118]": 1,
+        "-> f64[68,45]": 2
+      },
+      "in_loop_converted_elements_per_substep": 494216,
+      "loop_bodies_detected": 3,
+      "outside_loop": 2742,
+      "total": 2807
+    },
+    "raw_files": {
+      "cand_fp32_repro.json": {
+        "bytes": 26036,
+        "sha256": "d5afaea4938d7959ee6865d574730a902c01d5f75576813bdfdfe721e49fb4dd"
+      },
+      "cand_fp64_repro.json": {
+        "bytes": 38311,
+        "sha256": "eab662defbaede36da1968c530784d0fe051b9979131d6b19c0f138511a869aa"
+      },
+      "conversion_attribution_repro.json": {
+        "bytes": 6295,
+        "sha256": "435b95d648f8a9e8a53ac5f6e9c645a81ad56dfa03cd333e97449039dea20ca4"
+      },
+      "isolated_candidate_repro.json": {
+        "bytes": 2170,
+        "sha256": "d37240cf9121df9f361815cf4ee2bf87aab1efdea01cbd7508ca202fb81f144f"
+      },
+      "isolated_pre_repro.json": {
+        "bytes": 2036,
+        "sha256": "987dc9e7a6dfae6b5beaacb30a546c1895d34c50b639f0c9d1ee26f7fa9653d3"
+      },
+      "pre_fp32_repro.json": {
+        "bytes": 6905,
+        "sha256": "8f8c614fe74c16e950ab109730a89033eafa08c159761115930faaa455318d3f"
+      }
+    },
+    "source_jaxpr_conversion_attribution": {
+      "by_site": [
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 1495120,
+          "from_dtype": "float64",
+          "function": "to_work.<locals>._reduce",
+          "rank": 3,
+          "shape": [
+            44,
+            70,
+            121
+          ],
+          "site": "precision.py:160",
+          "sites": 4,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 378000,
+          "from_dtype": "float64",
+          "function": "advance_w_wrf",
+          "rank": 3,
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "site": "advance_w.py:723",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 369600,
+          "from_dtype": "float64",
+          "function": "perturbation_delta",
+          "rank": 3,
+          "shape": [
+            44,
+            70,
+            120
+          ],
+          "site": "precision.py:195",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 134148,
+          "from_dtype": "float64",
+          "function": "to_work.<locals>._reduce",
+          "rank": 2,
+          "shape": [
+            70,
+            121
+          ],
+          "site": "precision.py:160",
+          "sites": 18,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 16920,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work.<locals>._physical_at",
+          "rank": 2,
+          "shape": [
+            45,
+            120
+          ],
+          "site": "acoustic.py:521",
+          "sites": 4,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 16920,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work.<locals>._physical_at",
+          "rank": 2,
+          "shape": [
+            45,
+            120
+          ],
+          "site": "acoustic.py:520",
+          "sites": 4,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 16920,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work.<locals>._work_for_physical",
+          "rank": 2,
+          "shape": [
+            45,
+            120
+          ],
+          "site": "acoustic.py:540",
+          "sites": 4,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 8400,
+          "from_dtype": "float64",
+          "function": "advance_w_wrf",
+          "rank": 2,
+          "shape": [
+            70,
+            120
+          ],
+          "site": "advance_w.py:546",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 8400,
+          "from_dtype": "float64",
+          "function": "advance_w_wrf",
+          "rank": 2,
+          "shape": [
+            70,
+            120
+          ],
+          "site": "advance_w.py:547",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 8400,
+          "from_dtype": "float64",
+          "function": "advance_w_wrf",
+          "rank": 2,
+          "shape": [
+            70,
+            120
+          ],
+          "site": "advance_w.py:548",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 8400,
+          "from_dtype": "float64",
+          "function": "advance_w_wrf",
+          "rank": 2,
+          "shape": [
+            70,
+            120
+          ],
+          "site": "advance_w.py:549",
+          "sites": 1,
+          "to_dtype": "float32"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 8024,
+          "from_dtype": "float32",
+          "function": "_advance_mu_t_specified_or_nested",
+          "rank": 2,
+          "shape": [
+            68,
+            118
+          ],
+          "site": "mu_t_advance.py:501",
+          "sites": 1,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 376,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work.<locals>._work_for_physical",
+          "rank": 2,
+          "shape": [
+            1,
+            120
+          ],
+          "site": "acoustic.py:538",
+          "sites": 4,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 90,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work",
+          "rank": 3,
+          "shape": [
+            45,
+            1,
+            1
+          ],
+          "site": "acoustic.py:490",
+          "sites": 2,
+          "to_dtype": "float64"
+        },
+        {
+          "consumes_lead_interpolated_boundary_data": false,
+          "elements_per_substep": 90,
+          "from_dtype": "float32",
+          "function": "_specified_w_zero_grad_work",
+          "rank": 3,
+          "shape": [
+            45,
+            1,
+            1
+          ],
+          "site": "acoustic.py:491",
+          "sites": 2,
+          "to_dtype": "float64"
+        }
+      ],
+      "elements_from_lead_interpolated_boundary_data": 0,
+      "float_convert_elements_per_substep": 2469808,
+      "float_convert_sites": 49,
+      "integer_convert_sites": 20,
+      "loop_body": "gpuwrf.dynamics.core.acoustic.acoustic_substep_core",
+      "mode": "mixed_perturb_fp32",
+      "residual_is_lead_interpolated_boundary_data": false,
+      "sites_by_rank": {
+        "2": 39,
+        "3": 10
+      },
+      "view": "traced jaxpr of the literal loop body (pre-XLA duplication)"
+    },
+    "three_arm_complete_step": {
+      "candidate": {
+        "argument_bytes": 472710128,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 546,
+          "computations_total": 3557,
+          "in_loop": 130,
+          "in_loop_by_transition": {
+            "-> f32[45,120]": 4,
+            "-> f32[45,68]": 4,
+            "-> f32[68,118]": 96,
+            "-> f32[70,120]": 16,
+            "-> f64[120,45]": 4,
+            "-> f64[68,118]": 2,
+            "-> f64[68,45]": 4
+          },
+          "in_loop_converted_elements_per_substep": 988432,
+          "loop_bodies_detected": 8,
+          "outside_loop": 8456,
+          "total": 8586
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 4,
+            "f64->f32": 22
+          },
+          "f32_to_f64": 4,
+          "f64_to_f32": 22,
+          "other": 0,
+          "total": 26
+        },
+        "entry": "operational_mode._rk_scan_step",
+        "lower_and_compile_seconds": 22.61939818499377,
+        "optimized_hlo_bytes": 25932783,
+        "output_bytes": 485705952,
+        "static_launch_proxy": 3518,
+        "temporary_bytes": 1256262880
+      },
+      "candidate_vs_fp64_control_temporary_percent": -8.91705088329392,
+      "candidate_vs_pre_temporary_percent": -4.744943262097678,
+      "compile_ratio": 1.0306219082659742,
+      "fp64_control": {
+        "argument_bytes": 477246128,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 546,
+          "computations_total": 3549,
+          "in_loop": 0,
+          "in_loop_by_transition": {},
+          "in_loop_converted_elements_per_substep": 0,
+          "loop_bodies_detected": 8,
+          "outside_loop": 576,
+          "total": 576
+        },
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "entry": "operational_mode._rk_scan_step",
+        "lower_and_compile_seconds": 23.162188604008406,
+        "optimized_hlo_bytes": 24980186,
+        "output_bytes": 491753952,
+        "static_launch_proxy": 3510,
+        "temporary_bytes": 1379251432
+      },
+      "fp64_control_20_percent_gate_passes": false,
+      "incremental_10_percent_gate_passes": false,
+      "launch_delta": 11,
+      "launch_resolution_band": 18,
+      "launch_status": "STATIC_PROXY_REGRESSION_REQUIRES_DEVICE_FALSIFICATION",
+      "optimized_hlo_ratio": 1.0338992457093101,
+      "pre_candidate": {
+        "argument_bytes": 472710128,
+        "converts_inside_acoustic_loop": {
+          "computations_reachable_from_loop": 546,
+          "computations_total": 3546,
+          "in_loop": 0,
+          "in_loop_by_transition": {},
+          "in_loop_converted_elements_per_substep": 0,
+          "loop_bodies_detected": 8,
+          "outside_loop": 1606,
+          "total": 1606
+        },
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 2,
+            "f64->f32": 2
+          },
+          "f32_to_f64": 2,
+          "f64_to_f32": 2,
+          "other": 0,
+          "total": 4
+        },
+        "entry": "operational_mode._rk_scan_step",
+        "lower_and_compile_seconds": 21.947329087008256,
+        "optimized_hlo_bytes": 25082505,
+        "output_bytes": 485705952,
+        "static_launch_proxy": 3507,
+        "temporary_bytes": 1318841144
+      }
+    }
+  },
+  "input_binding": {
+    "assets": {
+      "namelist": {
+        "actual_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032",
+        "bytes": 3580,
+        "exists": true,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+        "recorded_matches": true,
+        "recorded_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032"
+      },
+      "previous_wrfout": {
+        "actual_sha256": "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+        "bytes": 9573975,
+        "exists": true,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+        "recorded_matches": true,
+        "recorded_sha256": "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275"
+      },
+      "snapshot_wrfout": {
+        "actual_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+        "bytes": 13054055,
+        "exists": true,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+        "recorded_matches": true,
+        "recorded_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5"
+      },
+      "wrfbdy": {
+        "actual_sha256": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+        "bytes": 69810046,
+        "exists": true,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfbdy_d01",
+        "recorded_matches": false,
+        "recorded_sha256": null
+      },
+      "wrfinput": {
+        "actual_sha256": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0",
+        "bytes": 9958735,
+        "exists": true,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01",
+        "recorded_matches": true,
+        "recorded_sha256": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+      }
+    },
+    "complete_input_binding": false,
+    "wrfbdy_is_hash_bound_in_author_raw": false,
+    "wrfbdy_is_used": true
+  },
+  "mandatory_attack_outcomes": {
+    "10_architecture_decision": {
+      "facts": "Large-step tendencies, transport velocities/advection, scalar transport, halo/boundary and diffusion are visible owners, but the evidence does not support an additive 'other 86%' map. The decisive next discriminator must measure the whole _rk_scan_step.",
+      "outcome": "PLAUSIBLE_NOT_PROVEN_BY_AUTHOR_CEILING"
+    },
+    "1_production_lineage_and_scope": {
+      "facts": "Actual _rk_scan_step; descriptor (3,54,13.5,4), real halo, specified wrfbdy branch, lead_seconds=3618. The complete-step denominator is the intended frozen product scope.",
+      "outcome": "SUPPORTED"
+    },
+    "2_three_arm_accounting": {
+      "candidate_vs_control_percent": -8.91705088329392,
+      "candidate_vs_pre_percent": -4.744943262097678,
+      "outcome": "REPRODUCED_GATES_FAIL"
+    },
+    "3_ceiling_proof": {
+      "arithmetic_is_correct": true,
+      "outcome": "REJECTED_NONADDITIVE_INCOMPATIBLE_DENOMINATORS",
+      "scope_bound_is_valid": false
+    },
+    "4_conversion_attribution": {
+      "optimized_elements_per_substep": 494216,
+      "optimized_sites": 65,
+      "outcome": "COUNT_REPRODUCED_CAUSAL_ZERO_NOT_PROVEN",
+      "repair_class": "Carrying mu_work or hoisting an exact difference is a bounded ADR-037 repair, but its complete-arena impact is unknown and it cannot erase either failed arena gate."
+    },
+    "5_floor_and_divergence": {
+      "consequence": "The stored 48-stage D/F and classifier arithmetic may be internally consistent, but it is normalized by the wrong perturbation and therefore cannot establish candidate safety.",
+      "numeric_boundary_matches": false,
+      "outcome": "REJECTED_INCOMPARABLE_FLOOR",
+      "source_placement_matches": false
+    },
+    "6_default_identity_and_safety": {
+      "core13_count": 13,
+      "core13_outputs_equal": true,
+      "core13_stablehlo_equal": true,
+      "full_step_equal": true,
+      "outcome": "SUPPORTED_CPU_STATIC",
+      "production_files_after_candidate": []
+    },
+    "7_launch_compile_honesty": {
+      "compile_ratio": 1.0306219082659742,
+      "hlo_ratio": 1.0338992457093101,
+      "launch_delta": 11,
+      "outcome": "REPRODUCED_DEVICE_FALSIFIER_NOT_PASS",
+      "resolution_band": 18
+    },
+    "8_proof_binding_and_reproduction": {
+      "outcome": "REJECTED_STALE_NON_RECONSTRUCTIBLE",
+      "published_builder_command_omits_required_parent_root": true,
+      "recorded_head_is_candidate": false,
+      "recorded_tree_is_candidate": false,
+      "wrfbdy_bound": false
+    },
+    "9_test_truth_and_m0_pins": {
+      "facts": "Focused and ordinary regression groups pass. Five v025 failures are the expected fail-closed ADR-036 pins; skips/xfail were inspected and not relabelled as passes.",
+      "outcome": "ADJUDICATED"
+    }
+  },
+  "objective": "Independent CPU-only terminal review of exact candidate 3677e491f395dfd44bb87e6946a24e231435a399.",
+  "proof_binding_mutations": {
+    "attack_count": 8,
+    "false_pass_count": 8,
+    "gate_claim": "hash-bind every raw arm, root and asset into the proof",
+    "gate_is_sound": false,
+    "mutations_that_false_pass": {
+      "amendment_hash_missing": true,
+      "candidate_custom_digest_fabricated": true,
+      "candidate_git_tree_zeroed": true,
+      "contract_hash_missing": true,
+      "head_commit_zeroed": true,
+      "raw_metadata_removed": true,
+      "raw_paths_missing": true,
+      "raw_sha_is_not_a_hash": true
+    },
+    "reason": "gate_proof_binding checks only candidate_custom_digest != pre_custom_digest, presence of one historical parent, and truthiness of raw sha strings. It never validates the recorded commit/tree, contract/amendment, raw paths or raw contents."
+  },
+  "schema": "wrf_gpu2.v025.m1.round3_gpt_final_critic_cpu_evidence.v1",
+  "terminal_reason": "Round 3 cannot be accepted because its Gate-10 proof binding is technically unsound and the claimed authoritative floor does not apply rounding at the contracted work boundary. Independently reproduced CPU/static measurements still preserve the useful mechanism signal and the empirical complete-step miss. The isolated arena ratio is not an additive ceiling, so fp32 scope insufficiency has not been proved.",
+  "terminal_verdict": "REJECT_ROUND3_BLOCKED_PROOF_UNSOUND",
+  "test_record_before_critic_artifact_tests": {
+    "focused_round3": {
+      "command": "timeout 600s taskset -c 0-3 env JAX_PLATFORMS=cpu PYTHONHASHSEED=0 pytest -q tests/v025/test_m1_round3_production_chain.py",
+      "result": "30 passed in 0.15s",
+      "return_code": 0
+    },
+    "invalid_combined_collection_attempt": {
+      "adjudication": "Combining historical suites in one pytest process imported JAX before cpu_guard during collection. The suites were rerun in their required separate processes; this was a command-grouping error, not a candidate test failure.",
+      "return_code": 2
+    },
+    "non_v025_regression_groups": {
+      "adjudication": "The xfail is a documented stale test on the deliberate use_vertical_solver=False no-op, not the operational path.",
+      "command": "timeout 600s taskset -c 0-3 env JAX_PLATFORMS=cpu PYTHONHASHSEED=0 pytest -q tests/dynamics tests/contracts tests/unit tests/test_v020_s4_mixed_precision.py tests/v025/test_m1_core13_precision.py",
+      "result": "118 passed, 1 xfailed in 68.30s",
+      "return_code": 0
+    },
+    "round2_gpt_critic": {
+      "command": "pytest -q tests/v025/test_m1_round2_gpt_critic.py",
+      "result": "8 passed",
+      "return_code": 0
+    },
+    "round2_typed_chain": {
+      "command": "pytest -q tests/v025/test_m1_round2_typed_chain.py",
+      "result": "20 passed",
+      "return_code": 0
+    },
+    "v025_except_held_session": {
+      "adjudication": "All five are the contracted fail-closed ADR-036/M0 immutable candidate pins; the two skips are explicit CPU-guard exceptions for separately coordinated entry points.",
+      "command": "timeout 600s taskset -c 0-3 env JAX_PLATFORMS=cpu PYTHONHASHSEED=0 pytest -q tests/v025 --ignore=tests/v025/test_m0_held_session_repair.py",
+      "result": "5 failed, 883 passed, 2 skipped in 70.32s",
+      "return_code": 1
+    }
+  },
+  "typed_work_floor_attack": {
+    "numeric_boundary_probe": {
+      "all_fields_match": false,
+      "comparison": "author canonical-state rounding before advance_stage versus exact small_step_prep followed by one fp32 round at the typed boundary",
+      "contracted_floor_reproduced_by_author": false,
+      "descriptor": {
+        "acoustic_substeps": 4,
+        "dt_rk": 54.0,
+        "dts_rk": 13.5,
+        "lead_seconds": 3618.0,
+        "rk_step": 3
+      },
+      "environment": {
+        "cpu_guard_pinned": true,
+        "jax_device_count": 1,
+        "jax_platforms": [
+          "cpu"
+        ]
+      },
+      "fields": {
+        "mu_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.00024257619224954396,
+          "relative_rms": 6.40847248462302e-05,
+          "rms_difference": 7.15704116713471e-05,
+          "shape": [
+            70,
+            120
+          ],
+          "unequal_elements": 8321
+        },
+        "ph_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.0009765588329173625,
+          "relative_rms": 0.00036530225790719833,
+          "rms_difference": 0.00033424543182942253,
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "unequal_elements": 369600
+        },
+        "pressure_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.012146590901475324,
+          "relative_rms": 0.004612301212497127,
+          "rms_difference": 0.003057029614145262,
+          "shape": [
+            44,
+            70,
+            120
+          ],
+          "unequal_elements": 369600
+        },
+        "theta_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 1.5004583885893226,
+          "relative_rms": 0.0014468772239212202,
+          "rms_difference": 0.8431908757651398,
+          "shape": [
+            44,
+            70,
+            120
+          ],
+          "unequal_elements": 369600
+        },
+        "u_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.09211576756752038,
+          "relative_rms": 1.7501501679326683e-05,
+          "rms_difference": 0.013557314726076169,
+          "shape": [
+            44,
+            70,
+            121
+          ],
+          "unequal_elements": 372680
+        },
+        "v_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.09373515536593402,
+          "relative_rms": 1.3413199454914158e-05,
+          "rms_difference": 0.01440628291898519,
+          "shape": [
+            44,
+            71,
+            120
+          ],
+          "unequal_elements": 374880
+        },
+        "w_work": {
+          "author_equals_round_after_prep": false,
+          "max_abs_difference": 0.002542475709589098,
+          "relative_rms": 4.063911677484655e-07,
+          "rms_difference": 5.561284680528465e-05,
+          "shape": [
+            45,
+            70,
+            120
+          ],
+          "unequal_elements": 372021
+        }
+      }
+    },
+    "source": {
+      "contracted_operand": "small_step_prep/acoustic work families after exact preparation algebra",
+      "floor_function": "scripts.v025.m1_round3_chain.stage_trajectory",
+      "fp32_round_trip_lines": [
+        629,
+        651
+      ],
+      "placement_matches_contract": false,
+      "production_boundary_marker_present": true,
+      "production_typed_boundary_capture_used": false,
+      "raw_gate_false_pass_count": 5,
+      "raw_gate_mutations_that_false_pass": {
+        "literal_regime_changed_to_escalating": true,
+        "per_field_authoritative_flag_false": true,
+        "per_field_floor_curve_zeroed": true,
+        "per_field_level_bound_false": true,
+        "rounded_field_list_emptied": true
+      },
+      "reason": "The floor rounds canonical u/v/theta/w/p'/ph'/mu' before advance_stage. The contracted floor rounds the newly reduced work families exactly once at the real typed boundary after preparation. For mass-coupled u/v/theta and pressure/geopotential work, rounding before exact preparation is a different numerical perturbation.",
+      "round_trip_operand": "OperationalCarry.state canonical fields",
+      "small_step_prep_called_in_floor_function": false
+    }
+  }
+}

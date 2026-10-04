@@ -1,0 +1,109 @@
+{
+  "arrays": {
+    "a": {
+      "all_finite": true,
+      "dtype": "float64",
+      "sha256": "90fb836acaed7fdf1213849c14cca45f562daf46321f2c15a96dcfb0be95accf",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "alpha": {
+      "all_finite": true,
+      "dtype": "float64",
+      "sha256": "90cf08ee878253f55d7f8c136e3c9dbf3546834c4ea0c31c2037fe938a76cd11",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "gamma": {
+      "all_finite": true,
+      "dtype": "float64",
+      "sha256": "c1eac2ba0573fa20ee9afa2bb700c1213f309c7838f5b491e319f4b215a4828e",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "rhs": {
+      "all_finite": true,
+      "dtype": "float64",
+      "sha256": "00c682abef67b172f3d6d5bea852aef8373773da27a2072017ce70f097ab6a00",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "correctness_envelope": {
+    "maximum": 3.410948495142528e-06,
+    "metric": "p99_rel",
+    "source": "proofs/v025/m0/cancellation_map.json advance_w fp32 arm"
+  },
+  "cpu_platform": {
+    "device_count": 1,
+    "platforms": [
+      "cpu"
+    ]
+  },
+  "device_touched": false,
+  "generated_at_utc": "2026-07-28T02:47:46.255552+00:00",
+  "native_pallas_verdict": "MISSING",
+  "payload_bytes": 12096978,
+  "payload_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/pallas/advance_w_fast_v1.npz",
+  "payload_sha256": "fc2e81eaeb6e458ea3c8bb2ea08cf5c78034936006cc3a06cdb74be406c2a5ac",
+  "production_oracle": {
+    "ast_sha256": "b5c9000f80bf7da494c8a546857a56c6bbc3b359d6cc37877a254c1b23007837",
+    "fqname": "gpuwrf.dynamics.tridiag_solve.thomas_solve_scan",
+    "wrf_source": "dyn_em/module_small_step_em.F:1533-1550"
+  },
+  "schema": "wrf_gpu2.v025.m0.pallas_fast_savepoint.v1",
+  "source": {
+    "coefficients": "context['a'], context['alpha'], context['gamma']",
+    "context_builder": "scripts.v025.build_cancellation_map.build_context",
+    "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+    "current_wrfout_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+    "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+    "previous_wrfout_sha256": "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+    "rhs": "context['prep'].w_work",
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+    "stage_pair": {
+      "construction": "current + (current - previous) * dt/3618s over 19 prognostic fields",
+      "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+      "dt_s": 54.0,
+      "fields": [
+        "Ni",
+        "Nr",
+        "mu_perturbation",
+        "mu_total",
+        "p_perturbation",
+        "p_total",
+        "ph_perturbation",
+        "ph_total",
+        "qc",
+        "qg",
+        "qi",
+        "qke",
+        "qr",
+        "qs",
+        "qv",
+        "theta",
+        "u",
+        "v",
+        "w"
+      ],
+      "interval_source": "derived from the snapshots' own Times stamps",
+      "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+      "snapshot_interval_seconds": 3618.0,
+      "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+    },
+    "state_source_is_real": true
+  },
+  "status": "CPU_REAL_FAST_SAVEPOINT_GREEN_NATIVE_PALLAS_MISSING"
+}

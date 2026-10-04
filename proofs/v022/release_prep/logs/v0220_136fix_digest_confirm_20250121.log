@@ -1,0 +1,29 @@
+MARKER:PROCESS_START epoch=1782562083.405 tag=v0220_136fix_digest_confirm_20250121 maxdom=3 kwarm=2 mode=fixed fixed_root_steps=2 fixed_repeats=3 defuse=0 fuse=(unset) aot=1 parallel=0
+MARKER:LOADED wall_s=160.7 root_dt=18.0 names=('d01', 'd02', 'd03')
+MARKER:PREWARM_DONE wall_s=0.0 active=False source=skip:fused-default
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:missing path=<gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_ff35d2df26785867d05c3988a81685076bb8552c4999cdc4da2d291444fcdd5c.xlaexec error=missing AOT artifact(s): <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_ff35d2df26785867d05c3988a81685076bb8552c4999cdc4da2d291444fcdd5c.xlaexec, <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_ff35d2df26785867d05c3988a81685076bb8552c4999cdc4da2d291444fcdd5c.meta
+E0627 13:16:17.699117  581589 slow_operation_alarm.cc:73]
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0627 13:17:14.464196  581511 slow_operation_alarm.cc:140] The operation took 2m56.765139672s
+
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:jit-compiled+aot-captured hlo=c4a3ea0d3c33
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=<gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_735c0989993d73f091a6938faed77b6d330650f7c153b607476d5c5583b8757d.xlaexec cheap_key=735c0989993d error=missing AOT artifact(s): <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_735c0989993d73f091a6938faed77b6d330650f7c153b607476d5c5583b8757d.xlaexec, <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_735c0989993d73f091a6938faed77b6d330650f7c153b607476d5c5583b8757d.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=99f2f0fc95bb cheap_key=735c0989993d
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=<gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_ef90b422ab1042e89e782ff78f48ac7eaba3ec12d669e2549c5733d1f08f9d59.xlaexec cheap_key=ef90b422ab10 error=missing AOT artifact(s): <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_ef90b422ab1042e89e782ff78f48ac7eaba3ec12d669e2549c5733d1f08f9d59.xlaexec, <gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_ef90b422ab1042e89e782ff78f48ac7eaba3ec12d669e2549c5733d1f08f9d59.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=99f2f0fc95bb cheap_key=ef90b422ab10
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+CALL FIXED_FIRST root_steps=2 wall_s=1281.4412 finite=True vram_mib=17586 rss_peak_mib=22316 d01_own=2
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_ff35d2df26785867d05c3988a81685076bb8552c4999cdc4da2d291444fcdd5c.xlaexec hlo=c4a3ea0d3c33
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+CALL FIXED_2 root_steps=2 wall_s=42.2709 finite=True vram_mib=17607 rss_peak_mib=22316 d01_own=2
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.22.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_ff35d2df26785867d05c3988a81685076bb8552c4999cdc4da2d291444fcdd5c.xlaexec hlo=c4a3ea0d3c33
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+CALL FIXED_3 root_steps=2 wall_s=41.9018 finite=True vram_mib=17418 rss_peak_mib=22316 d01_own=2
+SUMMARY tag=v0220_136fix_digest_confirm_20250121 maxdom=3 mode=fixed fixed_root_steps=2 fixed_repeats=3 first_s=1281.4412 wall_total_s=1365.6139 call_times_s=1281.4412,42.2709,41.9018 s_per_step=21.0432 s_per_fc_hour=4208.6373 vram_peak_mib=17607 rss_peak_mib=22316 vram_flat=False rss_flat=True all_finite=True final_d01_own=2
+BIT_ID tag=v0220_136fix_digest_confirm_20250121 fixed_mode=True digest_sha256=9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4 digest_leaves=178 digest_bytes=367594272 digest_path=<v0220_release_worktree>/proofs/v021/canary_gate/ts_proof_v0220_136fix_digest_confirm_20250121/warmK_state_digest.json
+REF_COMPARE tag=v0220_136fix_digest_confirm_20250121 ref_digest=<v0220_release_worktree>/proofs/v022/release_prep/v0211_ref_digest.json ref_equal=False ref_sha256=519cd3e5c69561d750189ad694e1300bc729df4a0e6348d670d055eb0ab6db8e digest_sha256=9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4

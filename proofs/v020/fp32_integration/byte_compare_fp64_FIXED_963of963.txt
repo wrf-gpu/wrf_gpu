@@ -1,0 +1,13 @@
+# byte-compare baseline_fp64 vs head_fp64_fixed
+#   A=/tmp/v020_fp32_warm_verify/baseline_timed/out
+#   B=/tmp/v020_fp32_byteid/out
+  wrfout_d01_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d02_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d03_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d04_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d05_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d06_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d07_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d08_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+  wrfout_d09_2026-04-28_19:00:00: 107/107 vars identical  [BIT-IDENTICAL]
+# SUMMARY: 963/963 vars bit-identical across 9 domain files; worst maxΔ=0.000e+00; verdict=BYTE-IDENTICAL

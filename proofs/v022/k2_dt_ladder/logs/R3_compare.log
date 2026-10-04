@@ -1,0 +1,80 @@
+{
+  "rung_wrfout": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R3/out/wrfout_d01_2023-01-15_02:00:00",
+  "r1_wrfout": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R1/out/wrfout_d01_2023-01-15_02:00:00",
+  "fields": {
+    "T2": {
+      "rmse": 0.03916124677119401,
+      "max_abs_diff": 0.86541748046875,
+      "bias": -0.0028562676161527634,
+      "band_rmse": 0.5,
+      "rmse_over_band": 0.07832249354238802,
+      "within_band": true
+    },
+    "U10": {
+      "rmse": 0.35627947484125294,
+      "max_abs_diff": 30.109932482242584,
+      "bias": 0.03834517539271265,
+      "band_rmse": 0.75,
+      "rmse_over_band": 0.47503929978833725,
+      "within_band": true
+    },
+    "V10": {
+      "rmse": 0.18613417244859434,
+      "max_abs_diff": 12.810411006212234,
+      "bias": -0.035436765174512,
+      "band_rmse": 0.75,
+      "rmse_over_band": 0.24817889659812578,
+      "within_band": true
+    },
+    "PSFC": {
+      "rmse": 17.87295812971001,
+      "max_abs_diff": 1431.6796875,
+      "bias": -3.248471736907959,
+      "band_rmse": 60.0,
+      "rmse_over_band": 0.29788263549516686,
+      "within_band": true
+    },
+    "T": {
+      "rmse": 0.07273547123329525,
+      "max_abs_diff": 6.37689208984375,
+      "bias": -0.004829489414326169,
+      "band_rmse": 0.75,
+      "rmse_over_band": 0.09698062831106034,
+      "within_band": true
+    },
+    "U": {
+      "rmse": 0.33895535074109107,
+      "max_abs_diff": 61.39581489562988,
+      "bias": 0.0225780621848635,
+      "band_rmse": 1.5,
+      "rmse_over_band": 0.22597023382739403,
+      "within_band": true
+    },
+    "V": {
+      "rmse": 0.18874522531496837,
+      "max_abs_diff": 27.182666778564453,
+      "bias": -0.02588920137703341,
+      "band_rmse": 1.5,
+      "rmse_over_band": 0.12583015020997892,
+      "within_band": true
+    },
+    "W": {
+      "rmse": 0.08781617502266024,
+      "max_abs_diff": 23.741751596331596,
+      "bias": -0.0013310977868337382,
+      "band_rmse": 0.5,
+      "rmse_over_band": 0.1756323500453205,
+      "within_band": true
+    },
+    "QVAPOR": {
+      "rmse": 1.95577351995571e-06,
+      "max_abs_diff": 0.00014851870946586132,
+      "bias": -5.7731925266725874e-08,
+      "band_rmse": 0.0005,
+      "rmse_over_band": 0.00391154703991142,
+      "within_band": true
+    }
+  },
+  "within_operational_band": true,
+  "worst_rmse_over_band": 0.47503929978833725
+}

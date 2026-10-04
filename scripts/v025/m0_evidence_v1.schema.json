@@ -1,0 +1,414 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wrf_gpu2.v025.m0.evidence_bundle.v1",
+  "title": "WRF-GPU v0.25 M0 evidence identities and VRAM sidecars",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$"
+    },
+    "device_uuid": {
+      "type": "string",
+      "pattern": "^GPU-[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    },
+    "utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identity_binding": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "source_sha256",
+        "config_sha256",
+        "input_manifest_sha256",
+        "device_uuid"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/run_id"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "input_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "device_uuid": {
+          "$ref": "#/$defs/device_uuid"
+        },
+        "workload_identity_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "integration_scope_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "event_mix_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "evidence_identity": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/identity_binding"
+        },
+        {
+          "type": "object",
+          "required": [
+            "schema",
+            "workload_identity_sha256",
+            "integration_scope_sha256",
+            "event_mix_sha256"
+          ],
+          "properties": {
+            "schema": {
+              "const": "wrf_gpu2.v025.m0.evidence_identity.v1"
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "forecast_allocator": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/identity_binding"
+        },
+        {
+          "type": "object",
+          "required": [
+            "schema",
+            "emitter_process_role",
+            "instrumentation",
+            "forecast_pid",
+            "measurement_start_ns",
+            "measurement_end_ns",
+            "measurement_start_utc",
+            "measurement_end_utc",
+            "peak_bytes_in_use",
+            "peak_bytes_reserved",
+            "device_platform",
+            "device_local_ordinal"
+          ],
+          "properties": {
+            "schema": {
+              "const": "wrf_gpu2.v025.m0.forecast_allocator.v1"
+            },
+            "emitter_process_role": {
+              "const": "forecast_process"
+            },
+            "instrumentation": {
+              "type": "object",
+              "required": [
+                "enabled",
+                "opt_in_environment",
+                "default_when_unset",
+                "range_name",
+                "range_scope",
+                "final_synchronization",
+                "allocator_read"
+              ],
+              "properties": {
+                "enabled": {
+                  "const": true
+                },
+                "opt_in_environment": {
+                  "const": "GPUWRF_M0_EVIDENCE=1"
+                },
+                "default_when_unset": {
+                  "const": "original-direct-call-no-range-no-sidecar"
+                },
+                "range_name": {
+                  "const": "GPUWRF_M0_FORECAST_INTEGRATION"
+                },
+                "range_scope": {
+                  "const": "full-forecast-integration"
+                },
+                "final_synchronization": {
+                  "const": "jax.block_until_ready(result)"
+                },
+                "allocator_read": {
+                  "const": "after-range-on-result-device"
+                }
+              },
+              "additionalProperties": false
+            },
+            "forecast_pid": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "measurement_start_ns": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "measurement_end_ns": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "measurement_start_utc": {
+              "$ref": "#/$defs/utc"
+            },
+            "measurement_end_utc": {
+              "$ref": "#/$defs/utc"
+            },
+            "peak_bytes_in_use": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "peak_bytes_reserved": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "device_platform": {
+              "type": "string",
+              "minLength": 1
+            },
+            "device_local_ordinal": {
+              "type": [
+                "integer",
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "lock_owner_total_residency": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/identity_binding"
+        },
+        {
+          "type": "object",
+          "required": [
+            "schema",
+            "sampler_process_role",
+            "sampler_backend",
+            "jax_imported_by_sampler",
+            "jax_import_check",
+            "orphan_control",
+            "forecast_pid",
+            "capture_root_pid",
+            "capture_process_group_id",
+            "baseline_absolute_bytes",
+            "peak_absolute_bytes",
+            "peak_baseline_subtracted_bytes",
+            "sample_cadence_ms",
+            "samples",
+            "sampling_misses",
+            "sampling_quality",
+            "sampling_limitations",
+            "malformed_samples",
+            "observed_process_tree_pids",
+            "unexpected_competing_contexts",
+            "measurement_start_ns",
+            "measurement_end_ns",
+            "measurement_start_utc",
+            "measurement_end_utc",
+            "command_sha256",
+            "product_metric",
+            "allocator_role",
+            "sampler_ram_scaling"
+          ],
+          "properties": {
+            "schema": {
+              "const": "wrf_gpu2.v025.m0.lock_owner_total_residency.v1"
+            },
+            "sampler_process_role": {
+              "const": "lock_owner_parent"
+            },
+            "sampler_backend": {
+              "const": "external-persistent-nvidia-smi"
+            },
+            "jax_imported_by_sampler": {
+              "const": false
+            },
+            "jax_import_check": {
+              "type": "object",
+              "required": [
+                "method",
+                "status",
+                "loaded_modules"
+              ],
+              "properties": {
+                "method": {
+                  "const": "sys.modules-prefix-scan-before-baseline-or-stream"
+                },
+                "status": {
+                  "const": "PASS"
+                },
+                "loaded_modules": {
+                  "type": "array",
+                  "maxItems": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "orphan_control": {
+              "const": "linux-prctl-pdeathsig-sigterm-plus-parent-stop"
+            },
+            "forecast_pid": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "capture_root_pid": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "capture_process_group_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "baseline_absolute_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "peak_absolute_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "peak_baseline_subtracted_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sample_cadence_ms": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "samples": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sampling_misses": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sampling_quality": {
+              "type": "object",
+              "required": [
+                "baseline_counted_as_stream_sample",
+                "denominator",
+                "observed_miss_fraction",
+                "maximum_miss_fraction",
+                "status"
+              ],
+              "properties": {
+                "baseline_counted_as_stream_sample": {
+                  "const": false
+                },
+                "denominator": {
+                  "const": "stream_samples_plus_inferred_or_malformed_misses"
+                },
+                "observed_miss_fraction": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0.05
+                },
+                "maximum_miss_fraction": {
+                  "const": 0.05
+                },
+                "status": {
+                  "const": "PASS"
+                }
+              },
+              "additionalProperties": false
+            },
+            "sampling_limitations": {
+              "type": "array",
+              "minItems": 3,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "malformed_samples": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "observed_process_tree_pids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "uniqueItems": true
+            },
+            "unexpected_competing_contexts": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "measurement_start_ns": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "measurement_end_ns": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "measurement_start_utc": {
+              "$ref": "#/$defs/utc"
+            },
+            "measurement_end_utc": {
+              "$ref": "#/$defs/utc"
+            },
+            "command_sha256": {
+              "type": "object",
+              "required": [
+                "baseline_total",
+                "baseline_processes",
+                "stream_total",
+                "stream_processes"
+              ],
+              "properties": {
+                "baseline_total": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "baseline_processes": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "stream_total": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "stream_processes": {
+                  "$ref": "#/$defs/sha256"
+                }
+              },
+              "additionalProperties": false
+            },
+            "product_metric": {
+              "const": "baseline-subtracted peak total selected-device residency"
+            },
+            "allocator_role": {
+              "const": "decomposition-cross-check-only"
+            },
+            "sampler_ram_scaling": {
+              "const": "O(unique process IDs); sample values aggregated online"
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/evidence_identity"
+    },
+    {
+      "$ref": "#/$defs/forecast_allocator"
+    },
+    {
+      "$ref": "#/$defs/lock_owner_total_residency"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+Command terminated by signal 15
+wall_s=748.95
+maxrss_kib=18377904

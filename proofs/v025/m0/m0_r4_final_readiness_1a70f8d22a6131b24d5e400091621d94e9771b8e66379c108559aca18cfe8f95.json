@@ -1,0 +1,2715 @@
+{
+  "base_commit": "24b128d539c101e941f659d37d6fe0aa3601850f",
+  "checkout": {
+    "branch": "integration/v0250-m0-r4-final-session",
+    "implementation_commit": "84b1c90a74dfd19d23f0131aa9866552766d24b0",
+    "is_worker_worktree": false,
+    "scripts_v025_tree": "b191e2dccc2611189ac371da8789d8b2206e6e10",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "stable_integration_worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session"
+  },
+  "content_address": "1a70f8d22a6131b24d5e400091621d94e9771b8e66379c108559aca18cfe8f95",
+  "contract_gate_set": {
+    "literal": "{H0_ROOTS, H1_REAL_C1_BOUNDARY, H2_PRODUCTION_ANALYSER, H3_PACKET_BINDING,\nH4_RETAINED_IDENTITY, H5_DEVICE_DENIAL, H6_SUITE_AND_TREE}",
+    "members": [
+      "H0_ROOTS",
+      "H1_REAL_C1_BOUNDARY",
+      "H2_PRODUCTION_ANALYSER",
+      "H3_PACKET_BINDING",
+      "H4_RETAINED_IDENTITY",
+      "H5_DEVICE_DENIAL",
+      "H6_SUITE_AND_TREE"
+    ],
+    "source": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/CONTRACT.md",
+    "source_sha256": "30e34ffd0f473e70adfe4e8d3262e84a314109654df42e299e623ec4fffb5bf9"
+  },
+  "gate_set_equality": {
+    "candidate_authored_second_declaration": false,
+    "only_in_contract": [],
+    "only_in_implementation": [],
+    "reference_is_the_contract_literal": true,
+    "status": "PASS"
+  },
+  "gates": {
+    "H0_ROOTS": {
+      "constants": {
+        "dead_fifth_root": {
+          "entrypoint": "m0_three_window_executor.run_outer_window_graph",
+          "reason": "Amendment 6 supersedes the per-window outer graph; the held session never calls it, so its root is not part of the R4 generation and is not added to the session",
+          "status": "UNREACHABLE_NOT_IN_HELD_SESSION"
+        },
+        "expected": {
+          "executor_c1_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "executor_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+          "executor_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+          "executor_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+          "executor_session_receipt": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+          "parent_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+          "parent_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+          "parent_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4"
+        },
+        "observed": {
+          "executor_c1_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "executor_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+          "executor_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+          "executor_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+          "executor_session_receipt": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+          "parent_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+          "parent_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+          "parent_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4"
+        },
+        "run_id_freshness_note": "freshness comes from the vacant R4 parent roots and the packet, not from cosmetic run-id text",
+        "run_ids_retain_reviewed_r3_text": [
+          "m0-autotune0-qualify-20260728-r3",
+          "m0-autotune0-profiled-20260728-r3",
+          "m0-autotune0-clean-20260728-r3"
+        ],
+        "status": "PASS"
+      },
+      "status": "PASS",
+      "vacancy_after": {
+        "mutable_root_count": 4,
+        "receipt_template_is_authority": false,
+        "rule": "a fresh generation is proven by absence, not by a fingerprint: each fixed target is absent, is not a symlink, and has no symlink ancestor below its canonical base",
+        "schema": "wrf_gpu2.v025.m0.r4_generation_vacancy.v1",
+        "status": "PASS",
+        "targets": [
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+            "vacant": true
+          },
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+            "vacant": true
+          },
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+            "vacant": true
+          },
+          {
+            "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4",
+            "vacant": true
+          },
+          {
+            "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/.agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+            "vacant": true
+          }
+        ]
+      },
+      "vacancy_before": {
+        "mutable_root_count": 4,
+        "receipt_template_is_authority": false,
+        "rule": "a fresh generation is proven by absence, not by a fingerprint: each fixed target is absent, is not a symlink, and has no symlink ancestor below its canonical base",
+        "schema": "wrf_gpu2.v025.m0.r4_generation_vacancy.v1",
+        "status": "PASS",
+        "targets": [
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+            "vacant": true
+          },
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+            "vacant": true
+          },
+          {
+            "base": "<DATA_ROOT>",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+            "vacant": true
+          },
+          {
+            "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4",
+            "vacant": true
+          },
+          {
+            "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+            "exists": false,
+            "is_symlink": false,
+            "symlink_ancestors_below_base": [],
+            "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/.agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+            "vacant": true
+          }
+        ]
+      }
+    },
+    "H1_REAL_C1_BOUNDARY": {
+      "failed_at_5356a37d": "the real C1 child refused because _c1_command supplied a root the outer owner did not use; the R4 route has no derived namespace, so one fixed value crosses the whole boundary",
+      "green": {
+        "c1_child": {
+          "child_side_root_self_check": "none: deleting the fingerprint namespace also deleted the child's derived-root refusal, so in-session C1 ignores --cpu-run-root. The invariant is structural -- one fixed constant feeds both commands -- and H1 is what measures it",
+          "cpu_preflight_root_supplied_by_owner": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "error": null,
+          "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "matches_fixed_r4_root": true,
+          "returncode": 0,
+          "stdout_bytes": 22930,
+          "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4"
+        },
+        "c1_command": [
+          "taskset",
+          "-c",
+          "16-27",
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_w1_fast_pair.py",
+          "--w1-result",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/generation/proof/m0-autotune0-qualify-20260728-r3.window.json",
+          "--in-session-held-lock",
+          "--pre-staged-cpu",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/session/cpu_preflight.json",
+          "--session-identity",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/session/session_preflight_identity.json",
+          "--prepare-session-pair",
+          "--receipt",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/synthetic_session_receipt.json",
+          "--cpu-run-root",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "--output",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/session/c1_fast_pair.json"
+        ],
+        "canonical_ledger_untouched": true,
+        "cpu_preflight_command": [
+          "taskset",
+          "-c",
+          "16-27",
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_w1_fast_pair.py",
+          "--prestage-cpu",
+          "--session-identity",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/session/session_preflight_identity.json",
+          "--cpu-run-root",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "--output",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/real/session/cpu_preflight.json"
+        ],
+        "cpu_preflight_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "every_registered_process_group_empty": true,
+        "held_child": {
+          "error": null,
+          "first_failure": null,
+          "process_group_proof": {
+            "active": [],
+            "all_registered_groups_empty": true,
+            "completed": [],
+            "registered": 0,
+            "status": "PASS"
+          },
+          "stage_order_executed": [
+            "W1_CACHED_AND_CORRECTNESS",
+            "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+            "W2_PROFILED_CAPTURE",
+            "W3_CLEAN_MATCHED_ARM"
+          ],
+          "status": "PASS"
+        },
+        "isolated": [
+          "physical flock wrapper process",
+          "CUDA/W1/W2/W3 device execution",
+          "physical 12-rank CPU-WRF launcher",
+          "environment identity/revalidation probes",
+          "canonical /tmp lock-holder release proof"
+        ],
+        "owner_error": null,
+        "owner_status": "PASS",
+        "real": [
+          "run_session_owner",
+          "held session entrypoint run_held_session",
+          "_c1_command",
+          "m0_w1_fast_pair CLI argparse and path validation",
+          "validate_cpu_preflight",
+          "in-session held-lock provenance",
+          "run_fast_pair.compare_arms on real netCDF bytes",
+          "economy gates",
+          "_post_w1_qualification",
+          "prepare_m0_matched_pair.prepare"
+        ],
+        "restore_r3_cpu_root": false,
+        "stages_reached": [
+          "W1",
+          "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+          "W2",
+          "W3"
+        ],
+        "status": "PASS",
+        "synthetic_ledger_path": "/tmp/m0-r4-readiness-k_r97sl7/h1/real/synthetic_spend_ledger.json",
+        "synthetic_ledger_spends": 3,
+        "w2_and_w3_reachable": true
+      },
+      "r3_root_mutation": {
+        "c1_child": {
+          "child_side_root_self_check": "none: deleting the fingerprint namespace also deleted the child's derived-root refusal, so in-session C1 ignores --cpu-run-root. The invariant is structural -- one fixed constant feeds both commands -- and H1 is what measures it",
+          "cpu_preflight_root_supplied_by_owner": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "error": null,
+          "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "matches_fixed_r4_root": false,
+          "returncode": 0,
+          "stdout_bytes": 23026,
+          "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3"
+        },
+        "c1_command": [
+          "taskset",
+          "-c",
+          "16-27",
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_w1_fast_pair.py",
+          "--w1-result",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/generation/proof/m0-autotune0-qualify-20260728-r3.window.json",
+          "--in-session-held-lock",
+          "--pre-staged-cpu",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/session/cpu_preflight.json",
+          "--session-identity",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/session/session_preflight_identity.json",
+          "--prepare-session-pair",
+          "--receipt",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/synthetic_session_receipt.json",
+          "--cpu-run-root",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3",
+          "--output",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/session/c1_fast_pair.json"
+        ],
+        "canonical_ledger_untouched": true,
+        "cpu_preflight_command": [
+          "taskset",
+          "-c",
+          "16-27",
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_w1_fast_pair.py",
+          "--prestage-cpu",
+          "--session-identity",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/session/session_preflight_identity.json",
+          "--cpu-run-root",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "--output",
+          "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/session/cpu_preflight.json"
+        ],
+        "cpu_preflight_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "every_registered_process_group_empty": true,
+        "held_child": {
+          "error": null,
+          "first_failure": null,
+          "process_group_proof": {
+            "active": [],
+            "all_registered_groups_empty": true,
+            "completed": [],
+            "registered": 0,
+            "status": "PASS"
+          },
+          "stage_order_executed": [
+            "W1_CACHED_AND_CORRECTNESS",
+            "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+            "W2_PROFILED_CAPTURE",
+            "W3_CLEAN_MATCHED_ARM"
+          ],
+          "status": "PASS"
+        },
+        "isolated": [
+          "physical flock wrapper process",
+          "CUDA/W1/W2/W3 device execution",
+          "physical 12-rank CPU-WRF launcher",
+          "environment identity/revalidation probes",
+          "canonical /tmp lock-holder release proof"
+        ],
+        "owner_error": null,
+        "owner_status": "PASS",
+        "real": [
+          "run_session_owner",
+          "held session entrypoint run_held_session",
+          "_c1_command",
+          "m0_w1_fast_pair CLI argparse and path validation",
+          "validate_cpu_preflight",
+          "in-session held-lock provenance",
+          "run_fast_pair.compare_arms on real netCDF bytes",
+          "economy gates",
+          "_post_w1_qualification",
+          "prepare_m0_matched_pair.prepare"
+        ],
+        "restore_r3_cpu_root": true,
+        "stages_reached": [
+          "W1",
+          "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+          "W2",
+          "W3"
+        ],
+        "status": "BLOCKED",
+        "synthetic_ledger_path": "/tmp/m0-r4-readiness-k_r97sl7/h1/r3-root/synthetic_spend_ledger.json",
+        "synthetic_ledger_spends": 3,
+        "w2_and_w3_reachable": true
+      },
+      "r3_root_mutation_refused": true,
+      "schema": "wrf_gpu2.v025.m0.r4_real_c1_boundary.v1",
+      "status": "PASS",
+      "traversal": [
+        "run_session_owner",
+        "real held-session child entrypoint",
+        "real _c1_command",
+        "real m0_w1_fast_pair.py CLI/path validation",
+        "pre-staged comparison fixture"
+      ]
+    },
+    "H2_PRODUCTION_ANALYSER": {
+      "ast_call_inventory": {
+        "calls_per_relation": {
+          "m0_postlock_census.analyze_w2": 1,
+          "m0_postlock_census.build_census": 1,
+          "m0_postlock_census.derive_integration_scope": 1,
+          "m0_postlock_census.derive_step_census": 1,
+          "run_gpu_arm.attribute_device_time": 1
+        },
+        "source": "scripts/v025/build_m0_r4_launch_readiness.py",
+        "source_sha256": "eba44117f3d2d49b2aa93e448a098f18996470e4975d57d3905db4f2882dd00a",
+        "status": "PASS"
+      },
+      "calls": [
+        {
+          "inputs": {
+            "artifact_class": "SCHEMA_FAITHFUL_FIXTURE",
+            "label": "MISSING_REAL_VALIDATION",
+            "nvtx_rows": 1,
+            "source": "tests/v025/fixtures/m0_w2_event_level_kernel_fixture.sqlite"
+          },
+          "invoked": true,
+          "is_generic_exception": false,
+          "outcome": "RETURNED",
+          "relation": "m0_postlock_census.derive_integration_scope",
+          "return_value": {
+            "boundary_kind": "integration",
+            "boundary_source": "nvtx_pushpop_trace",
+            "capture_run_id": "m0-r4-event-fixture",
+            "duration_ns": 450000.0,
+            "end_ns": 1350000.0,
+            "mechanically_verified": true,
+            "production_derived": false,
+            "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+            "run_id": "m0-r4-event-fixture",
+            "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+            "source_rep_sha256": "3ef88fe64a2ed4a26eaf2d3b8b43892f9fbb3896df47ed1211c622978352f111",
+            "start_ns": 900000.0,
+            "status": "OK"
+          },
+          "status": "OK",
+          "zero_substituted_for_missing": false
+        },
+        {
+          "inputs": {
+            "expected_steps": 3,
+            "integration_scope_status": "OK",
+            "kernel_rows": 6,
+            "radiation_cadence_steps": 4
+          },
+          "invoked": true,
+          "is_generic_exception": false,
+          "outcome": "RETURNED",
+          "relation": "m0_postlock_census.derive_step_census",
+          "return_value": {
+            "gap_discriminator": {
+              "largest_interior_gap_ns": 10000.0,
+              "reason": "inter-step gaps are not separated from intra-step gaps",
+              "required_ratio": 1.5,
+              "smallest_boundary_gap_ns": 10000.0
+            },
+            "reason": "inter-step gaps are not separated from intra-step gaps",
+            "status": "MISSING",
+            "whole_process_fallback_used": false
+          },
+          "status": "MISSING",
+          "zero_substituted_for_missing": false
+        },
+        {
+          "inputs": {
+            "kernels": 6
+          },
+          "invoked": true,
+          "is_generic_exception": false,
+          "outcome": "RETURNED",
+          "relation": "run_gpu_arm.attribute_device_time",
+          "return_value": {
+            "attributed_device_time_share": 0.0,
+            "attributed_launch_share": 0.0,
+            "families": {
+              "unknown": {
+                "device_time_ns": 240000.0,
+                "device_time_share": 1.0,
+                "launches": 6
+              }
+            },
+            "measured_dycore_share_of_known": null,
+            "measured_physics_share_of_known": null,
+            "meets_attribution_bar": false,
+            "static_proxy_reference": {
+              "dycore_share": 0.183,
+              "note": "the static proxy is a CPU-backend instruction-count proxy. It is the pre-registered thing this measurement must agree or disagree with; a disagreement is a result, not an error, and per manager decision e5df2364 neither number alone authorises an M2 reorder.",
+              "physics_share": 0.817,
+              "radiation_share": 0.365,
+              "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU)"
+            },
+            "total_device_time_ns": 240000.0,
+            "total_launches": 6,
+            "unknown_device_time_share": 1.0,
+            "unknown_launch_share": 1.0
+          },
+          "status": "OK",
+          "zero_substituted_for_missing": false
+        },
+        {
+          "inputs": {
+            "cuda_rows": 6,
+            "measured_rows_from": "tests/v025/fixtures/m0_w2_event_level_kernel_fixture.sqlite",
+            "nvtx_rows": 1,
+            "scaffold": "m0_c1_c2_cpu_proofs.complete_census_inputs"
+          },
+          "invoked": true,
+          "is_generic_exception": false,
+          "outcome": "RETURNED",
+          "relation": "m0_postlock_census.build_census",
+          "return_value": {
+            "census_sha256": "1a6bb466bc53d804a2cc903cf64acd5d63573831a1316c21c16444ef365551ad",
+            "cpu_closure_status": "CPU_C1_C2_GREEN_GPU_WINDOWS_MISSING",
+            "device_time_attribution": {
+              "attributed_device_time_share": 0.0,
+              "attributed_launch_share": 0.0,
+              "families": {
+                "unknown": {
+                  "device_time_ns": 240000.0,
+                  "device_time_share": 1.0,
+                  "launches": 6
+                }
+              },
+              "measured_dycore_share_of_known": null,
+              "measured_physics_share_of_known": null,
+              "meets_attribution_bar": false,
+              "static_proxy_reference": {
+                "dycore_share": 0.183,
+                "note": "the static proxy is a CPU-backend instruction-count proxy. It is the pre-registered thing this measurement must agree or disagree with; a disagreement is a result, not an error, and per manager decision e5df2364 neither number alone authorises an M2 reorder.",
+                "physics_share": 0.817,
+                "radiation_share": 0.365,
+                "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU)"
+              },
+              "status": "BLOCKED",
+              "total_device_time_ns": 240000.0,
+              "total_launches": 6,
+              "unknown_device_time_share": 1.0,
+              "unknown_launch_share": 1.0
+            },
+            "export": {
+              "exports": {
+                "cuda_api_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_api_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_api_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_api_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_api_trace.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_api_trace",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_gpu_kern_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_kern_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_gpu_kern_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_gpu_mem_size_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_mem_size_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_gpu_mem_size_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_gpu_mem_time_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_mem_time_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_gpu_mem_time_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_gpu_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_gpu_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "cuda_gpu_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_trace.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "cuda_gpu_trace",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "nvtx_gpu_proj_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/nvtx_gpu_proj_sum.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "nvtx_gpu_proj_sum",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                },
+                "nvtx_pushpop_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/nvtx_pushpop_trace.csv",
+                  "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+                  "report": "nvtx_pushpop_trace",
+                  "returncode": 0,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+                  "source_rep_bytes": 1234,
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "status": "OK"
+                }
+              },
+              "fixture_complete": true,
+              "forced_sqlite_export_count": 1,
+              "manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "private_sqlite_bytes": 4321,
+              "private_sqlite_export": "/cpu-complete-fixture/private_export.sqlite",
+              "private_sqlite_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+              "required": [
+                "nvtx_pushpop_trace",
+                "cuda_gpu_kern_sum",
+                "cuda_gpu_trace"
+              ],
+              "required_unusable": [],
+              "run_id": "cpu-complete-census-fixture",
+              "schema": "wrf_gpu2.v025.m0.nsys_export.v2",
+              "source_rep": "/cpu-complete-fixture/capture.nsys-rep",
+              "source_rep_bytes": 1234,
+              "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "sqlite_report_read_count": 8,
+              "status": "OK"
+            },
+            "family_census": {
+              "unknown": {
+                "device_time_ns": 240000.0,
+                "device_time_share": 1.0,
+                "launches": 6
+              }
+            },
+            "gates_not_pass": [
+              "step_classes",
+              "attribution",
+              "summary_crosscheck",
+              "transfer_audit",
+              "production_representativeness"
+            ],
+            "hlo": {
+              "a6_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/hlo_dtype_transfer_census.json",
+              "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+              "aggregate_temporary_bytes_is_not_peak_live": true,
+              "compiled_memory_analysis": "MISSING",
+              "compiled_memory_analysis_gate": {
+                "required_fields": [
+                  "temp_size_in_bytes",
+                  "output_size_in_bytes",
+                  "alias_size_in_bytes"
+                ],
+                "status": "PASS"
+              },
+              "cpu_fixture_override": true,
+              "dtype_and_convert_census": {
+                "status": "PASS"
+              },
+              "family_labels": [
+                "dycore.advection",
+                "dycore.damping",
+                "dycore.diffusion",
+                "dycore.eos",
+                "dycore.geopotential",
+                "dycore.mass",
+                "dycore.momentum",
+                "dycore.pgf",
+                "dycore.small_step",
+                "dycore.vertical_coordinate",
+                "dycore.vertical_implicit",
+                "physics.cumulus",
+                "physics.gwd",
+                "physics.land_surface",
+                "physics.microphysics",
+                "physics.pbl",
+                "physics.radiation",
+                "physics.surface_layer"
+              ],
+              "fixture_complete": true,
+              "largest_temporaries": [
+                {
+                  "family": "physics.pbl",
+                  "operator": "mynn_pbl",
+                  "temporary_bytes": 1147709904
+                },
+                {
+                  "family": "physics.radiation",
+                  "operator": "rrtmg_lw",
+                  "temporary_bytes": 784530152
+                },
+                {
+                  "family": "physics.microphysics",
+                  "operator": "thompson_microphysics",
+                  "temporary_bytes": 383613560
+                },
+                {
+                  "family": "dycore.advection",
+                  "operator": "advect_moisture_scalars",
+                  "temporary_bytes": 365433600
+                },
+                {
+                  "family": "physics.radiation",
+                  "operator": "rrtmg_sw",
+                  "temporary_bytes": 191423504
+                },
+                {
+                  "family": "physics.cumulus",
+                  "operator": "kain_fritsch_cumulus",
+                  "temporary_bytes": 116967008
+                },
+                {
+                  "family": "dycore.advection",
+                  "operator": "advect_w_flux",
+                  "temporary_bytes": 39312000
+                },
+                {
+                  "family": "physics.gwd",
+                  "operator": "gwdo_gravity_wave_drag",
+                  "temporary_bytes": 38792232
+                },
+                {
+                  "family": "dycore.advection",
+                  "operator": "advect_u_flux",
+                  "temporary_bytes": 38505600
+                },
+                {
+                  "family": "dycore.advection",
+                  "operator": "advect_v_flux",
+                  "temporary_bytes": 38505600
+                },
+                {
+                  "family": "dycore.diffusion",
+                  "operator": "horizontal_diffusion_coord_scalar_tendency",
+                  "temporary_bytes": 35955056
+                },
+                {
+                  "family": "dycore.pgf",
+                  "operator": "large_step_horizontal_pgf",
+                  "temporary_bytes": 33336048
+                },
+                {
+                  "family": "dycore.advection",
+                  "operator": "advect_scalar_flux",
+                  "temporary_bytes": 32592000
+                },
+                {
+                  "family": "dycore.momentum",
+                  "operator": "large_step_coriolis",
+                  "temporary_bytes": 24465008
+                },
+                {
+                  "family": "dycore.vertical_implicit",
+                  "operator": "advance_w",
+                  "temporary_bytes": 23993672
+                },
+                {
+                  "family": "dycore.diffusion",
+                  "operator": "smag2d_horizontal_km",
+                  "temporary_bytes": 23993456
+                },
+                {
+                  "family": "dycore.diffusion",
+                  "operator": "wrf_sixth_order_scalar_tendf",
+                  "temporary_bytes": 20697600
+                },
+                {
+                  "family": "dycore.diffusion",
+                  "operator": "sixth_order_diffusion_tendency",
+                  "temporary_bytes": 20697600
+                },
+                {
+                  "family": "dycore.pgf",
+                  "operator": "horizontal_pressure_gradient",
+                  "temporary_bytes": 18757040
+                },
+                {
+                  "family": "dycore.diffusion",
+                  "operator": "horizontal_deformation_2d",
+                  "temporary_bytes": 18011120
+                }
+              ],
+              "operator_count": 49,
+              "operator_names_sha256": "eb5fef428848d0ce253234503bdadad7c1eb4e1460fb67fd94ac854c63d70b0d",
+              "peak_live_buffers": "MISSING",
+              "peak_live_buffers_deferred": {
+                "mechanically_reachable_from_m0_core": false,
+                "owner": "M1 same-set candidate diagnosis / M2 backend bake-off",
+                "status": "MISSING",
+                "waived": false
+              },
+              "peak_live_buffers_evidence": "MISSING",
+              "peak_live_buffers_reason": "deferred by Amendment 6; M0 uses production-normal flags and does not collect compiler dumps",
+              "status": "PASS"
+            },
+            "honest_missing_policy": "no top-level OK while any required C1/C2 sub-gate is MISSING/BLOCKED",
+            "integration_scope": {
+              "boundary_kind": "integration",
+              "boundary_source": "nvtx_pushpop_trace",
+              "capture_run_id": "cpu-complete-census-fixture",
+              "duration_ns": 450000.0,
+              "end_ns": 1350000.0,
+              "mechanically_verified": true,
+              "production_derived": false,
+              "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+              "run_id": "cpu-complete-census-fixture",
+              "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+              "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "start_ns": 900000.0,
+              "status": "OK"
+            },
+            "inter_kernel_gap_ns": {
+              "count": 5,
+              "max": 35000.0,
+              "median": 10000.0,
+              "min": 10000.0,
+              "p95": 29999.999999999993,
+              "p99": 34000.0,
+              "status": "PASS",
+              "sum": 75000.0
+            },
+            "kernel_summary_crosscheck": {
+              "reason": "kernel summary unavailable",
+              "status": "MISSING"
+            },
+            "launch_duration_ns": {
+              "count": 6,
+              "max": 40000.0,
+              "median": 40000.0,
+              "min": 40000.0,
+              "p95": 40000.0,
+              "p99": 40000.0,
+              "status": "PASS",
+              "sum": 240000.0
+            },
+            "measurement_partition": {
+              "m0_core_m1_blocking": {
+                "fields": [
+                  "ordinary_and_cadence_step_classes",
+                  "kernels_and_device_time_per_step",
+                  "family_launch_and_device_time_shares",
+                  "top_kernel_duration_distributions",
+                  "inter_kernel_gaps_and_tail_kernels",
+                  "timestamped_integration_range_transfer_audit",
+                  "launch_and_device_time_attribution",
+                  "profiler_perturbation",
+                  "cold_cached_and_clean_timing",
+                  "single_case_vram_and_host_rss"
+                ],
+                "governed_by_required_gates": true,
+                "source": "nsys plus bound sidecars/clean arm"
+              },
+              "m0_deferred_m2": {
+                "fields": [
+                  "registers_per_thread",
+                  "achieved_occupancy",
+                  "stall_distribution",
+                  "dram_bytes",
+                  "l2_bytes",
+                  "source_location"
+                ],
+                "governed_by_required_gates": false,
+                "source": "ncu",
+                "status": "MISSING_UNTIL_M2",
+                "waived": false
+              }
+            },
+            "production_derived": false,
+            "production_representativeness": {
+              "a6_used_for_this_gate": false,
+              "candidate_binding": {
+                "run_id": "cpu-complete-census-fixture",
+                "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "candidate_rank_shares": {
+                "dycore.advection": 0.0,
+                "physics.cumulus": 0.0,
+                "physics.microphysics": 0.0,
+                "physics.pbl": 0.0,
+                "physics.radiation": 0.0
+              },
+              "checks": {
+                "active_d01_schemes": true,
+                "cadence_events": true,
+                "family_coverage": false,
+                "top_family_rank": false
+              },
+              "family_coverage": 0.0,
+              "min_family_coverage": 0.95,
+              "min_spearman": 0.8,
+              "missing_cadence_events": [],
+              "missing_reference_families": [
+                "dycore.advection",
+                "physics.cumulus",
+                "physics.microphysics",
+                "physics.pbl",
+                "physics.radiation"
+              ],
+              "missing_schemes": [],
+              "rank_families": [
+                "physics.cumulus",
+                "physics.microphysics",
+                "physics.radiation",
+                "physics.pbl",
+                "dycore.advection"
+              ],
+              "reference_binding": {
+                "run_id": "production-reference-fixture",
+                "source_rep": {
+                  "path": "/cpu-complete-fixture/reference.nsys-rep",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "reference_kind": "matched two-domain production trace",
+              "reference_rank_shares": {
+                "dycore.advection": 320.0,
+                "physics.cumulus": 1350.0,
+                "physics.microphysics": 950.0,
+                "physics.pbl": 530.0,
+                "physics.radiation": 600.0
+              },
+              "spearman": null,
+              "status": "FAILED"
+            },
+            "raw_artifacts": {
+              "exports": {
+                "cuda_api_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_api_sum.csv",
+                  "sha256": "8888888888888888888888888888888888888888888888888888888888888888"
+                },
+                "cuda_api_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_api_trace.csv",
+                  "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+                },
+                "cuda_gpu_kern_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_kern_sum.csv",
+                  "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+                },
+                "cuda_gpu_mem_size_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_mem_size_sum.csv",
+                  "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+                },
+                "cuda_gpu_mem_time_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_mem_time_sum.csv",
+                  "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+                },
+                "cuda_gpu_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_sum.csv",
+                  "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+                },
+                "cuda_gpu_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/cuda_gpu_trace.csv",
+                  "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+                },
+                "nvtx_gpu_proj_sum": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/nvtx_gpu_proj_sum.csv",
+                  "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+                },
+                "nvtx_pushpop_trace": {
+                  "data_rows": 16,
+                  "path": "/cpu-complete-fixture/nvtx_pushpop_trace.csv",
+                  "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+                }
+              },
+              "private_sqlite": {
+                "bytes": 4321,
+                "forced_export_count": 1,
+                "path": "/cpu-complete-fixture/private_export.sqlite",
+                "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+              },
+              "source_rep": "/cpu-complete-fixture/capture.nsys-rep",
+              "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            },
+            "release_provenance": {
+              "release_before_analysis": true,
+              "run_id": "cpu-complete-census-fixture",
+              "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+            },
+            "required_gates": {
+              "attribution": {
+                "attributed_device_time_share": 0.0,
+                "attributed_launch_share": 0.0,
+                "families": {
+                  "unknown": {
+                    "device_time_ns": 240000.0,
+                    "device_time_share": 1.0,
+                    "launches": 6
+                  }
+                },
+                "measured_dycore_share_of_known": null,
+                "measured_physics_share_of_known": null,
+                "meets_attribution_bar": false,
+                "static_proxy_reference": {
+                  "dycore_share": 0.183,
+                  "note": "the static proxy is a CPU-backend instruction-count proxy. It is the pre-registered thing this measurement must agree or disagree with; a disagreement is a result, not an error, and per manager decision e5df2364 neither number alone authorises an M2 reorder.",
+                  "physics_share": 0.817,
+                  "radiation_share": 0.365,
+                  "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU)"
+                },
+                "status": "BLOCKED",
+                "total_device_time_ns": 240000.0,
+                "total_launches": 6,
+                "unknown_device_time_share": 1.0,
+                "unknown_launch_share": 1.0
+              },
+              "clean_w3": {
+                "status": "PASS"
+              },
+              "cuda_trace_row_integrity": {
+                "rows": 6,
+                "rule": "every scoped row carries a finite start and duration",
+                "status": "PASS",
+                "unplaceable_rows": 0
+              },
+              "export": {
+                "manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                "problems": [],
+                "required": [
+                  "nvtx_pushpop_trace",
+                  "cuda_gpu_kern_sum",
+                  "cuda_gpu_trace"
+                ],
+                "status": "PASS"
+              },
+              "hlo_completeness": {
+                "evidence": {
+                  "a6_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/hlo_dtype_transfer_census.json",
+                  "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+                  "aggregate_temporary_bytes_is_not_peak_live": true,
+                  "compiled_memory_analysis": "MISSING",
+                  "compiled_memory_analysis_gate": {
+                    "required_fields": [
+                      "temp_size_in_bytes",
+                      "output_size_in_bytes",
+                      "alias_size_in_bytes"
+                    ],
+                    "status": "PASS"
+                  },
+                  "cpu_fixture_override": true,
+                  "dtype_and_convert_census": {
+                    "status": "PASS"
+                  },
+                  "family_labels": [
+                    "dycore.advection",
+                    "dycore.damping",
+                    "dycore.diffusion",
+                    "dycore.eos",
+                    "dycore.geopotential",
+                    "dycore.mass",
+                    "dycore.momentum",
+                    "dycore.pgf",
+                    "dycore.small_step",
+                    "dycore.vertical_coordinate",
+                    "dycore.vertical_implicit",
+                    "physics.cumulus",
+                    "physics.gwd",
+                    "physics.land_surface",
+                    "physics.microphysics",
+                    "physics.pbl",
+                    "physics.radiation",
+                    "physics.surface_layer"
+                  ],
+                  "fixture_complete": true,
+                  "largest_temporaries": [
+                    {
+                      "family": "physics.pbl",
+                      "operator": "mynn_pbl",
+                      "temporary_bytes": 1147709904
+                    },
+                    {
+                      "family": "physics.radiation",
+                      "operator": "rrtmg_lw",
+                      "temporary_bytes": 784530152
+                    },
+                    {
+                      "family": "physics.microphysics",
+                      "operator": "thompson_microphysics",
+                      "temporary_bytes": 383613560
+                    },
+                    {
+                      "family": "dycore.advection",
+                      "operator": "advect_moisture_scalars",
+                      "temporary_bytes": 365433600
+                    },
+                    {
+                      "family": "physics.radiation",
+                      "operator": "rrtmg_sw",
+                      "temporary_bytes": 191423504
+                    },
+                    {
+                      "family": "physics.cumulus",
+                      "operator": "kain_fritsch_cumulus",
+                      "temporary_bytes": 116967008
+                    },
+                    {
+                      "family": "dycore.advection",
+                      "operator": "advect_w_flux",
+                      "temporary_bytes": 39312000
+                    },
+                    {
+                      "family": "physics.gwd",
+                      "operator": "gwdo_gravity_wave_drag",
+                      "temporary_bytes": 38792232
+                    },
+                    {
+                      "family": "dycore.advection",
+                      "operator": "advect_u_flux",
+                      "temporary_bytes": 38505600
+                    },
+                    {
+                      "family": "dycore.advection",
+                      "operator": "advect_v_flux",
+                      "temporary_bytes": 38505600
+                    },
+                    {
+                      "family": "dycore.diffusion",
+                      "operator": "horizontal_diffusion_coord_scalar_tendency",
+                      "temporary_bytes": 35955056
+                    },
+                    {
+                      "family": "dycore.pgf",
+                      "operator": "large_step_horizontal_pgf",
+                      "temporary_bytes": 33336048
+                    },
+                    {
+                      "family": "dycore.advection",
+                      "operator": "advect_scalar_flux",
+                      "temporary_bytes": 32592000
+                    },
+                    {
+                      "family": "dycore.momentum",
+                      "operator": "large_step_coriolis",
+                      "temporary_bytes": 24465008
+                    },
+                    {
+                      "family": "dycore.vertical_implicit",
+                      "operator": "advance_w",
+                      "temporary_bytes": 23993672
+                    },
+                    {
+                      "family": "dycore.diffusion",
+                      "operator": "smag2d_horizontal_km",
+                      "temporary_bytes": 23993456
+                    },
+                    {
+                      "family": "dycore.diffusion",
+                      "operator": "wrf_sixth_order_scalar_tendf",
+                      "temporary_bytes": 20697600
+                    },
+                    {
+                      "family": "dycore.diffusion",
+                      "operator": "sixth_order_diffusion_tendency",
+                      "temporary_bytes": 20697600
+                    },
+                    {
+                      "family": "dycore.pgf",
+                      "operator": "horizontal_pressure_gradient",
+                      "temporary_bytes": 18757040
+                    },
+                    {
+                      "family": "dycore.diffusion",
+                      "operator": "horizontal_deformation_2d",
+                      "temporary_bytes": 18011120
+                    }
+                  ],
+                  "operator_count": 49,
+                  "operator_names_sha256": "eb5fef428848d0ce253234503bdadad7c1eb4e1460fb67fd94ac854c63d70b0d",
+                  "peak_live_buffers": "MISSING",
+                  "peak_live_buffers_deferred": {
+                    "mechanically_reachable_from_m0_core": false,
+                    "owner": "M1 same-set candidate diagnosis / M2 backend bake-off",
+                    "status": "MISSING",
+                    "waived": false
+                  },
+                  "peak_live_buffers_evidence": "MISSING",
+                  "peak_live_buffers_reason": "deferred by Amendment 6; M0 uses production-normal flags and does not collect compiler dumps",
+                  "status": "PASS"
+                },
+                "peak_live_buffers": "MISSING",
+                "peak_live_buffers_rule": "deferred, waived=false; aggregate temporary_bytes is not peak live and does not influence M0-CORE",
+                "requires": [
+                  "hash-bound static dtype/convert census",
+                  "exact executable stablehlo identity",
+                  "compiled memory_analysis temp/output/alias fields",
+                  "W2 measured GPU VRAM",
+                  "W2 measured host RSS"
+                ],
+                "status": "PASS"
+              },
+              "host_ram": {
+                "evidence": {
+                  "peak_process_tree_rss_bytes": 4294967296,
+                  "run_id": "cpu-complete-census-fixture",
+                  "schema": "wrf_gpu2.v025.m0.process_tree_rss.v1",
+                  "status": "PASS"
+                },
+                "reason": null,
+                "status": "PASS"
+              },
+              "integration_scope": {
+                "boundary_kind": "integration",
+                "boundary_source": "nvtx_pushpop_trace",
+                "capture_run_id": "cpu-complete-census-fixture",
+                "duration_ns": 450000.0,
+                "end_ns": 1350000.0,
+                "mechanically_verified": true,
+                "production_derived": false,
+                "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+                "run_id": "cpu-complete-census-fixture",
+                "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+                "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "start_ns": 900000.0,
+                "status": "PASS"
+              },
+              "production_representativeness": {
+                "a6_used_for_this_gate": false,
+                "candidate_binding": {
+                  "run_id": "cpu-complete-census-fixture",
+                  "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                "candidate_rank_shares": {
+                  "dycore.advection": 0.0,
+                  "physics.cumulus": 0.0,
+                  "physics.microphysics": 0.0,
+                  "physics.pbl": 0.0,
+                  "physics.radiation": 0.0
+                },
+                "checks": {
+                  "active_d01_schemes": true,
+                  "cadence_events": true,
+                  "family_coverage": false,
+                  "top_family_rank": false
+                },
+                "family_coverage": 0.0,
+                "min_family_coverage": 0.95,
+                "min_spearman": 0.8,
+                "missing_cadence_events": [],
+                "missing_reference_families": [
+                  "dycore.advection",
+                  "physics.cumulus",
+                  "physics.microphysics",
+                  "physics.pbl",
+                  "physics.radiation"
+                ],
+                "missing_schemes": [],
+                "rank_families": [
+                  "physics.cumulus",
+                  "physics.microphysics",
+                  "physics.radiation",
+                  "physics.pbl",
+                  "dycore.advection"
+                ],
+                "reference_binding": {
+                  "run_id": "production-reference-fixture",
+                  "source_rep": {
+                    "path": "/cpu-complete-fixture/reference.nsys-rep",
+                    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                "reference_kind": "matched two-domain production trace",
+                "reference_rank_shares": {
+                  "dycore.advection": 320.0,
+                  "physics.cumulus": 1350.0,
+                  "physics.microphysics": 950.0,
+                  "physics.pbl": 530.0,
+                  "physics.radiation": 600.0
+                },
+                "spearman": null,
+                "status": "FAILED"
+              },
+              "profiler_perturbation": {
+                "class": "LOW",
+                "identity": {
+                  "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                  "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                  "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                "order": [
+                  "profiled-fixture",
+                  "clean-fixture"
+                ],
+                "overhead_fraction": 0.1,
+                "profiled_seconds": 11.0,
+                "status": "PASS",
+                "unprofiled_seconds": 10.0,
+                "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+              },
+              "source_binding": {
+                "candidate_source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "exact_child_run_id": "cpu-complete-census-fixture",
+                "release_binding": {
+                  "release_before_analysis": true,
+                  "run_id": "cpu-complete-census-fixture",
+                  "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+                },
+                "run_id": "cpu-complete-census-fixture",
+                "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "status": "PASS"
+              },
+              "step_classes": {
+                "gap_discriminator": {
+                  "largest_interior_gap_ns": 10000.0,
+                  "reason": "inter-step gaps are not separated from intra-step gaps",
+                  "required_ratio": 1.5,
+                  "smallest_boundary_gap_ns": 10000.0
+                },
+                "reason": "inter-step gaps are not separated from intra-step gaps",
+                "status": "MISSING",
+                "whole_process_fallback_used": false
+              },
+              "summary_crosscheck": {
+                "reason": "kernel summary unavailable",
+                "status": "MISSING"
+              },
+              "taxonomy": {
+                "a6_operator_count": 49,
+                "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+                "attribution_threshold": 0.95,
+                "family_patterns": [
+                  [
+                    "rrtmg",
+                    "physics.radiation"
+                  ],
+                  [
+                    "radiation",
+                    "physics.radiation"
+                  ],
+                  [
+                    "thompson",
+                    "physics.microphysics"
+                  ],
+                  [
+                    "microphys",
+                    "physics.microphysics"
+                  ],
+                  [
+                    "mynn",
+                    "physics.pbl"
+                  ],
+                  [
+                    "pbl",
+                    "physics.pbl"
+                  ],
+                  [
+                    "sfclay",
+                    "physics.surface_layer"
+                  ],
+                  [
+                    "surface_layer",
+                    "physics.surface_layer"
+                  ],
+                  [
+                    "noahmp",
+                    "physics.land_surface"
+                  ],
+                  [
+                    "kf_",
+                    "physics.cumulus"
+                  ],
+                  [
+                    "cumulus",
+                    "physics.cumulus"
+                  ],
+                  [
+                    "gwdo",
+                    "physics.gwd"
+                  ],
+                  [
+                    "advect",
+                    "dycore.advection"
+                  ],
+                  [
+                    "flux5",
+                    "dycore.advection"
+                  ],
+                  [
+                    "thomas",
+                    "dycore.vertical_implicit"
+                  ],
+                  [
+                    "advance_w",
+                    "dycore.vertical_implicit"
+                  ],
+                  [
+                    "calc_coef_w",
+                    "dycore.vertical_implicit"
+                  ],
+                  [
+                    "rhs_ph",
+                    "dycore.geopotential"
+                  ],
+                  [
+                    "small_step_prep",
+                    "dycore.small_step"
+                  ],
+                  [
+                    "calc_p_rho",
+                    "dycore.eos"
+                  ],
+                  [
+                    "diagnose_pressure",
+                    "dycore.eos"
+                  ],
+                  [
+                    "pressure_gradient",
+                    "dycore.pgf"
+                  ],
+                  [
+                    "pgf",
+                    "dycore.pgf"
+                  ],
+                  [
+                    "coriolis",
+                    "dycore.momentum"
+                  ],
+                  [
+                    "curvature",
+                    "dycore.momentum"
+                  ],
+                  [
+                    "mu_continuity",
+                    "dycore.mass"
+                  ],
+                  [
+                    "hybrid",
+                    "dycore.vertical_coordinate"
+                  ],
+                  [
+                    "diffusion",
+                    "dycore.diffusion"
+                  ],
+                  [
+                    "smag",
+                    "dycore.diffusion"
+                  ],
+                  [
+                    "deformation",
+                    "dycore.diffusion"
+                  ],
+                  [
+                    "damp",
+                    "dycore.damping"
+                  ],
+                  [
+                    "smdiv",
+                    "dycore.damping"
+                  ]
+                ],
+                "family_patterns_sha256": "3f869dbf6ee9286a3af8f1a078fafc87b5fa3a8914ee7d0b7d9b1dfc1427a918",
+                "independent_launch_and_time_bars": true,
+                "status": "PASS"
+              },
+              "timing_completeness": {
+                "status": "PASS",
+                "values": {
+                  "cached_readiness": 5.0,
+                  "clean_status": "PASS",
+                  "clean_warm_integration": 10.0,
+                  "cold_readiness": 20.0,
+                  "profiled_warm_integration": 10.0,
+                  "profiler_perturbation": {
+                    "class": "LOW",
+                    "identity": {
+                      "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                      "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                      "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                    },
+                    "order": [
+                      "profiled-fixture",
+                      "clean-fixture"
+                    ],
+                    "overhead_fraction": 0.1,
+                    "profiled_seconds": 11.0,
+                    "status": "PASS",
+                    "unprofiled_seconds": 10.0,
+                    "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+                  }
+                }
+              },
+              "transfer_audit": {
+                "needs": "the integration_scope.v1 schema, production_derived=true, mechanically_verified=true, and an nvtx_pushpop_trace boundary",
+                "reason": "the supplied scope is not a mechanically verified production integration boundary",
+                "status": "MISSING"
+              },
+              "vram": {
+                "allocator": {
+                  "peak_bytes_in_use": 2147483648,
+                  "peak_bytes_reserved": 3221225472
+                },
+                "lock_owner_total_residency": {
+                  "peak_baseline_subtracted_bytes": 3221225472,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sampling_quality": {
+                    "status": "PASS"
+                  },
+                  "schema": "wrf_gpu2.v025.m0.lock_owner_total_residency.v1",
+                  "status": "PASS"
+                },
+                "reason": null,
+                "status": "PASS"
+              }
+            },
+            "resources": {
+              "host_ram": {
+                "evidence": {
+                  "peak_process_tree_rss_bytes": 4294967296,
+                  "run_id": "cpu-complete-census-fixture",
+                  "schema": "wrf_gpu2.v025.m0.process_tree_rss.v1",
+                  "status": "PASS"
+                },
+                "reason": null,
+                "status": "PASS"
+              },
+              "vram": {
+                "allocator": {
+                  "peak_bytes_in_use": 2147483648,
+                  "peak_bytes_reserved": 3221225472
+                },
+                "lock_owner_total_residency": {
+                  "peak_baseline_subtracted_bytes": 3221225472,
+                  "run_id": "cpu-complete-census-fixture",
+                  "sampling_quality": {
+                    "status": "PASS"
+                  },
+                  "schema": "wrf_gpu2.v025.m0.lock_owner_total_residency.v1",
+                  "status": "PASS"
+                },
+                "reason": null,
+                "status": "PASS"
+              }
+            },
+            "run_id": "cpu-complete-census-fixture",
+            "schema": "wrf_gpu2.v025.m0.postlock_kernel_census.v1",
+            "source_binding": {
+              "candidate_source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "exact_child_run_id": "cpu-complete-census-fixture",
+              "release_binding": {
+                "release_before_analysis": true,
+                "run_id": "cpu-complete-census-fixture",
+                "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+              },
+              "run_id": "cpu-complete-census-fixture",
+              "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "status": "PASS"
+            },
+            "status": "BLOCKED",
+            "step_census": {
+              "gap_discriminator": {
+                "largest_interior_gap_ns": 10000.0,
+                "reason": "inter-step gaps are not separated from intra-step gaps",
+                "required_ratio": 1.5,
+                "smallest_boundary_gap_ns": 10000.0
+              },
+              "reason": "inter-step gaps are not separated from intra-step gaps",
+              "status": "MISSING",
+              "whole_process_fallback_used": false
+            },
+            "tail_kernels": [
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.1",
+                "start_ns": 1000000.0
+              },
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.1",
+                "start_ns": 1100000.0
+              },
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.1",
+                "start_ns": 1175000.0
+              },
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.1",
+                "start_ns": 1275000.0
+              },
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.2",
+                "start_ns": 1050000.0
+              },
+              {
+                "duration_ns": 40000.0,
+                "name": "fusion.2",
+                "start_ns": 1225000.0
+              }
+            ],
+            "taxonomy": {
+              "a6_operator_count": 49,
+              "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+              "attribution_threshold": 0.95,
+              "family_patterns": [
+                [
+                  "rrtmg",
+                  "physics.radiation"
+                ],
+                [
+                  "radiation",
+                  "physics.radiation"
+                ],
+                [
+                  "thompson",
+                  "physics.microphysics"
+                ],
+                [
+                  "microphys",
+                  "physics.microphysics"
+                ],
+                [
+                  "mynn",
+                  "physics.pbl"
+                ],
+                [
+                  "pbl",
+                  "physics.pbl"
+                ],
+                [
+                  "sfclay",
+                  "physics.surface_layer"
+                ],
+                [
+                  "surface_layer",
+                  "physics.surface_layer"
+                ],
+                [
+                  "noahmp",
+                  "physics.land_surface"
+                ],
+                [
+                  "kf_",
+                  "physics.cumulus"
+                ],
+                [
+                  "cumulus",
+                  "physics.cumulus"
+                ],
+                [
+                  "gwdo",
+                  "physics.gwd"
+                ],
+                [
+                  "advect",
+                  "dycore.advection"
+                ],
+                [
+                  "flux5",
+                  "dycore.advection"
+                ],
+                [
+                  "thomas",
+                  "dycore.vertical_implicit"
+                ],
+                [
+                  "advance_w",
+                  "dycore.vertical_implicit"
+                ],
+                [
+                  "calc_coef_w",
+                  "dycore.vertical_implicit"
+                ],
+                [
+                  "rhs_ph",
+                  "dycore.geopotential"
+                ],
+                [
+                  "small_step_prep",
+                  "dycore.small_step"
+                ],
+                [
+                  "calc_p_rho",
+                  "dycore.eos"
+                ],
+                [
+                  "diagnose_pressure",
+                  "dycore.eos"
+                ],
+                [
+                  "pressure_gradient",
+                  "dycore.pgf"
+                ],
+                [
+                  "pgf",
+                  "dycore.pgf"
+                ],
+                [
+                  "coriolis",
+                  "dycore.momentum"
+                ],
+                [
+                  "curvature",
+                  "dycore.momentum"
+                ],
+                [
+                  "mu_continuity",
+                  "dycore.mass"
+                ],
+                [
+                  "hybrid",
+                  "dycore.vertical_coordinate"
+                ],
+                [
+                  "diffusion",
+                  "dycore.diffusion"
+                ],
+                [
+                  "smag",
+                  "dycore.diffusion"
+                ],
+                [
+                  "deformation",
+                  "dycore.diffusion"
+                ],
+                [
+                  "damp",
+                  "dycore.damping"
+                ],
+                [
+                  "smdiv",
+                  "dycore.damping"
+                ]
+              ],
+              "family_patterns_sha256": "3f869dbf6ee9286a3af8f1a078fafc87b5fa3a8914ee7d0b7d9b1dfc1427a918",
+              "independent_launch_and_time_bars": true,
+              "status": "PASS"
+            },
+            "timing": {
+              "cached_readiness": 5.0,
+              "clean_status": "PASS",
+              "clean_warm_integration": 10.0,
+              "cold_readiness": 20.0,
+              "profiled_warm_integration": 10.0,
+              "profiler_perturbation": {
+                "class": "LOW",
+                "identity": {
+                  "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                  "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                  "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                "order": [
+                  "profiled-fixture",
+                  "clean-fixture"
+                ],
+                "overhead_fraction": 0.1,
+                "profiled_seconds": 11.0,
+                "status": "PASS",
+                "unprofiled_seconds": 10.0,
+                "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+              }
+            },
+            "top_kernel_distributions": [
+              {
+                "achieved_occupancy": "MISSING",
+                "dram_bytes": "MISSING",
+                "duration_ns": {
+                  "count": 4,
+                  "max": 40000.0,
+                  "median": 40000.0,
+                  "min": 40000.0,
+                  "p95": 40000.0,
+                  "p99": 40000.0,
+                  "status": "PASS",
+                  "sum": 160000.0
+                },
+                "family": "unknown",
+                "l2_bytes": "MISSING",
+                "launches": 4,
+                "name": "fusion.1",
+                "registers_per_thread": "MISSING",
+                "source_location": "MISSING",
+                "stall_distribution": "MISSING"
+              },
+              {
+                "achieved_occupancy": "MISSING",
+                "dram_bytes": "MISSING",
+                "duration_ns": {
+                  "count": 2,
+                  "max": 40000.0,
+                  "median": 40000.0,
+                  "min": 40000.0,
+                  "p95": 40000.0,
+                  "p99": 40000.0,
+                  "status": "PASS",
+                  "sum": 80000.0
+                },
+                "family": "unknown",
+                "l2_bytes": "MISSING",
+                "launches": 2,
+                "name": "fusion.2",
+                "registers_per_thread": "MISSING",
+                "source_location": "MISSING",
+                "stall_distribution": "MISSING"
+              }
+            ],
+            "transfer_audit": {
+              "needs": "the integration_scope.v1 schema, production_derived=true, mechanically_verified=true, and an nvtx_pushpop_trace boundary",
+              "reason": "the supplied scope is not a mechanically verified production integration boundary",
+              "status": "MISSING"
+            }
+          },
+          "status": "BLOCKED",
+          "zero_substituted_for_missing": false
+        },
+        {
+          "inputs": {
+            "reason": "no real W2 device evidence exists at M0; the relation is invoked so its own named refusal, not a substituted zero, records what is missing",
+            "release_path": "/tmp/m0-r4-readiness-k_r97sl7/h2/absent/w2.lock-release.json",
+            "w2_result_path": "/tmp/m0-r4-readiness-k_r97sl7/h2/absent/w2.window.json"
+          },
+          "invoked": true,
+          "is_generic_exception": false,
+          "named_refusal": "lock-release proof is missing/not a regular file: /tmp/m0-r4-readiness-k_r97sl7/h2/absent/w2.lock-release.json",
+          "outcome": "NAMED_DOMAIN_REFUSAL",
+          "refusal_class": "PostlockRefusal",
+          "relation": "m0_postlock_census.analyze_w2",
+          "status": "MISSING",
+          "zero_substituted_for_missing": false
+        }
+      ],
+      "deepest_unique_launch_attribution": {
+        "all_leaves_total_gpu_ops": 2574776,
+        "artifact": "proofs/perf/v015/nsys_steady50_nvtx_gpu_proj_sum.csv",
+        "artifact_class": "REAL_RETAINED",
+        "artifact_sha256": "c54ce8521c5ecfce946bacc735b8392888ea4399d146cce169e7e618d380baf1",
+        "attributed_share": 0.9967859880417166,
+        "binding_numerator": 2567009,
+        "binding_numerator_is_source_named": true,
+        "denominator_total_gpu_ops": 2575286,
+        "disclosure_only_all_leaves_delta": 7767,
+        "reproduces_review10": true,
+        "retired_false_claim": "the earlier statement that Review 10 failed to document the deepest-unique numerator rule is retired: the rule is recorded at .agent/sprints/2026-07-30-v0250-management-review-10/OPUS_MANAGEMENT_REVIEW_10.md:345-354",
+        "review10_documents_the_rule": true,
+        "review10_source": ".agent/sprints/2026-07-30-v0250-management-review-10/OPUS_MANAGEMENT_REVIEW_10.md:345-354",
+        "rows": 513,
+        "rule": "denominator = sum of Total GPU Ops over rows with Avg Range Lvl == 0; binding numerator = sum over deepest-unique leaves (Avg Num Child == 0) whose Range names a jitted source program (contains 'name=jit(')",
+        "source_named_deepest_leaves_total_gpu_ops": 2567009
+      },
+      "event_level_schema_faithful_fixture": {
+        "artifact_class": "SCHEMA_FAITHFUL_FIXTURE",
+        "byte_identical": true,
+        "expected_sha256": "3ef88fe64a2ed4a26eaf2d3b8b43892f9fbb3896df47ed1211c622978352f111",
+        "fixture": "tests/v025/fixtures/m0_w2_event_level_kernel_fixture.sqlite",
+        "fixture_sha256": "3ef88fe64a2ed4a26eaf2d3b8b43892f9fbb3896df47ed1211c622978352f111",
+        "label": "MISSING_REAL_VALIDATION",
+        "rows_parsed_by": [
+          "nvtx_exclusive.parse_pushpop_trace",
+          "parse_profiler.parse_cuda_gpu_trace"
+        ]
+      },
+      "honest_missing_is_expected": "MISSING caused by absent real kernel events or the fixture's missing radiation class is the truthful result at M0 and does not block CPU green; a generic exception, a zero substituted for a missing quantity, or a builder-only parallel parser would",
+      "missing_kernel_table_named_refusal": {
+        "artifact": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.sqlite",
+        "artifact_class": "REAL_RETAINED",
+        "artifact_sha256": "48a44a77d077c814b711df8b63f1adb36cf6e758de27a577a65ebeda68293bf0",
+        "capture_phase": "COMPILE_ONLY",
+        "cupti_activity_tables": [
+          "CUPTI_ACTIVITY_KIND_MEMSET",
+          "CUPTI_ACTIVITY_KIND_OVERHEAD",
+          "CUPTI_ACTIVITY_KIND_RUNTIME",
+          "CUPTI_ACTIVITY_KIND_SYNCHRONIZATION"
+        ],
+        "kernel_table_present": false,
+        "named_refusal": {
+          "is_crash": false,
+          "is_zero": false,
+          "missing_quantity": "CUDA kernel device time",
+          "reason": "nsys_baseline.sqlite is a compile-phase capture with no CUPTI_ACTIVITY_KIND_KERNEL table, so no kernel duration, inter-kernel gap, kernels-per-step or interval-union device-busy quantity can be derived from it",
+          "required_columns": [
+            "start",
+            "end",
+            "deviceId",
+            "streamId",
+            "shortName"
+          ],
+          "required_table": "CUPTI_ACTIVITY_KIND_KERNEL",
+          "status": "MISSING"
+        },
+        "nvtx_event_rows": 157084,
+        "opened_read_only": true,
+        "status": "PASS",
+        "table_count": 58
+      },
+      "production_relations": [
+        "m0_postlock_census.analyze_w2",
+        "m0_postlock_census.build_census",
+        "m0_postlock_census.derive_integration_scope",
+        "m0_postlock_census.derive_step_census",
+        "run_gpu_arm.attribute_device_time"
+      ],
+      "schema": "wrf_gpu2.v025.m0.r4_production_analyser_rehearsal.v1",
+      "status": "PASS"
+    },
+    "H3_PACKET_BINDING": {
+      "commands": {
+        "held_wrapper": {
+          "declared_sha256": "8dd335f066787d934e766b5274fef02c8ea00eff0bcf8d2764e07af763a337ef",
+          "every_repository_path_below_stable_worktree": true,
+          "recomputed_sha256": "8dd335f066787d934e766b5274fef02c8ea00eff0bcf8d2764e07af763a337ef",
+          "reproduces": true,
+          "resolved_paths": [
+            {
+              "below_stable_worktree": true,
+              "is_interpreter": false,
+              "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/with_gpu_lock.sh"
+            },
+            {
+              "below_stable_worktree": false,
+              "is_interpreter": true,
+              "path": "<USER_HOME>/miniconda3/bin/python3.13"
+            },
+            {
+              "below_stable_worktree": true,
+              "is_interpreter": false,
+              "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py"
+            }
+          ]
+        },
+        "outer_owner": {
+          "declared_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+          "every_repository_path_below_stable_worktree": true,
+          "recomputed_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+          "reproduces": true,
+          "resolved_paths": [
+            {
+              "below_stable_worktree": false,
+              "is_interpreter": true,
+              "path": "<USER_HOME>/miniconda3/bin/python3.13"
+            },
+            {
+              "below_stable_worktree": true,
+              "is_interpreter": false,
+              "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py"
+            }
+          ]
+        }
+      },
+      "receipt_is_template_not_authority": true,
+      "schema": "wrf_gpu2.v025.m0.r4_packet_binding.v1",
+      "stable_integration_worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+      "status": "PASS"
+    },
+    "H4_RETAINED_IDENTITY": {
+      "after_aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+      "before_aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+      "changed_files": [],
+      "file_count": 180,
+      "schema": "wrf_gpu2.v025.m0.r4_retained_identity.v1",
+      "status": "PASS"
+    },
+    "H5_DEVICE_DENIAL": {
+      "accelerator_modules_loaded": [],
+      "canonical_ledger": ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_spent.json",
+      "canonical_ledger_untouched": true,
+      "canonical_lock_environment_absent": true,
+      "environment": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "JAX_PLATFORMS": "cpu"
+      },
+      "jax_state": null,
+      "no_coordination_request": true,
+      "no_receipt_created_checked_or_spent_outside_private_roots": true,
+      "schema": "wrf_gpu2.v025.m0.r4_device_denial.v1",
+      "status": "PASS"
+    },
+    "H6_SUITE_AND_TREE": {
+      "full_v025_suite": {
+        "errors": 0,
+        "failures": 0,
+        "junit_path": "proofs/v025/m0/m0_r4_final_readiness_raw/full_v025_suite.junit.xml",
+        "junit_sha256": "7f2e178ada98a83f759edd23d748b4292635d126a1419f304b222a96441af57a",
+        "skipped": 2,
+        "status": "PASS",
+        "tests": 1131,
+        "time_seconds": 111.66
+      },
+      "schema": "wrf_gpu2.v025.m0.r4_suite_and_tree.v1",
+      "src_gpuwrf_tree": {
+        "base_24b128d5": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+        "head": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+        "identical": true
+      },
+      "status": "PASS"
+    }
+  },
+  "generated_at_utc": "2026-08-03T09:56:04.799257+00:00",
+  "implemented_gate_set": [
+    "H0_ROOTS",
+    "H1_REAL_C1_BOUNDARY",
+    "H2_PRODUCTION_ANALYSER",
+    "H3_PACKET_BINDING",
+    "H4_RETAINED_IDENTITY",
+    "H5_DEVICE_DENIAL",
+    "H6_SUITE_AND_TREE"
+  ],
+  "mutations": {
+    "one_mutation_per_gate": true,
+    "results": {
+      "H0_ROOTS": {
+        "fails": true,
+        "mutation": "point the fixed R4 proof root at the occupied proofs/v025/m0/autotune0_three_window",
+        "observed": "BLOCKED",
+        "reason": "the generation is no longer vacant"
+      },
+      "H1_REAL_C1_BOUNDARY": {
+        "fails": true,
+        "mutation": "restore the fixed R3 C1 CPU root in the real _c1_command",
+        "observed": {
+          "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "matches_fixed_r4_root": false,
+          "owner_cpu_preflight_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+          "status": "BLOCKED",
+          "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3"
+        },
+        "reason": "the root the real _c1_command hands the real child is not the fixed R4 root the outer owner pre-staged the CPU arm into, so the in-lock comparison and the pre-lock staging name different generations -- the exact divergence class that blocked 5356a37d"
+      },
+      "H2_PRODUCTION_ANALYSER": {
+        "fails": true,
+        "mutation": "use every leaf as the numerator instead of source-named leaves",
+        "observed": {
+          "binding_numerator": 2574776,
+          "required_numerator": 2567009
+        },
+        "reason": "the binding 99.7% figure is the source-named deepest-leaf numerator 2,567,009, not all leaves 2,574,776"
+      },
+      "H3_PACKET_BINDING": {
+        "fails": true,
+        "mutation": "point the outer owner command at an Opus worker worktree",
+        "observed": {
+          "declared_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+          "every_repository_path_below_stable_worktree": false,
+          "recomputed_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+          "reproduces": true,
+          "resolved_paths": [
+            {
+              "below_stable_worktree": false,
+              "is_interpreter": true,
+              "path": "<USER_HOME>/miniconda3/bin/python3.13"
+            },
+            {
+              "below_stable_worktree": false,
+              "is_interpreter": false,
+              "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-w2-launch-readiness-opus/scripts/v025/m0_three_window_executor.py"
+            }
+          ]
+        },
+        "reason": "an executable path does not resolve below the stable worktree"
+      },
+      "H4_RETAINED_IDENTITY": {
+        "fails": true,
+        "mutation": "flip one retained R3 file hash",
+        "observed": {
+          "expected_aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+          "mutated_aggregate_sha256": "e84264fd520c86e0435b86d14bfa33e158c22c278697301a30d08dcee351de7c"
+        },
+        "reason": "the before/after aggregate no longer matches"
+      },
+      "H5_DEVICE_DENIAL": {
+        "fails": true,
+        "mutation": "load an accelerator module into the readiness process",
+        "observed": [
+          "pynvml"
+        ],
+        "reason": "an accelerator module was reachable during CPU-only work"
+      },
+      "H6_SUITE_AND_TREE": {
+        "fails": true,
+        "mutation": "one failing test in the full tests/v025 JUnit",
+        "observed": "BLOCKED",
+        "reason": "the full suite is not green"
+      }
+    },
+    "status": "PASS"
+  },
+  "packet": {
+    "abort_and_cleanup": {
+      "abort_publishes_a_refusal": true,
+      "every_registered_process_group_swept": true,
+      "forbidden_paths": [
+        "override",
+        "retry",
+        "queueing",
+        "receipt_refund",
+        "threshold_movement",
+        "second_lock_acquisition"
+      ],
+      "no_retry_no_queue_no_refund": true,
+      "preemption_invalidates_the_session": true
+    },
+    "budget": {
+      "global_deadline_seconds": 4500.0,
+      "headroom_seconds": 280,
+      "prelock_cpu_maximum_seconds": 420,
+      "session_ceiling_seconds": 4500,
+      "session_seconds": 4220,
+      "window_deadlines": {
+        "W1": 2160.0,
+        "W2": 1400.0,
+        "W3": 600.0
+      },
+      "within_ceiling": true
+    },
+    "canonical_authority": {
+      "global_spend_ledger": ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_spent.json",
+      "ledger_is_fingerprint_keyed": true,
+      "ledger_is_not_namespaced": true,
+      "zero_wait_lock_wrapper": "scripts/with_gpu_lock.sh"
+    },
+    "checkout": {
+      "branch": "integration/v0250-m0-r4-final-session",
+      "implementation_commit": "84b1c90a74dfd19d23f0131aa9866552766d24b0",
+      "is_worker_worktree": false,
+      "scripts_v025_tree": "b191e2dccc2611189ac371da8789d8b2206e6e10",
+      "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+      "stable_integration_worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session"
+    },
+    "commands": {
+      "hash_rule": "sha256 over the NUL-joined worktree-normalized argv, so the hash binds semantics and the resolved paths bind the checkout",
+      "held_wrapper": {
+        "command": [
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/with_gpu_lock.sh",
+          "--timeout",
+          "0",
+          "--label",
+          "m0-core-w1-w2-w3-session",
+          "--",
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py",
+          "--manager-core-session-held",
+          "--receipt",
+          ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+        ],
+        "command_normalized": [
+          "<REPO>/scripts/with_gpu_lock.sh",
+          "--timeout",
+          "0",
+          "--label",
+          "m0-core-w1-w2-w3-session",
+          "--",
+          "<PYTHON>",
+          "<REPO>/scripts/v025/m0_three_window_executor.py",
+          "--manager-core-session-held",
+          "--receipt",
+          ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+        ],
+        "command_sha256": "8dd335f066787d934e766b5274fef02c8ea00eff0bcf8d2764e07af763a337ef"
+      },
+      "outer_owner": {
+        "command": [
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py",
+          "--manager-core-session-owner",
+          "--receipt",
+          ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+        ],
+        "command_normalized": [
+          "<PYTHON>",
+          "<REPO>/scripts/v025/m0_three_window_executor.py",
+          "--manager-core-session-owner",
+          "--receipt",
+          ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+        ],
+        "command_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac"
+      }
+    },
+    "coordination": {
+      "abridged_or_reused_affirmative_is_invalid": true,
+      "explicit_handoff_required": true,
+      "fresh_unabridged_affirmatives_required_from": [
+        "0:2",
+        "0:3"
+      ],
+      "handoff": "the manager hands the accepted packet to the session operator; the operator runs exactly the two bound commands and nothing else",
+      "override_provenance": {
+        "encoded_authority": [
+          ".agent/skills/locking-gpu/SKILL.md",
+          ".agent/skills/managing-sprints/SKILL.md",
+          ".agent/patches/2026-08-02-gpu-default-owner-server-preempt.md",
+          ".agent/decisions/V0250-ROADMAP.md"
+        ],
+        "kind": "PRINCIPAL_OVERRIDE",
+        "manager_commit": "e7d78373ebae2b530e496df01ed58f50a0158419",
+        "manager_commit_subject": "policy(gpu): assign default owner and server preemption",
+        "received_utc": "2026-08-02",
+        "relayed_by": "ALISIOS manager (0:3)",
+        "replaces": "the recurring local-clock Nightly boundary encoded at c1e446bb",
+        "scope": "GPU ownership and Production preemption only: no M0/M1/M2 gate, target, receipt rule or CPU scope changes, and H0-H6 are unchanged",
+        "verbatim_directive": "0:2 ist au\u00dferhalb Production der dauerhafte Standard-Eigent\u00fcmer. Nightly 20260801_18z besitzt die GPU bis zum exakten RELEASE; bitte nicht claimen. Danach geht sie sofort an 0:2 zur\u00fcck. 0:1 nutzt GPU nur nach expliziter Manager-Freigabe. Ab der n\u00e4chsten Nacht PREEMPT erst auf Server-Anfrage, nicht nach lokaler Uhrzeit."
+      },
+      "owner_priority": {
+        "free_lock_or_idle_device_is_permission": false,
+        "holder": "0:2",
+        "role": "permanent default owner outside Production",
+        "rule": "0:1 may claim only after explicit resource-manager release; a free-looking card is not permission",
+        "wrf_gpu2_claim_requires_explicit_resource_manager_release": true,
+        "wrf_gpu2_takes_no_apparent_gap": true
+      }
+    },
+    "generated_at_utc": "2026-08-03T09:56:04.771182+00:00",
+    "grants_permission": false,
+    "nightly_return": {
+      "default_owner_outside_production": "0:2",
+      "grants_permission": false,
+      "override_provenance": {
+        "encoded_authority": [
+          ".agent/skills/locking-gpu/SKILL.md",
+          ".agent/skills/managing-sprints/SKILL.md",
+          ".agent/patches/2026-08-02-gpu-default-owner-server-preempt.md",
+          ".agent/decisions/V0250-ROADMAP.md"
+        ],
+        "kind": "PRINCIPAL_OVERRIDE",
+        "manager_commit": "e7d78373ebae2b530e496df01ed58f50a0158419",
+        "manager_commit_subject": "policy(gpu): assign default owner and server preemption",
+        "received_utc": "2026-08-02",
+        "relayed_by": "ALISIOS manager (0:3)",
+        "replaces": "the recurring local-clock Nightly boundary encoded at c1e446bb",
+        "scope": "GPU ownership and Production preemption only: no M0/M1/M2 gate, target, receipt rule or CPU scope changes, and H0-H6 are unchanged",
+        "verbatim_directive": "0:2 ist au\u00dferhalb Production der dauerhafte Standard-Eigent\u00fcmer. Nightly 20260801_18z besitzt die GPU bis zum exakten RELEASE; bitte nicht claimen. Danach geht sie sofort an 0:2 zur\u00fcck. 0:1 nutzt GPU nur nach expliziter Manager-Freigabe. Ab der n\u00e4chsten Nacht PREEMPT erst auf Server-Anfrage, nicht nach lokaler Uhrzeit."
+      },
+      "policy": "DEFAULT_OWNER_AND_SERVER_REQUESTED_PRODUCTION_PREEMPTION",
+      "preemption": {
+        "clean_abort_and_process_sweep_required": true,
+        "inferred_from_local_clock": false,
+        "preemption_invalidates_the_session": true,
+        "trigger": "explicit server request"
+      },
+      "production_ownership": {
+        "active_nightly_owns_until": "exact explicit RELEASE",
+        "free_lock_between_stages_is_a_handoff": false,
+        "release_returns_immediately_to": "0:2"
+      },
+      "rule": "outside Production 0:2 is the permanent default owner; an active Nightly owns until its exact RELEASE and then ownership returns immediately to 0:2; 0:1 may claim only after an explicit resource-manager release; lock availability or idleness grants nothing",
+      "supersedes": {
+        "manager_commit": "c1e446bb",
+        "policy": "RECURRING_WEST_NIGHTLY_BOUNDARY",
+        "reason": "principal authority replaced local-clock arbitration with permanent default ownership and server-requested preemption",
+        "status": "RETIRED"
+      },
+      "why": "Production may reserve the device across gaps before its pooled GPU leg acquires the zero-wait lock; a free lock between stages therefore cannot transfer ownership",
+      "wrf_gpu2_claim": {
+        "empty_holder_record_is_permission": false,
+        "free_lock_is_permission": false,
+        "idle_device_is_permission": false,
+        "requires_explicit_resource_manager_release": true
+      },
+      "wrf_gpu2_must_stand_down_without_release": true
+    },
+    "permission_note": "no field in this packet authorises a device action; only manager acceptance after the GPT critic may open fresh coordination",
+    "receipt": {
+      "authority": "the canonical fingerprint-keyed global spend ledger is authoritative; this pathname carries no authority and the session proof must bind the actual receipt bytes",
+      "exists_today": false,
+      "is_template_not_authority": true,
+      "post_hoc_content_fingerprint_proof_required": true,
+      "session_proof_must_bind": [
+        "receipt file sha256",
+        "CoordinationReceipt.fingerprint()",
+        "the ledger spend record keyed by that fingerprint"
+      ],
+      "template_path": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+    },
+    "roots": {
+      "all_absent_today": true,
+      "c1_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+      "pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+      "proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+      "raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+      "session_proof_root": "proofs/v025/m0/autotune0_three_window_r4/held_session"
+    },
+    "schema": "wrf_gpu2.v025.m0.r4_launch_packet.v1",
+    "session": {
+      "label": "m0-core-w1-w2-w3-session",
+      "lock_acquisitions": 1,
+      "receipt_spends": 1,
+      "stage_order": [
+        "W1_COLD_DECISION",
+        "W1_CACHED_AND_CORRECTNESS",
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+        "W2_PROFILED_CAPTURE",
+        "W3_CLEAN_MATCHED_ARM",
+        "LOCK_RELEASE",
+        "POSTLOCK_CPU_ANALYSIS",
+        "POSTLOCK_M0_CORE_FINALIZER"
+      ]
+    },
+    "status": "EXECUTABLE_CONTRACT_NOT_A_PERMISSION"
+  },
+  "packet_sha256": "f473c224b73d43509a322e0dec6e9b521882292b00c5a3fdbc937f840d022edb",
+  "rehearsal_sha256": "89d94f09a557bb3d4a4373cc0d23fda1d8e61d500212dc4332669d503b90592e",
+  "retained_manifest_after": {
+    "aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+    "file_count": 180,
+    "files": {
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AGENT_PROMPT.md": "e8deb46e7ad9b1e404be925ece9179ea2663916e410a492947626d7dbaa775f1",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AMENDMENT_5_M0_CORE_EXIT.md": "ca366529e434c734f1445679edb6e5bbea79c1c5ff5ea4d855aecfbdd193aa81",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AMENDMENT_6_MINIMAL_EXECUTABLE_EXIT.md": "07a8a71797e50266ec41c1ca6098e1151257d4ec2c4701078ca78c8222ea2eb9",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CANCELLATION_MAP_REPORT.md": "21384e8c2c7f7b63f4e9f0693d7ae250e9b7a02edcb8ac1fb12932a09e04cede",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CONTRACT.md": "0ed8cd74306c585c36739d48a47b1dcfd27e8dc14a076f5f2a279570ec5f71c6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CPU_BASELINE_REPORT.md": "318d6a00da92924a20f47e08622a2d7e76d149b80eeaf645c22ab335a4635b1c",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CPU_FIRST_CHECKPOINT.md": "8f04134758c73697e16653d76a70e38d8172ce8f9ea78b6263a857845a690025",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/DISPATCH.md": "96b88477cad9768cbfa19e7d4ded81e28e2e23d6af467bc3bc883e6db98d9bc6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_GATE_REPAIR_PROMPT.md": "031ee8b85dbd084cd028e50b45b93f9d10b09a960b01f979859f51a84338ca79",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_GATE_REPAIR_REPORT.md": "f688fce5a7e7198ce6f1ccb004c839778a8b751467a76024768655c9a4bf49d3",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_TERMINAL_REPORT.md": "782d07e3a24b8d6caa03f1eebece8ab3d5bbdf2052c172aafcf88b29b4fd7917",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_BREACH3_REV6_CRITIC_PROMPT.md": "bd5a71a1d16a139151cde15c024904e4c6dc2ddf9d2dbe08271dbdedb3e0e0d6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_C1_C2_CPU_CLOSURE_CONTRACT.md": "f5cc0c4d59797bd5c0a55cdb513ecc9d3bc2f1218f9168b8719a9f9a43aac414",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_C1_C2_CPU_CLOSURE_REPORT.md": "495cc4f5c40a5a987a98d73b633863c6546f6ab077ed53fa2c3682adf3576ef7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_EXECPLAN.md": "5ad4dc7a2856ad492e06a7a1896caf26196e577b7a0823ea4898d363934bc59d",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_FINAL_CPU_REPAIR_CONTRACT.md": "5e7778d0965f586cc5682448eb5f2696ac001d374f6d4dc31bf8e7f86cd1a816",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_FINAL_CPU_REPAIR_REPORT.md": "08503b5a1c4a84a33b81925c6cf96ec7dff56d241ce6f8f788fb03f5c123d473",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_PROMPT.md": "81d69ffba8e0d7f84ed7be1fc7e4126875d4904a7c4f739c5e8052e7f4be066d",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_REPORT.md": "b47418d78c8aef6ba65bb6d726cae0c70f2d20e6d8efdee365e2568a332426b7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_REV6_REPAIR_PROMPT.md": "a4e9d800fef2cf7d6bb2d35e3257794215362df695c31ff96554486271f68436",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_REV6_REPAIR_REPORT.md": "deaf3b18ec061bf14a90f4b108f08c2a4762005b1a3260ac5cc60962718b37a7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPU_COORDINATION_LOG.md": "6773c2b8d9948362b9447b49667cc35bbc50f4d6f3cf66c7d5d59b9d19b49e43",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KERNEL_CENSUS_REPORT.md": "c9900b13bfff3fff36db32c1c655138517a39aca2139afc7bb2a22519489a7c5",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_ADR036_CRITIC_CONTRACT.md": "dff80827dc4f1d9723dbbb77a97b6ca67be1ba5670bb105e8128b14de47858e5",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_M0_EXACT_BOUNDARY_CLOSURE_CONTRACT.md": "5890836c95852e7c244a8609bd6a96b0513bc896618b7773cc68e0659cb52a82",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_M0_R1_R2_FINAL_REVIEW_CONTRACT.md": "c626bc199a3703eb6b576f74fe299070d6593645acc6697d4d85830312b9174a",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/M0_CORE_W1_W2_W3_SESSION_RECEIPT.json": "ef935e9600c71981c3f5dc560997a8bbcd288ac0d0ba271799674b15fc13ce27",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/MANAGER_C1_C2_AMENDMENT_01.md": "bd8a7a2317384e66717371dfe5bacc19b1c439cef71c8a430de5bd45d4382dac",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/PATCH_PROPOSALS.md": "7c06a39172e2660f505448de6600e59d120d9ff4a71ee26fc8cc38fda133dfcd",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/RESUME.md": "8be9622a9d8434f4637b280d13593e14f851dbfa5d306640ea9076c831bfc5e4",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/STEP0_SHAPE_SWEEP_REPORT.md": "e1d0a8fe347c8106cb390492f0277099b3b23d05392425759809e584557055ce",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/W1_ATTEMPT_REPORT.md": "ffb55980d0ded4a2f4655cbaa04415b81fdbe437f803516307abe28dcfc11b44",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/WORKER_REPORT.md": "b64ba3e566074ebfa6ad9c827dd5e637d077be60473279c362dcba149ff7d174",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_receipt.json": "fde1c531276ad595f21a47037170a99a8601f839e67aba938eb9d79eb6cc75e9",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_spent.json": "fb759f9f935689446b11c0295f6659b8b82e10f3accba1673a56bab7186e2717",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/launch_opus_max.sh": "2605c405a77a52c673afbb9068c455213d379d53491884288fabf04fc18a39d7",
+      "proofs/perf/v015/.gitignore": "63b76dbab3dce07a9a170ef9f0e3eda309ac21a1163d51e06b7a650617305bac",
+      "proofs/perf/v015/_boulac_dense_frozen.py": "db02a135f63b528ea1ce87efa61c976bc284a26527bedd1c704dd3f15bc8984b",
+      "proofs/perf/v015/ab_compare_streamA_vs_streamA_thomas45.json": "d1e4dbbf297875e981f33e0f5f645fb0d558bac3e79a5abec42b51e0f743d934",
+      "proofs/perf/v015/ab_compare_v014_base_vs_streamA.json": "9c3a81cb8ccd5426901d4fc575d0649c1a8d6bf2548b13ee76759681c5e56528",
+      "proofs/perf/v015/ab_compare_v014_base_vs_streamA_final.json": "42a5f606da430369b1f8d17593d032b78ba5dd02f1114d7305076b63c03fabd9",
+      "proofs/perf/v015/ab_s1_base.json": "53d3506613a43c8cf21acefd9e930c0c26be4b1c66af985311525901a75894e4",
+      "proofs/perf/v015/ab_s1_base_dump.json": "4018fbe7fb24d61ce7b21095e8d444b63b9d52159bcbe1f76193778b5869c2ed",
+      "proofs/perf/v015/ab_s1_cbwhile.json": "b94de39c2e42a5afa79b2afd33600609ceec69b59015dac03e57fa7945b5cc79",
+      "proofs/perf/v015/ab_s1_cond16.json": "aaffcb5c5838fcd00eea0744061642211651364a21576d1654462750ace46c8b",
+      "proofs/perf/v015/ab_s1_cond16_fp32boulac.json": "1ee2d85433f738e4049eae3a4c420a0b67f3bac41c143fd9bb567175100010f5",
+      "proofs/perf/v015/ab_s1_flat16.json": "439f7dffe1118c175483b458f0ec357db0329d8b15c7cf7c4654458b13e9d77c",
+      "proofs/perf/v015/ab_s1_flat16_cbnoslice.json": "dc944e390823adc3148fee90bc62549d3c4f76ae166c89248be8a28990112561",
+      "proofs/perf/v015/ab_s1_flat16_cbwhile.json": "02ee3566d2466d2ae0d1014a6dfc95feb55c79a7fde99d19401b158b3cfb9f23",
+      "proofs/perf/v015/ab_streamA.json": "df4f460c05d5c85b437e08741e824284f5e1f2708100452d345f65c584f3e6bd",
+      "proofs/perf/v015/ab_streamA_final.json": "880f440793c98adba71534b98f27dfdd2bc9345f5af1779da7360f3c5fd057ee",
+      "proofs/perf/v015/ab_streamA_thomas45.json": "744793be00813b472f071221137bf5c12cc941c8d250ece02f51e2cec28ebd71",
+      "proofs/perf/v015/ab_v014_base.json": "396105caceedaf5bba42ba0a0e45656f622ff17a6fc6d5d6142688dacad15fed",
+      "proofs/perf/v015/ab_v014base_recheck.json": "c772539d869a30187d5c3ec7823a70334b56744a55b3c96b5cbefac3b817835c",
+      "proofs/perf/v015/ab_v014ref.json": "7f8bcad21c5fcfdb7f0629a2fb2c29e39a85f9135a585e1c95842470c5671f8a",
+      "proofs/perf/v015/ab_v015fin_niter50.json": "b811460970b86245b5b942865d7a57d5ef428dd3debcdded30e9deae3cb78c52",
+      "proofs/perf/v015/analyze_nsys.py": "7afa8f44e993cb0082c65b2dfb2d7cff53f27fcf1a86da42beb6fee27cd40798",
+      "proofs/perf/v015/analyze_nvtx_phases.py": "e66571164485529d5f3b88c068b336cbbd7fc8a20ccbad2ba41b9d36704d3a0f",
+      "proofs/perf/v015/analyze_trace.py": "aa0f2ee7db8fde9f8c566ad62b932dec054e8872081ee271a94aa669c7e8e07f",
+      "proofs/perf/v015/baseline_3h.json": "56c6c8ebb4f016198f6e0f64223834016a21fe94cbac24b1ff47d20c6e03e599",
+      "proofs/perf/v015/boulac_nz_optimization.json": "6c3ca2ef8f68b40b0532c5428f4aa5b878deb9c1d5644da5133f1e1b5d50e5a0",
+      "proofs/perf/v015/boulac_nz_oracle.json": "74d546b61036b5917958e21b9095db5fc771a69443a39b5a937d121c2d7f27cb",
+      "proofs/perf/v015/boulac_nz_oracle.py": "7c96c5f606010afe9da6550dba10e2d3a53a9ff0a8446e8bc102f445bbe2bee8",
+      "proofs/perf/v015/boulac_nz_perf_ab.json": "9290d1feec1361c8ea100023e637d402aeffce69657caadfb174c2c6e9256ae4",
+      "proofs/perf/v015/boulac_nz_perf_ab.py": "5d4d056e48ca32964881178087f8da6e4832e228b6180506df593bb7f44e2773",
+      "proofs/perf/v015/boulac_nz_perf_dense.json": "0f8af508b1a171ea29963c6036d9e428d4202c7f329d042444b10bb3e454a1cf",
+      "proofs/perf/v015/boulac_nz_perf_scan.json": "7c835e49b7ca043ce608de6f938b34f47283bb3e4ad103aaefe357bee73c0c8f",
+      "proofs/perf/v015/boulac_nz_tiered_dump.py": "4d90e40b18a68306b6f7aebca939413bab2bb5f9b2d86ee56e8987279da00b42",
+      "proofs/perf/v015/build_kernel_characterization.py": "2f2b1273a7392e7a3bbf520ea8d5e7148bd721c2eff105f986881e3f8d709151",
+      "proofs/perf/v015/cmdbuf_capture_default_nested.json": "fdd606aa1dec5985ce850488ffeaa6a2eed8423167b60a276b5eed870e34ef70",
+      "proofs/perf/v015/cmdbuf_capture_while_nested.json": "ba958864c6600f01901d0f34f9ae4f1c8c7c3d80949b1d567b7b4a9c8948b5fb",
+      "proofs/perf/v015/cmdbuf_capture_whileunroll_nested.json": "32ae32a03d196fb1e5a920a8eb4a51305b606613ef6a2387e441fee9a6f597da",
+      "proofs/perf/v015/cmdbuf_capture_whilevlog_nested.json": "2c9f0e6eb730b11e68d07a5b97bb8cd0d9fbaa11015f1d8dd56de9dc1d6fd394",
+      "proofs/perf/v015/compare_ab.py": "3e47bead0dde53d13da3d371bd0f2e29a2c243886fff1ead9d46f70dd806b08d",
+      "proofs/perf/v015/compare_tiered_identity.py": "400bc2e48bcb8538a2c34ea60dc682737361762c1cb931c65316d431560e404e",
+      "proofs/perf/v015/cond_niter_oracle.json": "8efc20f4733888a66c952df67cb86f10caa0dcac6be617f1c8b20d94ce0825be",
+      "proofs/perf/v015/cond_niter_oracle.py": "71eb0933c43aca8e5f4f0403f9675689236a089edcbf0c6a50486127e91b7910",
+      "proofs/perf/v015/d01_roofline_costonly.py": "273575bf35dae5b75f3712c434517cb4f4c581399eab3c04075e48286d6b48c7",
+      "proofs/perf/v015/d01_warm_step.py": "37f89c4f6747c1ce18ebc70b5e3fcd0f5f7d4e372386fcc867bc214f498d0a88",
+      "proofs/perf/v015/default_flip_v015.json": "87669cf31655eeb0c88821c3db5da7c0dc4faf20301bbf787258ee9289690c6e",
+      "proofs/perf/v015/fp32_boulac_forecast_identity.py": "f273097c5a6ea17c1c2f071fde063dd077ffa93feb5c6c0b0d0fb88042215d1b",
+      "proofs/perf/v015/fp32_definitive_verdict.json": "325cf2136f4c5a089972572c10dc80f78f1497d584a15671547e4a30c023556f",
+      "proofs/perf/v015/fp32_oracles/advance_w_fp32_oracle.json": "1ef9e075337435a4a114a0c72f01096d297cbef6d0fa517272e994034353a15f",
+      "proofs/perf/v015/fp32_oracles/advance_w_fp32_oracle.py": "b7a85cb01d0c90b38918c282819a331b634d0ee655ce3758bcb694d543188b39",
+      "proofs/perf/v015/fp32_oracles/calc_p_rho_fp32_oracle.json": "f395cc24c777bce96e6ecff61682b0d8b17d1292b0839c776d730e37c4d1b799",
+      "proofs/perf/v015/fp32_oracles/calc_p_rho_fp32_oracle.py": "232d54dbb1687e0831e5b25be5e0ec374a20624a847953c61819ef0e912e75fa",
+      "proofs/perf/v015/fp32_oracles/divergence_growth_metric.py": "c913fc3dba896fd821c6a7c4f6075b2be7caad823e370f7794ceda6834bd67b6",
+      "proofs/perf/v015/fp32_oracles/divergence_growth_metric_demo.json": "35895823fe6fd3b3ac9f0ab4e89207b2b870bd66da04122d4b36996c178fe126",
+      "proofs/perf/v015/fp32_oracles/fp32_mixed_branch_static_audit.json": "0ceb742fffabffacf8c0b3043ab4eeb2d105eaba5e27e43bfa61e931c4603cd6",
+      "proofs/perf/v015/fp32_oracles/fp32_mixed_branch_static_audit.py": "5ebf3d79d343d81fb572625550337218887897d833ff1f2443050e814609badb",
+      "proofs/perf/v015/fp32_oracles/v015_long_horizon_divergence_verdict.py": "5b44623c82ea3184056f5ba7fdc84f319cd04041557d87b70c852aa719532729",
+      "proofs/perf/v015/kernel_characterization.json": "c8be9166c7f8f8127ff3aaca633edf27a82f2e1c82f42c2dd057e2657e1f4824",
+      "proofs/perf/v015/kernel_characterization.md": "d52f6aed0e0581b136c83d438ab483b6f2bb6583434ccb4f490f8607de4ac53a",
+      "proofs/perf/v015/km_bench/grid_scaling.json": "d03ae90279cbf5439af1b44f6a7bbba2a7c6dbf7c8c9ad22d6152499fd7affcb",
+      "proofs/perf/v015/km_bench/grid_scaling_bench.py": "0e6714aa2e8fcb3bca4c153128bb6f28371394b1f0140887c3029c8b8b8734a2",
+      "proofs/perf/v015/km_bench/km_feasibility_verdict.json": "634860899bfdbed3d70307fc95a53a0ff368f1119dbc085ea7d0deb52de2ab89",
+      "proofs/perf/v015/km_bench/largest_probe.json": "b43bb4bff0f2f5865bf6281dc1614d7ac366be06d907a1f11c5a5fe040b577a9",
+      "proofs/perf/v015/km_bench/largest_probe_tiled_finite.json": "07bbcd441580ba406544eb5d428a0d34c45edcd200409c22248b39eaf6dd8852",
+      "proofs/perf/v015/km_bench/localize_18g_alloc.json": "112973e20ba9bf1785c44741d65079485ddfd4e4d9ef3466c25c36a188510fe1",
+      "proofs/perf/v015/km_bench/localize_18g_alloc.py": "2fab85630e1aeaba1bae9d93f6f6e67f599e3c570382f16dff81d4fad84cafb3",
+      "proofs/perf/v015/km_bench/mp_tiling_identity.py": "2df347c981402cc8eb9f25afd4985e2df80e9f6457b8fb6902e380a5722e9cd3",
+      "proofs/perf/v015/km_bench/mp_tiling_identity_fit.json": "502769c56f5b4758e496a7493307f01785550a1326de49bffa1c643efbe5a078",
+      "proofs/perf/v015/km_bench/mp_tiling_identity_fit.py": "54eac3161767ffeaa66485a3d93a7344f97a5d9880c7a79c7ea16f4daf701553",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.json": "42457ea1fe08ec306b068022b06b7ff95b60c5d2f5f05208257d76d6f13c3fc9",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.py": "e1bb4cdd397af6cb02a21348683a79aed2a4fc4589ca697fc1b07ba236a0b88d",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.txt": "ec878bb993bbd9d970888ec442d20f6907c6a7904bd519571a98633e4b508d26",
+      "proofs/perf/v015/km_bench/probe_ceiling_tiled.py": "4d47008d28d5c5b0325e44ee7cd9324f5f9e7cb3ce9d94e82068a8a608739c10",
+      "proofs/perf/v015/km_bench/probe_largest.py": "df290cf9dd41bb0c03175890920edbb17d938bbbfb73655918fc90746e00c87e",
+      "proofs/perf/v015/km_bench/probe_largest_tiled.py": "9bd67bbffe6f9e45be84ee31e4e3563a859276480d587cf5552c1d703acbcd67",
+      "proofs/perf/v015/km_bench/probe_largest_tiled_finite.py": "4bbb458423594c1b1a3732aba42bb54d45effa6b1bcaa4bc68b1a86ff31e4871",
+      "proofs/perf/v015/km_bench/vram_18g_localization.json": "d656ca065be4c15c4959e1a49e8e05abbc757b79893dce16af39c908de83fccc",
+      "proofs/perf/v015/km_bench/vram_18g_top_allocations_base.txt": "03d7796e1b4b3c7df0001a678258c11b5f3c6bc98124ea7c18d17e9de3978046",
+      "proofs/perf/v015/km_bench/vram_buffer_probe.py": "c5dcf795576c37bae52586376cfba96e80de571c39dbffcc4d25732881532406",
+      "proofs/perf/v015/km_bench/vram_ceiling_findings.json": "d3cf5b5337747f0f23f36e7a173e889e6d53f83cfc4f7c8fa5e8fe60841e9568",
+      "proofs/perf/v015/km_bench/vram_ceiling_tiled.json": "ff0f50676fd30517e6779da40d31f427bd551d03a4c1dce72005a07fc63faf85",
+      "proofs/perf/v015/micro_kernels.json": "0ef2e5a73da6bf9309cb522da654cb88b450d07e916bdbccad6e97190bd76041",
+      "proofs/perf/v015/mynn_fp32_boulac_ab.json": "38580c5dc739a64373d7d254ced56251c3b2bc80ae8cca93a110ab33e1aa9eec",
+      "proofs/perf/v015/mynn_fp32_boulac_ab.py": "54e946e59bc7ddfcc7feb18d5a70121cae5dca136ffbc216e78e9ef669bb9176",
+      "proofs/perf/v015/mynn_isolation_ab.json": "ccf7e7612be1cded396453ea4dbafca557e2027adb4bfeff3b941e1e44eac218",
+      "proofs/perf/v015/mynn_isolation_ab.py": "92e2901d184526ec59d58686c16892cf67c094e1a8b32fd36a71b6976ca9747f",
+      "proofs/perf/v015/niter16_revalidation.json": "17a5bb2326e49ea71a0d4b2d313c0c68bec984aae8b193b99fff0394613afaf3",
+      "proofs/perf/v015/nsys_base_v014_cuda_api_sum.csv": "f36ddba26686f578df7aeb83868d40a36d94639efe1cf630b6460d3d60f85734",
+      "proofs/perf/v015/nsys_base_v014_cuda_gpu_kern_sum.csv": "ca95b28fcf9585ae91b10621f9ba4937d1ce020ba2362ce3602a38228f9110d6",
+      "proofs/perf/v015/nsys_base_v014_nvtx_gpu_proj_sum.csv": "c74442ad9baef5a2816c51a7bc42982195b3d1f18eafd8395651d82560138663",
+      "proofs/perf/v015/nsys_cond16only_noflags_cuda_api_sum.csv": "7acd337fa82682db001269df67041e20210899a206e807c93dc0405673bf41ed",
+      "proofs/perf/v015/nsys_cond16only_noflags_cuda_gpu_kern_sum.csv": "4d81654b3e7edab58db8b92b4fb85747e358596fae472f8f8186673feda6cf57",
+      "proofs/perf/v015/nsys_cond16only_noflags_nvtx_gpu_proj_sum.csv": "49876c87c7233b3608dec68d6819184c2cd44117b99d24cf1acff7a111861920",
+      "proofs/perf/v015/nsys_flat16_cbwhile_cuda_api_sum.csv": "feff9e041ff6aadc294166a4a76dca4491eb7c90d276c5f107b3d18c0bb948b7",
+      "proofs/perf/v015/nsys_flat16_cbwhile_cuda_gpu_kern_sum.csv": "7fd39c66ccb17c971f6b6c9a7387358e1b2834b9a6f877d7ca3c4ebdeff6950c",
+      "proofs/perf/v015/nsys_flat16_cbwhile_nvtx_gpu_proj_sum.csv": "53e9079581867497aef44df2649bc64bd46391feb8b8d415ef9a91aeaaae4df0",
+      "proofs/perf/v015/nsys_post_cuda_api_sum.csv": "62110f9816831f3c86a7881e197a6936b2d5af5654292dd5c258016f6ca77d1d",
+      "proofs/perf/v015/nsys_post_cuda_gpu_kern_sum.csv": "7994fa9bdcc35a77885379bee14faf2f0b0c6cf6f5015c57907ca6c553436860",
+      "proofs/perf/v015/nsys_post_nvtx_gpu_proj_sum.csv": "4f6dd1319fd41100411bbfb47f64671668686855d6c99355acc82c092ea2031a",
+      "proofs/perf/v015/nsys_steady50_cuda_api_sum.csv": "7227ff6c76759afa7275e6a6578c41810825a42251d7e2aaa96da3f26091a24f",
+      "proofs/perf/v015/nsys_steady50_cuda_gpu_kern_sum.csv": "075ddc321c66c3f5b50462616914b9430463947c5d2b8705a416b23d8b38705c",
+      "proofs/perf/v015/nsys_steady50_cuda_gpu_sum.csv": "cbeffe639ed38dabb37bfb7662a1f4c31b3f08f7d0eee0eb32b65d8963a7f70d",
+      "proofs/perf/v015/nsys_steady50_nvtx_gpu_proj_sum.csv": "c54ce8521c5ecfce946bacc735b8392888ea4399d146cce169e7e618d380baf1",
+      "proofs/perf/v015/nsys_summary.json": "e49178f62dd722a3cbacb9d670596b1dcd62eb9b17a207ad7309af9e32a66b4c",
+      "proofs/perf/v015/nvtx_phase_attribution.json": "8cc6969257883c2e92234b7500c9222646163d3598a5342673a44c21aead0b64",
+      "proofs/perf/v015/nvtx_phase_attribution_post.json": "62a239e2f03290eb421dc3a00e99412e43490e628cd88f4b0d3d2cb9607dcbfd",
+      "proofs/perf/v015/perf_fix_findings.json": "b4592ce598b5f85b2418a16013f4693a24bd2fd0e993ad032dfd3c2f5a10de91",
+      "proofs/perf/v015/probe_ab_identity.py": "dcc7dda6ebc53a77273d6997752f6d6dbdfde0e996fededd99b9b2b8950bd9f3",
+      "proofs/perf/v015/probe_baseline_3h.py": "aa9a2976a1d92f7c9d8acc77215d490b3e720dfc3955bce51ce45d9383f3739f",
+      "proofs/perf/v015/probe_cmdbuf_capture.py": "8e945f4180734f388c576b7fcadc42b31a82de0fe1c104174791a4c686943fb9",
+      "proofs/perf/v015/probe_micro_kernels.py": "d034f988ebea1e5954df51646b146b063e4ad2e031d597663b74f36bcbc2dd5f",
+      "proofs/perf/v015/probe_nsys_steady.py": "9f1ea0706cddd1c179741176d418c33d1208a97e719e53fdd5e9fc902ecf4067",
+      "proofs/perf/v015/probe_trace_steady.py": "4fc58c50db0371fadfc9c98a09b810af1bbb4b08bf50ed1ece50605ca4c4e1ad",
+      "proofs/perf/v015/run_1c_tiered_merged.sh": "931363707c1a0dcba2f779c8a9f2638ba035bcd96677c7ef4a310f52ac7e2d70",
+      "proofs/perf/v015/run_nsys_capture.sh": "84f89640a0e143b9fb53f681a8ddbf1dc0c3ac5781e54fb1f3814a998d1ffde8",
+      "proofs/perf/v015/s1_bisect_walls.json": "52c1aedc9ea74303a41d76560580ac2cc2ec948632694f15b2c92f0e858c2ba3",
+      "proofs/perf/v015/s1_findings.py": "ae081bacfada243787eca262c5404b226b4c5d49658b84bebd96034d34135e15",
+      "proofs/perf/v015/s1_host_removal_findings.json": "2f2ce0c7115a9cc57639203c8b2c2a520f112d2f7116a8ef21db92be291cbaba",
+      "proofs/perf/v015/steady_power_samples.txt": "559df0c5aa626b5bbe1bbbed03d55bb996d743d83f44eb756eba145daa4dce32",
+      "proofs/perf/v015/tiered_gate_combined.json": "9f989a6b10d8dc5708a1753c778fc0ffd2d5661f8af132d8e3128b096778d937",
+      "proofs/perf/v015/tiered_gate_cond16.json": "c00484f6d23e16361a90d807c9caf234c383412d60ecf19dac20ea8625255ede",
+      "proofs/perf/v015/tiered_gate_flat16_cbwhile.json": "37aa85ecaaf92f80b23c092659aba4e4c7e9e3d37423844913f8775672fafde9",
+      "proofs/perf/v015/tiered_gate_merged.json": "d46cc39a19b47ef5fedb00628c891aa932e15c7e04912ed07a7c1359efe4aacb",
+      "proofs/perf/v015/trace_kernel_summary.json": "45d0a45367791837664aeb05296a748751c968040239df6b497928f3e28de732",
+      "proofs/perf/v015/trace_steady.json": "e8bae6255078100d37c9cf81e67f90a556838b396b1ca6fcfa71a0c43ff60e43",
+      "proofs/perf/v015/v3_steady_api_window.json": "3f4ddebb8df1ed21843a7c520cb891e78a5ac5a3f1ebf79ef110ee46a84e4f87",
+      "proofs/perf/v015/viability/VIABILITY_VERDICT.json": "a1554f1bf020032d4f0d5629bdcedd8a40007d690841f51e368b88482d5a2a0e",
+      "proofs/perf/v015/viability/fp32_fp64_ab_bench.py": "fb9145bf96454af3aac2cef522d5c506868cefb6965eb86ce323300ecd8e5ca5",
+      "proofs/perf/v015/viability/fp32_fp64_ladder.json": "435589334ef0752df09a5a027ff11c76b0586a8e58a8c6330720a7cea3fd9493",
+      "proofs/perf/v015/viability/fp32_fp64_ladder.py": "1a8a5b6c40449cb24844e757ec66f89985b3d5e143db6c44a5c17a3c6dbbc69e",
+      "proofs/perf/v015/viability/grid_scaling_committed_baseline.json": "d03ae90279cbf5439af1b44f6a7bbba2a7c6dbf7c8c9ad22d6152499fd7affcb",
+      "proofs/perf/v015/viability/true_fp32_cost_proxy.json": "dacd02a976215d9c5b22602990c21dd41c774e5ccb50683e50e8f4eec9495ae6",
+      "proofs/perf/v015/viability/true_fp32_cost_proxy.py": "4df87ec41cf75117424b9cfe68575fc4a539b7b79121448cc346a64759ba54a7",
+      "proofs/perf/v015/vram_ladder_shipgate.json": "aea42db8b58d4a3e1d1395392bb57186ec577e37ad45d02b5704ac75c291244f",
+      "proofs/perf/v015/vram_mp_tiling.json": "8cd1596aed14c98c167df0c92cade6e24f3d4cc0d17fb1cb19bbcc8410b4731c",
+      "proofs/v025/m0/autotune0_three_window/held_session/capture_capability_declaration.json": "a1a62d7ac3c9b60680efef8916bd696780309f54d9f184924a29ea8788f078c0",
+      "proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.json": "f89c9be17149d82fc343122de3dffc065f550b3bfb6b49faa5a03458823b8935",
+      "proofs/v025/m0/autotune0_three_window/held_session/cpu_real_boundary_preflight.json": "db95824bf8951d5ec9d62bc6003c7b02bba029b18681e27c2bb7fa97b74dd3b0",
+      "proofs/v025/m0/autotune0_three_window/held_session/held_wrapper.log": "426192ec751c8068af10f6684e1a93fd3ef3920c4adff87ee3a8139d59545ebd",
+      "proofs/v025/m0/autotune0_three_window/held_session/m0_core_session.json": "fe3a614f6d138d72cd448d8c6c5d83c3ef18c7745e9f63fa46a63a44d7c0585a",
+      "proofs/v025/m0/autotune0_three_window/held_session/m0_core_terminal.json": "927f8ff186dc1a918c75783c41369bb59b344984fbce6847618141b09cd4c8d4",
+      "proofs/v025/m0/autotune0_three_window/held_session/prelock_revalidation.json": "24e9667a4c5f54e408b925c2e5ccd028c5bfe6d249dcca2c3f76eaeba08fa7c0",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_lock_release.json": "670f1ace4a2ce425029748a51a34931f4cde519133f446c8860f76d18740e101",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_owner.json": "18414465a772dc8d66aa9c5e6fa80e20795ab4186bf0c9e74a83e85fbd1380a5",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_preflight_identity.json": "12727462d36abf18c8d556bbc003dac3f01561674dae18fc98948f6c376ea33c",
+      "proofs/v025/m0/autotune0_three_window/held_session/wrf_source_authority.json": "1c996a03b841eb927577b439f9be91e3e417785257fa01d75f7da0c83cf76d65"
+    },
+    "roots": [
+      "proofs/v025/m0/autotune0_three_window",
+      ".agent/sprints/2026-07-27-v0250-m0-setup",
+      "proofs/perf/v015"
+    ],
+    "schema": "wrf_gpu2.v025.m0.retained_r3_manifest.v1"
+  },
+  "retained_manifest_before": {
+    "aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+    "file_count": 180,
+    "files": {
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AGENT_PROMPT.md": "e8deb46e7ad9b1e404be925ece9179ea2663916e410a492947626d7dbaa775f1",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AMENDMENT_5_M0_CORE_EXIT.md": "ca366529e434c734f1445679edb6e5bbea79c1c5ff5ea4d855aecfbdd193aa81",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/AMENDMENT_6_MINIMAL_EXECUTABLE_EXIT.md": "07a8a71797e50266ec41c1ca6098e1151257d4ec2c4701078ca78c8222ea2eb9",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CANCELLATION_MAP_REPORT.md": "21384e8c2c7f7b63f4e9f0693d7ae250e9b7a02edcb8ac1fb12932a09e04cede",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CONTRACT.md": "0ed8cd74306c585c36739d48a47b1dcfd27e8dc14a076f5f2a279570ec5f71c6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CPU_BASELINE_REPORT.md": "318d6a00da92924a20f47e08622a2d7e76d149b80eeaf645c22ab335a4635b1c",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/CPU_FIRST_CHECKPOINT.md": "8f04134758c73697e16653d76a70e38d8172ce8f9ea78b6263a857845a690025",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/DISPATCH.md": "96b88477cad9768cbfa19e7d4ded81e28e2e23d6af467bc3bc883e6db98d9bc6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_GATE_REPAIR_PROMPT.md": "031ee8b85dbd084cd028e50b45b93f9d10b09a960b01f979859f51a84338ca79",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_GATE_REPAIR_REPORT.md": "f688fce5a7e7198ce6f1ccb004c839778a8b751467a76024768655c9a4bf49d3",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_ADR036_TERMINAL_REPORT.md": "782d07e3a24b8d6caa03f1eebece8ab3d5bbdf2052c172aafcf88b29b4fd7917",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_BREACH3_REV6_CRITIC_PROMPT.md": "bd5a71a1d16a139151cde15c024904e4c6dc2ddf9d2dbe08271dbdedb3e0e0d6",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_C1_C2_CPU_CLOSURE_CONTRACT.md": "f5cc0c4d59797bd5c0a55cdb513ecc9d3bc2f1218f9168b8719a9f9a43aac414",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_C1_C2_CPU_CLOSURE_REPORT.md": "495cc4f5c40a5a987a98d73b633863c6546f6ab077ed53fa2c3682adf3576ef7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_EXECPLAN.md": "5ad4dc7a2856ad492e06a7a1896caf26196e577b7a0823ea4898d363934bc59d",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_FINAL_CPU_REPAIR_CONTRACT.md": "5e7778d0965f586cc5682448eb5f2696ac001d374f6d4dc31bf8e7f86cd1a816",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_FINAL_CPU_REPAIR_REPORT.md": "08503b5a1c4a84a33b81925c6cf96ec7dff56d241ce6f8f788fb03f5c123d473",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_PROMPT.md": "81d69ffba8e0d7f84ed7be1fc7e4126875d4904a7c4f739c5e8052e7f4be066d",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_M0_EXACT_BOUNDARY_REPORT.md": "b47418d78c8aef6ba65bb6d726cae0c70f2d20e6d8efdee365e2568a332426b7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_REV6_REPAIR_PROMPT.md": "a4e9d800fef2cf7d6bb2d35e3257794215362df695c31ff96554486271f68436",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPT_REV6_REPAIR_REPORT.md": "deaf3b18ec061bf14a90f4b108f08c2a4762005b1a3260ac5cc60962718b37a7",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/GPU_COORDINATION_LOG.md": "6773c2b8d9948362b9447b49667cc35bbc50f4d6f3cf66c7d5d59b9d19b49e43",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KERNEL_CENSUS_REPORT.md": "c9900b13bfff3fff36db32c1c655138517a39aca2139afc7bb2a22519489a7c5",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_ADR036_CRITIC_CONTRACT.md": "dff80827dc4f1d9723dbbb77a97b6ca67be1ba5670bb105e8128b14de47858e5",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_M0_EXACT_BOUNDARY_CLOSURE_CONTRACT.md": "5890836c95852e7c244a8609bd6a96b0513bc896618b7773cc68e0659cb52a82",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/KIMI_M0_R1_R2_FINAL_REVIEW_CONTRACT.md": "c626bc199a3703eb6b576f74fe299070d6593645acc6697d4d85830312b9174a",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/M0_CORE_W1_W2_W3_SESSION_RECEIPT.json": "ef935e9600c71981c3f5dc560997a8bbcd288ac0d0ba271799674b15fc13ce27",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/MANAGER_C1_C2_AMENDMENT_01.md": "bd8a7a2317384e66717371dfe5bacc19b1c439cef71c8a430de5bd45d4382dac",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/PATCH_PROPOSALS.md": "7c06a39172e2660f505448de6600e59d120d9ff4a71ee26fc8cc38fda133dfcd",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/RESUME.md": "8be9622a9d8434f4637b280d13593e14f851dbfa5d306640ea9076c831bfc5e4",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/STEP0_SHAPE_SWEEP_REPORT.md": "e1d0a8fe347c8106cb390492f0277099b3b23d05392425759809e584557055ce",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/W1_ATTEMPT_REPORT.md": "ffb55980d0ded4a2f4655cbaa04415b81fdbe437f803516307abe28dcfc11b44",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/WORKER_REPORT.md": "b64ba3e566074ebfa6ad9c827dd5e637d077be60473279c362dcba149ff7d174",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_receipt.json": "fde1c531276ad595f21a47037170a99a8601f839e67aba938eb9d79eb6cc75e9",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/gpu_coordination_spent.json": "fb759f9f935689446b11c0295f6659b8b82e10f3accba1673a56bab7186e2717",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/launch_opus_max.sh": "2605c405a77a52c673afbb9068c455213d379d53491884288fabf04fc18a39d7",
+      "proofs/perf/v015/.gitignore": "63b76dbab3dce07a9a170ef9f0e3eda309ac21a1163d51e06b7a650617305bac",
+      "proofs/perf/v015/_boulac_dense_frozen.py": "db02a135f63b528ea1ce87efa61c976bc284a26527bedd1c704dd3f15bc8984b",
+      "proofs/perf/v015/ab_compare_streamA_vs_streamA_thomas45.json": "d1e4dbbf297875e981f33e0f5f645fb0d558bac3e79a5abec42b51e0f743d934",
+      "proofs/perf/v015/ab_compare_v014_base_vs_streamA.json": "9c3a81cb8ccd5426901d4fc575d0649c1a8d6bf2548b13ee76759681c5e56528",
+      "proofs/perf/v015/ab_compare_v014_base_vs_streamA_final.json": "42a5f606da430369b1f8d17593d032b78ba5dd02f1114d7305076b63c03fabd9",
+      "proofs/perf/v015/ab_s1_base.json": "53d3506613a43c8cf21acefd9e930c0c26be4b1c66af985311525901a75894e4",
+      "proofs/perf/v015/ab_s1_base_dump.json": "4018fbe7fb24d61ce7b21095e8d444b63b9d52159bcbe1f76193778b5869c2ed",
+      "proofs/perf/v015/ab_s1_cbwhile.json": "b94de39c2e42a5afa79b2afd33600609ceec69b59015dac03e57fa7945b5cc79",
+      "proofs/perf/v015/ab_s1_cond16.json": "aaffcb5c5838fcd00eea0744061642211651364a21576d1654462750ace46c8b",
+      "proofs/perf/v015/ab_s1_cond16_fp32boulac.json": "1ee2d85433f738e4049eae3a4c420a0b67f3bac41c143fd9bb567175100010f5",
+      "proofs/perf/v015/ab_s1_flat16.json": "439f7dffe1118c175483b458f0ec357db0329d8b15c7cf7c4654458b13e9d77c",
+      "proofs/perf/v015/ab_s1_flat16_cbnoslice.json": "dc944e390823adc3148fee90bc62549d3c4f76ae166c89248be8a28990112561",
+      "proofs/perf/v015/ab_s1_flat16_cbwhile.json": "02ee3566d2466d2ae0d1014a6dfc95feb55c79a7fde99d19401b158b3cfb9f23",
+      "proofs/perf/v015/ab_streamA.json": "df4f460c05d5c85b437e08741e824284f5e1f2708100452d345f65c584f3e6bd",
+      "proofs/perf/v015/ab_streamA_final.json": "880f440793c98adba71534b98f27dfdd2bc9345f5af1779da7360f3c5fd057ee",
+      "proofs/perf/v015/ab_streamA_thomas45.json": "744793be00813b472f071221137bf5c12cc941c8d250ece02f51e2cec28ebd71",
+      "proofs/perf/v015/ab_v014_base.json": "396105caceedaf5bba42ba0a0e45656f622ff17a6fc6d5d6142688dacad15fed",
+      "proofs/perf/v015/ab_v014base_recheck.json": "c772539d869a30187d5c3ec7823a70334b56744a55b3c96b5cbefac3b817835c",
+      "proofs/perf/v015/ab_v014ref.json": "7f8bcad21c5fcfdb7f0629a2fb2c29e39a85f9135a585e1c95842470c5671f8a",
+      "proofs/perf/v015/ab_v015fin_niter50.json": "b811460970b86245b5b942865d7a57d5ef428dd3debcdded30e9deae3cb78c52",
+      "proofs/perf/v015/analyze_nsys.py": "7afa8f44e993cb0082c65b2dfb2d7cff53f27fcf1a86da42beb6fee27cd40798",
+      "proofs/perf/v015/analyze_nvtx_phases.py": "e66571164485529d5f3b88c068b336cbbd7fc8a20ccbad2ba41b9d36704d3a0f",
+      "proofs/perf/v015/analyze_trace.py": "aa0f2ee7db8fde9f8c566ad62b932dec054e8872081ee271a94aa669c7e8e07f",
+      "proofs/perf/v015/baseline_3h.json": "56c6c8ebb4f016198f6e0f64223834016a21fe94cbac24b1ff47d20c6e03e599",
+      "proofs/perf/v015/boulac_nz_optimization.json": "6c3ca2ef8f68b40b0532c5428f4aa5b878deb9c1d5644da5133f1e1b5d50e5a0",
+      "proofs/perf/v015/boulac_nz_oracle.json": "74d546b61036b5917958e21b9095db5fc771a69443a39b5a937d121c2d7f27cb",
+      "proofs/perf/v015/boulac_nz_oracle.py": "7c96c5f606010afe9da6550dba10e2d3a53a9ff0a8446e8bc102f445bbe2bee8",
+      "proofs/perf/v015/boulac_nz_perf_ab.json": "9290d1feec1361c8ea100023e637d402aeffce69657caadfb174c2c6e9256ae4",
+      "proofs/perf/v015/boulac_nz_perf_ab.py": "5d4d056e48ca32964881178087f8da6e4832e228b6180506df593bb7f44e2773",
+      "proofs/perf/v015/boulac_nz_perf_dense.json": "0f8af508b1a171ea29963c6036d9e428d4202c7f329d042444b10bb3e454a1cf",
+      "proofs/perf/v015/boulac_nz_perf_scan.json": "7c835e49b7ca043ce608de6f938b34f47283bb3e4ad103aaefe357bee73c0c8f",
+      "proofs/perf/v015/boulac_nz_tiered_dump.py": "4d90e40b18a68306b6f7aebca939413bab2bb5f9b2d86ee56e8987279da00b42",
+      "proofs/perf/v015/build_kernel_characterization.py": "2f2b1273a7392e7a3bbf520ea8d5e7148bd721c2eff105f986881e3f8d709151",
+      "proofs/perf/v015/cmdbuf_capture_default_nested.json": "fdd606aa1dec5985ce850488ffeaa6a2eed8423167b60a276b5eed870e34ef70",
+      "proofs/perf/v015/cmdbuf_capture_while_nested.json": "ba958864c6600f01901d0f34f9ae4f1c8c7c3d80949b1d567b7b4a9c8948b5fb",
+      "proofs/perf/v015/cmdbuf_capture_whileunroll_nested.json": "32ae32a03d196fb1e5a920a8eb4a51305b606613ef6a2387e441fee9a6f597da",
+      "proofs/perf/v015/cmdbuf_capture_whilevlog_nested.json": "2c9f0e6eb730b11e68d07a5b97bb8cd0d9fbaa11015f1d8dd56de9dc1d6fd394",
+      "proofs/perf/v015/compare_ab.py": "3e47bead0dde53d13da3d371bd0f2e29a2c243886fff1ead9d46f70dd806b08d",
+      "proofs/perf/v015/compare_tiered_identity.py": "400bc2e48bcb8538a2c34ea60dc682737361762c1cb931c65316d431560e404e",
+      "proofs/perf/v015/cond_niter_oracle.json": "8efc20f4733888a66c952df67cb86f10caa0dcac6be617f1c8b20d94ce0825be",
+      "proofs/perf/v015/cond_niter_oracle.py": "71eb0933c43aca8e5f4f0403f9675689236a089edcbf0c6a50486127e91b7910",
+      "proofs/perf/v015/d01_roofline_costonly.py": "273575bf35dae5b75f3712c434517cb4f4c581399eab3c04075e48286d6b48c7",
+      "proofs/perf/v015/d01_warm_step.py": "37f89c4f6747c1ce18ebc70b5e3fcd0f5f7d4e372386fcc867bc214f498d0a88",
+      "proofs/perf/v015/default_flip_v015.json": "87669cf31655eeb0c88821c3db5da7c0dc4faf20301bbf787258ee9289690c6e",
+      "proofs/perf/v015/fp32_boulac_forecast_identity.py": "f273097c5a6ea17c1c2f071fde063dd077ffa93feb5c6c0b0d0fb88042215d1b",
+      "proofs/perf/v015/fp32_definitive_verdict.json": "325cf2136f4c5a089972572c10dc80f78f1497d584a15671547e4a30c023556f",
+      "proofs/perf/v015/fp32_oracles/advance_w_fp32_oracle.json": "1ef9e075337435a4a114a0c72f01096d297cbef6d0fa517272e994034353a15f",
+      "proofs/perf/v015/fp32_oracles/advance_w_fp32_oracle.py": "b7a85cb01d0c90b38918c282819a331b634d0ee655ce3758bcb694d543188b39",
+      "proofs/perf/v015/fp32_oracles/calc_p_rho_fp32_oracle.json": "f395cc24c777bce96e6ecff61682b0d8b17d1292b0839c776d730e37c4d1b799",
+      "proofs/perf/v015/fp32_oracles/calc_p_rho_fp32_oracle.py": "232d54dbb1687e0831e5b25be5e0ec374a20624a847953c61819ef0e912e75fa",
+      "proofs/perf/v015/fp32_oracles/divergence_growth_metric.py": "c913fc3dba896fd821c6a7c4f6075b2be7caad823e370f7794ceda6834bd67b6",
+      "proofs/perf/v015/fp32_oracles/divergence_growth_metric_demo.json": "35895823fe6fd3b3ac9f0ab4e89207b2b870bd66da04122d4b36996c178fe126",
+      "proofs/perf/v015/fp32_oracles/fp32_mixed_branch_static_audit.json": "0ceb742fffabffacf8c0b3043ab4eeb2d105eaba5e27e43bfa61e931c4603cd6",
+      "proofs/perf/v015/fp32_oracles/fp32_mixed_branch_static_audit.py": "5ebf3d79d343d81fb572625550337218887897d833ff1f2443050e814609badb",
+      "proofs/perf/v015/fp32_oracles/v015_long_horizon_divergence_verdict.py": "5b44623c82ea3184056f5ba7fdc84f319cd04041557d87b70c852aa719532729",
+      "proofs/perf/v015/kernel_characterization.json": "c8be9166c7f8f8127ff3aaca633edf27a82f2e1c82f42c2dd057e2657e1f4824",
+      "proofs/perf/v015/kernel_characterization.md": "d52f6aed0e0581b136c83d438ab483b6f2bb6583434ccb4f490f8607de4ac53a",
+      "proofs/perf/v015/km_bench/grid_scaling.json": "d03ae90279cbf5439af1b44f6a7bbba2a7c6dbf7c8c9ad22d6152499fd7affcb",
+      "proofs/perf/v015/km_bench/grid_scaling_bench.py": "0e6714aa2e8fcb3bca4c153128bb6f28371394b1f0140887c3029c8b8b8734a2",
+      "proofs/perf/v015/km_bench/km_feasibility_verdict.json": "634860899bfdbed3d70307fc95a53a0ff368f1119dbc085ea7d0deb52de2ab89",
+      "proofs/perf/v015/km_bench/largest_probe.json": "b43bb4bff0f2f5865bf6281dc1614d7ac366be06d907a1f11c5a5fe040b577a9",
+      "proofs/perf/v015/km_bench/largest_probe_tiled_finite.json": "07bbcd441580ba406544eb5d428a0d34c45edcd200409c22248b39eaf6dd8852",
+      "proofs/perf/v015/km_bench/localize_18g_alloc.json": "112973e20ba9bf1785c44741d65079485ddfd4e4d9ef3466c25c36a188510fe1",
+      "proofs/perf/v015/km_bench/localize_18g_alloc.py": "2fab85630e1aeaba1bae9d93f6f6e67f599e3c570382f16dff81d4fad84cafb3",
+      "proofs/perf/v015/km_bench/mp_tiling_identity.py": "2df347c981402cc8eb9f25afd4985e2df80e9f6457b8fb6902e380a5722e9cd3",
+      "proofs/perf/v015/km_bench/mp_tiling_identity_fit.json": "502769c56f5b4758e496a7493307f01785550a1326de49bffa1c643efbe5a078",
+      "proofs/perf/v015/km_bench/mp_tiling_identity_fit.py": "54eac3161767ffeaa66485a3d93a7344f97a5d9880c7a79c7ea16f4daf701553",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.json": "42457ea1fe08ec306b068022b06b7ff95b60c5d2f5f05208257d76d6f13c3fc9",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.py": "e1bb4cdd397af6cb02a21348683a79aed2a4fc4589ca697fc1b07ba236a0b88d",
+      "proofs/perf/v015/km_bench/oom_breakdown_167904.txt": "ec878bb993bbd9d970888ec442d20f6907c6a7904bd519571a98633e4b508d26",
+      "proofs/perf/v015/km_bench/probe_ceiling_tiled.py": "4d47008d28d5c5b0325e44ee7cd9324f5f9e7cb3ce9d94e82068a8a608739c10",
+      "proofs/perf/v015/km_bench/probe_largest.py": "df290cf9dd41bb0c03175890920edbb17d938bbbfb73655918fc90746e00c87e",
+      "proofs/perf/v015/km_bench/probe_largest_tiled.py": "9bd67bbffe6f9e45be84ee31e4e3563a859276480d587cf5552c1d703acbcd67",
+      "proofs/perf/v015/km_bench/probe_largest_tiled_finite.py": "4bbb458423594c1b1a3732aba42bb54d45effa6b1bcaa4bc68b1a86ff31e4871",
+      "proofs/perf/v015/km_bench/vram_18g_localization.json": "d656ca065be4c15c4959e1a49e8e05abbc757b79893dce16af39c908de83fccc",
+      "proofs/perf/v015/km_bench/vram_18g_top_allocations_base.txt": "03d7796e1b4b3c7df0001a678258c11b5f3c6bc98124ea7c18d17e9de3978046",
+      "proofs/perf/v015/km_bench/vram_buffer_probe.py": "c5dcf795576c37bae52586376cfba96e80de571c39dbffcc4d25732881532406",
+      "proofs/perf/v015/km_bench/vram_ceiling_findings.json": "d3cf5b5337747f0f23f36e7a173e889e6d53f83cfc4f7c8fa5e8fe60841e9568",
+      "proofs/perf/v015/km_bench/vram_ceiling_tiled.json": "ff0f50676fd30517e6779da40d31f427bd551d03a4c1dce72005a07fc63faf85",
+      "proofs/perf/v015/micro_kernels.json": "0ef2e5a73da6bf9309cb522da654cb88b450d07e916bdbccad6e97190bd76041",
+      "proofs/perf/v015/mynn_fp32_boulac_ab.json": "38580c5dc739a64373d7d254ced56251c3b2bc80ae8cca93a110ab33e1aa9eec",
+      "proofs/perf/v015/mynn_fp32_boulac_ab.py": "54e946e59bc7ddfcc7feb18d5a70121cae5dca136ffbc216e78e9ef669bb9176",
+      "proofs/perf/v015/mynn_isolation_ab.json": "ccf7e7612be1cded396453ea4dbafca557e2027adb4bfeff3b941e1e44eac218",
+      "proofs/perf/v015/mynn_isolation_ab.py": "92e2901d184526ec59d58686c16892cf67c094e1a8b32fd36a71b6976ca9747f",
+      "proofs/perf/v015/niter16_revalidation.json": "17a5bb2326e49ea71a0d4b2d313c0c68bec984aae8b193b99fff0394613afaf3",
+      "proofs/perf/v015/nsys_base_v014_cuda_api_sum.csv": "f36ddba26686f578df7aeb83868d40a36d94639efe1cf630b6460d3d60f85734",
+      "proofs/perf/v015/nsys_base_v014_cuda_gpu_kern_sum.csv": "ca95b28fcf9585ae91b10621f9ba4937d1ce020ba2362ce3602a38228f9110d6",
+      "proofs/perf/v015/nsys_base_v014_nvtx_gpu_proj_sum.csv": "c74442ad9baef5a2816c51a7bc42982195b3d1f18eafd8395651d82560138663",
+      "proofs/perf/v015/nsys_cond16only_noflags_cuda_api_sum.csv": "7acd337fa82682db001269df67041e20210899a206e807c93dc0405673bf41ed",
+      "proofs/perf/v015/nsys_cond16only_noflags_cuda_gpu_kern_sum.csv": "4d81654b3e7edab58db8b92b4fb85747e358596fae472f8f8186673feda6cf57",
+      "proofs/perf/v015/nsys_cond16only_noflags_nvtx_gpu_proj_sum.csv": "49876c87c7233b3608dec68d6819184c2cd44117b99d24cf1acff7a111861920",
+      "proofs/perf/v015/nsys_flat16_cbwhile_cuda_api_sum.csv": "feff9e041ff6aadc294166a4a76dca4491eb7c90d276c5f107b3d18c0bb948b7",
+      "proofs/perf/v015/nsys_flat16_cbwhile_cuda_gpu_kern_sum.csv": "7fd39c66ccb17c971f6b6c9a7387358e1b2834b9a6f877d7ca3c4ebdeff6950c",
+      "proofs/perf/v015/nsys_flat16_cbwhile_nvtx_gpu_proj_sum.csv": "53e9079581867497aef44df2649bc64bd46391feb8b8d415ef9a91aeaaae4df0",
+      "proofs/perf/v015/nsys_post_cuda_api_sum.csv": "62110f9816831f3c86a7881e197a6936b2d5af5654292dd5c258016f6ca77d1d",
+      "proofs/perf/v015/nsys_post_cuda_gpu_kern_sum.csv": "7994fa9bdcc35a77885379bee14faf2f0b0c6cf6f5015c57907ca6c553436860",
+      "proofs/perf/v015/nsys_post_nvtx_gpu_proj_sum.csv": "4f6dd1319fd41100411bbfb47f64671668686855d6c99355acc82c092ea2031a",
+      "proofs/perf/v015/nsys_steady50_cuda_api_sum.csv": "7227ff6c76759afa7275e6a6578c41810825a42251d7e2aaa96da3f26091a24f",
+      "proofs/perf/v015/nsys_steady50_cuda_gpu_kern_sum.csv": "075ddc321c66c3f5b50462616914b9430463947c5d2b8705a416b23d8b38705c",
+      "proofs/perf/v015/nsys_steady50_cuda_gpu_sum.csv": "cbeffe639ed38dabb37bfb7662a1f4c31b3f08f7d0eee0eb32b65d8963a7f70d",
+      "proofs/perf/v015/nsys_steady50_nvtx_gpu_proj_sum.csv": "c54ce8521c5ecfce946bacc735b8392888ea4399d146cce169e7e618d380baf1",
+      "proofs/perf/v015/nsys_summary.json": "e49178f62dd722a3cbacb9d670596b1dcd62eb9b17a207ad7309af9e32a66b4c",
+      "proofs/perf/v015/nvtx_phase_attribution.json": "8cc6969257883c2e92234b7500c9222646163d3598a5342673a44c21aead0b64",
+      "proofs/perf/v015/nvtx_phase_attribution_post.json": "62a239e2f03290eb421dc3a00e99412e43490e628cd88f4b0d3d2cb9607dcbfd",
+      "proofs/perf/v015/perf_fix_findings.json": "b4592ce598b5f85b2418a16013f4693a24bd2fd0e993ad032dfd3c2f5a10de91",
+      "proofs/perf/v015/probe_ab_identity.py": "dcc7dda6ebc53a77273d6997752f6d6dbdfde0e996fededd99b9b2b8950bd9f3",
+      "proofs/perf/v015/probe_baseline_3h.py": "aa9a2976a1d92f7c9d8acc77215d490b3e720dfc3955bce51ce45d9383f3739f",
+      "proofs/perf/v015/probe_cmdbuf_capture.py": "8e945f4180734f388c576b7fcadc42b31a82de0fe1c104174791a4c686943fb9",
+      "proofs/perf/v015/probe_micro_kernels.py": "d034f988ebea1e5954df51646b146b063e4ad2e031d597663b74f36bcbc2dd5f",
+      "proofs/perf/v015/probe_nsys_steady.py": "9f1ea0706cddd1c179741176d418c33d1208a97e719e53fdd5e9fc902ecf4067",
+      "proofs/perf/v015/probe_trace_steady.py": "4fc58c50db0371fadfc9c98a09b810af1bbb4b08bf50ed1ece50605ca4c4e1ad",
+      "proofs/perf/v015/run_1c_tiered_merged.sh": "931363707c1a0dcba2f779c8a9f2638ba035bcd96677c7ef4a310f52ac7e2d70",
+      "proofs/perf/v015/run_nsys_capture.sh": "84f89640a0e143b9fb53f681a8ddbf1dc0c3ac5781e54fb1f3814a998d1ffde8",
+      "proofs/perf/v015/s1_bisect_walls.json": "52c1aedc9ea74303a41d76560580ac2cc2ec948632694f15b2c92f0e858c2ba3",
+      "proofs/perf/v015/s1_findings.py": "ae081bacfada243787eca262c5404b226b4c5d49658b84bebd96034d34135e15",
+      "proofs/perf/v015/s1_host_removal_findings.json": "2f2ce0c7115a9cc57639203c8b2c2a520f112d2f7116a8ef21db92be291cbaba",
+      "proofs/perf/v015/steady_power_samples.txt": "559df0c5aa626b5bbe1bbbed03d55bb996d743d83f44eb756eba145daa4dce32",
+      "proofs/perf/v015/tiered_gate_combined.json": "9f989a6b10d8dc5708a1753c778fc0ffd2d5661f8af132d8e3128b096778d937",
+      "proofs/perf/v015/tiered_gate_cond16.json": "c00484f6d23e16361a90d807c9caf234c383412d60ecf19dac20ea8625255ede",
+      "proofs/perf/v015/tiered_gate_flat16_cbwhile.json": "37aa85ecaaf92f80b23c092659aba4e4c7e9e3d37423844913f8775672fafde9",
+      "proofs/perf/v015/tiered_gate_merged.json": "d46cc39a19b47ef5fedb00628c891aa932e15c7e04912ed07a7c1359efe4aacb",
+      "proofs/perf/v015/trace_kernel_summary.json": "45d0a45367791837664aeb05296a748751c968040239df6b497928f3e28de732",
+      "proofs/perf/v015/trace_steady.json": "e8bae6255078100d37c9cf81e67f90a556838b396b1ca6fcfa71a0c43ff60e43",
+      "proofs/perf/v015/v3_steady_api_window.json": "3f4ddebb8df1ed21843a7c520cb891e78a5ac5a3f1ebf79ef110ee46a84e4f87",
+      "proofs/perf/v015/viability/VIABILITY_VERDICT.json": "a1554f1bf020032d4f0d5629bdcedd8a40007d690841f51e368b88482d5a2a0e",
+      "proofs/perf/v015/viability/fp32_fp64_ab_bench.py": "fb9145bf96454af3aac2cef522d5c506868cefb6965eb86ce323300ecd8e5ca5",
+      "proofs/perf/v015/viability/fp32_fp64_ladder.json": "435589334ef0752df09a5a027ff11c76b0586a8e58a8c6330720a7cea3fd9493",
+      "proofs/perf/v015/viability/fp32_fp64_ladder.py": "1a8a5b6c40449cb24844e757ec66f89985b3d5e143db6c44a5c17a3c6dbbc69e",
+      "proofs/perf/v015/viability/grid_scaling_committed_baseline.json": "d03ae90279cbf5439af1b44f6a7bbba2a7c6dbf7c8c9ad22d6152499fd7affcb",
+      "proofs/perf/v015/viability/true_fp32_cost_proxy.json": "dacd02a976215d9c5b22602990c21dd41c774e5ccb50683e50e8f4eec9495ae6",
+      "proofs/perf/v015/viability/true_fp32_cost_proxy.py": "4df87ec41cf75117424b9cfe68575fc4a539b7b79121448cc346a64759ba54a7",
+      "proofs/perf/v015/vram_ladder_shipgate.json": "aea42db8b58d4a3e1d1395392bb57186ec577e37ad45d02b5704ac75c291244f",
+      "proofs/perf/v015/vram_mp_tiling.json": "8cd1596aed14c98c167df0c92cade6e24f3d4cc0d17fb1cb19bbcc8410b4731c",
+      "proofs/v025/m0/autotune0_three_window/held_session/capture_capability_declaration.json": "a1a62d7ac3c9b60680efef8916bd696780309f54d9f184924a29ea8788f078c0",
+      "proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.json": "f89c9be17149d82fc343122de3dffc065f550b3bfb6b49faa5a03458823b8935",
+      "proofs/v025/m0/autotune0_three_window/held_session/cpu_real_boundary_preflight.json": "db95824bf8951d5ec9d62bc6003c7b02bba029b18681e27c2bb7fa97b74dd3b0",
+      "proofs/v025/m0/autotune0_three_window/held_session/held_wrapper.log": "426192ec751c8068af10f6684e1a93fd3ef3920c4adff87ee3a8139d59545ebd",
+      "proofs/v025/m0/autotune0_three_window/held_session/m0_core_session.json": "fe3a614f6d138d72cd448d8c6c5d83c3ef18c7745e9f63fa46a63a44d7c0585a",
+      "proofs/v025/m0/autotune0_three_window/held_session/m0_core_terminal.json": "927f8ff186dc1a918c75783c41369bb59b344984fbce6847618141b09cd4c8d4",
+      "proofs/v025/m0/autotune0_three_window/held_session/prelock_revalidation.json": "24e9667a4c5f54e408b925c2e5ccd028c5bfe6d249dcca2c3f76eaeba08fa7c0",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_lock_release.json": "670f1ace4a2ce425029748a51a34931f4cde519133f446c8860f76d18740e101",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_owner.json": "18414465a772dc8d66aa9c5e6fa80e20795ab4186bf0c9e74a83e85fbd1380a5",
+      "proofs/v025/m0/autotune0_three_window/held_session/session_preflight_identity.json": "12727462d36abf18c8d556bbc003dac3f01561674dae18fc98948f6c376ea33c",
+      "proofs/v025/m0/autotune0_three_window/held_session/wrf_source_authority.json": "1c996a03b841eb927577b439f9be91e3e417785257fa01d75f7da0c83cf76d65"
+    },
+    "roots": [
+      "proofs/v025/m0/autotune0_three_window",
+      ".agent/sprints/2026-07-27-v0250-m0-setup",
+      "proofs/perf/v015"
+    ],
+    "schema": "wrf_gpu2.v025.m0.retained_r3_manifest.v1"
+  },
+  "schema": "wrf_gpu2.v025.m0.r4_final_readiness.v1",
+  "verdict": "CPU_M0_R4_FINAL_READINESS_GREEN"
+}

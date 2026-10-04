@@ -1,0 +1,16 @@
+{
+  "cols": 1690000,
+  "dt_s": 6.0,
+  "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Failed to allocate request for 26.82GiB (28793963752B) on device ordinal 0",
+  "force_fp64": false,
+  "hours": 0.0033333333333333335,
+  "nx": 1300,
+  "ny": 1300,
+  "nz": 50,
+  "ok": false,
+  "oom": true,
+  "peak_vram_mib": null,
+  "regime": "aggressive",
+  "state_dtype_fraction_fp32": 0.5475236329446047,
+  "steps": 2
+}

@@ -1,0 +1,38 @@
+CANARY FINAL TRAINING GRID — SELECTION (2026-06-14, MEASURED, FINAL)
+=====================================================================
+
+VERDICT: GRID_OK_ALL_ISLANDS_1KM (qualified — at a measured-fit trimmed size)
+
+SELECTED GRID: AC1_FIT — single contiguous 1 km ALL-ISLANDS Canary grid
+  mass dims = 520 x 278 x 45  (e_we=521, e_sn=279, e_vert=45)
+  dx=dy=1000 m ; center 28.535 N, -15.755 W
+  ncols ~144,560 ; covers all 7 islands + Lobos ; buffer ~25 km E/W, ~37 km N/S.
+  precision = fp64 ONLY (gated-fp32 nonfinite at 1 km) ; REQUIRES GPUWRF_MYNN_BOULAC_ONZ=1.
+
+WHY THIS SIZE (MEASURED, RTX 5090, branch worker/perf/v017-rc @fa0ca55c, BouLac-ONZ fp64):
+  - FIT ceiling MEASURED at ~147,456 cols (18.7-18.8 GiB peak), OOM from ~167,400 cols.
+  - AC1_SMALL (560x280=156,800) is in the OOM-RISK band -> NOT safe.
+  - AC1_BALANCED (640x320=204,800) and AC1_WIDE OOM outright.
+  - AC1_FIT (520x278=144,560) sits just under the fit ceiling, covers all islands.
+  - CAVEAT: the fit was on a LIGHT step (no GWD/NoahMP/LBC); a full-physics from-IC
+    AC1_FIT run must be confirmed <~28 GiB before mass production (else drop to
+    AC1_MIN 490x230=112,700 or fall back to OPER_NESTED).
+
+CPU-reference-needs: A from-scratch all-islands 1 km CPU-WRF reference is impractical
+  (single-Tenerife 1 km L3 24 h already ~6.9 h/30 cores; all-islands ~10-15x area;
+  operational WRF MPI build currently DOWN). RECOMMENDED CPU reference path for the gate:
+  (1) result-equivalence of GPU AC1_FIT vs the EXISTING d03/d04/d05 1 km CPU-WRF labels
+      in their overlap windows -- use case
+      <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_distinct_surface_gate_20260607T003529Z
+      (full 9/3/1 CPU wrfout already on disk; no new CPU run needed); PLUS
+  (2) GPU self-consistency + finiteness + conservation gate on AC1_FIT (min bar); OR
+  (3) ONE-OFF CPU-WRF 3-dom 9/3/1(AC1_FIT 521x279) reference for a single case once the
+      WRF build is restored -- gate only, never routine labels.
+  Note: OPER_NESTED 1 km nests do NOT cover Fuerteventura/Lanzarote -> only AC1 labels them.
+
+FALLBACK if AC1_FIT full-physics OOMs: OPER_NESTED 5-dom (9km+3km+three 1km nests),
+  forcing+complete 24h ref already exist; train d02->d03, d02->d04, d02->d05 shared
+  backbone + per-nest terrain heads.
+
+Full report + proofs: wrf_downscale/reports/final_canary_training_grid_20260614.md
+Measured ladders: <DATA_ROOT>/wrf_downscale/grid_feasibility/final_canary_training_grid/

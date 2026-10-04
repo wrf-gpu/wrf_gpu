@@ -1,0 +1,68 @@
+{
+  "schema": "wrf_gpu2.v025.m0.kimi_r1_r2_final_review_reproduction.v1",
+  "date": "2026-07-28",
+  "reviewer": "Kimi K3 thinking-max (independent, device-denied)",
+  "candidate": "1f77ac012db0416289861f19501db39634a76930",
+  "candidate_worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair",
+  "execution_control": {
+    "env": {"JAX_PLATFORMS": "cpu", "CUDA_VISIBLE_DEVICES": ""},
+    "affinity": "taskset -c 0-3",
+    "python": "<USER_HOME>/miniconda3/bin/python (3.13.11, JAX 0.10.0)",
+    "device_actions": "none: no GPU query, nvidia-smi, accelerator import, compile, run, lock, receipt, readiness probe, or coordination",
+    "candidate_edits": "none; all probes ran in /tmp or against /tmp outputs"
+  },
+  "commands": [
+    {"cmd": "git log -1 / git status --porcelain / git rev-parse HEAD:src/gpuwrf", "rc": 0, "result": "exact commit 1f77ac01; clean tree before and after; src/gpuwrf tree a6885ceded260df2f5777d7366d75a5d38947cb7"},
+    {"cmd": "git diff --exit-code dedff5bb..HEAD -- src/gpuwrf", "rc": 0, "result": "production tree byte-identical to frozen starting tree"},
+    {"cmd": "pytest -q tests/v025 -p no:cacheprovider", "rc": 0, "result": "723 passed, 2 skipped in 56.54s; matches worker claim 723/2 in 66.70s; skips are the two intentional device-coordination guards"},
+    {"cmd": "refresh_m0_exact_boundary_evidence.py --input proofs/v025/m0/m0_exact_boundary_cpu_evidence.json --output /tmp/kimi_r1r2_refresh_check.json", "rc": 0, "result": "source_contract PASS, plan_contract PASS, mutations 18/18 rejected, exact_child_unchanged true, zero accelerator modules imported, device_touched false"},
+    {"cmd": "pytest -q tests/v025/test_m0_exact_boundary.py -k 'parent_death or death_guard or kill'", "rc": 0, "result": "5 passed (incl. sigterm/sigint/abrupt-sigkill kill-tree cases), 41 deselected"},
+    {"cmd": "independent kill-tree attack /tmp/kimi_r2_attack/attack.py (SIGTERM, SIGINT, SIGKILL; trapping child + trapping grandchild; guard driven directly like _launch_authorized_child)", "rc": 0, "result": "3/3 PASS: parent, guard, child, grandchild all dead; no RESULT_ARTIFACT; no LATER_STAGE_MARKER"},
+    {"cmd": "independent pdeathsig race attack /tmp/kimi_r2_attack/race_attack.py (parent killed immediately after Popen, before guard can arm; 15 trials SIGKILL + 15 SIGTERM)", "rc": 0, "result": "30/30 PASS: zero leaked guard/child/grandchild processes, no artifacts"},
+    {"cmd": "guard launch overhead microbenchmark (15 pairs, /usr/bin/true, warm)", "rc": 0, "result": "direct median 1.541 ms; guarded median 26.030 ms; fixed overhead 24.489 ms (worker measured 20.582 ms; same O(1) magnitude, Python exec dominated)"},
+    {"cmd": "sha256sum of 4 committed proof objects", "rc": 0, "result": "4/4 match GPT final repair report (fresh evidence ac596a79…, fresh junit b3f1c0d9…, archived pre-repair 3f07f72d… == its content-hash filename, pallas manifest 3f840cca…)"},
+    {"cmd": "stat+sha256 of reference cache entry <DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1/jit__run_forecast_operational_jit-5ca1a338…-cache", "rc": 0, "result": "226417734 bytes, sha256 d05078bc… — matches builder pins; entry mtime 2026-07-28T02:56:49Z predates archived pre-repair proof 2026-07-28T05:32:00Z"},
+    {"cmd": "independent recompute of 8 EXPECTED_FUNCTION_AST_SHA256 pins via child._verified_product_functions()", "rc": 0, "result": "8/8 MATCH on live production tree"},
+    {"cmd": "archived vs fresh six-way digest comparison", "rc": 0, "result": "arguments 55e2e600…, lowered 25be79df…/222295811 B, result 41ea21b8… identical in both proofs; all six checks true in both"},
+    {"cmd": "validate_fast_pair.py --require-fresh-cpu / validate_pallas_viability.py / validate_kernel_census.py / validate_m0_manifest.py", "rc": 1, "result": "all honest structured MISSING/FAIL; no device economy claimed"},
+    {"cmd": "m0_three_window_executor.py --dry-run-all", "rc": 0, "result": "status CPU_EXACT_BOUNDARY_GREEN_GPU_WINDOWS_MISSING; gpu_evidence_status MISSING; 10 CPU dry stubs; receipts_read/consumed []; device_touched false"},
+    {"cmd": "git diff --stat e36e6615..HEAD -- gpu coordination files", "rc": 0, "result": "GPU_COORDINATION_LOG.md, gpu_coordination_receipt.json, gpu_coordination_spent.json untouched"}
+  ],
+  "r1_clock_purity": {
+    "structural": "source contract pins ordered fragments lower→compile→ready-stamp→argument identity→lowered identity→invocation branch; child runtime refuses non-monotonic proof endpoints and any warm call before lowered_identity_end; validator re-checks sorted endpoints and zero-tolerance second identities",
+    "mutation_attacks": ["argument_identity_inside_readiness_clock", "lowered_identity_inside_readiness_clock", "readiness_event_before_compile", "final_synchronization_removed", "parent_death_arm_removed", "parent_death_group_kill_weakened"],
+    "all_18_mutations_rejected": true,
+    "clock_accounting": {
+      "status": "PASS",
+      "pre_repair_readiness_seconds": 81.242206654,
+      "post_repair_readiness_seconds": 63.541230471,
+      "readiness_reduction_seconds": 17.700976183,
+      "required_reduction_seconds": 1.061064665,
+      "comparison_tolerance_seconds": 0.0
+    },
+    "like_for_like": {
+      "host": "same workstation (both proofs generated on it)",
+      "toolchain": "JAX 0.10.0 / Python 3.13.11 in both archived and fresh proof",
+      "cache_mode_path_lock_entry": "GPUWRF_JAX_CACHE=1, LOCK=1, same dir, entry bytes/hash pinned and verified on disk; unchanged_during_oracle true",
+      "endpoint": "identical definition 'parent process launch -> exact lower().compile() return' in both proofs",
+      "affinity": "not machine-recorded in either proof (finding f2); non-load-bearing given 16.64 s margin beyond required delta"
+    },
+    "no_cache_substitution": true,
+    "no_phase_subtraction": true,
+    "no_tolerance_weakening": true
+  },
+  "r2_parent_death": {
+    "guard": "scripts/v025/m0_parent_death_guard.py: session leader; double-ppid check + PR_SET_PDEATHSIG(SIGTERM) closes launch-to-prctl race; SIGTERM/SIGINT/SIGHUP handler killpg(SIGKILL); child armed SIGKILL-on-guard-death via single-threaded guard-side preexec_fn; manager uses no preexec_fn (fork-with-threads hazard avoided)",
+    "committed_tests": "3 signal cases through real _launch_authorized_child with receipt spend: no survivor, no result artifact, no later-stage marker, receipt rejects SPENT",
+    "independent_attacks": "3/3 signal cases + 30/30 immediate-death race trials, zero survivors",
+    "receipt_spent_preserved": true,
+    "zero_wait_lock_handoff_sampler_preemption_gates_untouched": true
+  },
+  "missing_mechanically_confirmed": ["C1 wrfout adapter", "C2 post-lock exporter/census", "typed-FFI fallback", "W1", "W2", "W3", "native Pallas verdict", "profiler numbers", "transfer rows", "VRAM"],
+  "findings": [
+    {"id": "f1", "severity": "MINOR", "location": "scripts/v025/m0_window_parent.py:627-631", "issue": "nonzero-returncode path raises WindowRefusal without a final _kill_process_group sweep; only reachable if the guard dies alone (e.g. OOM) while a grandchild survives the child's pdeathsig death", "recommended_fix": "call _kill_process_group(process) before raising on returncode != 0"},
+    {"id": "f2", "severity": "MINOR", "location": "proofs/v025/m0/archive/m0_exact_boundary_cpu_evidence.3f07f72d….json", "issue": "archived pre-repair proof does not machine-record host affinity/env of the 81.242 s run; like-for-like rests on report narrative plus cache-entry mtimes", "recommended_fix": "embed hostname/affinity/env in future oracle proofs"},
+    {"id": "f3", "severity": "MINOR", "location": "scripts/v025/m0_exact_boundary_child.py run_boundary", "issue": "_lowered_text(lowered).encode('utf-8') materializes a transient second 222 MB buffer (~444 MB peak); proof-only, outside both clocks, freed before invocation", "recommended_fix": "stream-encode in chunks into the hasher if peak host RSS ever matters"}
+  ],
+  "verdict": "ACCEPT_CPU_BOUNDARY_FINAL"
+}

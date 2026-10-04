@@ -1,0 +1,1 @@
+wrote <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/g0_decision_20260621T085744Z/G0_VERDICT.json

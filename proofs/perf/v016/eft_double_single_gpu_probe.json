@@ -1,0 +1,53 @@
+{
+  "device": "cuda:0",
+  "platform": "gpu",
+  "eft_selfcheck": {
+    "two_sum_max_abs_residual": 0.0,
+    "two_prod_max_rel_residual": 0.0,
+    "two_sum_exact": true,
+    "two_prod_exact": true,
+    "note": "0.0 == XLA preserved the error-free transformation under optimization_barrier"
+  },
+  "E0_raw_throughput": {
+    "N": 16777216,
+    "K": 256,
+    "fp32_wall_s": 0.026571350055746734,
+    "fp64_wall_s": 0.09128276898991317,
+    "fp64_over_fp32_slowdown": 3.4353831776858073,
+    "interpretation": "how many x slower native fp64 is than fp32 on this device (compute-bound)"
+  },
+  "E1a_pressure_gradient_rmse_vs_fp64": {
+    "magnitude_P0": 100000.0,
+    "anomaly_sigma": 3.0,
+    "naive_fp32": 0.003189115775204478,
+    "perturbation_fp32": 1.5864405474071137e-07,
+    "double_single_fp32": 1.142628377244147e-10
+  },
+  "E1b_acoustic_accumulation": {
+    "X0": 100000.0,
+    "Nsub": 20000,
+    "true_total_drift_signal": 4.0,
+    "fp64_final": 100003.94793365922,
+    "naive_fp32_final": 100003.875,
+    "naive_fp32_abs_err": 0.07293365921941586,
+    "compensated_fp32_final": 100003.94269152917,
+    "compensated_fp32_abs_err": 0.00524213004973717
+  },
+  "E2_gpu_speed": {
+    "N": 16777216,
+    "K": 256,
+    "fp32_wall_s": 0.026571350055746734,
+    "fp64_wall_s": 0.09128276898991317,
+    "double_single_wall_s": 0.5802555120317265,
+    "dd_over_fp32_cost": 21.837637561296265,
+    "fp64_over_dd_speedup": 0.15731478132847468,
+    "claim": "fp64_over_dd_speedup > 1 means DD-fp32 BEATS native fp64 on this GPU"
+  },
+  "E3_long_horizon_200k": {
+    "Nsteps": 200000,
+    "fp64_final": 100006.35361857028,
+    "naive_fp32_abs_err": 0.8260689297167119,
+    "compensated_fp32_abs_err": 0.004113264993065968,
+    "true_signal_magnitude": 20.0
+  }
+}

@@ -1,0 +1,7 @@
+probe=G0_fp32_vs_fp64_decision
+grid=DRAM_bound_single_large (v017 bigswiss 460x460x44 ~211k cols, working set >> 96MiB L2)
+input=<DATA_ROOT>/wrf_gpu_validation/v017_bigswiss_gpu_init
+fp64_arm=JAX_ENABLE_X64=true (production baseline)
+fp32_arm=JAX_ENABLE_X64=false + GPUWRF_THOMPSON_FP32=1 (aggressive global-fp32 proxy; NO source edit)
+hours_per_arm=1
+criteria=FINAL_FP32_SPRINT_PLAN.md §2 + V0200-ROADMAP.md §8.4 (three-outcome split)

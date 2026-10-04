@@ -1,0 +1,28 @@
+{
+  "all_finite": true,
+  "call_times_s": [
+    81.6133838010719,
+    27.28653271694202
+  ],
+  "digest": {
+    "bytes": 367594272,
+    "leaves": 178,
+    "sha256": "8b5b4405699d0f67ac46a4c8977d201482cdbce3635417cbee944e67387345ac",
+    "tag": "v023_f1loaderfix_default_final"
+  },
+  "digest_path": "proofs/v023/f1_loaderfix/default_gate_final/v023_f1loaderfix_default_final_state_digest.json",
+  "final_d01_own": 2,
+  "fixed_repeats": 2,
+  "fixed_root_steps": 2,
+  "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20250121/cpu",
+  "maxdom": 3,
+  "rss_flat": true,
+  "rss_peak_mib": 12055.44921875,
+  "s_per_fc_hour": 2728.653271694202,
+  "s_per_step": 13.64326635847101,
+  "state_meta": "proofs/v023/f1_loaderfix/default_gate_final/v023_f1loaderfix_default_final_state_meta.json",
+  "state_npz": "proofs/v023/f1_loaderfix/default_gate_final/v023_f1loaderfix_default_final_state.npz",
+  "tag": "v023_f1loaderfix_default_final",
+  "vram_flat": true,
+  "vram_peak_mib": 17514
+}

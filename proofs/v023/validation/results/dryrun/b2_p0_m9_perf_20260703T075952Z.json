@@ -1,0 +1,8 @@
+{
+  "gate": "b2_p0_m9_perf",
+  "generated_utc": "2026-07-03T07:59:52.302686+00:00",
+  "message": "B2 P0/M9 A/B commands staged only.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

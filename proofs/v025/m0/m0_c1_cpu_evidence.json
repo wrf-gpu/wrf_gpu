@@ -1,0 +1,761 @@
+{
+  "accepted_exact_boundary": {
+    "artifact": {
+      "bytes": 109520,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_exact_boundary_cpu_evidence.json",
+      "sha256": "ac596a79680f1ce41b88e311d97507ed199bdb1feb587f323ca89baf7cfcd16e"
+    },
+    "mutation_matrix": {
+      "attacks": [
+        {
+          "detail": "ContractViolation: exact preparation call/args changed",
+          "name": "preparation_order",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: production function identities changed",
+          "name": "production_function_identity",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: missing exact boundary fragment 'lowered = exact_jit.lower(*prepared_arguments)'",
+          "name": "lower_call_arguments",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "readiness_event_before_compile",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "argument_identity_inside_readiness_clock",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "lowered_identity_inside_readiness_clock",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: compiled call/sync changed",
+          "name": "final_synchronization_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: profiled range identity changed",
+          "name": "profile_range_identity",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: clean branch contains profiler/resource instrumentation",
+          "name": "clean_instrumentation_added",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: parent imports accelerator roots ['jax']",
+          "name": "parent_jax_import",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: profiled residency baseline/streams do not start before forecast launch",
+          "name": "residency_sampler_after_forecast_launch",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: guard does not arm group cleanup before launching its child",
+          "name": "parent_death_arm_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: parent-death handler does not unconditionally kill the child group",
+          "name": "parent_death_group_kill_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: Pallas child authorization must be consumed exactly once",
+          "name": "pallas_second_authorization",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W3 can accept a blocked or unknown native Pallas verdict",
+          "name": "pallas_blocked_verdict_accepted",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W3 can launch Pallas before the exact profiled/clean identity gate",
+          "name": "pallas_before_profiled_clean_identity_gate",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W2 does not fail closed on profiled capture integrity/MISSING census",
+          "name": "profiled_capture_integrity_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W1 qualification can accept an unbound or incomplete FAST pair",
+          "name": "w1_fast_pair_binding_removed",
+          "rejected": true
+        }
+      ],
+      "rejected": 18,
+      "status": "PASS",
+      "total": 18
+    },
+    "readiness_seconds": 63.541230471,
+    "six_identity_checks": {
+      "arguments_identical": true,
+      "called_function_identical": true,
+      "hours_identical": true,
+      "lowered_program_identical": true,
+      "output_digest_identical": true,
+      "returned_state_semantics_identical": true
+    },
+    "status": "PASS_ACCEPTED_PRE_C1"
+  },
+  "device_action": false,
+  "final_admissible_attempt_r8": {
+    "accepted_as_c1_proof": false,
+    "artifacts": {
+      "process_tree_rss": {
+        "bytes": 1863,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/ineligible_precreated_wrfout_process_tree_rss.json",
+        "sha256": "3af95c06eaef969be35fe826c2627154fe8ae5b51da0cc9c482d985044e9042f"
+      },
+      "stderr": {
+        "bytes": 1653130,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stderr.log",
+        "sha256": "7761b21356c3e0d2461f42dff5454d968132632609d9fd556c6c6793e1f0ffc3"
+      },
+      "stdout": {
+        "bytes": 731,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stdout.log",
+        "sha256": "7c79951762db2b0ea7c92175b648f563e4dc0b634dcafe7f4f9eae017a6f75eb"
+      },
+      "time": {
+        "bytes": 1092,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.time",
+        "sha256": "8caff058bb58151d5de864da434a20fc286b49ffab98c572769856b1c2bea6a5"
+      }
+    },
+    "elapsed_wallclock": "1:16:44",
+    "failure_boundary": "after synchronized exact invocation, at the first _publish_exact_wrfout absent-directory guard",
+    "fresh_cpu_wrf_comparator_run": false,
+    "machine_identity": {
+      "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+      "cpu_affinity": [
+        4
+      ],
+      "environment": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "GPUWRF_JAX_CACHE": "1",
+        "GPUWRF_JAX_CACHE_DIR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+        "GPUWRF_JAX_CACHE_LOCK": "1",
+        "JAX_PLATFORMS": "cpu",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+      },
+      "hostname": "user-battlestation",
+      "observed_process_tree_pids": [
+        3333870,
+        3333872,
+        3333874
+      ],
+      "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+      "python": "3.13.11"
+    },
+    "max_rss_time_kib": 20899988,
+    "process_tree_peak_rss_bytes": 21454475264,
+    "reason": "BoundaryRefusal: refusing stale/pre-existing wrfout output directory: <DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/wrfout",
+    "science_computation_failure_observed": false,
+    "status": "RESIDUAL_EXACT_COMPUTE_COMPLETE_PUBLICATION_REFUSED",
+    "wrfout_published": false
+  },
+  "fixture_static_mutation_repairs": {
+    "amendment5_session": {
+      "cold_sequence_proofs": {
+        "fail_third": {
+          "attempts_used": 3,
+          "classifications": [
+            "FAIL_COLD",
+            "PASS_COLD",
+            "FAIL_COLD"
+          ],
+          "decision": "FAIL",
+          "failures": 2,
+          "passes": 1,
+          "status": "PASS",
+          "third_required": false,
+          "threshold_seconds": 600.0
+        },
+        "fail_two": {
+          "attempts_used": 2,
+          "classifications": [
+            "FAIL_COLD",
+            "FAIL_COLD"
+          ],
+          "decision": "FAIL",
+          "failures": 2,
+          "passes": 0,
+          "status": "PASS",
+          "third_required": false,
+          "threshold_seconds": 600.0
+        },
+        "pass_third": {
+          "attempts_used": 3,
+          "classifications": [
+            "PASS_COLD",
+            "FAIL_COLD",
+            "PASS_COLD"
+          ],
+          "decision": "PASS",
+          "failures": 1,
+          "passes": 2,
+          "status": "PASS",
+          "third_required": false,
+          "threshold_seconds": 600.0
+        },
+        "pass_two": {
+          "attempts_used": 2,
+          "classifications": [
+            "PASS_COLD",
+            "PASS_COLD"
+          ],
+          "decision": "PASS",
+          "failures": 0,
+          "passes": 2,
+          "status": "PASS",
+          "third_required": false,
+          "threshold_seconds": 600.0
+        }
+      },
+      "contract": {
+        "canonical_lock_acquisitions": 1,
+        "cold_protocol": {
+          "decision": "two PASS_COLD or two FAIL_COLD",
+          "first_cold_miss_suppresses_later_cold_attempts": false,
+          "maximum_processes": 3,
+          "third_process": "only if first two disagree",
+          "threshold_seconds": 600.0,
+          "unique_empty_normal_cache_per_process": true
+        },
+        "contract_sha256": "964b9e60024c2f1507dcdfb0c6bb63b9d8562a9e3cdfe2300b437792588b674a",
+        "deferred": {
+          "native_pallas": "M2_BACKEND_BAKEOFF_ENTRY",
+          "ncu_fields": "M2"
+        },
+        "global_deadline_seconds": 4500.0,
+        "label": "m0-core-w1-w2-w3-session",
+        "receipt": {
+          "affirmative_verbatim_required": true,
+          "content_addressed": true,
+          "invalid_after": [
+            "preemption",
+            "process_leak",
+            "identity_change",
+            "global_deadline"
+          ],
+          "nonqueueing": true,
+          "relinquish_immediately_on_manager_request": true,
+          "required_managers": [
+            "0:2",
+            "0:3"
+          ],
+          "single_use": true,
+          "spent_at_authorization": true
+        },
+        "schema": "wrf_gpu2.v025.m0.core_session_protocol.v1",
+        "stage_order": [
+          "W1_COLD_DECISION",
+          "W1_CACHED_AND_CORRECTNESS",
+          "W2_PROFILED_CAPTURE",
+          "W3_CLEAN_MATCHED_ARM",
+          "LOCK_RELEASE",
+          "POSTLOCK_CPU_ANALYSIS"
+        ],
+        "suppression": {
+          "definitive_w1_failure": [
+            "W1_CACHED_AND_CORRECTNESS",
+            "W2",
+            "W3"
+          ],
+          "first_cold_miss": [],
+          "safety_correctness_identity_failure": [
+            "every_later_stage"
+          ]
+        }
+      },
+      "device_execution": "MISSING_NOT_AUTHORIZED",
+      "plan_gate": {
+        "lock_acquisitions": 1,
+        "max_deadline_seconds": 1500.0,
+        "session_receipts": 1,
+        "status": "PASS",
+        "window_count": 3
+      }
+    },
+    "long_run_controls": {
+      "clock_continuity_smoke": {
+        "boot_id": "94850f0f-572d-4851-babd-d85a33179faa",
+        "elapsed_monotonic_ns": 17970,
+        "end": {
+          "boot_id": "94850f0f-572d-4851-babd-d85a33179faa",
+          "boottime_minus_monotonic_ns": 17032336368466,
+          "boottime_ns": 179068328902800,
+          "monotonic_after_ns": 162035992534494,
+          "monotonic_before_ns": 162035992534174,
+          "monotonic_midpoint_ns": 162035992534334,
+          "sampling_uncertainty_ns": 320
+        },
+        "offset_change_ns": -310,
+        "start": {
+          "boot_id": "94850f0f-572d-4851-babd-d85a33179faa",
+          "boottime_minus_monotonic_ns": 17032336368776,
+          "boottime_ns": 179068328885140,
+          "monotonic_after_ns": 162035992516874,
+          "monotonic_before_ns": 162035992515854,
+          "monotonic_midpoint_ns": 162035992516364,
+          "sampling_uncertainty_ns": 1020
+        },
+        "status": "PASS",
+        "suspend_or_reboot_detected": false,
+        "tolerance_ns": 100000000
+      },
+      "future_inhibited_command": [
+        "/usr/bin/systemd-inhibit",
+        "--what=sleep:idle:handle-lid-switch",
+        "--mode=block",
+        "--who=wrf_gpu2-v025-long-run",
+        "--why=protect a hash-bound M0 long-running evidence process",
+        "--",
+        "FUTURE_EXACT_ORACLE_COMMAND"
+      ],
+      "inhibitor": {
+        "estimated_seconds": 5400.0,
+        "mode": "block",
+        "raw_command": [
+          "FUTURE_EXACT_ORACLE_COMMAND"
+        ],
+        "status": "PASS",
+        "systemd_inhibit_path": "/usr/bin/systemd-inhibit",
+        "systemd_inhibit_sha256": "0c718332ff86787e62f74f15bca1dfbb4e801ee73f391acb73511a23e2c548a7",
+        "threshold_seconds": 600.0,
+        "what": "sleep:idle:handle-lid-switch",
+        "who": "wrf_gpu2-v025-long-run",
+        "why": "protect a hash-bound M0 long-running evidence process",
+        "wrapped_command": [
+          "/usr/bin/systemd-inhibit",
+          "--what=sleep:idle:handle-lid-switch",
+          "--mode=block",
+          "--who=wrf_gpu2-v025-long-run",
+          "--why=protect a hash-bound M0 long-running evidence process",
+          "--",
+          "FUTURE_EXACT_ORACLE_COMMAND"
+        ]
+      },
+      "memory_preflight": {
+        "expected_process_tree_peak_bytes": 21639462912,
+        "foreign_process_limit_bytes": 25190602752,
+        "foreign_process_offenders": [],
+        "foreign_process_physical_ram_ratio": 0.25,
+        "headroom_ratio": 2.0,
+        "largest_foreign_processes": [
+          {
+            "command": "qemu-system-x86_64 -nodefaults -cpu host,kvm=on,l3-cache=on,+hypervisor,migratable=no,-vmx,+invtsc,arch_capabilities=off,hv_passthrough,-hv-evmcs -smp 8,sockets=1,dies=1,cores=8,threads=1 -m 10G -machine type=q35,smm=off,graphics=off,vmport=off,dump-guest-core=off,hpet=off,accel=kvm -enable-kvm -global kvm-pit.lost_tick_policy=discard -smbios type=1,serial=TobefilledbyOEM -display vnc=:0,websocket=5700 -vga virtio -monitor telnet:localhost:7100,server,nowait,nodelay -daemonize -D /run/shm/qemu.log -pidfile ",
+            "name": "windows",
+            "pid": 10381,
+            "ppid": 9579,
+            "rss_bytes": 2025062400
+          },
+          {
+            "command": "/snap/firefox/8664/usr/lib/firefox/firefox",
+            "name": "firefox",
+            "pid": 11825,
+            "ppid": 7501,
+            "rss_bytes": 1862590464
+          },
+          {
+            "command": "/snap/firefox/8664/usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:50789 -prefMapHandle 1:291671 -jsInitHandle 2:156236 -parentBuildID 20260720151037 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {8016a333-a87c-4292-a518-bca384e1c678} -parentPid 11825 -crashHelperPid 12210 -crashHelper 6 -crashReporter 7 -greomni /snap/firefox/8664/usr/lib/firefox/omni.ja -appomni /snap/firefox/8664/usr/lib/firefox/browser/omni.ja -appDir /snap/firefox/8664/usr/lib/firefox/browser 21 ta",
+            "name": "Isolated Web Co",
+            "pid": 13389,
+            "ppid": 12340,
+            "rss_bytes": 1136082944
+          },
+          {
+            "command": "/snap/firefox/8664/usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:51145 -prefMapHandle 1:291671 -jsInitHandle 2:156236 -parentBuildID 20260720151037 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {4621e0b2-4079-447e-835c-d67d0dc3a62c} -parentPid 11825 -crashHelperPid 12210 -crashHelper 6 -crashReporter 7 -greomni /snap/firefox/8664/usr/lib/firefox/omni.ja -appomni /snap/firefox/8664/usr/lib/firefox/browser/omni.ja -appDir /snap/firefox/8664/usr/lib/firefox/browser 3051 ",
+            "name": "Isolated Web Co",
+            "pid": 2937808,
+            "ppid": 12340,
+            "rss_bytes": 1120305152
+          },
+          {
+            "command": "/usr/bin/tmux new-session -d -s 0 -n ui-worker -c <USER_HOME>/src/alisios",
+            "name": "tmux: server",
+            "pid": 8298,
+            "ppid": 7501,
+            "rss_bytes": 881594368
+          },
+          {
+            "command": "/usr/bin/plasmashell --no-respawn",
+            "name": "plasmashell",
+            "pid": 3273246,
+            "ppid": 7501,
+            "rss_bytes": 543649792
+          },
+          {
+            "command": "<USER_HOME>/.local/bin/claude --resume aa3860de-ae30-420f-af90-28e32fba93a9 --permission-mode auto",
+            "name": "claude",
+            "pid": 8311,
+            "ppid": 8298,
+            "rss_bytes": 525434880
+          },
+          {
+            "command": "/snap/firefox/8664/usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:35306 -prefMapHandle 1:291671 -jsInitHandle 2:156236 -parentBuildID 20260720151037 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {d5610a81-e195-4058-830c-81a32546f25a} -parentPid 11825 -crashHelperPid 12210 -crashHelper 6 -crashReporter 7 -greomni /snap/firefox/8664/usr/lib/firefox/omni.ja -appomni /snap/firefox/8664/usr/lib/firefox/browser/omni.ja -appDir /snap/firefox/8664/usr/lib/firefox/browser 6 tab",
+            "name": "Isolated Web Co",
+            "pid": 12456,
+            "ppid": 12340,
+            "rss_bytes": 524943360
+          }
+        ],
+        "lineage_pids_excluded": [
+          1,
+          7501,
+          3056214,
+          3056221,
+          3479792
+        ],
+        "mem_available_bytes": 82012033024,
+        "mem_total_bytes": 100762411008,
+        "required_available_bytes": 43278925824,
+        "status": "PASS"
+      }
+    },
+    "output_directory_protocol": {
+      "child_atomic_no_replace_guard": "PASS",
+      "early_absent-target_preflight": "PASS",
+      "r8_failure_reproduced_by_fixture": "PASS"
+    },
+    "representative_long_run_validators": {
+      "fixture_is_runtime_or_device_evidence": false,
+      "fixture_sha256": {
+        "clean": "bf9cf14651ce79103e520f87465db3f42748cdc34fecdc3115df122240e17fd6",
+        "compile-only": "73a05b1f76f457729fe3c7b123d5d6068dbe4af822ca2c99bdb7778581f6d56c",
+        "profiled": "0aa25911b0becef090a6b0b54e9c5a7f2d25042c0770f6a22054c5733300cec2"
+      },
+      "results": {
+        "clean": {
+          "mode": "clean",
+          "status": "PASS"
+        },
+        "clean_wrfout": {
+          "binding_sha256": "39337527466b7c33d300d2d7bb393f2ae947518d812998afd59ce2784e5d4b58",
+          "run_id": "cpu-validator-fixture-clean",
+          "status": "PASS"
+        },
+        "compile_only": {
+          "mode": "compile-only",
+          "status": "PASS"
+        },
+        "profiled": {
+          "mode": "profiled",
+          "status": "PASS"
+        },
+        "profiled_clean": {
+          "only_allowed_difference": "profiler/resource instrumentation",
+          "status": "PASS"
+        },
+        "profiled_wrfout": {
+          "binding_sha256": "5856ce074d7c8aa52f9ca2e91735deadc590f0251c1f5eb21b52ff792b4af03f",
+          "run_id": "cpu-validator-fixture-profiled",
+          "status": "PASS"
+        }
+      },
+      "status": "PASS",
+      "validators_exercised": [
+        "validate_boundary_result:compile-only",
+        "validate_boundary_result:profiled",
+        "validate_boundary_result:clean",
+        "validate_wrfout_binding:profiled",
+        "validate_wrfout_binding:clean",
+        "compare_profiled_clean"
+      ]
+    },
+    "runtime_or_device_evidence": false,
+    "source_contract": {
+      "amendment5_one_session_two_of_three": true,
+      "authorization_before_child_import": true,
+      "clean_instrumentation_absent": true,
+      "cpu_arm_process_group_attached": true,
+      "direct_synchronized_invocation": true,
+      "evidence_builder_top_level_accelerator_imports": [],
+      "exact_lower_compile": true,
+      "exact_result_wrfout_adapter": true,
+      "executor_accelerator_imports": [],
+      "forecast_child_top_level_accelerator_imports": [],
+      "long_run_preflight_and_inhibition": true,
+      "nonzero_child_final_group_sweep": true,
+      "pallas_child_top_level_accelerator_imports": [],
+      "parent_accelerator_imports": [],
+      "parent_death_guard_accelerator_imports": [],
+      "parent_death_kills_child_process_group": true,
+      "production_function_hashes": {
+        "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s": "23702a1d4d5154f523ed3dd9ec19d43fc11376ffe600b1f959595ea4c75e72db",
+        "gpuwrf.integration.daily_pipeline._build_real_case": "aff14597c9760987836e08382bf6f9d4a0f240ba69ae6caaceb4a6efc909a143",
+        "gpuwrf.integration.daily_pipeline._capture_boundary_leaves": "e02ce49fe0c62fff014f7679dc8b3e709e8b9dc6c6f746acbdb01b5f49266613",
+        "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves": "c85f42ce6e33237f3df20613ef8cc9a78cd95589ebaa880b65e86806726e83d4",
+        "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total": "4dc8690a0f6181a24f0817242501d9a7599db372bca7677b013327a1ea96ecb1",
+        "gpuwrf.runtime.operational_mode._dealias_pytree_buffers": "9e3bc0fd9be3ad694805578db05fc9bb7409646649cee82c9ff902e2f1257265",
+        "gpuwrf.runtime.operational_mode._operational_scan_state": "f0609a83ad8c7ee7421e4155a13632299495c9466ab38109ff2db2326785e1c1",
+        "gpuwrf.runtime.operational_mode._run_forecast_operational_jit": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123"
+      },
+      "profiled_clean_shared_helper": true,
+      "profiled_exact_range": "GPUWRF_M0_FORECAST_INTEGRATION",
+      "sequential_fresh_cpu_arm_processes": true,
+      "single_core_cpu_arm_before_jax": true,
+      "source_sha256": {
+        "scripts/v025/build_m0_c1_c2_cpu_closure_evidence.py": "6ad2baccee1c82adb175431d6e1538b670bac07fa072f6994c01b1fe82e962d3",
+        "scripts/v025/build_m0_c1_c2_cpu_residual_evidence.py": "b1039a8e491f93701087fa1775efc4b48dd58bdbcab3d7d887c63d60160b6aaf",
+        "scripts/v025/build_m0_exact_boundary_evidence.py": "aa3b76f52814949af4ce957bedd36822524629a01ee242ee57cb7bbbd4be984d",
+        "scripts/v025/m0_c1_c2_cpu_proofs.py": "0238183e99607c0ad971dc302de7444c568aaa71553dfb1ea423065af46d2803",
+        "scripts/v025/m0_core_session_protocol.py": "0777aaa58d0592c65aa5d000319de37edd12534459bdd788fe5ab82ea242880a",
+        "scripts/v025/m0_exact_boundary_child.py": "51eb70a5b5acc400f7f5c78960089c1a69e6d959821df437594db118fb0945e8",
+        "scripts/v025/m0_exact_boundary_contract.py": "49625fe1654cc012d4c4b0386bb82388f191124c90f71daf181d804442b33ade",
+        "scripts/v025/m0_host_rss_sampler.py": "751fccfa46e9e185fb8e0e3f3b7f4ee0dc4e729c061e6a8769704c0de8a59779",
+        "scripts/v025/m0_long_run_controls.py": "75b1a9036b849e2925a3c4ec7c66810f653952a0ecd8ed0efdf9c68104ee3a3e",
+        "scripts/v025/m0_parent_death_guard.py": "6b05573364958d03d8d5d5d9c473fd4f23b380ef53c92453366208c7ab006986",
+        "scripts/v025/m0_postlock_census.py": "e910282dd7f613df5ae32446e598bf5e6e98546e9b918d05e7e5e30974ed6878",
+        "scripts/v025/m0_three_window_executor.py": "c305d2bab0b5ea79b8b307deadd0d56de4b7b99e66760d2709bd42b0d5661c38",
+        "scripts/v025/m0_vram_sampler.py": "b28e750b291d01d52f9074ddaf2f673db5623c46a366227a9b34d22c884275f7",
+        "scripts/v025/m0_w1_fast_pair.py": "8545cfeb7fbfd9a8b64030363c25cb2faf62dc10ea115117ca33955ab54392a4",
+        "scripts/v025/m0_window_parent.py": "d1b338699631505f66e9872b78907e4c6656b7e90a27dcc94ecc5d86fe95d4be",
+        "scripts/v025/nsys_export.py": "d8de2f2de8cb29e6d7fca34f00294c24a5fc5853a69eb9e6ddb55959ef56318b",
+        "scripts/v025/pallas_sm120_spike.py": "39abfd9a983ff8fc3d16eca3f4ef00f02a9cd2458166ae171a1e35444f92d9a2",
+        "scripts/v025/prepare_m0_matched_pair.py": "034c7ec43fc5928646a061d290c41832c13870c4177d9f89f5388f6e519cc3b6",
+        "scripts/v025/prepare_pallas_fast_savepoint.py": "36cc1083c394b5531e32b3146f2155b23840e1033941494ec82a1ff7fe674eab",
+        "scripts/v025/refresh_m0_exact_boundary_evidence.py": "6bcaf339802baf9433584a6bc44360c0e1a162bcab9455934b4bc5278c0dda4f",
+        "scripts/v025/run_fast_pair.py": "be5d3481d851f14831df1a9a053581fd0e1122378be47838c29dd18f4a2199bd"
+      },
+      "stablehlo_streamed_encoding": true,
+      "status": "PASS",
+      "wrapper_preparation_sequence": [
+        "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+        "gpuwrf.runtime.operational_mode._operational_scan_state",
+        "gpuwrf.runtime.operational_mode._dealias_pytree_buffers"
+      ]
+    },
+    "source_mutation_matrix": {
+      "attacks": [
+        {
+          "detail": "ContractViolation: exact preparation call/args changed",
+          "name": "preparation_order",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: production function identities changed",
+          "name": "production_function_identity",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: missing exact boundary fragment 'lowered = exact_jit.lower(*prepared_arguments)'",
+          "name": "lower_call_arguments",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "readiness_event_before_compile",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "argument_identity_inside_readiness_clock",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+          "name": "lowered_identity_inside_readiness_clock",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: compiled call/sync changed",
+          "name": "final_synchronization_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: profiled range identity changed",
+          "name": "profile_range_identity",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: clean branch contains profiler/resource instrumentation",
+          "name": "clean_instrumentation_added",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: parent imports accelerator roots ['jax']",
+          "name": "parent_jax_import",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: profiled residency baseline/streams do not start before forecast launch",
+          "name": "residency_sampler_after_forecast_launch",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: guard does not arm group cleanup before launching its child",
+          "name": "parent_death_arm_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: parent-death handler does not unconditionally kill the child group",
+          "name": "parent_death_group_kill_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: Pallas child authorization must be consumed exactly once",
+          "name": "pallas_second_authorization",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W3 can accept a blocked or unknown native Pallas verdict",
+          "name": "pallas_blocked_verdict_accepted",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W3 can launch Pallas before the exact profiled/clean identity gate",
+          "name": "pallas_before_profiled_clean_identity_gate",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W2 does not fail closed on profiled capture integrity/MISSING census",
+          "name": "profiled_capture_integrity_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: W1 qualification can accept an unbound or incomplete FAST pair",
+          "name": "w1_fast_pair_binding_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: wrfout publication can consume a substituted or unsynchronized result",
+          "name": "substituted_wrfout_result",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: compiled call/sync order changed",
+          "name": "output_clock_before_synchronization",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: exact-result wrfout adapter order/source changed",
+          "name": "stale_output_reuse",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: wrfout adapter production domain changed",
+          "name": "wrong_wrfout_domain",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: wrfout adapter production argument changed: full_variable_set=full_variable_set,",
+          "name": "missing_production_variable_set",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: wrfout proof binding changed: \"variable_inventory_sha256\": canonical_sha256(variable_inventory),",
+          "name": "variable_inventory_hash_unbound",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: exact/public CPU arms are not each launched in a fresh process",
+          "name": "same_process_double_integration",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: CPU arm launcher detaches from the caller process group",
+          "name": "isolated_arm_detached_process_group",
+          "rejected": true
+        },
+        {
+          "detail": "SyntaxError: unterminated string literal (detected at line 438) (<unknown>, line 438)",
+          "name": "cpu_arm_mislabelled_with_gpu_timing_gate",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: single-core CPU deadlock guard is not applied before JAX import",
+          "name": "single_core_cpu_deadlock_guard_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: long-run output/memory/validator preflights are not before execution",
+          "name": "early_output_directory_preflight_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: long-run output/memory/validator preflights are not before execution",
+          "name": "representative_validator_preflight_removed",
+          "rejected": true
+        },
+        {
+          "detail": "SyntaxError: unmatched ')' (<unknown>, line 701)",
+          "name": "long_run_inhibitor_removed",
+          "rejected": true
+        },
+        {
+          "detail": "SyntaxError: unmatched ')' (<unknown>, line 711)",
+          "name": "long_run_continuity_gate_removed",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: long-run duration/memory/inhibitor constants changed",
+          "name": "memory_headroom_ratio_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: long-run duration/memory/inhibitor constants changed",
+          "name": "foreign_process_limit_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: long-run duration/memory/inhibitor constants changed",
+          "name": "systemd_inhibit_scope_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: Amendment-5 session/cold constants changed",
+          "name": "session_receipt_label_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: Amendment-5 session/cold constants changed",
+          "name": "session_cold_threshold_weakened",
+          "rejected": true
+        },
+        {
+          "detail": "ContractViolation: one-session graph no longer preserves cold continuation/suppression",
+          "name": "session_third_process_always_runs",
+          "rejected": true
+        }
+      ],
+      "rejected": 38,
+      "status": "PASS",
+      "total": 38
+    },
+    "status": "PASS_FIXTURE_STATIC_MUTATION_ONLY"
+  },
+  "frozen_gate_inventory": {
+    "accepted_pre_c1_exact_boundary": "PASS",
+    "atomic_no_replace_and_absent_target_preflight": "PASS",
+    "existing_comparator_delta_atlas": "MISSING_NOT_RUN",
+    "fresh_12_rank_cpu_wrf_after_r8": "MISSING_NOT_RUN",
+    "production_wrfout_adapter_fixture": "PASS_FIXTURE",
+    "r8_same_run_wrfout": "MISSING_PUBLICATION_REFUSED",
+    "same_synchronized_exact_result_adapter_source": "PASS_STATIC"
+  },
+  "generated_at_utc": "2026-07-28T19:34:08.988280+00:00",
+  "residual_risk": "The repaired early absent-directory protocol is fixture/static/mutation proven but was not exercised by another full real-FAST oracle because manager commit 78aa07a9 forbids one.",
+  "schema": "wrf_gpu2.v025.m0.c1_cpu_closure.v1",
+  "status": "BLOCKED_RUNTIME_RESIDUAL"
+}

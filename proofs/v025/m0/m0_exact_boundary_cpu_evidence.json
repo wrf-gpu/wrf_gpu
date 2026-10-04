@@ -1,0 +1,4141 @@
+{
+  "clock_accounting": {
+    "argument_identity_seconds": 0.040542418,
+    "comparison_tolerance_seconds": 0.0,
+    "lowered_identity_seconds": 1.020521907,
+    "measured_proof_identity_seconds": 1.061064665,
+    "post_repair_readiness_seconds": 63.541230471,
+    "pre_repair_proof_archive": "proofs/v025/m0/archive/m0_exact_boundary_cpu_evidence.3f07f72db80addf4c706fe39f17178c36741cd408f891daa9236f6ccd5c68646.json",
+    "pre_repair_proof_sha256": "3f07f72db80addf4c706fe39f17178c36741cd408f891daa9236f6ccd5c68646",
+    "pre_repair_readiness_seconds": 81.242206654,
+    "proof_work_outside_integration_clock": true,
+    "proof_work_outside_readiness_clock": true,
+    "readiness_reduction_seconds": 17.700976183,
+    "required_reduction_seconds": 1.061064665,
+    "status": "PASS"
+  },
+  "cpu_compile_cache": {
+    "comparison_basis": "same populated persistent CPU cache as the recorded 81.242206654 s pre-repair readiness",
+    "device_touched": false,
+    "directory": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+    "directory_file_count_observed": 911,
+    "enabled": true,
+    "locked": true,
+    "status": "PASS",
+    "top_level_entry": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1/jit__run_forecast_operational_jit-5ca1a338cdbae726ba84ea3ae9d8d37c2b382165acd4310303acac4d4f3733ee-cache",
+    "top_level_entry_bytes": 226417734,
+    "top_level_entry_sha256": "d05078bcb8dcd03ff045199975e7f7d1d848f1b8b42e76c06948d7ad254ae0b4",
+    "unchanged_during_oracle": true
+  },
+  "cpu_platform": {
+    "device_count": 1,
+    "platforms": [
+      "cpu"
+    ]
+  },
+  "device_policy": "closed",
+  "device_queries": [],
+  "device_touched": false,
+  "generated_at_utc": "2026-07-28T10:21:12.123278+00:00",
+  "gpu_windows": {
+    "W1": "MISSING",
+    "W2": "MISSING",
+    "W3": "MISSING"
+  },
+  "jax_version": "0.10.0",
+  "mutation_matrix": {
+    "attacks": [
+      {
+        "detail": "ContractViolation: exact preparation call/args changed",
+        "name": "preparation_order",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: production function identities changed",
+        "name": "production_function_identity",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: missing exact boundary fragment 'lowered = exact_jit.lower(*prepared_arguments)'",
+        "name": "lower_call_arguments",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+        "name": "readiness_event_before_compile",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+        "name": "argument_identity_inside_readiness_clock",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: proof identities are not strictly after readiness and before invocation",
+        "name": "lowered_identity_inside_readiness_clock",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: compiled call/sync changed",
+        "name": "final_synchronization_removed",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: profiled range identity changed",
+        "name": "profile_range_identity",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: clean branch contains profiler/resource instrumentation",
+        "name": "clean_instrumentation_added",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: parent imports accelerator roots ['jax']",
+        "name": "parent_jax_import",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: profiled residency baseline/streams do not start before forecast launch",
+        "name": "residency_sampler_after_forecast_launch",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: guard does not arm group cleanup before launching its child",
+        "name": "parent_death_arm_removed",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: parent-death handler does not unconditionally kill the child group",
+        "name": "parent_death_group_kill_weakened",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: Pallas child authorization must be consumed exactly once",
+        "name": "pallas_second_authorization",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: W3 can accept a blocked or unknown native Pallas verdict",
+        "name": "pallas_blocked_verdict_accepted",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: W3 can launch Pallas before the exact profiled/clean identity gate",
+        "name": "pallas_before_profiled_clean_identity_gate",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: W2 does not fail closed on profiled capture integrity/MISSING census",
+        "name": "profiled_capture_integrity_removed",
+        "rejected": true
+      },
+      {
+        "detail": "ContractViolation: W1 qualification can accept an unbound or incomplete FAST pair",
+        "name": "w1_fast_pair_binding_removed",
+        "rejected": true
+      }
+    ],
+    "rejected": 18,
+    "status": "PASS",
+    "total": 18
+  },
+  "native_pallas_verdict": "MISSING",
+  "pallas_wiring": {
+    "alternating_pairs_future": 5,
+    "compile_separated_future": true,
+    "manifest": "proofs/v025/m0/pallas_fast_savepoint_manifest.json",
+    "manifest_sha256": "3f840cca38dedc196fb5d023dcec037f405eff59d42c535f9dc9fee444653e0f",
+    "payload_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/pallas/advance_w_fast_v1.npz",
+    "payload_sha256": "fc2e81eaeb6e458ea3c8bb2ea08cf5c78034936006cc3a06cdb74be406c2a5ac",
+    "shape": [
+      45,
+      70,
+      120
+    ],
+    "status": "CPU_REAL_FAST_SAVEPOINT_GREEN_NATIVE_PALLAS_MISSING",
+    "transfer_audit_future": true,
+    "warm_iterations_future": 100
+  },
+  "performance_implications": {
+    "cache_disk_scaling": "two private snapshots; O(2 * qualified cache bytes)",
+    "clean_instrumentation_absent": true,
+    "cpu_local_integration_seconds": 2072.602310497,
+    "cpu_local_readiness_seconds": 63.541230471,
+    "cpu_proof_identity_seconds": 1.061064665,
+    "cpu_readiness_cache_matched_to_pre_repair": true,
+    "cpu_times_are_not_gpu_economy_evidence": true,
+    "integration_is_direct_synchronized_endpoint": true,
+    "phase_subtraction": false,
+    "profiled_clean_share_one_invocation_helper": true,
+    "proof_hashing_ram_scaling": "streamed per leaf; O(largest state leaf)",
+    "readiness_is_direct_endpoint": true,
+    "readiness_reduction_covers_measured_proof_work": true,
+    "readiness_reduction_seconds": 17.700976183
+  },
+  "plan_contract": {
+    "max_deadline_seconds": 1500.0,
+    "status": "PASS",
+    "window_count": 3
+  },
+  "plan_sha256": "4783c3c8d03f9d91a41b0d25e53ac3914d1717ce45d1ca1bb99e494df8712333",
+  "production_identity": {
+    "diff_exit_code": 0,
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "starting_commit": "dedff5bbb4ac4fb852bdd9d42b50c1da25a61dfb",
+    "unchanged": true
+  },
+  "python": "3.13.11",
+  "real_fast_cpu_identity": {
+    "checks": {
+      "arguments_identical": true,
+      "called_function_identical": true,
+      "hours_identical": true,
+      "lowered_program_identical": true,
+      "output_digest_identical": true,
+      "returned_state_semantics_identical": true
+    },
+    "cpu_state_zeros_adapter": {
+      "enabled": true,
+      "reason": "production State.zeros explicitly rejects a CPU backend",
+      "scope": "gpuwrf.contracts.state._gpu_device during _build_real_case only"
+    },
+    "hours": 1.0,
+    "local_exact_compiled": {
+      "allocator": null,
+      "backend": {
+        "device_count": 1,
+        "expected_platform": "cpu",
+        "observed_platforms": [
+          "cpu"
+        ]
+      },
+      "call": {
+        "argument_identity": {
+          "exact_value_sha256": "55e2e600b89ed1ce5ff11a98306bd12dfd8652cfd13f2dc815f65215aa6a86eb",
+          "hours": 1.0,
+          "semantics": {
+            "leaf_count": 125,
+            "leaves": [
+              {
+                "dtype": "float32",
+                "index": 0,
+                "shape": [
+                  44,
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 1,
+                "shape": [
+                  44,
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 2,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 3,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 4,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 5,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 6,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 7,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 8,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 9,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 10,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 11,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 12,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 13,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 14,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 15,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 16,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 17,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 18,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 19,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 20,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 21,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 22,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 23,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 24,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 25,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 26,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 27,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 28,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 29,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 30,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 31,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 32,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 33,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 34,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 35,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 36,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 37,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 38,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 39,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 40,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 41,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 42,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 43,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  1,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 44,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 45,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 46,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 47,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 48,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  1,
+                  121
+                ]
+              },
+              {
+                "dtype": "int32",
+                "index": 49,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 50,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 51,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 52,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 53,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 54,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 55,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 56,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 57,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 58,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 59,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 60,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 61,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 62,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 63,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 64,
+                "shape": [
+                  44,
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 65,
+                "shape": [
+                  44,
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 66,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 67,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 68,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 69,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 70,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 71,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 72,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 73,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 74,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 75,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 76,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 77,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 78,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 79,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 80,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 81,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 82,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 83,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 84,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 85,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 86,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 87,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 88,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 89,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 90,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 91,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 92,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 93,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 94,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 95,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 96,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 97,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 98,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 99,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 100,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 101,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 102,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 103,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 104,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 105,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 106,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 107,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 108,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 109,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 110,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 111,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 112,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 113,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 114,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 115,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 116,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 117,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 118,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 119,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 120,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 121,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 122,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 123,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float",
+                "index": 124,
+                "shape": []
+              }
+            ],
+            "treedef": {
+              "bytes": 1023845,
+              "leaf_count": 125,
+              "node_count": 140,
+              "serialization": "python-pickle-protocol-5",
+              "sha256": "647656e876953aaaf6a9fc8a8942c885697a793e515d3659b04051718f887a3c"
+            },
+            "type": "builtins.tuple"
+          }
+        },
+        "compiled_invocation": "_call_compiled_with_exact_arguments(executable, prepared_arguments, lowered_static_hours=hours)",
+        "compiled_invocation_count": 1,
+        "hours": 1.0,
+        "jax_compiled_dynamic_invocation": "executable(prepared_state, namelist)",
+        "lower_api": "_run_forecast_operational_jit.lower(*prepared_arguments).compile()",
+        "lowered_program_bytes": 222295811,
+        "lowered_program_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5",
+        "static_argument_binding": {
+          "mechanism": "_run_forecast_operational_jit static_argnames=('hours',)",
+          "name": "hours",
+          "runtime_revalidated_before_dynamic_call": true,
+          "value": 1.0
+        }
+      },
+      "case": {
+        "boundary_leaf_names": [
+          "mu_bdy",
+          "mub_bdy",
+          "p_bdy",
+          "pb_bdy",
+          "ph_bdy",
+          "phb_bdy",
+          "qv_bdy",
+          "theta_bdy",
+          "u_bdy",
+          "v_bdy",
+          "w_bdy"
+        ],
+        "boundary_record_cadence_s": 3600.0,
+        "boundary_window_cadence_s": 3600.0,
+        "case_metadata": {
+          "boundary": {
+            "bdy_width": 5,
+            "padded_side_length": 121,
+            "schema": "history-strip-pack-v2",
+            "side_order": [
+              "W",
+              "E",
+              "S",
+              "N"
+            ],
+            "source": "Gen2 d02 hourly wrfout side-history replay",
+            "source_run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+            "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+            "times": 2,
+            "variables": [
+              "U",
+              "V",
+              "W",
+              "T",
+              "QVAPOR",
+              "P",
+              "PB",
+              "PH",
+              "PHB",
+              "MU",
+              "MUB"
+            ],
+            "wrfbdy_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfbdy_d01",
+            "wrfbdy_width_source": "decode_wrfbdy"
+          },
+          "domain": "d01",
+          "grid": {
+            "dx_m": 9000.0,
+            "dy_m": 9000.0,
+            "mass_shape": [
+              44,
+              70,
+              120
+            ],
+            "wrf_staggered_extent": [
+              45,
+              71,
+              121
+            ]
+          },
+          "gwdo_static": {
+            "domain": "d01",
+            "dx_m": 9000.0,
+            "fields_present": {
+              "CON": true,
+              "OA1": true,
+              "OA2": true,
+              "OA3": true,
+              "OA4": true,
+              "OL1": true,
+              "OL2": true,
+              "OL3": true,
+              "OL4": true,
+              "VAR": true
+            },
+            "requested": true,
+            "sources": {
+              "CON": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA1": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA2": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA3": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA4": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL1": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL2": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL3": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL4": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "VAR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00"
+            },
+            "status": "built",
+            "terrain_shape": [
+              70,
+              120
+            ],
+            "uses_dycore_map_rotation": true,
+            "var_abs_max": 396.22198486328125
+          },
+          "init_mode": "cpu_wrf_replay",
+          "namelist": {
+            "acoustic_substeps": 10,
+            "damp_opt": 3,
+            "dampcoef": 0.2,
+            "diff_6th_factor": 0.12,
+            "diff_6th_opt": 2,
+            "disable_guards": false,
+            "dt_s": 10.0,
+            "force_fp64": true,
+            "gwd_opt": 1,
+            "moist_adv_opt": 1,
+            "radiation_cadence_steps": 180,
+            "rk_order": 3,
+            "run_boundary": true,
+            "run_physics": true,
+            "scalar_adv_opt": 1,
+            "slope_rad": 1,
+            "top_lid": false,
+            "topo_shading": 1,
+            "topo_shadow_length_m": 25000.0,
+            "use_flux_advection": true,
+            "use_vertical_solver": true,
+            "w_damping": 1,
+            "zdamp": 5000.0
+          },
+          "radiation_static": {
+            "domain": "d01",
+            "dx_m": 9000.0,
+            "dy_m": 9000.0,
+            "slope_aspect_ref": "WRF dyn_em/start_em.F slope/slp_azi initialization",
+            "terrain_shape": [
+              70,
+              120
+            ],
+            "terrain_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+            "uses_dycore_map_rotation": true,
+            "uses_real_xlat_xlong": true,
+            "xlat_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+            "xlong_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00"
+          },
+          "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+          "run_id": "fastbind_r1",
+          "source": "gpuwrf.integration.d02_replay.build_replay_case",
+          "standalone_native_init": false,
+          "writer_static_latlon": {
+            "candidate_files": [
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18"
+            ],
+            "domain": "d01",
+            "errors": {},
+            "fields": {
+              "XLAT": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.32917022705078,
+                "min": 25.61162567138672,
+                "shape": [
+                  70,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLAT_U": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.329177856445312,
+                "min": 25.60967254638672,
+                "shape": [
+                  70,
+                  121
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLAT_V": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.369590759277344,
+                "min": 25.571189880371094,
+                "shape": [
+                  71,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.1119384765625,
+                "min": -21.3668212890625,
+                "shape": [
+                  70,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG_U": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.064727783203125,
+                "min": -21.414093017578125,
+                "shape": [
+                  70,
+                  121
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG_V": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.109527587890625,
+                "min": -21.36871337890625,
+                "shape": [
+                  71,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              }
+            },
+            "loaded_fields": [
+              "XLAT",
+              "XLAT_U",
+              "XLAT_V",
+              "XLONG",
+              "XLONG_U",
+              "XLONG_V"
+            ],
+            "missing_fields": [],
+            "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+            "status": "loaded"
+          }
+        },
+        "case_preparation_sequence": [
+          "gpuwrf.integration.daily_pipeline._build_real_case",
+          "gpuwrf.integration.daily_pipeline._capture_boundary_leaves",
+          "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s",
+          "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves"
+        ],
+        "cpu_device_adapter": {
+          "enabled": true,
+          "scope": "gpuwrf.contracts.state._gpu_device only, during _build_real_case"
+        },
+        "domain": "d01",
+        "hours": 1.0,
+        "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+        "segment_hours": 1.0,
+        "segment_start_s": 0.0
+      },
+      "device_touched": false,
+      "generated_at_utc": "2026-07-28T09:43:26.831503+00:00",
+      "instrumentation": {
+        "allocator_sidecar": null,
+        "clean_has_allocator_read": false,
+        "clean_has_profiler_range": false,
+        "invocation_helper": "m0_exact_boundary_child._invoke_and_synchronize",
+        "mode": "clean",
+        "nvtx_range": null
+      },
+      "pid": 2889541,
+      "production_binding": {
+        "case_preparation_sequence": [
+          "gpuwrf.integration.daily_pipeline._build_real_case",
+          "gpuwrf.integration.daily_pipeline._capture_boundary_leaves",
+          "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s",
+          "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves"
+        ],
+        "jit_function": "gpuwrf.runtime.operational_mode._run_forecast_operational_jit",
+        "jit_identity": {
+          "ast_sha256": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123",
+          "fqname": "gpuwrf.runtime.operational_mode._run_forecast_operational_jit",
+          "module": "gpuwrf.runtime.operational_mode",
+          "qualname": "_run_forecast_operational_jit"
+        },
+        "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+        "wrapper_preparation_identity": [
+          {
+            "ast_sha256": "4dc8690a0f6181a24f0817242501d9a7599db372bca7677b013327a1ea96ecb1",
+            "fqname": "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+            "module": "gpuwrf.runtime.operational_mode",
+            "qualname": "_assert_nonzero_initial_mu_total"
+          },
+          {
+            "ast_sha256": "f0609a83ad8c7ee7421e4155a13632299495c9466ab38109ff2db2326785e1c1",
+            "fqname": "gpuwrf.runtime.operational_mode._operational_scan_state",
+            "module": "gpuwrf.runtime.operational_mode",
+            "qualname": "_operational_scan_state"
+          },
+          {
+            "ast_sha256": "9e3bc0fd9be3ad694805578db05fc9bb7409646649cee82c9ff902e2f1257265",
+            "fqname": "gpuwrf.runtime.operational_mode._dealias_pytree_buffers",
+            "module": "gpuwrf.runtime.operational_mode",
+            "qualname": "_dealias_pytree_buffers"
+          }
+        ],
+        "wrapper_preparation_sequence": [
+          "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+          "gpuwrf.runtime.operational_mode._operational_scan_state",
+          "gpuwrf.runtime.operational_mode._dealias_pytree_buffers"
+        ]
+      },
+      "result": {
+        "exact_value_sha256": "41ea21b86ee898e2547e055dedbc60af83cd851eb0db557057e6f717508d1e6e",
+        "semantics": {
+          "leaf_count": 64,
+          "leaves": [
+            {
+              "dtype": "float64",
+              "index": 0,
+              "shape": [
+                44,
+                70,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 1,
+              "shape": [
+                44,
+                71,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 2,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 3,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 4,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 5,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 6,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 7,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 8,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 9,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 10,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 11,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 12,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 13,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 14,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 15,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 16,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 17,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 18,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 19,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 20,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 21,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 22,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 23,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 24,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 25,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 26,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 27,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 28,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 29,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 30,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 31,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 32,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 33,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 34,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 35,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 36,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 37,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 38,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 39,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 40,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 41,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 42,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 43,
+              "shape": [
+                2,
+                4,
+                5,
+                1,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 44,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 45,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 46,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 47,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 48,
+              "shape": [
+                2,
+                4,
+                5,
+                1,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 49,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 50,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 51,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 52,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 53,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 54,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 55,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 56,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 57,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 58,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 59,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 60,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 61,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 62,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 63,
+              "shape": [
+                70,
+                120
+              ]
+            }
+          ],
+          "treedef": {
+            "bytes": 1069,
+            "leaf_count": 64,
+            "node_count": 72,
+            "serialization": "python-pickle-protocol-5",
+            "sha256": "6486a046bd0c991617527194135f12ae8b3160b85936a4c82ccf557183e04858"
+          },
+          "type": "gpuwrf.contracts.state.State"
+        },
+        "synchronization": "jax.block_until_ready(result)"
+      },
+      "run_id": "m0-exact-boundary-real-fast-cpu-20260728-r1",
+      "schema": "wrf_gpu2.v025.m0.exact_executable_boundary.v1",
+      "status": "OK",
+      "timing": {
+        "argument_identity_end_monotonic_ns": 129792664180427,
+        "argument_identity_seconds": 0.040542418,
+        "argument_identity_start_monotonic_ns": 129792623638009,
+        "child_executable_ready_monotonic_ns": 129792623637399,
+        "clock": "time.monotonic_ns",
+        "derived_by_phase_subtraction": false,
+        "first_lazy_call_used_as_readiness": false,
+        "integration_definition": "immediately before compiled invocation -> after jax.block_until_ready(result)",
+        "integration_end_monotonic_ns": 131866287026661,
+        "integration_seconds": 2072.602310497,
+        "integration_start_monotonic_ns": 129793684716164,
+        "lowered_identity_end_monotonic_ns": 129793684702674,
+        "lowered_identity_seconds": 1.020521907,
+        "lowered_identity_start_monotonic_ns": 129792664180767,
+        "parent_process_launch_monotonic_ns": 129729082406928,
+        "proof_identity_definition": "after executable readiness -> exact argument and lowered StableHLO identities -> before compiled invocation",
+        "proof_identity_seconds": 1.061064665,
+        "readiness_definition": "parent process launch -> exact lower().compile() return",
+        "readiness_seconds": 63.541230471
+      }
+    },
+    "public_wrapper": {
+      "captured_call": {
+        "argument_identity": {
+          "exact_value_sha256": "55e2e600b89ed1ce5ff11a98306bd12dfd8652cfd13f2dc815f65215aa6a86eb",
+          "hours": 1.0,
+          "semantics": {
+            "leaf_count": 125,
+            "leaves": [
+              {
+                "dtype": "float32",
+                "index": 0,
+                "shape": [
+                  44,
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 1,
+                "shape": [
+                  44,
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 2,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 3,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 4,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 5,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 6,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 7,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 8,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 9,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 10,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 11,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 12,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 13,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 14,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 15,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 16,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 17,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 18,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 19,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 20,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 21,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 22,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 23,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 24,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 25,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 26,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 27,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 28,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 29,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 30,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 31,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 32,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 33,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 34,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 35,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 36,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 37,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 38,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 39,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 40,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 41,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 42,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 43,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  1,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 44,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 45,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 46,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  44,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 47,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  45,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 48,
+                "shape": [
+                  2,
+                  4,
+                  5,
+                  1,
+                  121
+                ]
+              },
+              {
+                "dtype": "int32",
+                "index": 49,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 50,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 51,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 52,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 53,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 54,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 55,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 56,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 57,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 58,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 59,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 60,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 61,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 62,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 63,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 64,
+                "shape": [
+                  44,
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 65,
+                "shape": [
+                  44,
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 66,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 67,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float32",
+                "index": 68,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 69,
+                "shape": [
+                  44,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 70,
+                "shape": [
+                  45,
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 71,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 72,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 73,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 74,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 75,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 76,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 77,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 78,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 79,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 80,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 81,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 82,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 83,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 84,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 85,
+                "shape": [
+                  45
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 86,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 87,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 88,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 89,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 90,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 91,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 92,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 93,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 94,
+                "shape": [
+                  44
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 95,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 96,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 97,
+                "shape": [
+                  70,
+                  121
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 98,
+                "shape": [
+                  71,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 99,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 100,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 101,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 102,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 103,
+                "shape": []
+              },
+              {
+                "dtype": "float64",
+                "index": 104,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 105,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 106,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 107,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 108,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 109,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 110,
+                "shape": [
+                  70,
+                  120
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 111,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 112,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 113,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 114,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 115,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 116,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 117,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 118,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 119,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 120,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 121,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 122,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float64",
+                "index": 123,
+                "shape": [
+                  8400
+                ]
+              },
+              {
+                "dtype": "float",
+                "index": 124,
+                "shape": []
+              }
+            ],
+            "treedef": {
+              "bytes": 1023845,
+              "leaf_count": 125,
+              "node_count": 140,
+              "serialization": "python-pickle-protocol-5",
+              "sha256": "647656e876953aaaf6a9fc8a8942c885697a793e515d3659b04051718f887a3c"
+            },
+            "type": "builtins.tuple"
+          }
+        },
+        "called_function": {
+          "ast_sha256": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123",
+          "fqname": "gpuwrf.runtime.operational_mode._run_forecast_operational_jit"
+        },
+        "lowered_program_bytes": 222295811,
+        "lowered_program_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5"
+      },
+      "case": {
+        "boundary_leaf_names": [
+          "mu_bdy",
+          "mub_bdy",
+          "p_bdy",
+          "pb_bdy",
+          "ph_bdy",
+          "phb_bdy",
+          "qv_bdy",
+          "theta_bdy",
+          "u_bdy",
+          "v_bdy",
+          "w_bdy"
+        ],
+        "boundary_record_cadence_s": 3600.0,
+        "boundary_window_cadence_s": 3600.0,
+        "case_metadata": {
+          "boundary": {
+            "bdy_width": 5,
+            "padded_side_length": 121,
+            "schema": "history-strip-pack-v2",
+            "side_order": [
+              "W",
+              "E",
+              "S",
+              "N"
+            ],
+            "source": "Gen2 d02 hourly wrfout side-history replay",
+            "source_run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+            "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
+            "times": 2,
+            "variables": [
+              "U",
+              "V",
+              "W",
+              "T",
+              "QVAPOR",
+              "P",
+              "PB",
+              "PH",
+              "PHB",
+              "MU",
+              "MUB"
+            ],
+            "wrfbdy_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfbdy_d01",
+            "wrfbdy_width_source": "decode_wrfbdy"
+          },
+          "domain": "d01",
+          "grid": {
+            "dx_m": 9000.0,
+            "dy_m": 9000.0,
+            "mass_shape": [
+              44,
+              70,
+              120
+            ],
+            "wrf_staggered_extent": [
+              45,
+              71,
+              121
+            ]
+          },
+          "gwdo_static": {
+            "domain": "d01",
+            "dx_m": 9000.0,
+            "fields_present": {
+              "CON": true,
+              "OA1": true,
+              "OA2": true,
+              "OA3": true,
+              "OA4": true,
+              "OL1": true,
+              "OL2": true,
+              "OL3": true,
+              "OL4": true,
+              "VAR": true
+            },
+            "requested": true,
+            "sources": {
+              "CON": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA1": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA2": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA3": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OA4": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL1": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL2": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL3": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "OL4": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "VAR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00"
+            },
+            "status": "built",
+            "terrain_shape": [
+              70,
+              120
+            ],
+            "uses_dycore_map_rotation": true,
+            "var_abs_max": 396.22198486328125
+          },
+          "init_mode": "cpu_wrf_replay",
+          "namelist": {
+            "acoustic_substeps": 10,
+            "damp_opt": 3,
+            "dampcoef": 0.2,
+            "diff_6th_factor": 0.12,
+            "diff_6th_opt": 2,
+            "disable_guards": false,
+            "dt_s": 10.0,
+            "force_fp64": true,
+            "gwd_opt": 1,
+            "moist_adv_opt": 1,
+            "radiation_cadence_steps": 180,
+            "rk_order": 3,
+            "run_boundary": true,
+            "run_physics": true,
+            "scalar_adv_opt": 1,
+            "slope_rad": 1,
+            "top_lid": false,
+            "topo_shading": 1,
+            "topo_shadow_length_m": 25000.0,
+            "use_flux_advection": true,
+            "use_vertical_solver": true,
+            "w_damping": 1,
+            "zdamp": 5000.0
+          },
+          "radiation_static": {
+            "domain": "d01",
+            "dx_m": 9000.0,
+            "dy_m": 9000.0,
+            "slope_aspect_ref": "WRF dyn_em/start_em.F slope/slp_azi initialization",
+            "terrain_shape": [
+              70,
+              120
+            ],
+            "terrain_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+            "uses_dycore_map_rotation": true,
+            "uses_real_xlat_xlong": true,
+            "xlat_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+            "xlong_source": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00"
+          },
+          "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+          "run_id": "fastbind_r1",
+          "source": "gpuwrf.integration.d02_replay.build_replay_case",
+          "standalone_native_init": false,
+          "writer_static_latlon": {
+            "candidate_files": [
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18"
+            ],
+            "domain": "d01",
+            "errors": {},
+            "fields": {
+              "XLAT": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.32917022705078,
+                "min": 25.61162567138672,
+                "shape": [
+                  70,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLAT_U": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.329177856445312,
+                "min": 25.60967254638672,
+                "shape": [
+                  70,
+                  121
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLAT_V": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": 31.369590759277344,
+                "min": 25.571189880371094,
+                "shape": [
+                  71,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.1119384765625,
+                "min": -21.3668212890625,
+                "shape": [
+                  70,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG_U": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.064727783203125,
+                "min": -21.414093017578125,
+                "shape": [
+                  70,
+                  121
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              },
+              "XLONG_V": {
+                "dtype": "float32",
+                "finite_fraction": 1.0,
+                "max": -10.109527587890625,
+                "min": -21.36871337890625,
+                "shape": [
+                  71,
+                  120
+                ],
+                "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+              }
+            },
+            "loaded_fields": [
+              "XLAT",
+              "XLAT_U",
+              "XLAT_V",
+              "XLONG",
+              "XLONG_U",
+              "XLONG_V"
+            ],
+            "missing_fields": [],
+            "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+            "status": "loaded"
+          }
+        },
+        "case_preparation_sequence": [
+          "gpuwrf.integration.daily_pipeline._build_real_case",
+          "gpuwrf.integration.daily_pipeline._capture_boundary_leaves",
+          "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s",
+          "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves"
+        ],
+        "cpu_device_adapter": {
+          "enabled": true,
+          "scope": "gpuwrf.contracts.state._gpu_device only, during _build_real_case"
+        },
+        "domain": "d01",
+        "hours": 1.0,
+        "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+        "segment_hours": 1.0,
+        "segment_start_s": 0.0
+      },
+      "result": {
+        "exact_value_sha256": "41ea21b86ee898e2547e055dedbc60af83cd851eb0db557057e6f717508d1e6e",
+        "semantics": {
+          "leaf_count": 64,
+          "leaves": [
+            {
+              "dtype": "float64",
+              "index": 0,
+              "shape": [
+                44,
+                70,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 1,
+              "shape": [
+                44,
+                71,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 2,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 3,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 4,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 5,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 6,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 7,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 8,
+              "shape": [
+                45,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 9,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 10,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 11,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 12,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 13,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 14,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 15,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 16,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 17,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 18,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 19,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 20,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 21,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 22,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 23,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 24,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 25,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 26,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 27,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 28,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 29,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 30,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 31,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 32,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 33,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 34,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 35,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 36,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 37,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 38,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 39,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 40,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 41,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 42,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 43,
+              "shape": [
+                2,
+                4,
+                5,
+                1,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 44,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 45,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 46,
+              "shape": [
+                2,
+                4,
+                5,
+                44,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 47,
+              "shape": [
+                2,
+                4,
+                5,
+                45,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 48,
+              "shape": [
+                2,
+                4,
+                5,
+                1,
+                121
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 49,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 50,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 51,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 52,
+              "shape": [
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 53,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 54,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 55,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 56,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 57,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 58,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 59,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 60,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 61,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 62,
+              "shape": [
+                44,
+                70,
+                120
+              ]
+            },
+            {
+              "dtype": "float64",
+              "index": 63,
+              "shape": [
+                70,
+                120
+              ]
+            }
+          ],
+          "treedef": {
+            "bytes": 1069,
+            "leaf_count": 64,
+            "node_count": 72,
+            "serialization": "python-pickle-protocol-5",
+            "sha256": "6486a046bd0c991617527194135f12ae8b3160b85936a4c82ccf557183e04858"
+          },
+          "type": "gpuwrf.contracts.state.State"
+        },
+        "synchronization": "jax.block_until_ready(result)"
+      },
+      "returned_state_semantics": "gpuwrf.contracts.state.State",
+      "wrapper_function": "gpuwrf.runtime.operational_mode.run_forecast_operational"
+    },
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+    "status": "PASS"
+  },
+  "receipts_consumed": [],
+  "receipts_read": [],
+  "schema": "wrf_gpu2.v025.m0.exact_boundary_cpu_evidence.v1",
+  "source_contract": {
+    "authorization_before_child_import": true,
+    "clean_instrumentation_absent": true,
+    "direct_synchronized_invocation": true,
+    "exact_lower_compile": true,
+    "executor_accelerator_imports": [],
+    "forecast_child_top_level_accelerator_imports": [],
+    "pallas_child_top_level_accelerator_imports": [],
+    "parent_accelerator_imports": [],
+    "parent_death_guard_accelerator_imports": [],
+    "parent_death_kills_child_process_group": true,
+    "production_function_hashes": {
+      "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s": "23702a1d4d5154f523ed3dd9ec19d43fc11376ffe600b1f959595ea4c75e72db",
+      "gpuwrf.integration.daily_pipeline._build_real_case": "aff14597c9760987836e08382bf6f9d4a0f240ba69ae6caaceb4a6efc909a143",
+      "gpuwrf.integration.daily_pipeline._capture_boundary_leaves": "e02ce49fe0c62fff014f7679dc8b3e709e8b9dc6c6f746acbdb01b5f49266613",
+      "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves": "c85f42ce6e33237f3df20613ef8cc9a78cd95589ebaa880b65e86806726e83d4",
+      "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total": "4dc8690a0f6181a24f0817242501d9a7599db372bca7677b013327a1ea96ecb1",
+      "gpuwrf.runtime.operational_mode._dealias_pytree_buffers": "9e3bc0fd9be3ad694805578db05fc9bb7409646649cee82c9ff902e2f1257265",
+      "gpuwrf.runtime.operational_mode._operational_scan_state": "f0609a83ad8c7ee7421e4155a13632299495c9466ab38109ff2db2326785e1c1",
+      "gpuwrf.runtime.operational_mode._run_forecast_operational_jit": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123"
+    },
+    "profiled_clean_shared_helper": true,
+    "profiled_exact_range": "GPUWRF_M0_FORECAST_INTEGRATION",
+    "source_sha256": {
+      "scripts/v025/build_m0_exact_boundary_evidence.py": "2e453dc5ca68a10f7bed71ec36bcb2c4f078f972c7bd92167ec742781bb1ea76",
+      "scripts/v025/m0_exact_boundary_child.py": "61c4a3d332f4d4d601f299b3fca1e98eb65833ce70e17d92969173f9afe6fd88",
+      "scripts/v025/m0_exact_boundary_contract.py": "18a611f424e8424000cc1a637e4f6bc9c47cb181f267b1d91d1d55235605b566",
+      "scripts/v025/m0_parent_death_guard.py": "6b05573364958d03d8d5d5d9c473fd4f23b380ef53c92453366208c7ab006986",
+      "scripts/v025/m0_three_window_executor.py": "41948e5610456596fa0defd45be151c74581baa0a3b26fce7f29a8def2a18dcd",
+      "scripts/v025/m0_vram_sampler.py": "b28e750b291d01d52f9074ddaf2f673db5623c46a366227a9b34d22c884275f7",
+      "scripts/v025/m0_window_parent.py": "466a5ba5e63da553aecc176f1bdd8962905bd97c8221d0512b33d68f8066e97e",
+      "scripts/v025/pallas_sm120_spike.py": "39abfd9a983ff8fc3d16eca3f4ef00f02a9cd2458166ae171a1e35444f92d9a2",
+      "scripts/v025/prepare_m0_matched_pair.py": "034c7ec43fc5928646a061d290c41832c13870c4177d9f89f5388f6e519cc3b6",
+      "scripts/v025/prepare_pallas_fast_savepoint.py": "36cc1083c394b5531e32b3146f2155b23840e1033941494ec82a1ff7fe674eab",
+      "scripts/v025/refresh_m0_exact_boundary_evidence.py": "6bcaf339802baf9433584a6bc44360c0e1a162bcab9455934b4bc5278c0dda4f"
+    },
+    "status": "PASS",
+    "wrapper_preparation_sequence": [
+      "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+      "gpuwrf.runtime.operational_mode._operational_scan_state",
+      "gpuwrf.runtime.operational_mode._dealias_pytree_buffers"
+    ]
+  },
+  "status": "CPU_EXACT_BOUNDARY_GREEN_GPU_WINDOWS_MISSING"
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "BigswissGpuBenchmark",
+  "schema_version": 2,
+  "generated_utc": "2026-06-14T22:14:00+00:00",
+  "branch": "worker/perf/v017-rc",
+  "worktree": "<USER_HOME>/src/wrf_gpu2/.wt-rc",
+  "device": "NVIDIA GeForce RTX 5090 (GB202, 32607 MiB total)",
+  "grid": {
+    "label": "bigswiss / switzerland-large",
+    "e_we": 461,
+    "e_sn": 461,
+    "e_vert": 45,
+    "dx_m": 3000,
+    "mass_cols": 211600,
+    "mass_nx": 460,
+    "mass_ny": 460,
+    "mass_nz": 44
+  },
+  "config": {
+    "domain": "d01",
+    "hours_requested": 13,
+    "dt_s": 18.0,
+    "steps_per_hour": 200,
+    "total_steps_13h": 2600,
+    "precision": "fp64",
+    "init_mode": "standalone_native_init",
+    "GPUWRF_MYNN_BOULAC_ONZ": "1",
+    "physics": {
+      "mp_physics": 8,
+      "ra_lw_physics": 4,
+      "ra_sw_physics": 4,
+      "sf_sfclay_physics": 5,
+      "sf_surface_physics": 4,
+      "bl_pbl_physics": 5,
+      "cu_physics": 0
+    },
+    "namelist_validation": "PASS (all schemes operationally wired; no silent omission, no warnings)"
+  },
+  "result": "BLOCKED_GPU_VRAM_OOM",
+  "verdict_summary": "bigswiss (211,600 cols, fp64) EXCEEDS the single-GPU 32 GB VRAM ceiling. No measured warm 13h wallclock or CPU/GPU factor is possible on one RTX 5090. NOT a NaN/CFL instability; a hard memory ceiling.",
+  "runs": [
+    {
+      "run": "default_BFC_allocator",
+      "allocator": "BFC (XLA default)",
+      "column_tiling": "RRTMG LW/SW + MYNN default 16384; MP adapter UN-tiled (default off)",
+      "oom_single_alloc_gib": 22.28,
+      "oom_single_alloc_bytes": 23919941376,
+      "resident_peak_gib_in_use": 9.02,
+      "wall_to_failure_s": 231.3,
+      "failure": "JaxRuntimeError RESOURCE_EXHAUSTED: Out of memory while trying to allocate 22.28GiB"
+    },
+    {
+      "run": "platform_allocator_plus_aggressive_tiling",
+      "allocator": "platform (cudaMalloc, synchronous; no BFC arena)",
+      "column_tiling": "MP=ON@8192, MYNN=8192, RRTMG LW/SW=8192 (all maximally tiled)",
+      "oom_single_alloc_gib": 21.35,
+      "oom_single_alloc_bytes": 22921455480,
+      "resident_during_compile_gib": 8.6,
+      "free_at_attempt_gib": 23.5,
+      "wall_to_failure_s": 212.5,
+      "failure": "CUDA_ERROR_OUT_OF_MEMORY: Failed to allocate 21.35GiB",
+      "note": "Aggressive column-tiling reduced the big transient only 22.28->21.35 GiB. The residual is the SUM of un-tiled full-grid (ncol,nz) arrays (prognostic State leaves, dycore/acoustic work arrays, per-RK-stage tendencies) that NO env knob caps -- exactly the v0.15 vram_ceiling_findings.json composition."
+    }
+  ],
+  "vram_ceiling_corroboration_v015": {
+    "source": ".wt-rc/proofs/perf/v015/km_bench/{km_feasibility_verdict.json,vram_ceiling_findings.json,localize_18g_alloc.json}",
+    "peak_vram_fit": "LINEAR in ncol: 0.1654 GiB/1000col, intercept -1.52 GiB (R2 0.997)",
+    "largest_that_ran": "167,904 cols @ 26.25 GiB",
+    "first_documented_oom": "209,880 cols -> single 28.44 GiB alloc",
+    "bigswiss_projected_peak_gib": 33.5,
+    "fits_32gb": false,
+    "single_gpu_fp64_fits_ceiling": "~167k cols (560x280 = 156,800 cols @ 24.4 GiB FITS; bigswiss 460x460 = 211,600 cols does NOT)"
+  },
+  "projected_if_it_fit": {
+    "basis": "v0.15 km_feasibility_verdict core_ms_per_step fit (a=19.58 ms + b=4.937 ms/1000col, R2 0.997); CORE = dycore+rad+MYNN, EXCLUDES boundary relaxation + NoahMP land + full Thompson MP + output I/O",
+    "core_ms_per_step": 1064.2,
+    "core_13h_warm_wall_h": 0.77,
+    "core_factor_vs_cpu_3346h": 4.35,
+    "caveat": "PROJECTION ONLY, NOT A MEASUREMENT. Core-only; real warm with full physics + boundary + I/O would be SLOWER -> a smaller factor. Cannot be measured on one GPU because the grid OOMs."
+  },
+  "cpu_reference": {
+    "ranks": 12,
+    "coreset": "4-15",
+    "binary": "WRF v4 gfortran dmpar (install_gen2_dmpar)",
+    "wall_13h_h": 3.346,
+    "wall_13h_s": 12045.6,
+    "method": "h0->h13 wrfout mtime delta (verified 12046.7 s)",
+    "cpu_warm_per_hour_s": 946.6
+  },
+  "factor_cpu_over_gpu": {
+    "warm": null,
+    "observed": null,
+    "reason": "GPU run OOM -- no GPU wallclock measured."
+  },
+  "stability_equivalence": "NOT REACHED: 0 wrfout produced (OOM before hour-1 output). No NaN/CFL was observed -- the run never advanced; failure is VRAM, not numerics.",
+  "recommendation": "bigswiss is NOT a valid single-GPU benchmark target in fp64 on the RTX 5090. For the v0.17 headline pick a grid <= ~167k cols (e.g. 560x280 / 156,800 cols, the proven single-GPU 1km-unlock fits-ceiling) so a real warm wallclock + factor can be MEASURED; OR run bigswiss on multi-GPU (its real value per the project anchor is 1km-capability + cluster weak-scaling, not single-GPU speed); OR land the deferred MP-adapter + dycore-work column-tiling (v0.15 vram_ceiling_findings.json actionable path, ~4-5 GiB savings still short of the ~5+ GiB bigswiss overshoot).",
+  "artifacts": {
+    "bench_log_default": "<DATA_ROOT>/wrf_gpu_validation/v017_bigswiss_gpu_bench/bench.log",
+    "bench_log_mitigation": "<DATA_ROOT>/wrf_gpu_validation/v017_bigswiss_gpu_bench/bench_mitig.log",
+    "pipeline_blocked_json": "<DATA_ROOT>/wrf_gpu_validation/v017_bigswiss_gpu_bench/proofs/pipeline_run_20260521.json",
+    "init_dir": "<DATA_ROOT>/wrf_gpu_validation/v017_bigswiss_gpu_init",
+    "driver": "<USER_HOME>/src/wrf_gpu2/.wt-rc/scripts/v017_bigswiss_gpu_bench.py"
+  }
+}

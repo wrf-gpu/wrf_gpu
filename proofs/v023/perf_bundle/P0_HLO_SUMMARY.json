@@ -1,0 +1,57 @@
+{
+  "after": {
+    "chars": 576030,
+    "divide": 119,
+    "dynamic_update_slice": 6,
+    "reduce": 338,
+    "subtract": 442,
+    "tuple": 2272,
+    "while": 52
+  },
+  "after_attrs": [
+    "swdown",
+    "swdnb",
+    "swupb",
+    "swdnt",
+    "swupt",
+    "swnorm"
+  ],
+  "before": {
+    "chars": 1626763,
+    "divide": 357,
+    "dynamic_update_slice": 17,
+    "reduce": 672,
+    "subtract": 1247,
+    "tuple": 7397,
+    "while": 166
+  },
+  "before_attrs": [
+    "t2",
+    "u10",
+    "v10",
+    "psfc",
+    "swdown",
+    "glw",
+    "pblh",
+    "tsk",
+    "swdnb",
+    "swupb",
+    "lwdnb",
+    "lwupb",
+    "swdnt",
+    "swupt",
+    "lwdnt",
+    "lwupt",
+    "swnorm"
+  ],
+  "delta_after_minus_before": {
+    "chars": -1050733,
+    "divide": -238,
+    "dynamic_update_slice": -11,
+    "reduce": -334,
+    "subtract": -805,
+    "tuple": -5125,
+    "while": -114
+  },
+  "verdict": "PASS"
+}

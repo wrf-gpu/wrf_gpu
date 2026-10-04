@@ -1,0 +1,22 @@
+{
+  "algo": "dense",
+  "algo_desc": "dense_nznz_frozen_v014_default",
+  "hours": 1,
+  "compile_timeout_s": 1800,
+  "verdict": "COMPLETED",
+  "cold_compile_plus_run_s": 83.78,
+  "cold_compile_timed_out": false,
+  "compile_wall_s": 51.48,
+  "warm_run_walls_s": [
+    32.341,
+    32.3
+  ],
+  "warm_run_min_s": 32.3,
+  "steps_per_hour": 360,
+  "dt_s": 10.0,
+  "steady_s_per_step": 0.08972,
+  "peak_rss_gb": 8.257,
+  "state_npz": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/compile_pathology/killgate_dense_state.npz",
+  "n_leaves": 64,
+  "warm_input_mode": "fresh_real_case_per_call_to_avoid_reusing_jax_donated_arrays"
+}

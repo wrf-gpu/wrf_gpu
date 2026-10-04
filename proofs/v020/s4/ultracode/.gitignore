@@ -1,0 +1,5 @@
+# Heavy run artifacts (multi-GB wrfout + scratch) — keep scripts, JSON metrics, logs only.
+out/
+scratch/
+wrfout_*
+*.nsys-rep

@@ -1,0 +1,255 @@
+{
+  "authorization": {
+    "canonical_lock": {
+      "exported_label": "m0-core-w1-w2-w3-session",
+      "holder_file": "/tmp/wrf_gpu2_gpu.lock.holder",
+      "holder_record": "holder=m0-core-w1-w2-w3-session pid=631037 since=2026-08-09T07:17:17Z token=gpuwrf-lock-631037-19090-1786259837510021755 cmd=<USER_HOME>/miniconda3/bin/python <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_three_window_executor.py --manager-core-session-held --receipt .agent/sprints/2026-08-09-v0250-m0-r5-kernel-lock-authority/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R5.json",
+      "label_matched": true,
+      "token_matched": true
+    },
+    "cpu_preflight_content_sha256": "23696257c0fa65c586b77e759e2532fc090d9063810624ea889a119d190fe78f",
+    "cpu_preflight_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/cpu_preflight.json",
+    "cpu_preflight_sha256": "372e6ad53298d33734e6b3d7802dc78e0893dbec73c1c759ddebc2ecf4442066",
+    "kernel_lock_binding": {
+      "device_decimal": 39,
+      "expected_path": "/tmp/wrf_gpu2_gpu.lock",
+      "held_fd": 9,
+      "held_fd_checked": true,
+      "held_kernel_record_count": 1,
+      "held_kernel_snapshot_content_address": "85bba1b64c552d29e78afa128481cd62d3d4e03d84dd768186b267f625403345",
+      "inode": 294,
+      "proc_locks_key": "00:27:294",
+      "status": "PASS"
+    },
+    "label": "m0-core-w1-w2-w3-session",
+    "lock_acquisitions": 1,
+    "prelock_revalidation_content_sha256": "524f2375b58e98b619948033052516e79e7b56c5576f0e16ace5fc7edc592250",
+    "prelock_revalidation_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/prelock_revalidation.json",
+    "prelock_revalidation_sha256": "00e407dea8cbb96e592d980799f73b952bba4e975b411cbc150575aadfaab387",
+    "receipt_fingerprint": "46a6c5e750793d1efb6f480bfabad7744d8ed96c37c95a13e57f3e05953027a6",
+    "receipt_path": ".agent/sprints/2026-08-09-v0250-m0-r5-kernel-lock-authority/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R5.json",
+    "receipt_spent_at_utc": "2026-08-09T07:17:17.645175+00:00",
+    "session_identity_content_sha256": "580116d686bc7ed08342858028a56bc0eb3c020de5f5aef67f62ffd95a046374",
+    "session_identity_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/session_preflight_identity.json",
+    "session_identity_sha256": "ac53b237baf7672351170e448db109eaedccd8c4f1a1ac21c54560f564d41229",
+    "spend_record": {
+      "managers": [
+        "0:2",
+        "0:3"
+      ],
+      "reason": "authorised window m0-core-w1-w2-w3-session",
+      "requested_at_utc": "2026-08-09T07:14:27.153453+00:00",
+      "spent_at_utc": "2026-08-09T07:17:17.645175+00:00",
+      "window": "m0-core-w1-w2-w3-session"
+    },
+    "spent_after_cpu_preflight": true,
+    "spent_after_input_revalidation": true,
+    "spent_before_any_device_child": true,
+    "window": "M0_CORE_SESSION"
+  },
+  "compiler_dump_flags": [],
+  "cpu_preflight": {
+    "content_sha256": "23696257c0fa65c586b77e759e2532fc090d9063810624ea889a119d190fe78f",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/cpu_preflight.json",
+    "sha256": "372e6ad53298d33734e6b3d7802dc78e0893dbec73c1c759ddebc2ecf4442066"
+  },
+  "elapsed_seconds": 1204.616579664,
+  "finished_at_utc": "2026-08-09T07:37:22.218384+00:00",
+  "first_failure": {
+    "error": "WindowRefusal: changed autotune-0 candidate definitively FAILED the frozen two-of-three 600s cold protocol; W1/C1/W2/W3 are suppressed",
+    "kind": "SAFETY_CORRECTNESS_OR_IDENTITY_FAILURE",
+    "stage": "W1_CACHED_AND_CORRECTNESS"
+  },
+  "global_deadline_seconds": 4500.0,
+  "graph": {
+    "first_failure": {
+      "error": "WindowRefusal: changed autotune-0 candidate definitively FAILED the frozen two-of-three 600s cold protocol; W1/C1/W2/W3 are suppressed",
+      "kind": "SAFETY_CORRECTNESS_OR_IDENTITY_FAILURE",
+      "stage": "W1_CACHED_AND_CORRECTNESS"
+    },
+    "schema": "wrf_gpu2.v025.m0.core_session_protocol.v2",
+    "stages": [],
+    "status": "BLOCKED",
+    "suppressed": [
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+      "W2",
+      "W3"
+    ]
+  },
+  "held_budget": {
+    "global_deadline_seconds": 4500.0,
+    "headroom_seconds": 280.0,
+    "reservation_seconds": 4220.0,
+    "reservations": {
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR": 60.0,
+      "W1_CACHED_AND_CORRECTNESS": 360.0,
+      "W1_COLD_DECISION": 1800.0,
+      "W2_PROFILED_CAPTURE": 1400.0,
+      "W3_CLEAN_MATCHED_ARM": 600.0
+    },
+    "status": "PASS",
+    "worst_branch": "three threshold-censored cold attempts"
+  },
+  "held_process_group": 631037,
+  "label": "m0-core-w1-w2-w3-session",
+  "lock_acquisitions": 1,
+  "lock_released_by": "the manager's with_gpu_lock.sh on process exit",
+  "native_pallas_reachable": false,
+  "orphan_sweep_completed": true,
+  "postlock_analysis_runs_after_release": true,
+  "prelock_revalidation": {
+    "content_sha256": "524f2375b58e98b619948033052516e79e7b56c5576f0e16ace5fc7edc592250",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/prelock_revalidation.json",
+    "sha256": "00e407dea8cbb96e592d980799f73b952bba4e975b411cbc150575aadfaab387"
+  },
+  "process_group_proof": {
+    "active": [],
+    "all_registered_groups_empty": true,
+    "completed": [
+      {
+        "empty": true,
+        "process_group": 631049,
+        "stage": "cold_empty_cache_readiness_1"
+      },
+      {
+        "empty": true,
+        "process_group": 651125,
+        "stage": "cold_empty_cache_readiness_2"
+      }
+    ],
+    "registered": 2,
+    "status": "PASS"
+  },
+  "queue_path": null,
+  "receipt_refund_path": null,
+  "retry_path": null,
+  "schema": "wrf_gpu2.v025.m0.core_session_execution.v1",
+  "session_contract": {
+    "c1_subgate": {
+      "both_required": true,
+      "components": [
+        "w1_same_result_wrfout_binding_verify_file",
+        "fresh_12_rank_cpu_wrf_comparator"
+      ],
+      "coordination_disclosure": "the fresh 12-rank CPU-WRF arm runs before coordination; C1 spends at most 60 s in-lock verifying the hash-bound output and preparing the exact W2/W3 pair",
+      "expected_lock_hold_seconds": 60.0,
+      "position": "between W1_CACHED_AND_CORRECTNESS and W2_PROFILED_CAPTURE",
+      "runs_inside_the_one_held_lock": true,
+      "suppresses_on_failure": [
+        "W2",
+        "W3"
+      ]
+    },
+    "canonical_lock_acquisitions": 1,
+    "cold_protocol": {
+      "decision": "two PASS_COLD or two FAIL_COLD",
+      "first_cold_miss_suppresses_later_cold_attempts": false,
+      "maximum_processes": 3,
+      "third_process": "only if first two disagree",
+      "threshold_seconds": 600.0,
+      "unique_empty_normal_cache_per_process": true
+    },
+    "contract_sha256": "3ebdbbd608a26be6a9e0c0deb63d1b5cea96a202e0e95fbebb6ce7f8167dc2f1",
+    "cpu_preflight": {
+      "device_action": false,
+      "fresh_12_rank_cpu_wrf": true,
+      "position": "before receipt spend and canonical lock acquisition",
+      "timeout_seconds": 420.0
+    },
+    "deferred": {
+      "compiler_peak_live_buffers": "M1_SAME_SET_CANDIDATE_DIAGNOSIS_OR_M2_BACKEND_BAKEOFF",
+      "native_pallas": "M2_BACKEND_BAKEOFF_ENTRY",
+      "ncu_fields": "M2"
+    },
+    "global_deadline_seconds": 4500.0,
+    "held_budget": {
+      "global_deadline_seconds": 4500.0,
+      "headroom_seconds": 280.0,
+      "reservation_seconds": 4220.0,
+      "reservations": {
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR": 60.0,
+        "W1_CACHED_AND_CORRECTNESS": 360.0,
+        "W1_COLD_DECISION": 1800.0,
+        "W2_PROFILED_CAPTURE": 1400.0,
+        "W3_CLEAN_MATCHED_ARM": 600.0
+      },
+      "status": "PASS",
+      "worst_branch": "three threshold-censored cold attempts"
+    },
+    "label": "m0-core-w1-w2-w3-session",
+    "machine_authority": {
+      "fields": [
+        "cpu_closure_gate",
+        "milestone_partition"
+      ],
+      "never": "top_level_status_string",
+      "rule": "automation keys M0-CORE acceptance on the structured gate fields only; the descriptive status string is not a gate"
+    },
+    "receipt": {
+      "affirmative_verbatim_required": true,
+      "content_addressed": true,
+      "invalid_after": [
+        "preemption",
+        "process_leak",
+        "identity_change",
+        "global_deadline"
+      ],
+      "nonqueueing": true,
+      "relinquish_immediately_on_manager_request": true,
+      "required_managers": [
+        "0:2",
+        "0:3"
+      ],
+      "single_use": true,
+      "spent_at_authorization": true
+    },
+    "schema": "wrf_gpu2.v025.m0.core_session_protocol.v2",
+    "stage_order": [
+      "W1_COLD_DECISION",
+      "W1_CACHED_AND_CORRECTNESS",
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+      "W2_PROFILED_CAPTURE",
+      "W3_CLEAN_MATCHED_ARM",
+      "LOCK_RELEASE",
+      "POSTLOCK_CPU_ANALYSIS",
+      "POSTLOCK_M0_CORE_FINALIZER"
+    ],
+    "suppression": {
+      "c1_comparator_failure": [
+        "W2",
+        "W3"
+      ],
+      "c1_wrfout_binding_failure": [
+        "W2",
+        "W3"
+      ],
+      "definitive_w1_failure": [
+        "W1_CACHED_AND_CORRECTNESS",
+        "W2",
+        "W3"
+      ],
+      "first_cold_miss": [],
+      "global_deadline_exceeded": [
+        "every_later_stage"
+      ],
+      "preemption_or_process_leak": [
+        "every_later_stage"
+      ],
+      "receipt_reuse_or_spend_order_failure": [
+        "every_stage"
+      ],
+      "safety_correctness_identity_failure": [
+        "every_later_stage"
+      ]
+    }
+  },
+  "session_identity": {
+    "content_sha256": "580116d686bc7ed08342858028a56bc0eb3c020de5f5aef67f62ffd95a046374",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/session_preflight_identity.json",
+    "sha256": "ac53b237baf7672351170e448db109eaedccd8c4f1a1ac21c54560f564d41229"
+  },
+  "session_sha256": "60b3a2db95a708d057ffc98f8d75f34e927cefdac8a68ea3af53f9efc792036a",
+  "stage_details": {},
+  "started_at_utc": "2026-08-09T07:17:17.601793+00:00",
+  "status": "BLOCKED"
+}

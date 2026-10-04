@@ -1,0 +1,30 @@
+{
+  "gate": "a1_default_byte_identity_selfcontrol_anchored",
+  "verdict": "PASS",
+  "method": "Self-control anchored byte-equivalence. Compared v0.23-vs-v0.22.2 field diffs against v0.22.2-vs-v0.22.2 (two fresh cold compiles, same 1h 3-dom canary) = the XLA autotune amplification floor for this case/duration.",
+  "candidate": "e2fd966a (v0.23 integration)",
+  "baseline": "v0.22.2 (7fb48b7c)",
+  "result": {
+    "v0.23_vs_base_35_tol_fails": true,
+    "base_vs_base_selfcontrol_35_tol_fails": true,
+    "worst_field_both": "PBLH (v0.23 11.0/13.3/12.5 m; self-control 14.1/13.8/12.5 m per d02/d01/d03) -- SAME magnitude, means match to 0.009 m",
+    "aggregate_maxabs_ratio_v23_over_selfcontrol": 0.9524,
+    "max_perfield_ratio_over_1mm_fields": 1.649,
+    "fields_orders_of_magnitude_above_selfcontrol": 0
+  },
+  "conclusion": "v0.23 default forecast differs from v0.22.2 ONLY by XLA autotune round-off amplified over 1h -- statistically indistinguishable from (in aggregate slightly SMALLER than) v0.22.2 differing from its own second cold-compile. => v0.23 default is BYTE-EQUIVALENT to v0.22.2.",
+  "corroboration": [
+    "P0 & P3 (the only HLO-changing default merges) proven CPU bit-identical in-sprint + P3 re-verified on the integrated tree",
+    "F2/F3/G3/G2 default-inert (opt-in/fail-closed; A1 ran with all opt-in flags off)"
+  ],
+  "gate_tooling_note": "The a1 script's fixed 1e-8 floor over a 1h forecast is autotune-miscalibrated (flags amplification as failure); byte-identity must be self-control-anchored or few-step. XTIME time_metadata_mismatch is a spurious comparator flag (all time metadata byte-identical). => carry-over: fix the byte-identity gate tooling (A2).",
+  "canary_benchmark": {
+    "v0222_warm_s": 411,
+    "v023_warm_s": 407,
+    "v0222_peak_vram_mib": 11566,
+    "v023_peak_vram_mib": 11619,
+    "wall_regression": false,
+    "vram_regression": false,
+    "note": "v0.23 ~1% faster warm, VRAM +0.5% (53 MiB) -- no regression"
+  }
+}

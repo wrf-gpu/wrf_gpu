@@ -1,0 +1,18 @@
+{
+  "all_finite": true,
+  "bytes": 367594272,
+  "corrected_gate": "PASS",
+  "invalidated_old_ref_sha256": "519cd3e5c69561d750189ad694e1300bc729df4a0e6348d670d055eb0ab6db8e",
+  "invalidated_old_ref_reason": "Stale cold-compile/autotune artifact, not a v0.22 source regression.",
+  "leaves": 178,
+  "log": "proofs/v022/release_prep/logs/v0220_136fix_digest_confirm_20250121.log",
+  "ref_basis": "fresh_v0211_matched_warmdet_20250121",
+  "ref_equal": true,
+  "ref_sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4",
+  "s_per_fc_hour": 4208.6373,
+  "s_per_step": 21.0432,
+  "sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4",
+  "tag": "v0220_136fix_digest_confirm_20250121",
+  "verdict": "PASS",
+  "vram_peak_mib": 17607
+}

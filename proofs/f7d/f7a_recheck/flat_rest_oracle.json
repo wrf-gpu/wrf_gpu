@@ -1,0 +1,38 @@
+{
+  "generated_utc": "2026-05-29T04:21:19.956480+00:00",
+  "commit": "5fb6d36bfbc8a250c40e6baf000e045a872340ff",
+  "grid": {
+    "nz": 20,
+    "ny": 4,
+    "nx": 4
+  },
+  "dts_s": 2.0,
+  "dx_m": 1000.0,
+  "dy_m": 1000.0,
+  "epssm": 0.5,
+  "device": [
+    "cuda:0"
+  ],
+  "oracle": "flat_rest_AC3",
+  "deltas": {
+    "u": 0.0,
+    "v": 0.0,
+    "w": 0.0,
+    "ph": 0.0,
+    "theta": 0.0,
+    "p": 0.0,
+    "mu": 0.0
+  },
+  "tolerances": {
+    "u": 1e-09,
+    "v": 1e-09,
+    "w": 1e-09,
+    "ph": 0.14498868494351302,
+    "theta": 1e-09,
+    "p": 0.09774999999999999,
+    "mu": 9e-05
+  },
+  "passed": true,
+  "pressure_scale": 97750.0,
+  "ph_scale": 144988.68494351304
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "v022_k2_nest_ladder_config",
+  "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20250121/cpu",
+  "hours": 3,
+  "maxdom": 3,
+  "history_interval_min": 18,
+  "rung_timeout_s": 5400,
+  "rungs": [
+    {"tag": "N1", "root_dt_s": 54, "n_sound": 10},
+    {"tag": "N2", "root_dt_s": 60, "n_sound": 9},
+    {"tag": "N3", "root_dt_s": 72, "n_sound": 8},
+    {"tag": "N4", "root_dt_s": 90, "n_sound": 7}
+  ]
+}

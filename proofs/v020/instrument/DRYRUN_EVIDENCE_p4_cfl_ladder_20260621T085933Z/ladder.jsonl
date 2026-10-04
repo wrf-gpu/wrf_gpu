@@ -1,0 +1,4 @@
+{"rung":"dt24","dt":24,"n_sound":null,"rc":0,"blowup_rc":0,"wall_s":0,"result":"DRYRUN_GATES_EXERCISED"}
+{"rung":"dt24_ns14","dt":24,"n_sound":14,"result":"SKIP_NSOUND_PLUMBING_GAP"}
+{"rung":"dt24_ns12","dt":24,"n_sound":12,"result":"SKIP_NSOUND_PLUMBING_GAP"}
+{"rung":"dt24_ns10","dt":24,"n_sound":10,"result":"SKIP_NSOUND_PLUMBING_GAP"}

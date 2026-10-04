@@ -1,0 +1,17 @@
+{
+  "cpu_closure_gate": "BLOCKED",
+  "device_action": "HELD_WRAPPER_MAY_HAVE_RUN",
+  "first_failure": {
+    "error": "SessionRefusal: held wrapper returned 124 without a session proof",
+    "kind": "SESSION_OWNER_REFUSAL",
+    "process_group_sweep_error": null,
+    "stage": "HELD_ZERO_WAIT_WRAPPER"
+  },
+  "later_stages_suppressed": true,
+  "manifest_sha256": "3b8d93e6685e3c00519d2edbf91fd4dbe5e7d8d1c1de2e19bc3f6b336578ed9c",
+  "may_open_m1": false,
+  "receipt_consumed": false,
+  "release_proof_path": null,
+  "schema": "wrf_gpu2.v025.m0.core_session_owner.v1",
+  "status": "M0_CORE_BLOCKED"
+}

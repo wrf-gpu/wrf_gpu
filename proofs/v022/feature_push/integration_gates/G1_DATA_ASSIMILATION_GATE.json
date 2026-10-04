@@ -1,0 +1,72 @@
+{
+  "analysis_nudging": {
+    "dry_tendencies_finite": true,
+    "mu_tendf_mean": 0.04000000000000001,
+    "qv_rmse_after": 0.0007999999999999999,
+    "qv_rmse_before": 0.001,
+    "ru_tendf_mean": 4.0,
+    "rv_tendf_mean": -3.0,
+    "theta_rmse_after": 8.0,
+    "theta_rmse_before": 10.0,
+    "theta_tendf_mean": 20.0
+  },
+  "argv": [
+    "scripts/v022_data_assimilation_gate.py",
+    "--output",
+    "proofs/v022/feature_push/integration_gates/G1_DATA_ASSIMILATION_GATE.json"
+  ],
+  "dfi": {
+    "coefficient_symmetric_norm": 0.9999999999999999,
+    "cutoff_s": 120.0,
+    "filter_id": 1,
+    "finite": true,
+    "half_window_steps": 4,
+    "launch_path": "forward_dfi",
+    "theta_max_abs_delta": 0.11901248715389556
+  },
+  "landed_vs_scaffold": {
+    "landed": [
+      "resident analysis/grid nudging target-minus-state rates",
+      "resident gridded-observation nudging kernel using same weighted target contract",
+      "spectral low-pass nudging mode",
+      "DFI coefficient generation and forward DFI state accumulation",
+      "OperationalNamelist optional DA child and RK dry-tendency wiring"
+    ],
+    "scaffold_deferred": [
+      "raw obs ingest, station QC, and fddaobs objective-analysis spreading",
+      "full WRF backward+forward DFI timekeeping/boundary choreography",
+      "FDDA auxinput9/10 NetCDF readers",
+      "multi-GPU/NVLink validation"
+    ]
+  },
+  "observation_nudging": {
+    "mode": "gridded_obs_target",
+    "theta_rmse_after": 2.3999999999999773,
+    "theta_rmse_before": 3.0,
+    "weighted_target_pull": true
+  },
+  "schema": "gpuwrf.v022.data_assimilation_gate",
+  "schema_version": 1,
+  "spectral_nudging": {
+    "filtered_std": 0.5868746539017806,
+    "high_frequency_reduced": true,
+    "mode": "lowpass_fft_large_scale_increment",
+    "raw_std": 5.049494391938941,
+    "x_wavenum": 1,
+    "y_wavenum": 1
+  },
+  "transfer_audit": {
+    "gpu_used": false,
+    "host_device_transfer_inside_timestep_loop": false,
+    "note": "CPU small-grid JAX gate; production GPU runs must use scripts/with_gpu_lock.sh."
+  },
+  "verdict": "PASS",
+  "wrf_reference": {
+    "analysis_nudging": "WRF/phys/module_fdda_psufddagd.F::fddagd",
+    "dfi": "WRF/share/dfi.F::dfi_accumulate/dfcoef",
+    "fdda_driver": "WRF/phys/module_fddagd_driver.F::fddagd_driver",
+    "obs_nudging_call": "WRF/dyn_em/module_first_rk_step_part2.F::fddaobs_driver",
+    "root": "<USER_HOME>/src/wrf_pristine",
+    "spectral_nudging": "WRF/phys/module_fdda_spnudging.F::spectral_nudging"
+  }
+}

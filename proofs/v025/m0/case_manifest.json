@@ -1,0 +1,440 @@
+{
+  "case": {
+    "actual_model_advance_seconds": 3618,
+    "decomposition": [
+      4,
+      3
+    ],
+    "domains": 1,
+    "dt_seconds": 54,
+    "e_vert": 45,
+    "end_stamp_expected": "2026-07-26_01:00:18",
+    "expected_source_hashes": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    },
+    "grid_mass_we_sn": [
+      120,
+      70
+    ],
+    "grid_namelist_we_sn": [
+      121,
+      71
+    ],
+    "mass_levels": 44,
+    "mpirun": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+    "name": "FAST-v025",
+    "non_divisible_boundary_note": "3600/54 is not an integer; a one-hour job takes 67 steps and advances 3618s, overshooting the scheduled window by 18s (0.500%). Every rate normalises by the actual advance.",
+    "ranks": 12,
+    "scheduled_window_seconds": 3600,
+    "source_bundle": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+    "start_time": "2026-07-26_00:00:00",
+    "steps": 67,
+    "wrf_exe": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe"
+  },
+  "cpu_executable": {
+    "path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe",
+    "realpath": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+    "sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b",
+    "version": "WRF V4.7.1 (dmpar)"
+  },
+  "derived_namelist": {
+    "derivations": [
+      {
+        "derived": "0",
+        "group": "time_control",
+        "key": "run_days",
+        "reason": "FAST-v025 is one forecast hour, not 6d18h",
+        "source": "6"
+      },
+      {
+        "derived": "1",
+        "group": "time_control",
+        "key": "run_hours",
+        "reason": "FAST-v025 is one forecast hour",
+        "source": "18"
+      },
+      {
+        "derived": "2026",
+        "group": "time_control",
+        "key": "start_year",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "2026, 2026"
+      },
+      {
+        "derived": "7",
+        "group": "time_control",
+        "key": "start_month",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "7, 7"
+      },
+      {
+        "derived": "26",
+        "group": "time_control",
+        "key": "start_day",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "26, 26"
+      },
+      {
+        "derived": "0",
+        "group": "time_control",
+        "key": "start_hour",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0, 0"
+      },
+      {
+        "derived": "2026",
+        "group": "time_control",
+        "key": "end_year",
+        "reason": "end = start + 1 h, one column per domain",
+        "source": "2026, 2026"
+      },
+      {
+        "derived": "7",
+        "group": "time_control",
+        "key": "end_month",
+        "reason": "end = start + 1 h, one column per domain",
+        "source": "8, 8"
+      },
+      {
+        "derived": "26",
+        "group": "time_control",
+        "key": "end_day",
+        "reason": "end = start + 1 h, one column per domain",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "time_control",
+        "key": "end_hour",
+        "reason": "end = start + 1 h, one column per domain",
+        "source": "18, 18"
+      },
+      {
+        "derived": ".true.",
+        "group": "time_control",
+        "key": "input_from_file",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": ".true., .true."
+      },
+      {
+        "derived": "60",
+        "group": "time_control",
+        "key": "history_interval",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "60, 60"
+      },
+      {
+        "derived": "1",
+        "group": "time_control",
+        "key": "frames_per_outfile",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "max_dom",
+        "reason": "FAST-v025 is d01 only",
+        "source": "2"
+      },
+      {
+        "derived": "121",
+        "group": "domains",
+        "key": "e_we",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "121, 268"
+      },
+      {
+        "derived": "71",
+        "group": "domains",
+        "key": "e_sn",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "71, 118"
+      },
+      {
+        "derived": "45",
+        "group": "domains",
+        "key": "e_vert",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "45, 45"
+      },
+      {
+        "derived": "9000",
+        "group": "domains",
+        "key": "dx",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "9000, 3000"
+      },
+      {
+        "derived": "9000",
+        "group": "domains",
+        "key": "dy",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "9000, 3000"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "grid_id",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 2"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "parent_id",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "i_parent_start",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 16"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "j_parent_start",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 16"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "parent_grid_ratio",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 3"
+      },
+      {
+        "derived": "1",
+        "group": "domains",
+        "key": "parent_time_step_ratio",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 3"
+      },
+      {
+        "derived": "8",
+        "group": "physics",
+        "key": "mp_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "8, 8"
+      },
+      {
+        "derived": "4",
+        "group": "physics",
+        "key": "ra_lw_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "4, 4"
+      },
+      {
+        "derived": "4",
+        "group": "physics",
+        "key": "ra_sw_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "4, 4"
+      },
+      {
+        "derived": "30",
+        "group": "physics",
+        "key": "radt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "30, 30"
+      },
+      {
+        "derived": "5",
+        "group": "physics",
+        "key": "sf_sfclay_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "5, 5"
+      },
+      {
+        "derived": "4",
+        "group": "physics",
+        "key": "sf_surface_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "4, 4"
+      },
+      {
+        "derived": "5",
+        "group": "physics",
+        "key": "bl_pbl_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "5, 5"
+      },
+      {
+        "derived": "0",
+        "group": "physics",
+        "key": "bldt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0, 0"
+      },
+      {
+        "derived": "1",
+        "group": "physics",
+        "key": "cu_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 0"
+      },
+      {
+        "derived": "5",
+        "group": "physics",
+        "key": "cudt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "5, 5"
+      },
+      {
+        "derived": "0",
+        "group": "physics",
+        "key": "sf_urban_physics",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0, 0"
+      },
+      {
+        "derived": "1",
+        "group": "physics",
+        "key": "topo_shading",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "physics",
+        "key": "slope_rad",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "dynamics",
+        "key": "diff_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "4",
+        "group": "dynamics",
+        "key": "km_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "4, 4"
+      },
+      {
+        "derived": "2",
+        "group": "dynamics",
+        "key": "diff_6th_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "2, 2"
+      },
+      {
+        "derived": "0.12",
+        "group": "dynamics",
+        "key": "diff_6th_factor",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0.12, 0.12"
+      },
+      {
+        "derived": "5000.",
+        "group": "dynamics",
+        "key": "zdamp",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "5000., 5000."
+      },
+      {
+        "derived": "0.2",
+        "group": "dynamics",
+        "key": "dampcoef",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0.2, 0.2"
+      },
+      {
+        "derived": "0",
+        "group": "dynamics",
+        "key": "khdif",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0, 0"
+      },
+      {
+        "derived": "0",
+        "group": "dynamics",
+        "key": "kvdif",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0, 0"
+      },
+      {
+        "derived": "0.5",
+        "group": "dynamics",
+        "key": "epssm",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "0.5, 0.5"
+      },
+      {
+        "derived": ".true.",
+        "group": "dynamics",
+        "key": "non_hydrostatic",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": ".true., .true."
+      },
+      {
+        "derived": "1",
+        "group": "dynamics",
+        "key": "moist_adv_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "dynamics",
+        "key": "scalar_adv_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 1"
+      },
+      {
+        "derived": "1",
+        "group": "dynamics",
+        "key": "gwd_opt",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": "1, 0"
+      },
+      {
+        "derived": ".true.",
+        "group": "bdy_control",
+        "key": "specified",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": ".true., .false."
+      },
+      {
+        "derived": ".false.",
+        "group": "bdy_control",
+        "key": "nested",
+        "reason": "per-domain list collapsed to its d01 column",
+        "source": ".false., .true."
+      }
+    ],
+    "note": "FAST-v025 runs a DERIVED namelist: the source bundle describes the full 2-domain 162 h production run. The derivation below is the complete diff; regenerating it reproduces this hash byte-for-byte.",
+    "sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032"
+  },
+  "generated_at_utc": "2026-07-27T12:38:55.902311+00:00",
+  "provenance_chain": {
+    "identity_chain": "forcing manifest -> WPS receipt/met_em -> real.exe wrfinput/wrfbdy",
+    "launch_identity": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/wrf_launch_identity.json",
+    "production_run_receipt": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/receipt.json"
+  },
+  "schema": "wrf_gpu2.v025.m0.case_manifest.v1",
+  "source_inputs": {
+    "bundle": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+    "expected_sha256": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    },
+    "independently_verified": true,
+    "observed_sha256": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+wrote proofs/v020/s4/1km_demo_20260621T200404Z/fp64_650x650x45_step1_dt1_tile64.json
+{
+  "acoustic_precision_mode": "fp64_default",
+  "aggressive_fp32": false,
+  "env": {
+    "GPUWRF_RRTMG_LW_CLOUD_OPTICS_FP32": null,
+    "GPUWRF_RRTMG_LW_COLUMN_TILE_COLS": "64",
+    "GPUWRF_RRTMG_LW_COLUMN_TILING": null,
+    "GPUWRF_RRTMG_SW_COLUMN_TILE_COLS": "64",
+    "GPUWRF_RRTMG_SW_COLUMN_TILING": null,
+    "JAX_ENABLE_X64": "true",
+    "JAX_PLATFORMS": null,
+    "JAX_PLATFORM_NAME": null,
+    "XLA_PYTHON_CLIENT_ALLOCATOR": "platform",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "error": null,
+  "force_fp64": true,
+  "forecast": {
+    "bl_pbl_physics": 5,
+    "cu_physics": 0,
+    "dt_s": 1.0,
+    "hours": 0.0002777777777777778,
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "radiation_cadence_steps": 1,
+    "radiation_calls_expected": 1,
+    "run_boundary": false,
+    "run_physics": true,
+    "runtime_entry": "run_forecast_operational_segmented",
+    "segment_steps": 1,
+    "sf_sfclay_physics": 5,
+    "steps": 1
+  },
+  "grid": {
+    "cols": 422500,
+    "dx_m": 1000.0,
+    "dy_m": 1000.0,
+    "nx": 650,
+    "ny": 650,
+    "nz": 45
+  },
+  "ok": true,
+  "oom": false,
+  "peak_vram_mib": null,
+  "proof": "v020-s4-1km-full-physics-capability",
+  "regime": "fp64",
+  "stability": {
+    "all_finite": true,
+    "mu_max_pa": 90000.0,
+    "mu_min_pa": 90000.0,
+    "nonfinite_fields": {},
+    "p_max_pa": 99031.21179737586,
+    "p_min_pa": 10301.609012061766,
+    "qv_max": 0.01148834452031054,
+    "qv_min": 4.9492677779074015e-06,
+    "theta_max_k": 320.984708157189,
+    "theta_min_k": 300.2221168803044,
+    "w_max_abs_ms": 85.8871405661237
+  },
+  "state_dtype_fraction_fp32": 0.0,
+  "wall_s": 588.7095033479854
+}

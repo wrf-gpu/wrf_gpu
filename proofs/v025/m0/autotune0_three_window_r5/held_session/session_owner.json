@@ -1,0 +1,123 @@
+{
+  "commands": [
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+        "--output",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/cpu_preflight.json"
+      ],
+      "command_normalized": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<REPO>/proofs/v025/m0/autotune0_three_window_r5/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+        "--output",
+        "<REPO>/proofs/v025/m0/autotune0_three_window_r5/held_session/cpu_preflight.json"
+      ],
+      "command_sha256": "b5df6b205b4c265ce3be8ff033239be49aa569780e98abec1405e90491143d7c",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/cpu_preflight.log",
+      "log_sha256": "372e6ad53298d33734e6b3d7802dc78e0893dbec73c1c759ddebc2ecf4442066",
+      "returncode": 0,
+      "stage": "CPU_PREFLIGHT"
+    },
+    {
+      "command": [
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-08-09-v0250-m0-r5-kernel-lock-authority/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R5.json"
+      ],
+      "command_normalized": [
+        "<REPO>/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-08-09-v0250-m0-r5-kernel-lock-authority/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R5.json"
+      ],
+      "command_sha256": "17b859297fcc7743a3f2c3aa778213a768350ca33f2d931711f365608cf3c5f7",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/held_wrapper.log",
+      "log_sha256": "9f043a1645b1b67592e6a7060495dccd3711736cfca0bdceff12abb292e51a69",
+      "returncode": 1,
+      "stage": "HELD_ZERO_WAIT_WRAPPER"
+    }
+  ],
+  "elapsed_seconds": 1279.205832183,
+  "finished_at_utc": "2026-08-09T07:37:22.320215+00:00",
+  "first_failure": {
+    "error": "SessionRefusal: held session failed; post-lock census/finalizer suppressed",
+    "kind": "SESSION_OWNER_REFUSAL",
+    "process_group_sweep_error": null,
+    "stage": "HELD_ZERO_WAIT_WRAPPER"
+  },
+  "owner_sha256": "034d07648bd11246857485fda8117a9cd2d3eef9c7f290dc531ad4e1addcc56c",
+  "prelock_revalidation": {
+    "content_sha256": "524f2375b58e98b619948033052516e79e7b56c5576f0e16ace5fc7edc592250",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/prelock_revalidation.json",
+    "sha256": "00e407dea8cbb96e592d980799f73b952bba4e975b411cbc150575aadfaab387"
+  },
+  "process_group_proof": {
+    "active": [],
+    "all_registered_groups_empty": true,
+    "completed": [
+      {
+        "empty": true,
+        "process_group": 630571,
+        "stage": "CPU_PREFLIGHT"
+      },
+      {
+        "empty": true,
+        "process_group": 631037,
+        "stage": "HELD_ZERO_WAIT_WRAPPER"
+      }
+    ],
+    "registered": 2,
+    "status": "PASS"
+  },
+  "receipt_path": ".agent/sprints/2026-08-09-v0250-m0-r5-kernel-lock-authority/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R5.json",
+  "receipt_refund_path": null,
+  "release_proof": {
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/session_lock_release.json",
+    "sha256": "74efe56a21677b0eae1ee0e2723e1ab5581f935707d075e2c2af28c1479618e1"
+  },
+  "retry_path": null,
+  "schema": "wrf_gpu2.v025.m0.core_session_owner.v1",
+  "session_proof": {
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/m0_core_session.json",
+    "sha256": "89f1199966bfb4132cf4e896a057bb511f96ed90661cbbf5ae4b86e43270d75d"
+  },
+  "started_at_utc": "2026-08-09T07:16:03.114417+00:00",
+  "status": "BLOCKED",
+  "terminal_manifest": {
+    "cpu_closure_gate": "BLOCKED",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/m0_core_terminal.json",
+    "sha256": "fdbaabbe5bd3ef92615d15daa0658ce5c5bd9bdfa43f3626d13ef048f48a108a"
+  }
+}

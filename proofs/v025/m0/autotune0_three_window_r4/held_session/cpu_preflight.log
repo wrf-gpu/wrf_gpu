@@ -1,0 +1,259 @@
+{
+  "cpu_invocation_argv": [
+    "taskset",
+    "-c",
+    "16-27",
+    "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+    "--use-hwthread-cpus",
+    "--bind-to",
+    "core",
+    "-np",
+    "12",
+    "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe"
+  ],
+  "cpu_invocation_sha256": "453119c42ac6218e82d8bc11c343710ab673bd186df835e9bb1eedb3344720e4",
+  "cpu_list": "16-27",
+  "cpu_record": {
+    "finished_at_utc": "2026-08-08T23:11:48.491435+00:00",
+    "kind": "cpu",
+    "payload": {
+      "command": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+        "--use-hwthread-cpus",
+        "--bind-to",
+        "core",
+        "-np",
+        "12",
+        "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe"
+      ],
+      "content_digest": "23b6d8da685c222fe3b32e1d74239270f4404e46bf75bc15d11c09fffd0152d1",
+      "content_digest_variables": 375,
+      "contention": {
+        "foreign_cores_busy_max_percent": 36.06060606060606,
+        "foreign_cores_busy_mean_percent": 16.266855589782928,
+        "foreign_cores_over_50pct": [],
+        "loadavg": {
+          "15m": 18.65,
+          "1m": 20.65,
+          "5m": 18.97
+        },
+        "own_cores": "16-27",
+        "own_cores_busy_mean_percent": 70.05549229661551,
+        "per_core_busy_percent": {
+          "0": 34.5,
+          "1": 11.2,
+          "10": 8.23,
+          "11": 5.61,
+          "12": 13.81,
+          "13": 11.86,
+          "14": 12.4,
+          "15": 10.36,
+          "16": 51.16,
+          "17": 77.82,
+          "18": 56.75,
+          "19": 82.61,
+          "2": 28.69,
+          "20": 53.84,
+          "21": 79.68,
+          "22": 72.43,
+          "23": 79.14,
+          "24": 52.86,
+          "25": 77.45,
+          "26": 78.16,
+          "27": 78.76,
+          "28": 14.07,
+          "29": 23.02,
+          "3": 7.19,
+          "30": 14.0,
+          "31": 11.82,
+          "4": 35.58,
+          "5": 8.16,
+          "6": 23.56,
+          "7": 6.26,
+          "8": 36.06,
+          "9": 8.97
+        }
+      },
+      "cpu_list": "16-27",
+      "final_wrfout": "wrfout_d01_2026-07-26_01:00:18",
+      "final_wrfout_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4/pair_cpu_m0-core-prelock-fresh-cpu/wrfout_d01_2026-07-26_01:00:18",
+      "final_wrfout_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+      "finished_at_utc": "2026-08-08T23:11:48.491435+00:00",
+      "finiteness": {
+        "float_variables_checked": 355,
+        "non_finite_total": 0,
+        "offenders": {},
+        "pass": true
+      },
+      "host": "user-battlestation",
+      "hours": 1,
+      "label": "pair_cpu_m0-core-prelock-fresh-cpu",
+      "launcher_wallclock_seconds": 9.972048158000689,
+      "max_dom": 1,
+      "mpi_flags": [
+        "--use-hwthread-cpus",
+        "--bind-to",
+        "core"
+      ],
+      "mpirun_realpath": "<DATA_ROOT>/canairy_meteo/artifacts/envs/wrf-build/bin/mpirun",
+      "mpirun_sha256": "155a11132d1b47ed9282978739bce46b478405266a0370110265beddb01dc84f",
+      "namelist_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032",
+      "ranks": 12,
+      "returncode": 0,
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4/pair_cpu_m0-core-prelock-fresh-cpu",
+      "source_namelist_sha256": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "stage_seconds": 0.0705620120279491,
+      "started_at_utc": "2026-08-08T23:11:38.519058+00:00",
+      "status": "OK",
+      "timing": {
+        "block_profile": {
+          "blocks": [],
+          "hours_per_block": 3.0,
+          "per_fc_hour_spread": {},
+          "steps_per_block": 200
+        },
+        "domain1": {
+          "domain": 1,
+          "first_step_seconds": 0.53927,
+          "normalisation_note": "canonical rates use the actual 3618s advance (67 steps x 54s); the *_scheduled_window rates use the requested 3600s and are +0.500% different",
+          "per_step": {
+            "cv": 0.6727032678554994,
+            "mad": 0.0025400000000000006,
+            "max": 0.53927,
+            "mean": 0.08915343283582089,
+            "median": 0.07772,
+            "min": 0.07421,
+            "n": 67,
+            "stdev": 0.05997380560919249
+          },
+          "per_step_warm": {
+            "cv": 0.2682989474416316,
+            "mad": 0.002475000000000005,
+            "max": 0.20627,
+            "mean": 0.08233348484848485,
+            "median": 0.07763,
+            "min": 0.07421,
+            "n": 66,
+            "stdev": 0.022089987324050007
+          },
+          "step_sum_per_fc_hour": 5.9435621890547266,
+          "step_sum_per_fc_hour_scheduled_window": 5.97328,
+          "step_sum_seconds": 5.97328,
+          "step_sum_warm_per_fc_hour": 5.48889898989899,
+          "step_sum_warm_per_fc_hour_scheduled_window": 5.516343484848485,
+          "step_sum_warm_seconds": 5.516343484848485,
+          "warmup_seconds": 0.53927,
+          "warmup_steps_excluded": 1,
+          "window": {
+            "actual_model_advance_hours": 1.005,
+            "actual_model_advance_seconds": 3618.0,
+            "dt_divides_hour": false,
+            "dt_seconds": 54,
+            "end_time": "2026-07-26_01:00:18",
+            "predicted_advance_seconds": 3618,
+            "scheduled_window_hours": 1.0,
+            "scheduled_window_seconds": 3600,
+            "start_time": "2026-07-26_00:00:00",
+            "steps": 67,
+            "timestamp_mismatch_seconds": 0.0,
+            "window_overshoot_factor": 1.005,
+            "window_overshoot_percent": 0.49999999999998934,
+            "window_overshoot_seconds": 18.0
+          }
+        },
+        "domains_present": [
+          1
+        ],
+        "hourly_profile": [
+          {
+            "hour": 0,
+            "mean_per_step": 0.08742848484848485,
+            "steps": 66,
+            "sum_seconds": 5.77028
+          },
+          {
+            "hour": 1,
+            "mean_per_step": 0.203,
+            "steps": 1,
+            "sum_seconds": 0.203
+          }
+        ],
+        "hourly_step_counts": [
+          1,
+          66
+        ],
+        "hourly_sum_spread": {
+          "cv": 1.3180903760628138,
+          "mad": 2.78364,
+          "max": 5.77028,
+          "mean": 2.98664,
+          "median": 2.98664,
+          "min": 0.203,
+          "n": 2,
+          "stdev": 3.936661440764242
+        },
+        "io_seconds_total": 0.5766,
+        "io_writes": [
+          {
+            "domain": 1,
+            "elapsed_seconds": 0.27149,
+            "path": "wrfout_d01_2026-07-26_00:00:00"
+          },
+          {
+            "domain": 1,
+            "elapsed_seconds": 0.30511,
+            "path": "wrfout_d01_2026-07-26_01:00:18"
+          }
+        ],
+        "rsl_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4/pair_cpu_m0-core-prelock-fresh-cpu/rsl.out.0000",
+        "wallclock_minus_step_sum_seconds": 3.998768158000689,
+        "wallclock_per_fc_hour": 9.922435978110139,
+        "wallclock_seconds": 9.972048158000689
+      },
+      "timing_classes": {
+        "first_step_seconds": 0.53927,
+        "integration_step_sum_seconds": 5.97328,
+        "io_write_seconds": 0.5766,
+        "launcher_minus_step_sum_seconds": 3.998768158000689,
+        "launcher_wallclock_seconds": 9.972048158000689,
+        "stage_seconds": 0.0705620120279491,
+        "step_sum_per_fc_hour": 5.9435621890547266,
+        "step_sum_per_fc_hour_scheduled_window": 5.97328,
+        "step_sum_warm_per_fc_hour": 5.48889898989899,
+        "wallclock_per_fc_hour": 9.922435978110139,
+        "wrfinput_read_seconds": 0.18788
+      },
+      "variant": "FAST-v025",
+      "wrf_exe_realpath": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+      "wrf_exe_sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b",
+      "wrfinput_read_seconds": 0.18788,
+      "wrfout_files": [
+        "wrfout_d01_2026-07-26_00:00:00",
+        "wrfout_d01_2026-07-26_01:00:18"
+      ]
+    },
+    "run_id": "m0-core-prelock-fresh-cpu",
+    "started_at_utc": "2026-08-08T23:11:38.519058+00:00",
+    "status": "OK"
+  },
+  "cpu_record_sha256": "a8e0d48700e25627b563e9dc5e76055fb0804dbc2df20fa961c11c534291dbdc",
+  "device_action": false,
+  "finished_monotonic_ns": 463178942549926,
+  "lock_environment_absent": true,
+  "preflight_sha256": "87a21273902fc4d7495b5960a14a5fcb9b0768f9dc153fbad8275d0eed9bd128",
+  "ranks": 12,
+  "schema": "wrf_gpu2.v025.m0.cpu_preflight.v1",
+  "session_identity_content_sha256": "c6ac19f44029f6e2be8925ecdae0ddcc392462f1b738bfa87cb924ddd9d23d40",
+  "session_identity_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/session_preflight_identity.json",
+  "session_identity_sha256": "0926135444b4c772972bd369b5a581517add3480fd1de084fa875df47079629e",
+  "started_monotonic_ns": 463168459361605,
+  "status": "PASS",
+  "verified_output": {
+    "final_wrfout_bytes": 13054055,
+    "final_wrfout_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4/pair_cpu_m0-core-prelock-fresh-cpu/wrfout_d01_2026-07-26_01:00:18",
+    "final_wrfout_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5"
+  }
+}

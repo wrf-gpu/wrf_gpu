@@ -1,0 +1,696 @@
+{
+  "attack_outcomes": {
+    "B1_real_callback_and_canonical_w1": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_c1_failure_makes_w2_and_w3_mechanically_unreachable": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_c1_failure_makes_w2_and_w3_mechanically_unreachable",
+            "status": "PASSED"
+          }
+        ],
+        "test_real_w1_c1_w2_w3_callbacks_reach_w3_with_only_children_injected": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_real_w1_c1_w2_w3_callbacks_reach_w3_with_only_children_injected",
+            "status": "PASSED"
+          }
+        ],
+        "test_separate_pair_is_prepared_as_exact_held_session_callbacks": [
+          {
+            "classname": "tests.v025.test_m0_step1_evidence_boundary",
+            "name": "test_separate_pair_is_prepared_as_exact_held_session_callbacks",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "B2_outer_owner_and_terminal_path": {
+      "case_count": 5,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_cpu_preflight_binds_the_exact_mpi_and_wrf_executables": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_cpu_preflight_binds_the_exact_mpi_and_wrf_executables",
+            "status": "PASSED"
+          }
+        ],
+        "test_cpu_preflight_failure_never_launches_wrapper_or_spends_receipt": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_cpu_preflight_failure_never_launches_wrapper_or_spends_receipt",
+            "status": "PASSED"
+          }
+        ],
+        "test_frozen_amendment6_commands_parse_byte_for_byte": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_frozen_amendment6_commands_parse_byte_for_byte",
+            "status": "PASSED"
+          }
+        ],
+        "test_legacy_outer_graph_refuses_without_reading_receipt": [
+          {
+            "classname": "tests.v025.test_m0_three_window_executor",
+            "name": "test_legacy_outer_graph_refuses_without_reading_receipt",
+            "status": "PASSED"
+          }
+        ],
+        "test_outer_owner_source_mechanically_reaches_release_posts_and_finalizer": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_outer_owner_source_mechanically_reaches_release_posts_and_finalizer",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M1_deferred_pallas_and_dump_unreachable": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_census_hlo_gate_defers_peak_live_and_ignores_the_future_sidecar": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_census_hlo_gate_defers_peak_live_and_ignores_the_future_sidecar",
+            "status": "PASSED"
+          }
+        ],
+        "test_deferred_evidence_cannot_be_waived_or_promoted": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_deferred_evidence_cannot_be_waived_or_promoted",
+            "status": "PASSED"
+          }
+        ],
+        "test_m0_core_gate_subset_excludes_the_deferred_diagnostic": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_gate_subset_excludes_the_deferred_diagnostic",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M2_exact_lock_budget_and_absolute_deadline": {
+      "case_count": 5,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_deadline_exhaustion_suppresses_every_later_stage": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_deadline_exhaustion_suppresses_every_later_stage",
+            "status": "PASSED"
+          }
+        ],
+        "test_global_deadline_is_one_monotonic_4500s_budget": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_global_deadline_is_one_monotonic_4500s_budget",
+            "status": "PASSED"
+          }
+        ],
+        "test_worst_branch_budget_mutation_is_refused_before_coordination": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_worst_branch_budget_mutation_is_refused_before_coordination",
+            "status": "PASSED"
+          }
+        ],
+        "test_wrong_session_lock_label_is_refused_before_receipt_spend": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_wrong_session_lock_label_is_refused_before_receipt_spend[exported]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_wrong_session_lock_label_is_refused_before_receipt_spend[holder]",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M3_process_group_kill_reap_and_zero_orphan": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_preemption_or_stage_exception_still_sweeps_and_fails_closed": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_preemption_or_stage_exception_still_sweeps_and_fails_closed",
+            "status": "PASSED"
+          }
+        ],
+        "test_registered_process_group_kills_and_reaps_descendants": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_registered_process_group_kills_and_reaps_descendants[False]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_registered_process_group_kills_and_reaps_descendants[True]",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M4_stale_live_buffer_cannot_promote_m0_core": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_aggregate_temporary_bytes_can_never_be_relabelled_as_peak": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_aggregate_temporary_bytes_can_never_be_relabelled_as_peak",
+            "status": "PASSED"
+          }
+        ],
+        "test_census_hlo_gate_defers_peak_live_and_ignores_the_future_sidecar": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_census_hlo_gate_defers_peak_live_and_ignores_the_future_sidecar",
+            "status": "PASSED"
+          }
+        ],
+        "test_m0_core_verdict_is_reachable_while_deferred_evidence_is_missing": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_verdict_is_reachable_while_deferred_evidence_is_missing",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M5_session_root_and_raw_identity": {
+      "case_count": 12,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_finalizer_source_rehashes_session_and_all_retained_raw_artifacts": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_finalizer_source_rehashes_session_and_all_retained_raw_artifacts",
+            "status": "PASSED"
+          }
+        ],
+        "test_finalizer_stale_hash_is_refused": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_finalizer_stale_hash_is_refused",
+            "status": "PASSED"
+          }
+        ],
+        "test_m0_core_manifest_mutations_fail_closed": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation0-M0-CORE census gate subset changed]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation1-open M1]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation2-release gate]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation3-machine authority changed]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation4-contradicts]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation5-held-session/bidirectional root binding]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation6-held-session/bidirectional root binding]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_m0_core_manifest_mutations_fail_closed[mutation7-held-session/bidirectional root binding]",
+            "status": "PASSED"
+          }
+        ],
+        "test_mutated_prelock_revalidation_is_refused_before_receipt_spend": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_mutated_prelock_revalidation_is_refused_before_receipt_spend",
+            "status": "PASSED"
+          }
+        ],
+        "test_prelock_revalidation_accepts_symlinked_tools_but_rejects_retarget": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_prelock_revalidation_accepts_symlinked_tools_but_rejects_retarget",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M6_one_sqlite_and_exact_preambles": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_export_forces_a_fresh_private_sqlite_and_refuses_a_reused_one": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_export_forces_a_fresh_private_sqlite_and_refuses_a_reused_one",
+            "status": "PASSED"
+          }
+        ],
+        "test_stale_sqlite_notice_is_refused_by_the_parsers": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_stale_sqlite_notice_is_refused_by_the_parsers",
+            "status": "PASSED"
+          }
+        ],
+        "test_verified_preamble_is_tolerated_but_unknown_preamble_is_not": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_verified_preamble_is_tolerated_but_unknown_preamble_is_not",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "M7_current_plan_junit_and_normalized_commands": {
+      "case_count": 3,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_executable_dry_run_of_the_whole_session_in_a_fresh_process": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_executable_dry_run_of_the_whole_session_in_a_fresh_process",
+            "status": "PASSED"
+          }
+        ],
+        "test_normalized_commands_are_identical_across_worktrees_and_python_paths": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_normalized_commands_are_identical_across_worktrees_and_python_paths",
+            "status": "PASSED"
+          }
+        ],
+        "test_session_source_contract_still_holds": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_source_contract_still_holds",
+            "status": "PASSED"
+          }
+        ]
+      }
+    },
+    "required_non_attack_controls": {
+      "case_count": 7,
+      "status": "REPRODUCED_AND_REJECTED",
+      "tests": {
+        "test_plan_freezes_three_unique_capped_windows_and_exact_commands": [
+          {
+            "classname": "tests.v025.test_m0_three_window_executor",
+            "name": "test_plan_freezes_three_unique_capped_windows_and_exact_commands",
+            "status": "PASSED"
+          }
+        ],
+        "test_prepared_cache_uses_zero_payload_copy_hardlinks_and_read_on_hit_policy": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_prepared_cache_uses_zero_payload_copy_hardlinks_and_read_on_hit_policy",
+            "status": "PASSED"
+          }
+        ],
+        "test_session_modules_import_no_accelerator_in_a_hostile_environment": [
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_modules_import_no_accelerator_in_a_hostile_environment[m0_core_session_protocol]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_modules_import_no_accelerator_in_a_hostile_environment[m0_hlo_live_buffers]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_modules_import_no_accelerator_in_a_hostile_environment[m0_postlock_census]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_modules_import_no_accelerator_in_a_hostile_environment[m0_three_window_executor]",
+            "status": "PASSED"
+          },
+          {
+            "classname": "tests.v025.test_m0_held_session_repair",
+            "name": "test_session_modules_import_no_accelerator_in_a_hostile_environment[m0_window_parent]",
+            "status": "PASSED"
+          }
+        ]
+      }
+    }
+  },
+  "cpu_test_environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "affinity": "16-27"
+  },
+  "device_policy": {
+    "coordination_requests": [],
+    "device_imports": [],
+    "device_queries": [],
+    "device_touched": false,
+    "full_cpu_oracles": [],
+    "gpu_compiles": [],
+    "gpu_runs": [],
+    "locks_acquired": [],
+    "receipts_read": [],
+    "receipts_spent": []
+  },
+  "generated_at_utc": "2026-07-28T23:57:46.685322+00:00",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "green": true,
+    "passed": 857,
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-held-session-gpt-critic/proofs/v025/m0/m0_held_session_repair_tests.xml",
+    "sha256": "debaa87b3a808925f3a2caf48107fbc39004dc6faab5b9e6f27e14387e8e429d",
+    "skipped": 2,
+    "skipped_cases": [
+      "tests.v025.test_cpu_guard::test_a_pin_precedes_every_accelerator_import[m0_exact_boundary_child.py]",
+      "tests.v025.test_cpu_guard::test_a_pin_precedes_every_accelerator_import[pallas_sm120_spike.py]"
+    ],
+    "tests": 859
+  },
+  "m0_core_partition": {
+    "authorizes_gpu_work": false,
+    "blocking_gates": [
+      "export",
+      "source_binding",
+      "cuda_trace_row_integrity",
+      "integration_scope",
+      "step_classes",
+      "taxonomy",
+      "attribution",
+      "summary_crosscheck",
+      "transfer_audit",
+      "vram",
+      "host_ram",
+      "profiler_perturbation",
+      "clean_w3",
+      "timing_completeness",
+      "hlo_completeness"
+    ],
+    "deferred_fields": {
+      "compiler_peak_live_buffers": "M1_SAME_SET_CANDIDATE_DIAGNOSIS_OR_M2_BACKEND_BAKEOFF",
+      "instruction_counter_E_baseline_T_ceiling": "M2_ENTRY",
+      "multi_size_vram_scaling_fit": "RELEASE_SCALING_ACCEPTANCE",
+      "native_pallas_sm120": "M2_BACKEND_BAKEOFF_ENTRY",
+      "ncu_registers_occupancy_stalls_dram_l2": "M2",
+      "two_domain_rho_family_coverage_trace": "M1_M2_PRODUCTION_DIAGNOSTIC"
+    },
+    "deferred_gates": [
+      "production_representativeness"
+    ],
+    "may_open_m1": false
+  },
+  "outcome": "CPU_AMENDMENT6_REPAIR_GREEN_READY_FOR_NARROW_CLOSURE",
+  "performance_repairs": {
+    "cache_pair": {
+      "disk_scaling": "O(seed bytes + per-arm misses)",
+      "method": "same-filesystem hard links plus read-on-hit policy",
+      "payload_copies": 0,
+      "ram_scaling": "O(1)"
+    },
+    "compiler_dump_flags_in_m0_core": [],
+    "compiler_peak_live_buffers": {
+      "owner": "M1 same-set candidate diagnosis / M2 backend bake-off",
+      "status": "MISSING",
+      "waived": false
+    },
+    "cpu_wrf_preflight": {
+      "hard_cap_seconds": 420.0,
+      "outside_lock": true
+    },
+    "held_budget": {
+      "global_deadline_seconds": 4500.0,
+      "headroom_seconds": 280.0,
+      "reservation_seconds": 4220.0,
+      "reservations": {
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR": 60.0,
+        "W1_CACHED_AND_CORRECTNESS": 360.0,
+        "W1_COLD_DECISION": 1800.0,
+        "W2_PROFILED_CAPTURE": 1400.0,
+        "W3_CLEAN_MATCHED_ARM": 600.0
+      },
+      "status": "PASS",
+      "worst_branch": "three threshold-censored cold attempts"
+    },
+    "native_pallas_reachable_from_m0_core": false,
+    "nsys_sqlite_exports_per_w2_analysis": 1,
+    "runtime_primary": true
+  },
+  "plan": {
+    "compiler_peak_live_buffers": {
+      "dump_flags_in_w1": [],
+      "gate": "hlo_completeness",
+      "mechanically_reachable_from_m0_core": false,
+      "owner": "M1 same-set candidate diagnosis / M2 backend bake-off",
+      "status": "MISSING",
+      "waived": false
+    },
+    "held_budget": {
+      "global_deadline_seconds": 4500.0,
+      "headroom_seconds": 280.0,
+      "reservation_seconds": 4220.0,
+      "reservations": {
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR": 60.0,
+        "W1_CACHED_AND_CORRECTNESS": 360.0,
+        "W1_COLD_DECISION": 1800.0,
+        "W2_PROFILED_CAPTURE": 1400.0,
+        "W3_CLEAN_MATCHED_ARM": 600.0
+      },
+      "status": "PASS",
+      "worst_branch": "three threshold-censored cold attempts"
+    },
+    "held_wrapper_command_normalized": [
+      "<REPO>/scripts/with_gpu_lock.sh",
+      "--timeout",
+      "0",
+      "--label",
+      "m0-core-w1-w2-w3-session",
+      "--",
+      "<PYTHON>",
+      "<REPO>/scripts/v025/m0_three_window_executor.py",
+      "--manager-core-session-held",
+      "--receipt",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/M0_CORE_W1_W2_W3_SESSION_RECEIPT.json"
+    ],
+    "held_wrapper_command_sha256": "9a026c78c6fd203472dded08dd52ddc353bfd6141917f1d3ed77c8dcda63b80f",
+    "lock_acquisitions": 1,
+    "manager_session_command_normalized": [
+      "<PYTHON>",
+      "<REPO>/scripts/v025/m0_three_window_executor.py",
+      "--manager-core-session-owner",
+      "--receipt",
+      ".agent/sprints/2026-07-27-v0250-m0-setup/M0_CORE_W1_W2_W3_SESSION_RECEIPT.json"
+    ],
+    "manager_session_command_sha256": "da76f4daf95370112a5c8b6c9e3c9e74402c2d3d2dd75fa7e9eb2743cb2c3c18",
+    "plan_gate": {
+      "lock_acquisitions": 1,
+      "max_deadline_seconds": 2160.0,
+      "session_receipts": 1,
+      "status": "PASS",
+      "window_count": 3
+    },
+    "receipt_spends": 1,
+    "source_gate": {
+      "amendment5_one_session_two_of_three": true,
+      "authorization_before_child_import": true,
+      "clean_instrumentation_absent": true,
+      "cpu_arm_process_group_attached": true,
+      "direct_synchronized_invocation": true,
+      "evidence_builder_top_level_accelerator_imports": [],
+      "exact_lower_compile": true,
+      "exact_result_wrfout_adapter": true,
+      "executor_accelerator_imports": [],
+      "forecast_child_top_level_accelerator_imports": [],
+      "long_run_preflight_and_inhibition": true,
+      "nonzero_child_final_group_sweep": true,
+      "pallas_child_top_level_accelerator_imports": [],
+      "parent_accelerator_imports": [],
+      "parent_death_guard_accelerator_imports": [],
+      "parent_death_kills_child_process_group": true,
+      "production_function_hashes": {
+        "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s": "23702a1d4d5154f523ed3dd9ec19d43fc11376ffe600b1f959595ea4c75e72db",
+        "gpuwrf.integration.daily_pipeline._build_real_case": "aff14597c9760987836e08382bf6f9d4a0f240ba69ae6caaceb4a6efc909a143",
+        "gpuwrf.integration.daily_pipeline._capture_boundary_leaves": "e02ce49fe0c62fff014f7679dc8b3e709e8b9dc6c6f746acbdb01b5f49266613",
+        "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves": "c85f42ce6e33237f3df20613ef8cc9a78cd95589ebaa880b65e86806726e83d4",
+        "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total": "4dc8690a0f6181a24f0817242501d9a7599db372bca7677b013327a1ea96ecb1",
+        "gpuwrf.runtime.operational_mode._dealias_pytree_buffers": "9e3bc0fd9be3ad694805578db05fc9bb7409646649cee82c9ff902e2f1257265",
+        "gpuwrf.runtime.operational_mode._operational_scan_state": "f0609a83ad8c7ee7421e4155a13632299495c9466ab38109ff2db2326785e1c1",
+        "gpuwrf.runtime.operational_mode._run_forecast_operational_jit": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123"
+      },
+      "profiled_clean_shared_helper": true,
+      "profiled_exact_range": "GPUWRF_M0_FORECAST_INTEGRATION",
+      "sequential_fresh_cpu_arm_processes": true,
+      "single_core_cpu_arm_before_jax": true,
+      "source_sha256": {
+        "scripts/v025/build_m0_c1_c2_cpu_closure_evidence.py": "6ad2baccee1c82adb175431d6e1538b670bac07fa072f6994c01b1fe82e962d3",
+        "scripts/v025/build_m0_c1_c2_cpu_residual_evidence.py": "b1039a8e491f93701087fa1775efc4b48dd58bdbcab3d7d887c63d60160b6aaf",
+        "scripts/v025/build_m0_exact_boundary_evidence.py": "aa3b76f52814949af4ce957bedd36822524629a01ee242ee57cb7bbbd4be984d",
+        "scripts/v025/m0_c1_c2_cpu_proofs.py": "d63febe8a5e3da589a6746bcb3fa230daa26888ce5d1f30dca787111403feffc",
+        "scripts/v025/m0_core_session_protocol.py": "880ddc820b53bdd17838b73df8f83069c38751a50ed36cd6d9d7c1cb0ece5dfd",
+        "scripts/v025/m0_exact_boundary_child.py": "51eb70a5b5acc400f7f5c78960089c1a69e6d959821df437594db118fb0945e8",
+        "scripts/v025/m0_exact_boundary_contract.py": "02f291c8bbd3b69ca734c13e5091e0f7d98c17039c9de92fc9a777d17f172f7e",
+        "scripts/v025/m0_host_rss_sampler.py": "751fccfa46e9e185fb8e0e3f3b7f4ee0dc4e729c061e6a8769704c0de8a59779",
+        "scripts/v025/m0_long_run_controls.py": "75b1a9036b849e2925a3c4ec7c66810f653952a0ecd8ed0efdf9c68104ee3a3e",
+        "scripts/v025/m0_parent_death_guard.py": "6b05573364958d03d8d5d5d9c473fd4f23b380ef53c92453366208c7ab006986",
+        "scripts/v025/m0_postlock_census.py": "aebcad92605170d81040b94d17fe9e906eb6779a1162dc71681857821dc62ad1",
+        "scripts/v025/m0_three_window_executor.py": "0f5b97178b5e355e8b4b7f3e798af2469774f01008b31d9665845b0917d1d658",
+        "scripts/v025/m0_vram_sampler.py": "b28e750b291d01d52f9074ddaf2f673db5623c46a366227a9b34d22c884275f7",
+        "scripts/v025/m0_w1_fast_pair.py": "3f988447664fd61124ac6ca90f0f96a3378cfb1549ee4c9eb50dc1cbf94e0fc9",
+        "scripts/v025/m0_window_parent.py": "2465db4e5b876256cb67015fe6d489bf5c2cdb86de9f49aabff16e2e2487f70d",
+        "scripts/v025/nsys_export.py": "f83b7d61a37f695ed38655e4ea65dd8922efff66b6b917f156d87afa4925bc25",
+        "scripts/v025/pallas_sm120_spike.py": "39abfd9a983ff8fc3d16eca3f4ef00f02a9cd2458166ae171a1e35444f92d9a2",
+        "scripts/v025/prepare_m0_matched_pair.py": "b9a80fcf53a6df074d0fd0001068ea47a40a24767b60caa787c59015fd478856",
+        "scripts/v025/prepare_pallas_fast_savepoint.py": "36cc1083c394b5531e32b3146f2155b23840e1033941494ec82a1ff7fe674eab",
+        "scripts/v025/refresh_m0_exact_boundary_evidence.py": "6bcaf339802baf9433584a6bc44360c0e1a162bcab9455934b4bc5278c0dda4f",
+        "scripts/v025/run_fast_pair.py": "be5d3481d851f14831df1a9a053581fd0e1122378be47838c29dd18f4a2199bd"
+      },
+      "stablehlo_streamed_encoding": true,
+      "status": "PASS",
+      "wrapper_preparation_sequence": [
+        "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+        "gpuwrf.runtime.operational_mode._operational_scan_state",
+        "gpuwrf.runtime.operational_mode._dealias_pytree_buffers"
+      ]
+    },
+    "stage_order": [
+      "W1_COLD_DECISION",
+      "W1_CACHED_AND_CORRECTNESS",
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+      "W2_PROFILED_CAPTURE",
+      "W3_CLEAN_MATCHED_ARM",
+      "LOCK_RELEASE",
+      "POSTLOCK_CPU_ANALYSIS",
+      "POSTLOCK_M0_CORE_FINALIZER"
+    ]
+  },
+  "preflight_identity_probe": {
+    "cache": {
+      "observed_absent": true,
+      "required_state": "ABSENT",
+      "w1_seed_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r3/m0-autotune0-qualify-20260728-r3/unique-empty-cache"
+    },
+    "config": {
+      "case_descriptor_sha256": "e919385108c4a2c8ba6be2a6e1de3d5b934752452107b3a60fe5848378d10e68",
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+      "sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032"
+    },
+    "device_action": false,
+    "input_manifest_sha256": "985d992220e3d79cbe896e6f02d961c198901b3faa27bceb037339b10a313b90",
+    "revalidation_status": "PASS",
+    "source_inputs_sha256": "ef1440d9469e1afae0982916a9b199e88d5206b55239788ec50886d80fb39cf5",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "status": "PASS",
+    "tools": {
+      "mpirun": {
+        "bytes": 190592,
+        "device": 66319,
+        "inode": 101595489,
+        "invoked_path": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+        "invoked_via_symlink": false,
+        "mtime_ns": 1776598360005129344,
+        "path": "<DATA_ROOT>/canairy_meteo/artifacts/envs/wrf-build/bin/mpirun",
+        "sha256": "155a11132d1b47ed9282978739bce46b478405266a0370110265beddb01dc84f"
+      },
+      "nsys": {
+        "bytes": 76353640,
+        "device": 66309,
+        "inode": 23597968,
+        "invoked_path": "/usr/local/bin/nsys",
+        "invoked_via_symlink": true,
+        "mtime_ns": 1760511009000000000,
+        "path": "/opt/nvidia/nsight-systems/2025.5.2/target-linux-x64/nsys",
+        "sha256": "dff002f06a6068fad71ea64ff84bde41278b5a93b0916d27989bc6c9bb84f535"
+      },
+      "python": {
+        "bytes": 32003680,
+        "device": 66309,
+        "inode": 24929485,
+        "invoked_path": "<USER_HOME>/miniconda3/bin/python",
+        "invoked_via_symlink": true,
+        "mtime_ns": 1769644101096190190,
+        "path": "<USER_HOME>/miniconda3/bin/python3.13",
+        "sha256": "3851f1998dcd3a08bd2554a3a0f1f439c9227e80afff2791d4df6da1b3456492"
+      },
+      "wrf_exe": {
+        "bytes": 42057744,
+        "device": 66319,
+        "inode": 104874085,
+        "invoked_path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe",
+        "invoked_via_symlink": true,
+        "mtime_ns": 1777370958000000000,
+        "path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+        "sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+      }
+    },
+    "wallclock_seconds": 0.3260922890040092
+  },
+  "production_tree": {
+    "frozen": true,
+    "src_gpuwrf_dirty": "",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7"
+  },
+  "proof_sha256": "6e75f0528e57780d863d47efd5e4a4e9b951b2a7b09d26a082e9bad92cdc71d4",
+  "remaining_device_evidence": {
+    "GPU_VRAM_and_host_RSS": "MISSING",
+    "W1_W2_W3_runtime_correctness_and_safety": "MISSING",
+    "multi_size_VRAM_scaling": "MISSING_DEFERRED_RELEASE_GATE",
+    "profiler_perturbation": "MISSING"
+  },
+  "review_scope": "Amendment-6 session-fatal CPU repair only",
+  "schema": "wrf_gpu2.v025.m0.amendment6_repair_cpu_proof.v1",
+  "source_hashes": {
+    "scripts/v025/build_m0_held_session_repair_evidence.py": "90b8049333d3d6232c1c895cf3f878e7c80755b965b523d652839db2e26ed944",
+    "scripts/v025/m0_c1_c2_cpu_proofs.py": "d63febe8a5e3da589a6746bcb3fa230daa26888ce5d1f30dca787111403feffc",
+    "scripts/v025/m0_core_session_protocol.py": "880ddc820b53bdd17838b73df8f83069c38751a50ed36cd6d9d7c1cb0ece5dfd",
+    "scripts/v025/m0_exact_boundary_contract.py": "02f291c8bbd3b69ca734c13e5091e0f7d98c17039c9de92fc9a777d17f172f7e",
+    "scripts/v025/m0_postlock_census.py": "aebcad92605170d81040b94d17fe9e906eb6779a1162dc71681857821dc62ad1",
+    "scripts/v025/m0_three_window_executor.py": "0f5b97178b5e355e8b4b7f3e798af2469774f01008b31d9665845b0917d1d658",
+    "scripts/v025/m0_w1_fast_pair.py": "3f988447664fd61124ac6ca90f0f96a3378cfb1549ee4c9eb50dc1cbf94e0fc9",
+    "scripts/v025/m0_window_parent.py": "2465db4e5b876256cb67015fe6d489bf5c2cdb86de9f49aabff16e2e2487f70d",
+    "scripts/v025/nsys_export.py": "f83b7d61a37f695ed38655e4ea65dd8922efff66b6b917f156d87afa4925bc25",
+    "scripts/v025/nvtx_exclusive.py": "847ec424006e0951c40f227581a2a37f4893a80b2741d8fcd266ceae4c25eab2",
+    "scripts/v025/parse_profiler.py": "b78de7c782de3e74f618a7e91d053c301629bd9d4f121febe93474985483d64f",
+    "scripts/v025/prepare_m0_matched_pair.py": "b9a80fcf53a6df074d0fd0001068ea47a40a24767b60caa787c59015fd478856",
+    "scripts/v025/run_cpu_arm.py": "dad694b5073f22bfb0295ffe20596480df68d616f089b9f7c8dec21d6ba0c3ba",
+    "scripts/v025/run_gpu_arm.py": "fcda6c01c74c418dd63bd72c8e6c985c38fe402c49fa330b89e471fe5e8bc4c0",
+    "scripts/v025/step1_driver.py": "6644f6d5c3ce54e7829ac210e6c123f88d966e19fce14552c3a2cf874c6dc04a",
+    "scripts/v025/step1_stub.py": "460527e4881499b7f13d69711b8cb25e3f2d662017e5cfb609ca5824344fc093",
+    "tests/v025/test_m0_exact_boundary.py": "e94553cb20f8a02ed50871f2e8f1b2cefc2d21a324752dbc34addf0cd540c50f",
+    "tests/v025/test_m0_held_session_repair.py": "1fb5545cb85070566cb276d4d14c8ab316b7224396cfec3c86a4afea9eca7c32",
+    "tests/v025/test_m0_step1_evidence_boundary.py": "d352f88c0470a66d1353f9c2a5e23622fa69832a6c15ef950be5ea035238770d",
+    "tests/v025/test_m0_three_window_executor.py": "4fdcddf4bb9c74524b90a006a5070aa73b99a65b2ccd2bea960c299474247f12"
+  },
+  "status": "PASS"
+}

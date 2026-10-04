@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="6" time="0.256" timestamp="2026-07-30T00:30:49.646957+01:00" hostname="user-battlestation"><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_outer_preflight_must_execute_the_real_native_lw_loader" time="0.200"><failure message="AssertionError: outer preflight returned PASS without executing the production LW loader; observed call boundaries: []&#10;assert '_native_lw_tables' in []">tmp_path = PosixPath('/tmp/pytest-of-user/pytest-1341/test_outer_preflight_must_exec0')
+
+    def test_outer_preflight_must_execute_the_real_native_lw_loader(tmp_path: Path) -&gt; None:
+        """A PASS authority must not derive OPENED_AT_READINESS from a label.
+    
+        The existing raw W1 directory makes the real pre-authorization guard refuse,
+        so this isolated call stubs only that already-proven state/budget relation.
+        A Python call profiler then observes the production function boundary.  It
+        does not mistake the authority builder's hash-file ``open()`` for a call to
+        ``gpuwrf.physics.rrtmg_lw._native_lw_tables()``.
+        """
+    
+        code = f"""
+    import json
+    import sys
+    from pathlib import Path
+    import m0_three_window_executor as executor
+    
+    executor.core_session.validate_held_budget = lambda: {{"critic_stub": True}}
+    executor.window_parent.validate_pre_authorization = lambda _window: {{
+        "unique_raw_root_absent": True,
+        "unique_empty_cache_absent": True,
+        "pair_prerequisite": None,
+    }}
+    calls = []
+    def profile(frame, event, arg):
+        if event == "call" and frame.f_code.co_name in {{
+            "_native_lw_tables", "load_fast_call_arguments"
+        }}:
+            calls.append(frame.f_code.co_name)
+        return profile
+    sys.setprofile(profile)
+    try:
+        result = executor.build_session_preflight_identity(
+            output_path=Path({str(tmp_path / "identity.json")!r}),
+            receipt_path=Path({str(tmp_path / "receipt.json")!r}),
+            authority_output_path=Path({str(tmp_path / "authority.json")!r}),
+        )
+    finally:
+        sys.setprofile(None)
+    print(json.dumps({{"status": result["status"], "calls": calls}}))
+    """
+        proc = subprocess.run(
+            [sys.executable, "-c", code],
+            cwd=REPO,
+            env=_fresh_cpu_environment(),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        observed = json.loads(proc.stdout.strip().splitlines()[-1])
+        assert observed["status"] == "PASS"
+&gt;       assert "_native_lw_tables" in observed["calls"], (
+            "outer preflight returned PASS without executing the production LW "
+            f"loader; observed call boundaries: {observed['calls']}"
+        )
+E       AssertionError: outer preflight returned PASS without executing the production LW loader; observed call boundaries: []
+E       assert '_native_lw_tables' in []
+
+tests/v025/test_m0_live_preflight_gpt_critic.py:117: AssertionError</failure></testcase><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_authorise_must_refuse_an_unknown_lock_label_before_spend" time="0.001"><failure message="AssertionError: run_gpu_arm.authorise accepted an unregistered canonical-lock label and reached spend: result={'window': 'baseline-census', 'receipt_path': '/tmp/pytest-of-user/pytest-1341/test_authorise_must_refuse_an_0/receipt.json', 'receipt_requested_at_utc': '2026-07-29T23:30:49.890299+00:00', 'receipt_fingerprint': '09a4c4158db4325f48d45cdef423bf56aca52bfbbc2255642f9a137b0f4c85a0', 'replies': {'0:2': {'affirmative': True, 'verbatim': 'yes', 'received_at_utc': '2026-07-29T23:30:49.890299+00:00'}, '0:3': {'affirmative': True, 'verbatim': 'yes', 'received_at_utc': '2026-07-29T23:30:49.890299+00:00'}}, 'lock': {'holder_file': '/tmp/pytest-of-user/pytest-1341/test_authorise_must_refuse_an_0/holder', 'holder_record': 'holder=invented-lock-label pid=1 since=now token=critic-token cmd=x', 'token_matched': True, 'exported_label': 'invented-lock-label', 'label_matched': None}, 'consumed': True, 'spend_record': {'spent_at_utc': '2026-07-29T23:30:49.890492+00:00', 'window': 'baseline-census', 'reason': 'authorised window baseline-census', 'requested_at_utc': '2026-07-29T23:30:49.890299+00:00', 'managers': ['0:2', '0:3']}, 'authorised_at_utc': '2026-07-29T23:30:49.890564+00:00'}, temp_ledger_exists=True&#10;assert (False)">tmp_path = PosixPath('/tmp/pytest-of-user/pytest-1341/test_authorise_must_refuse_an_0')
+
+    def test_authorise_must_refuse_an_unknown_lock_label_before_spend(
+        tmp_path: Path,
+    ) -&gt; None:
+        """Receipt label and canonical-lock label are one authorization identity."""
+    
+        now = datetime.now(timezone.utc).isoformat()
+        receipt_path = tmp_path / "receipt.json"
+        receipt_path.write_text(
+            json.dumps(
+                {
+                    "window": "baseline-census",
+                    "requested_at_utc": now,
+                    "request_text": "critic authorization-label attack",
+                    "replies": {
+                        "0:2": {
+                            "affirmative": True,
+                            "verbatim": "yes",
+                            "received_at_utc": now,
+                        },
+                        "0:3": {
+                            "affirmative": True,
+                            "verbatim": "yes",
+                            "received_at_utc": now,
+                        },
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        holder = tmp_path / "holder"
+        holder.write_text(
+            "holder=invented-lock-label pid=1 since=now "
+            "token=critic-token cmd=x\n",
+            encoding="utf-8",
+        )
+        lock_environment = {
+            "GPUWRF_GPU_LOCK_HELD": "1",
+            "GPUWRF_GPU_LOCK_TOKEN": "critic-token",
+            "GPUWRF_GPU_LOCK_HOLDER_FILE": str(holder),
+            "GPUWRF_GPU_LOCK_LABEL": "invented-lock-label",
+        }
+        ledger = tmp_path / "ledger.json"
+        committed_before = hashlib.sha256(COMMITTED_LEDGER.read_bytes()).hexdigest()
+    
+        refused = False
+        result = None
+        try:
+            result = arm.authorise(
+                "baseline-census",
+                receipt_path=receipt_path,
+                env=lock_environment,
+                consume=True,
+                ledger_path=ledger,
+            )
+        except arm.WindowNotAuthorised:
+            refused = True
+    
+        committed_after = hashlib.sha256(COMMITTED_LEDGER.read_bytes()).hexdigest()
+        assert committed_after == committed_before
+&gt;       assert refused and not ledger.exists(), (
+            "run_gpu_arm.authorise accepted an unregistered canonical-lock label "
+            f"and reached spend: result={result!r}, temp_ledger_exists={ledger.exists()}"
+        )
+E       AssertionError: run_gpu_arm.authorise accepted an unregistered canonical-lock label and reached spend: result={'window': 'baseline-census', 'receipt_path': '/tmp/pytest-of-user/pytest-1341/test_authorise_must_refuse_an_0/receipt.json', 'receipt_requested_at_utc': '2026-07-29T23:30:49.890299+00:00', 'receipt_fingerprint': '09a4c4158db4325f48d45cdef423bf56aca52bfbbc2255642f9a137b0f4c85a0', 'replies': {'0:2': {'affirmative': True, 'verbatim': 'yes', 'received_at_utc': '2026-07-29T23:30:49.890299+00:00'}, '0:3': {'affirmative': True, 'verbatim': 'yes', 'received_at_utc': '2026-07-29T23:30:49.890299+00:00'}}, 'lock': {'holder_file': '/tmp/pytest-of-user/pytest-1341/test_authorise_must_refuse_an_0/holder', 'holder_record': 'holder=invented-lock-label pid=1 since=now token=critic-token cmd=x', 'token_matched': True, 'exported_label': 'invented-lock-label', 'label_matched': None}, 'consumed': True, 'spend_record': {'spent_at_utc': '2026-07-29T23:30:49.890492+00:00', 'window': 'baseline-census', 'reason': 'authorised window baseline-census', 'requested_at_utc': '2026-07-29T23:30:49.890299+00:00', 'managers': ['0:2', '0:3']}, 'authorised_at_utc': '2026-07-29T23:30:49.890564+00:00'}, temp_ledger_exists=True
+E       assert (False)
+
+tests/v025/test_m0_live_preflight_gpt_critic.py:182: AssertionError</failure></testcase><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_source_anchor_must_not_silently_override_a_conflicting_vendor_family" time="0.000"><failure message="Failed: DID NOT RAISE &lt;class 'm0_family_attribution.AttributionRefusal'&gt;">def test_source_anchor_must_not_silently_override_a_conflicting_vendor_family() -&gt; None:
+        """Nested/range ownership that conflicts with a vendor identity is ambiguous."""
+    
+        name = (
+            "void pcrGtsvBatchSharedMemKernelLoop&lt;double&gt;"
+            "(pcrGtsvBatchGlobalMemParams_t&lt;double&gt;)"
+        )
+&gt;       with pytest.raises(attribution.AttributionRefusal, match="ambiguous|conflict"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'm0_family_attribution.AttributionRefusal'&gt;
+
+tests/v025/test_m0_live_preflight_gpt_critic.py:195: Failed</failure></testcase><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_ambiguous_vendor_mutation_must_exercise_the_classifier" time="0.004"><failure message="AssertionError: assert 'no ambiguou... to exercise' not in 'vendor tabl... to exercise'&#10;  &#10;  'no ambiguous pair to exercise' is contained here:&#10;    vendor table has no ambiguous pair to exercise">def test_ambiguous_vendor_mutation_must_exercise_the_classifier() -&gt; None:
+        """A harness throwing its own refusal is not a flipped classifier relation."""
+    
+        gate = evidence.gate_c()
+        mutation = gate["mutations"]["ambiguous_vendor_family"]
+        assert mutation["refused"] is True
+&gt;       assert "no ambiguous pair to exercise" not in str(mutation["detail"])
+E       AssertionError: assert 'no ambiguou... to exercise' not in 'vendor tabl... to exercise'
+E         
+E         'no ambiguous pair to exercise' is contained here:
+E           vendor table has no ambiguous pair to exercise
+
+tests/v025/test_m0_live_preflight_gpt_critic.py:205: AssertionError</failure></testcase><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_retained_nvtx_already_carries_source_and_hlo_metadata" time="0.001" /><testcase classname="tests.v025.test_m0_live_preflight_gpt_critic" name="test_assumed_step_denominator_is_not_current_capture_evidence" time="0.001"><failure message="AssertionError: a denominator explicitly named steps_assumed was promoted to AVAILABLE_CURRENT_CAPTURE&#10;assert 'AVAILABLE_CURRENT_CAPTURE' != 'AVAILABLE_CURRENT_CAPTURE'&#10; +  where 'AVAILABLE_CURRENT_CAPTURE' = evidence.AVAILABLE_CURRENT">def test_assumed_step_denominator_is_not_current_capture_evidence() -&gt; None:
+        """The 1,588.2 value divides by a CLI default, not an observed step count."""
+    
+        trace = json.loads(RETAINED_TRACE.read_text(encoding="utf-8"))
+        nsys = json.loads(RETAINED_NSYS.read_text(encoding="utf-8"))
+        assert trace["device_event_count"] == 317_634
+        assert trace["steps_assumed"] == 200
+        assert trace["launches_per_step"] == pytest.approx(1_588.2, abs=0.1)
+        assert nsys["steps_total"] == 150
+        assert nsys["cuda_api"]["launches_per_step_est"] == pytest.approx(
+            13_958.3, abs=0.1
+        )
+    
+        gate = evidence.gate_c()
+        classification = gate["review08_quantities"]["kernels_per_step"][
+            "classification"
+        ]
+&gt;       assert classification != evidence.AVAILABLE_CURRENT, (
+            "a denominator explicitly named steps_assumed was promoted to "
+            "AVAILABLE_CURRENT_CAPTURE"
+        )
+E       AssertionError: a denominator explicitly named steps_assumed was promoted to AVAILABLE_CURRENT_CAPTURE
+E       assert 'AVAILABLE_CURRENT_CAPTURE' != 'AVAILABLE_CURRENT_CAPTURE'
+E        +  where 'AVAILABLE_CURRENT_CAPTURE' = evidence.AVAILABLE_CURRENT
+
+tests/v025/test_m0_live_preflight_gpt_critic.py:240: AssertionError</failure></testcase></testsuite></testsuites>

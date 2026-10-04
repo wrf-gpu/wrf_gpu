@@ -1,0 +1,5 @@
+# Regenerable bit-identity baseline (5.6M); reproduce with `harness.py save` on the
+# parent commit. The result is captured in gate_a_bit_identical.txt.
+baseline_advance.npz
+__pycache__/
+*.pyc

@@ -1,0 +1,4 @@
+# SUMMARY: 1926/1926 vars bit-identical across 18 domain files; worst maxΔ=0.000e+00; verdict=BYTE-IDENTICAL
+# SUMMARY: 1926/1926 vars bit-identical across 18 domain files; worst maxΔ=0.000e+00; verdict=BYTE-IDENTICAL
+# SUMMARY: 1926/1926 vars bit-identical across 18 domain files; worst maxΔ=0.000e+00; verdict=BYTE-IDENTICAL
+# SUMMARY: 1926/1926 vars bit-identical across 18 domain files; worst maxΔ=0.000e+00; verdict=BYTE-IDENTICAL

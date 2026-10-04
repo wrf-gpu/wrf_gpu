@@ -1,0 +1,8 @@
+{
+  "gate": "b5_k1_boulac",
+  "generated_utc": "2026-07-03T07:59:52.540258+00:00",
+  "message": "Pair commands were staged only; rerun without V023_DRYRUN=1 when the GPU is free.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

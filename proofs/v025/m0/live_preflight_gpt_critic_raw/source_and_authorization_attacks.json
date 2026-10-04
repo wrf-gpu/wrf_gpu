@@ -1,0 +1,104 @@
+{
+  "source_boundary": {
+    "pre_repair_commit": "c8f38a88",
+    "pre_repair_src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "pre_repair_rrtmg_lw_blob": "fae9dd3990855c60ea2d6bfb9c02c5991e063ef9",
+    "candidate_rrtmg_lw_blob": "fae9dd3990855c60ea2d6bfb9c02c5991e063ef9",
+    "original_missing_root_reproduction": {
+      "environment": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "GPUWRF_WRF_ROOT": "UNSET",
+        "GPUWRF_WRF_SRC": "UNSET",
+        "JAX_PLATFORMS": "cpu"
+      },
+      "call": "gpuwrf.physics.rrtmg_lw._native_lw_tables()",
+      "exception": "builtins.FileNotFoundError",
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-live-preflight-gpt-critic/data/wrf_pristine/WRF/phys/module_ra_rrtmg_lw.F"
+    },
+    "bound_native_loader": {
+      "root": "<USER_HOME>/src/wrf_pristine/WRF",
+      "call_ok": true,
+      "return_type": "gpuwrf.physics.rrtmg_lw._LWNTableBundle",
+      "field_count": 29,
+      "chi_mls_shape": [
+        7,
+        59
+      ],
+      "chi_mls_dtype": "float64",
+      "source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_ra_rrtmg_lw.F"
+    },
+    "bound_exact_production_lowering": {
+      "call": "_run_forecast_operational_jit.lower(*prepared_arguments)",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+      "cpu_device_adapter": true,
+      "lower_type": "jax._src.stages.Lowered",
+      "native_lw_calls_observed": 2,
+      "elapsed_seconds": 26.583,
+      "backend": "cpu"
+    },
+    "outer_preflight_profile": {
+      "function": "m0_three_window_executor.build_session_preflight_identity",
+      "returned_status": "PASS",
+      "native_lw_calls_observed": 0,
+      "load_fast_call_arguments_calls_observed": 0,
+      "authority_file_written": true,
+      "claimed_opened_at_readiness": [
+        "phys/module_ra_rrtmg_lw.F"
+      ],
+      "gpuwrf_loaded_by_source_authority_builder": false,
+      "jax_loaded_by_source_authority_builder": false,
+      "extractor_loaded_by_source_authority_builder": false
+    },
+    "resolver_precedence": [
+      "GPUWRF_WRF_SRC",
+      "gpuwrf.config.paths.wrf_root() via GPUWRF_WRF_ROOT",
+      "<repo>/external/WRF"
+    ],
+    "central_default": "<repo>/data/wrf_pristine/WRF",
+    "import_cache": [
+      "scripts/extract_rrtmg_tables.WRF_ROOT is fixed at module import",
+      "gpuwrf.physics.rrtmg_lw._extract_rrtmg_tables_module is lru_cache(maxsize=1)",
+      "gpuwrf.physics.rrtmg_lw._native_lw_tables is lru_cache(maxsize=1)"
+    ],
+    "candidate_gate_a": {
+      "required_mutations": 15,
+      "observed_mutations": 15,
+      "all_refused": true,
+      "mutation_set_equal": true,
+      "independent_conclusion": "The file/root/substitution checks work at their isolated validation points, but they do not exercise the production import/readiness boundary required by C2."
+    }
+  },
+  "authorization_boundary": {
+    "committed_ledger_sha256_before": "b4544ff8e3f2ef8b087a16a9e2f8743cbf8a22d59d456ff7845b9af9daed4ce0",
+    "committed_ledger_sha256_after": "b4544ff8e3f2ef8b087a16a9e2f8743cbf8a22d59d456ff7845b9af9daed4ce0",
+    "committed_ledger_byte_identical": true,
+    "unknown_lock_label_attack": {
+      "receipt_label": "baseline-census",
+      "requested_window": "baseline-census",
+      "exported_lock_label": "invented-lock-label",
+      "holder_lock_label": "invented-lock-label",
+      "result": "AUTHORISED_AND_SPENT",
+      "temporary_ledger_written": true,
+      "temporary_receipt_marked_spent": true,
+      "device_action": false
+    },
+    "root_cause": {
+      "path": "scripts/v025/run_gpu_arm.py",
+      "function": "authorise",
+      "line_relation": "check_canonical_lock(env) is called without expected_label=window"
+    },
+    "second_unchecked_reachable_path": {
+      "path": "scripts/v025/m0_exact_boundary_child.py",
+      "function": "consume_authorization_handoff",
+      "line_relation": "check_canonical_lock(os.environ) is called without expected_label=expected_window"
+    },
+    "paths_that_do_check_expected_label": [
+      "m0_window_parent.authorise_window",
+      "m0_three_window_executor.authorise_held_session",
+      "m0_w1_fast_pair"
+    ],
+    "candidate_gate_b_blind_spot": "Its lock-label mutations call gpu_window_registry.assert_lock_label directly; neither mutation traverses run_gpu_arm.authorise.",
+    "device_action": false
+  },
+  "device_action": false
+}

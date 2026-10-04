@@ -1,0 +1,22 @@
+# byte-compare baseline_fp64_warm vs head_fp64_warm
+#   A=/tmp/v020_fp32_warm_verify/baseline_timed/out
+#   B=/tmp/v020_fp32_warm_verify/head_timed/out
+  wrfout_d01_2026-04-28_19:00:00: 102/107 vars identical  [DIFFERS maxΔ=1.907e-06]
+      differing: U(maxΔ=2.980e-08), V(maxΔ=2.980e-08), W(maxΔ=3.725e-09), P(maxΔ=1.907e-06), QKE(maxΔ=2.980e-08)
+  wrfout_d02_2026-04-28_19:00:00: 99/107 vars identical  [DIFFERS maxΔ=2.441e-04]
+      differing: LH(maxΔ=7.629e-06), U(maxΔ=4.768e-07), V(maxΔ=4.768e-07), W(maxΔ=7.451e-09), QVAPOR(maxΔ=9.313e-10), P(maxΔ=1.221e-04), PH(maxΔ=2.441e-04), QKE(maxΔ=5.960e-08)
+  wrfout_d03_2026-04-28_19:00:00: 97/107 vars identical  [DIFFERS maxΔ=3.052e-05]
+      differing: U10(maxΔ=7.451e-09), V10(maxΔ=1.192e-07), PBLH(maxΔ=3.052e-05), LH(maxΔ=3.815e-06), U(maxΔ=1.907e-06), V(maxΔ=4.768e-07), W(maxΔ=2.980e-08), QVAPOR(maxΔ=9.313e-10), P(maxΔ=3.052e-05), QKE(maxΔ=2.980e-08)
+  wrfout_d04_2026-04-28_19:00:00: 98/107 vars identical  [DIFFERS maxΔ=3.052e-05]
+      differing: U10(maxΔ=2.328e-10), UST(maxΔ=3.725e-09), HFX(maxΔ=1.192e-07), LH(maxΔ=1.907e-06), U(maxΔ=2.980e-08), V(maxΔ=1.192e-07), W(maxΔ=7.451e-09), P(maxΔ=3.052e-05), QKE(maxΔ=2.980e-08)
+  wrfout_d05_2026-04-28_19:00:00: 99/107 vars identical  [DIFFERS maxΔ=7.629e-06]
+      differing: UST(maxΔ=7.451e-09), HFX(maxΔ=9.537e-07), LH(maxΔ=7.629e-06), U(maxΔ=9.537e-07), V(maxΔ=2.384e-07), W(maxΔ=7.451e-09), P(maxΔ=7.629e-06), QKE(maxΔ=3.725e-09)
+  wrfout_d06_2026-04-28_19:00:00: 102/107 vars identical  [DIFFERS maxΔ=3.815e-06]
+      differing: U(maxΔ=9.537e-07), V(maxΔ=2.384e-07), W(maxΔ=7.451e-09), P(maxΔ=3.815e-06), QKE(maxΔ=3.725e-09)
+  wrfout_d07_2026-04-28_19:00:00: 100/107 vars identical  [DIFFERS maxΔ=1.221e-04]
+      differing: PBLH(maxΔ=1.221e-04), U(maxΔ=2.980e-08), V(maxΔ=2.980e-08), W(maxΔ=7.451e-09), P(maxΔ=1.907e-06), QKE(maxΔ=5.960e-08), LWDNB(maxΔ=3.052e-05)
+  wrfout_d08_2026-04-28_19:00:00: 86/107 vars identical  [DIFFERS maxΔ=1.562e-02]
+      differing: U10(maxΔ=1.788e-07), V10(maxΔ=4.768e-07), SWDOWN(maxΔ=1.526e-05), GLW(maxΔ=3.052e-05), UST(maxΔ=1.490e-08), HFX(maxΔ=9.537e-07), LH(maxΔ=7.629e-06), U(maxΔ=1.907e-06), V(maxΔ=4.768e-07), W(maxΔ=3.446e-07), P(maxΔ=2.441e-04), PB(maxΔ=1.562e-02) ...
+  wrfout_d09_2026-04-28_19:00:00: 96/107 vars identical  [DIFFERS maxΔ=6.104e-05]
+      differing: U10(maxΔ=1.863e-09), Q2(maxΔ=9.313e-10), PBLH(maxΔ=6.104e-05), LH(maxΔ=1.907e-05), U(maxΔ=1.907e-06), V(maxΔ=4.768e-07), W(maxΔ=1.490e-08), QVAPOR(maxΔ=9.313e-10), P(maxΔ=1.907e-06), PH(maxΔ=3.815e-06), QKE(maxΔ=2.980e-08)
+# SUMMARY: 879/963 vars bit-identical across 9 domain files; worst maxΔ=1.562e-02; verdict=NOT byte-identical

@@ -1,0 +1,9 @@
+{
+  "theta_prime_max_K": 2.0,
+  "analytic_buoyancy_m_s2": 0.0654,
+  "max_abs_rw_phys_m_s2": 0.6147371920618954,
+  "ratio_rw_over_analytic": 9.399651254769042,
+  "max_abs_p_buoy_Pa": 743.9650179372494,
+  "max_abs_pg_term": 4687.44309269363,
+  "max_abs_c1f_mu_term": 0.0
+}

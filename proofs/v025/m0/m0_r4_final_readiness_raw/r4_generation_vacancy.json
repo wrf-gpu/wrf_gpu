@@ -1,0 +1,135 @@
+{
+  "constants": {
+    "dead_fifth_root": {
+      "entrypoint": "m0_three_window_executor.run_outer_window_graph",
+      "reason": "Amendment 6 supersedes the per-window outer graph; the held session never calls it, so its root is not part of the R4 generation and is not added to the session",
+      "status": "UNREACHABLE_NOT_IN_HELD_SESSION"
+    },
+    "expected": {
+      "executor_c1_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+      "executor_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+      "executor_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+      "executor_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+      "executor_session_receipt": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+      "parent_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+      "parent_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+      "parent_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4"
+    },
+    "observed": {
+      "executor_c1_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+      "executor_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+      "executor_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+      "executor_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+      "executor_session_receipt": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+      "parent_pair_cache_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+      "parent_proof_root": "proofs/v025/m0/autotune0_three_window_r4",
+      "parent_raw_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4"
+    },
+    "run_id_freshness_note": "freshness comes from the vacant R4 parent roots and the packet, not from cosmetic run-id text",
+    "run_ids_retain_reviewed_r3_text": [
+      "m0-autotune0-qualify-20260728-r3",
+      "m0-autotune0-profiled-20260728-r3",
+      "m0-autotune0-clean-20260728-r3"
+    ],
+    "status": "PASS"
+  },
+  "status": "PASS",
+  "vacancy_after": {
+    "mutable_root_count": 4,
+    "receipt_template_is_authority": false,
+    "rule": "a fresh generation is proven by absence, not by a fingerprint: each fixed target is absent, is not a symlink, and has no symlink ancestor below its canonical base",
+    "schema": "wrf_gpu2.v025.m0.r4_generation_vacancy.v1",
+    "status": "PASS",
+    "targets": [
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+        "vacant": true
+      },
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+        "vacant": true
+      },
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "vacant": true
+      },
+      {
+        "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4",
+        "vacant": true
+      },
+      {
+        "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/.agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+        "vacant": true
+      }
+    ]
+  },
+  "vacancy_before": {
+    "mutable_root_count": 4,
+    "receipt_template_is_authority": false,
+    "rule": "a fresh generation is proven by absence, not by a fingerprint: each fixed target is absent, is not a symlink, and has no symlink ancestor below its canonical base",
+    "schema": "wrf_gpu2.v025.m0.r4_generation_vacancy.v1",
+    "status": "PASS",
+    "targets": [
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r4",
+        "vacant": true
+      },
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r4",
+        "vacant": true
+      },
+      {
+        "base": "<DATA_ROOT>",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "vacant": true
+      },
+      {
+        "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4",
+        "vacant": true
+      },
+      {
+        "base": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session",
+        "exists": false,
+        "is_symlink": false,
+        "symlink_ancestors_below_base": [],
+        "target": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/.agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+        "vacant": true
+      }
+    ]
+  }
+}

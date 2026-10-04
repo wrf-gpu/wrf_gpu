@@ -1,0 +1,11 @@
+gate=b3_p3_fusion_perf
+session=proofs/v023/validation/results/dryrun_work/b3_p3_fusion_perf_20260703T075952Z/ab
+base_ref=HEAD
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=2
+domains=d01 d02
+base_env=GPUWRF_NESTED_FUSE=0
+candidate_env=GPUWRF_NESTED_FUSE=1 GPUWRF_ROOT_FUSION=1
+dryrun=1

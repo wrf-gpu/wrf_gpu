@@ -1,0 +1,11 @@
+gate=b1_gate3_p1_p7b
+session=proofs/v023/validation/results/dryrun_work/b1_gate3_p1_p7b_20260703T075952Z/ab
+base_ref=HEAD
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=GPUWRF_SINGLE_SCAN=0 GPUWRF_FUSED_CASCADE_LOW_EFFORT=0
+candidate_env=GPUWRF_SINGLE_SCAN=1 GPUWRF_FUSED_CASCADE_LOW_EFFORT=1
+dryrun=1

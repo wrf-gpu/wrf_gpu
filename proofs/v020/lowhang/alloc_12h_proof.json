@@ -1,0 +1,2255 @@
+{
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "carry_overs": [
+    "Two-way feedback is OFF (one-way nesting); matches the v0.11.0 validated wiring.",
+    "In-loop nested w relaxation is OFF (deferred to a longer stability gate).",
+    "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke."
+  ],
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domains": [
+    "d01",
+    "d02",
+    "d03",
+    "d04",
+    "d05",
+    "d06",
+    "d07",
+    "d08",
+    "d09"
+  ],
+  "feedback": false,
+  "hierarchy": {
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 22,
+        "j_parent_start": 18,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d03",
+        "feedback": false,
+        "i_parent_start": 54,
+        "j_parent_start": 26,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d04",
+        "feedback": false,
+        "i_parent_start": 93,
+        "j_parent_start": 14,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d05",
+        "feedback": false,
+        "i_parent_start": 20,
+        "j_parent_start": 42,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d06",
+        "feedback": false,
+        "i_parent_start": 43,
+        "j_parent_start": 24,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d07",
+        "feedback": false,
+        "i_parent_start": 18,
+        "j_parent_start": 10,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d08",
+        "feedback": false,
+        "i_parent_start": 137,
+        "j_parent_start": 28,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d09",
+        "feedback": false,
+        "i_parent_start": 154,
+        "j_parent_start": 58,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "event_counts": {
+      "advance": 60000,
+      "force": 52800,
+      "output": 108
+    },
+    "force_counts": {
+      "d01->d02": 2400,
+      "d02->d03": 7200,
+      "d02->d04": 7200,
+      "d02->d05": 7200,
+      "d02->d06": 7200,
+      "d02->d07": 7200,
+      "d02->d08": 7200,
+      "d02->d09": 7200
+    },
+    "observed_own_steps": {
+      "d01": 2400,
+      "d02": 7200,
+      "d03": 21600,
+      "d04": 21600,
+      "d05": 21600,
+      "d06": 21600,
+      "d07": 21600,
+      "d08": 21600,
+      "d09": 21600
+    },
+    "order": [
+      "d01",
+      "d02",
+      "d03",
+      "d04",
+      "d05",
+      "d06",
+      "d07",
+      "d08",
+      "d09"
+    ],
+    "output_cadence_steps": {
+      "d01": 200,
+      "d02": 600,
+      "d03": 1800,
+      "d04": 1800,
+      "d05": 1800,
+      "d06": 1800,
+      "d07": 1800,
+      "d08": 1800,
+      "d09": 1800
+    },
+    "persistent_state_bytes": {
+      "d01": 46017808,
+      "d02": 115194448,
+      "d03": 46065040,
+      "d04": 27527728,
+      "d05": 20801200,
+      "d06": 10850896,
+      "d07": 10850896,
+      "d08": 55065040,
+      "d09": 36502480
+    }
+  },
+  "hours": 12,
+  "init_mode": "standalone_native_init_nested",
+  "input_dir": "<DATA_ROOT>/wrf_downscale/canary_all7/run",
+  "max_dom": 9,
+  "metadata": {
+    "domains": {
+      "d01": {
+        "grid": {
+          "dx_m": 9000.0,
+          "dy_m": 9000.0,
+          "mass_shape": [
+            44,
+            59,
+            93
+          ],
+          "wrf_staggered_extent": [
+            45,
+            60,
+            94
+          ]
+        },
+        "ic_source": "wrfinput_d01",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 522,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+        "live_nest_base_init": {
+          "enabled": false
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 21600.0,
+          "cu_physics": 1,
+          "dt_s": 18.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 100,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 21.184270009209246,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfbdy_d01",
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+          ],
+          "domain": "d01",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.64828109741211,
+              "min": 25.88818359375,
+              "shape": [
+                59,
+                93
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.64828109741211,
+              "min": 25.886817932128906,
+              "shape": [
+                59,
+                94
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.688735961914062,
+              "min": 25.847694396972656,
+              "shape": [
+                60,
+                93
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.0758056640625,
+              "min": -20.724212646484375,
+              "shape": [
+                59,
+                93
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.028839111328125,
+              "min": -20.77117919921875,
+              "shape": [
+                59,
+                94
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.07415771484375,
+              "min": -20.725830078125,
+              "shape": [
+                60,
+                93
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d01"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d02": {
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            93,
+            195
+          ],
+          "wrf_staggered_extent": [
+            45,
+            94,
+            196
+          ]
+        },
+        "ic_source": "wrfinput_d02",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 1146,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d02",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 22,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 18,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d01",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95115.171875,
+          "pre_start_blended_phb_max_m2_s2": 195220.53125,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d02",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d02",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 22,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 18,
+            "parent_domain": "d01",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 18.0,
+          "cu_physics": 0,
+          "dt_s": 6.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 300,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 22.73144975975882,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+          ],
+          "domain": "d02",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.784961700439453,
+              "min": 27.254615783691406,
+              "shape": [
+                93,
+                195
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.784961700439453,
+              "min": 27.254230499267578,
+              "shape": [
+                93,
+                196
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.7984619140625,
+              "min": 27.241111755371094,
+              "shape": [
+                94,
+                195
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.731719970703125,
+              "min": -18.76300048828125,
+              "shape": [
+                93,
+                195
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.7161865234375,
+              "min": -18.778564453125,
+              "shape": [
+                93,
+                196
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.73126220703125,
+              "min": -18.7633056640625,
+              "shape": [
+                94,
+                195
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d02"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d03": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            69,
+            102
+          ],
+          "wrf_staggered_extent": [
+            45,
+            70,
+            103
+          ]
+        },
+        "ic_source": "wrfinput_d03",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 2044,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d03",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 54,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 26,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.53125,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d03",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d03",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 54,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 26,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 16.03845746084383,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+          ],
+          "domain": "d03",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.579090118408203,
+              "min": 27.965118408203125,
+              "shape": [
+                69,
+                102
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.579090118408203,
+              "min": 27.96509552001953,
+              "shape": [
+                69,
+                103
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.58359146118164,
+              "min": 27.960617065429688,
+              "shape": [
+                70,
+                102
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -16.082244873046875,
+              "min": -17.1175537109375,
+              "shape": [
+                69,
+                102
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -16.077117919921875,
+              "min": -17.1226806640625,
+              "shape": [
+                69,
+                103
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -16.08221435546875,
+              "min": -17.117584228515625,
+              "shape": [
+                70,
+                102
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d03"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d04": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            66,
+            63
+          ],
+          "wrf_staggered_extent": [
+            45,
+            67,
+            64
+          ]
+        },
+        "ic_source": "wrfinput_d04",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 1562,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d04",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 93,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 14,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.5,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d04",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d04",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 93,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 14,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 18.349964919429627,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+          ],
+          "domain": "d04",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.227184295654297,
+              "min": 27.638431549072266,
+              "shape": [
+                66,
+                63
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.22719955444336,
+              "min": 27.638389587402344,
+              "shape": [
+                66,
+                64
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.231685638427734,
+              "min": 27.633914947509766,
+              "shape": [
+                67,
+                63
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -15.28631591796875,
+              "min": -15.922332763671875,
+              "shape": [
+                66,
+                63
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -15.28118896484375,
+              "min": -15.927398681640625,
+              "shape": [
+                66,
+                64
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -15.2862548828125,
+              "min": -15.92236328125,
+              "shape": [
+                67,
+                63
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d04"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d05": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            54,
+            57
+          ],
+          "wrf_staggered_extent": [
+            45,
+            55,
+            58
+          ]
+        },
+        "ic_source": "wrfinput_d05",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 702,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d05",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 20,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 42,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.515625,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d05",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d05",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 20,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 42,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 7.276799135660268,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+          ],
+          "domain": "d05",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.871109008789062,
+              "min": 28.388076782226562,
+              "shape": [
+                54,
+                57
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.87114715576172,
+              "min": 28.38800048828125,
+              "shape": [
+                54,
+                58
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.8756103515625,
+              "min": 28.383563995361328,
+              "shape": [
+                55,
+                57
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.587066650390625,
+              "min": -18.16778564453125,
+              "shape": [
+                54,
+                57
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.581939697265625,
+              "min": -18.172943115234375,
+              "shape": [
+                54,
+                58
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.587005615234375,
+              "min": -18.167877197265625,
+              "shape": [
+                55,
+                57
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d05"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d06": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            39,
+            39
+          ],
+          "wrf_staggered_extent": [
+            45,
+            40,
+            40
+          ]
+        },
+        "ic_source": "wrfinput_d06",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 367,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d06",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 43,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 24,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.515625,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d06",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d06",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 43,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 24,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 2.591494853878618,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+          ],
+          "domain": "d06",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.253459930419922,
+              "min": 27.908992767333984,
+              "shape": [
+                39,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.253475189208984,
+              "min": 27.908954620361328,
+              "shape": [
+                39,
+                40
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.257953643798828,
+              "min": 27.904491424560547,
+              "shape": [
+                40,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.062225341796875,
+              "min": -17.452667236328125,
+              "shape": [
+                39,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.05712890625,
+              "min": -17.457763671875,
+              "shape": [
+                39,
+                40
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.06219482421875,
+              "min": -17.45269775390625,
+              "shape": [
+                40,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d06"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d07": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            39,
+            39
+          ],
+          "wrf_staggered_extent": [
+            45,
+            40,
+            40
+          ]
+        },
+        "ic_source": "wrfinput_d07",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 264,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d07",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 18,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 10,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.515625,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d07",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d07",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 18,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 10,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 9.587462578220936,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+          ],
+          "domain": "d07",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 27.86963653564453,
+              "min": 27.523086547851562,
+              "shape": [
+                39,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 27.869701385498047,
+              "min": 27.523025512695312,
+              "shape": [
+                39,
+                40
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 27.87413787841797,
+              "min": 27.518600463867188,
+              "shape": [
+                40,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.821380615234375,
+              "min": -18.2127685546875,
+              "shape": [
+                39,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.816314697265625,
+              "min": -18.217864990234375,
+              "shape": [
+                39,
+                40
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -17.821319580078125,
+              "min": -18.212860107421875,
+              "shape": [
+                40,
+                39
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d07"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d08": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            87,
+            99
+          ],
+          "wrf_staggered_extent": [
+            45,
+            88,
+            100
+          ]
+        },
+        "ic_source": "wrfinput_d08",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 1656,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d08",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 137,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 28,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.515625,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d08",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d08",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 137,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 28,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 6.908905425475555,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+          ],
+          "domain": "d08",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.783191680908203,
+              "min": 27.99256134033203,
+              "shape": [
+                87,
+                99
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.78325653076172,
+              "min": 27.99246597290039,
+              "shape": [
+                87,
+                100
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 28.787689208984375,
+              "min": 27.988052368164062,
+              "shape": [
+                88,
+                99
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.555450439453125,
+              "min": -14.574615478515625,
+              "shape": [
+                87,
+                99
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.550323486328125,
+              "min": -14.5797119140625,
+              "shape": [
+                87,
+                100
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.555328369140625,
+              "min": -14.57470703125,
+              "shape": [
+                88,
+                99
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d08"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d09": {
+        "grid": {
+          "dx_m": 1000.0,
+          "dy_m": 1000.0,
+          "mass_shape": [
+            44,
+            75,
+            75
+          ],
+          "wrf_staggered_extent": [
+            45,
+            76,
+            76
+          ]
+        },
+        "ic_source": "wrfinput_d09",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 117.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 845,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d09",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 154,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 58,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95000.0,
+          "pre_start_blended_phb_max_m2_s2": 195220.53125,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d09",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d09",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 154,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 58,
+            "parent_domain": "d02",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 6.0,
+          "cu_physics": 0,
+          "dt_s": 2.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 900,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 1.966257341409851,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+          ],
+          "domain": "d09",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.477252960205078,
+              "min": 28.796680450439453,
+              "shape": [
+                75,
+                75
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.477336883544922,
+              "min": 28.79656982421875,
+              "shape": [
+                75,
+                76
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.481746673583984,
+              "min": 28.792186737060547,
+              "shape": [
+                76,
+                75
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.258026123046875,
+              "min": -14.037200927734375,
+              "shape": [
+                75,
+                75
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.252838134765625,
+              "min": -14.042327880859375,
+              "shape": [
+                75,
+                76
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -13.25787353515625,
+              "min": -14.03729248046875,
+              "shape": [
+                76,
+                75
+              ],
+              "source_file": "<DATA_ROOT>/wrf_downscale/canary_all7/run/wrfinput_d09"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      }
+    },
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": false,
+        "i_parent_start": 22,
+        "j_parent_start": 18,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d03",
+        "feedback": false,
+        "i_parent_start": 54,
+        "j_parent_start": 26,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d04",
+        "feedback": false,
+        "i_parent_start": 93,
+        "j_parent_start": 14,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d05",
+        "feedback": false,
+        "i_parent_start": 20,
+        "j_parent_start": 42,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d06",
+        "feedback": false,
+        "i_parent_start": 43,
+        "j_parent_start": 24,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d07",
+        "feedback": false,
+        "i_parent_start": 18,
+        "j_parent_start": 10,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d08",
+        "feedback": false,
+        "i_parent_start": 137,
+        "j_parent_start": 28,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      },
+      {
+        "child": "d09",
+        "feedback": false,
+        "i_parent_start": 154,
+        "j_parent_start": 58,
+        "parent": "d02",
+        "parent_grid_ratio": 3
+      }
+    ]
+  },
+  "nesting_mode": "one_way",
+  "output_dir": "proofs/v020/lowhang/alloc_12h/out",
+  "per_domain": {
+    "d01": {
+      "dt_s": 18.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 2400,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_06:00:00"
+      ]
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 7200,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_06:00:00"
+      ]
+    },
+    "d03": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_06:00:00"
+      ]
+    },
+    "d04": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_06:00:00"
+      ]
+    },
+    "d05": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_06:00:00"
+      ]
+    },
+    "d06": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_06:00:00"
+      ]
+    },
+    "d07": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_06:00:00"
+      ]
+    },
+    "d08": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_06:00:00"
+      ]
+    },
+    "d09": {
+      "dt_s": 2.0,
+      "expected_wrfout_count": 12,
+      "final_state_finite": true,
+      "history_interval_min": 60.0,
+      "own_steps": 21600,
+      "wrfout_count": 12,
+      "wrfout_files": [
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_19:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_20:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_21:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_22:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_23:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_00:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_01:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_02:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_03:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_04:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_05:00:00",
+        "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_06:00:00"
+      ]
+    }
+  },
+  "root_steps": 2400,
+  "run_id": "<DATA_ROOT>/wrf_downscale/canary_all7/run",
+  "run_start_utc": "2026-04-28T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "scratch_dir": "proofs/v020/lowhang/alloc_12h/out/.scratch",
+  "verdict": "PIPELINE_GREEN",
+  "wall_clock_forecast_only_s": 8608.544975755038,
+  "wall_clock_total_s": 8760.75357890292,
+  "wrfout_files": [
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d01_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d02_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d03_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d04_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d05_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d06_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d07_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d08_2026-04-29_06:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_19:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_20:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_21:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_22:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-28_23:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_00:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_01:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_02:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_03:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_04:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_05:00:00",
+    "proofs/v020/lowhang/alloc_12h/out/wrfout_d09_2026-04-29_06:00:00"
+  ]
+}

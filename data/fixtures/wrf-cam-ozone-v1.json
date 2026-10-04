@@ -1,0 +1,47 @@
+{
+  "asset": {
+    "arrays": {
+      "latitude_deg": {
+        "dtype": "<f4",
+        "payload_sha256": "aa3a9daacbf5d545e033aa23942cb8689d931858e69abac4a6a8d3733c6369cf",
+        "shape": [
+          64
+        ]
+      },
+      "ozone_vmr": {
+        "dtype": "<f4",
+        "payload_sha256": "82e16042e17db543b97f77c11b08a5fa2e6ef6bc068018f58a6fb82df1b9c01d",
+        "shape": [
+          12,
+          64,
+          59
+        ]
+      },
+      "pressure_pa": {
+        "dtype": "<f4",
+        "payload_sha256": "f33be37c277974f486dbb4359363025cf37b8e549aa6775fbd80dc0dc297ac38",
+        "shape": [
+          59
+        ]
+      }
+    },
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0234-gpt-land-tsk/data/fixtures/wrf-cam-ozone-v1.npz",
+    "sha256": "621981243488618988b5d8b5926e981c5658d4a82ebabdf8c680874f3a3fec95"
+  },
+  "description": "WRF v4 ozone.formatted monthly VMR on its 64-latitude x 59-pressure grid; read order and float32 storage match module_ra_cam_support.F::oznini",
+  "schema": "wrf-cam-ozone-v1",
+  "wrf_sources": {
+    "latitude": {
+      "path": "/tmp/v0234_land_tsk_scratch/pristine-wrf-source/run/ozone_lat.formatted",
+      "sha256": "761597f3454b99e3dbf15d2621b1ede88269948e96e47f4695b79fabd3cc6348"
+    },
+    "mixing_ratio": {
+      "path": "/tmp/v0234_land_tsk_scratch/pristine-wrf-source/run/ozone.formatted",
+      "sha256": "2a13ee25809672e0419e40062c1fc753580adbf604bfc67a9166ef77c815dbc0"
+    },
+    "pressure": {
+      "path": "/tmp/v0234_land_tsk_scratch/pristine-wrf-source/run/ozone_plev.formatted",
+      "sha256": "df26a938273b22d2d04ec52b7297827a316cac0061fab020519241cdc0e61d48"
+    }
+  }
+}

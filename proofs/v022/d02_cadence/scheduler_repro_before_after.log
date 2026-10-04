@@ -1,0 +1,34 @@
+Static scheduler repro for v0.22.1 d02 cadence bug.
+
+Configuration proxy:
+- time_step(d01)=18 s
+- parent_grid_ratio(d01->d02)=3
+- history_interval=20 min
+- output_cadence_steps: d01=67, d02=200, d03+=600
+
+Pre-fix scheduler behavior, max_dom=2, 70.2 min / 234 root steps:
+  d01: count=3 steps=[67, 134, 201]
+  d02: count=1 steps=[600]
+
+Pre-fix scheduler behavior, max_dom=2, 2 h / 400 root steps:
+  d01: count=5 steps=[67, 134, 201, 268, 335]
+  d02: count=2 steps=[600, 1200]
+
+Post-fix scheduler behavior, max_dom=2, 70.2 min / 234 root steps:
+  d01: count=3 steps=[67, 134, 201]
+  d02: count=3 steps=[200, 400, 600]
+
+Post-fix scheduler behavior, max_dom=2, 2 h / 400 root steps:
+  d01: count=5 steps=[67, 134, 201, 268, 335]
+  d02: count=6 steps=[200, 400, 600, 800, 1000, 1200]
+
+Post-fix scheduler behavior, max_dom=9 canary shape, 1 h / 200 root steps:
+  d01: count=2 steps=[67, 134]
+  d02: count=3 steps=[200, 400, 600]
+  d03: count=3 steps=[600, 1200, 1800]
+  d04: count=3 steps=[600, 1200, 1800]
+  d05: count=3 steps=[600, 1200, 1800]
+  d06: count=3 steps=[600, 1200, 1800]
+  d07: count=3 steps=[600, 1200, 1800]
+  d08: count=3 steps=[600, 1200, 1800]
+  d09: count=3 steps=[600, 1200, 1800]

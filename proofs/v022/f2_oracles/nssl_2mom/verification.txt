@@ -1,0 +1,87 @@
+=== NSSL 2-mom oracle savepoint verification ===
+
+--- gate 1 (finite): PASS unless FAIL lines above ---
+
+--- gate 2 (activity + precip) ---
+ok fp32 case 1: max|dTH|=8.896e-01 max|dQV|=3.323e-04 RAINNCV=2.087590e-02 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp32 case 2: max|dTH|=1.408e+00 max|dQV|=5.220e-04 RAINNCV=5.530706e-02 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp32 case 3: max|dTH|=1.090e-01 max|dQV|=3.927e-05 RAINNCV=1.292581e-03 SNOWNCV=1.293e-03 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp32 case 4: max|dTH|=2.154e+00 max|dQV|=6.938e-04 RAINNCV=5.836652e-02 SNOWNCV=7.859e-04 GRPLNCV=1.613e-03 HAILNCV=0.000e+00
+ok fp32 case 5: max|dTH|=1.113e+00 max|dQV|=3.279e-04 RAINNCV=1.414414e-02 SNOWNCV=4.847e-04 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp32 case 6: max|dTH|=4.266e-02 max|dQV|=1.655e-05 RAINNCV=0.000000e+00 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp64 case 1: max|dTH|=8.896e-01 max|dQV|=3.323e-04 RAINNCV=2.087591e-02 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp64 case 2: max|dTH|=1.408e+00 max|dQV|=5.220e-04 RAINNCV=5.530707e-02 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp64 case 3: max|dTH|=1.091e-01 max|dQV|=3.927e-05 RAINNCV=1.292581e-03 SNOWNCV=1.293e-03 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp64 case 4: max|dTH|=2.154e+00 max|dQV|=6.938e-04 RAINNCV=5.836654e-02 SNOWNCV=7.859e-04 GRPLNCV=1.613e-03 HAILNCV=0.000e+00
+ok fp64 case 5: max|dTH|=1.113e+00 max|dQV|=3.279e-04 RAINNCV=1.414415e-02 SNOWNCV=4.847e-04 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+ok fp64 case 6: max|dTH|=3.717e-02 max|dQV|=1.442e-05 RAINNCV=0.000000e+00 SNOWNCV=0.000e+00 GRPLNCV=0.000e+00 HAILNCV=0.000e+00
+
+--- gate 3 (fp32 vs fp64 physical band, OUT fields) ---
+ok  case 1 TH  : nsig=40 worst_rel=1.080e-07 (k=17 fp32=3.214183e+02 fp64=3.214182e+02)
+ok  case 1 QV  : nsig=40 worst_rel=2.921e-06 (k=37 fp32=1.079792e-05 fp64=1.079795e-05)
+ok  case 1 QC  : nsig= 7 worst_rel=8.220e-06 (k=0 fp32=4.394789e-04 fp64=4.394753e-04)
+ok  case 1 QR  : nsig=12 worst_rel=2.123e-06 (k=5 fp32=4.569752e-04 fp64=4.569742e-04)
+ok  case 1 CCW : nsig= 7 worst_rel=5.372e-06 (k=6 fp32=1.686445e+08 fp64=1.686436e+08)
+ok  case 1 CRW : nsig=12 worst_rel=2.263e-06 (k=5 fp32=8.043377e+04 fp64=8.043359e+04)
+ok  case 1 CN  : nsig= 4 worst_rel=5.018e-08 (k=3 fp32=9.232853e+07 fp64=9.232852e+07)
+ok  case 1 RAINNCV: fp32=2.087590e-02 fp64=2.087591e-02 rel=4.180e-07
+ok  case 2 TH  : nsig=40 worst_rel=1.834e-07 (k=13 fp32=3.098642e+02 fp64=3.098643e+02)
+ok  case 2 QV  : nsig=40 worst_rel=4.845e-06 (k=39 fp32=1.444877e-05 fp64=1.444884e-05)
+ok  case 2 QC  : nsig= 8 worst_rel=1.677e-05 (k=6 fp32=2.986076e-04 fp64=2.986026e-04)
+ok  case 2 QR  : nsig=15 worst_rel=1.961e-06 (k=3 fp32=5.348339e-04 fp64=5.348328e-04)
+ok  case 2 QI  : nsig=30 worst_rel=1.142e-05 (k=25 fp32=6.671024e-05 fp64=6.671100e-05)
+ok  case 2 QS  : nsig=30 worst_rel=3.439e-06 (k=10 fp32=2.715621e-05 fp64=2.715612e-05)
+ok  case 2 QH  : nsig=26 worst_rel=1.104e-06 (k=34 fp32=9.629847e-09 fp64=9.629837e-09)
+ok  case 2 CCW : nsig= 8 worst_rel=1.317e-05 (k=6 fp32=1.113853e+08 fp64=1.113839e+08)
+ok  case 2 CRW : nsig=15 worst_rel=2.492e-06 (k=3 fp32=8.108942e+04 fp64=8.108922e+04)
+ok  case 2 CCI : nsig=30 worst_rel=1.137e-05 (k=25 fp32=6.689286e+05 fp64=6.689362e+05)
+ok  case 2 CSW : nsig=30 worst_rel=3.681e-06 (k=10 fp32=1.260468e+03 fp64=1.260464e+03)
+ok  case 2 CHW : nsig=25 worst_rel=1.177e-06 (k=34 fp32=2.870118e-01 fp64=2.870115e-01)
+ok  case 2 VHW : nsig=27 worst_rel=1.239e-06 (k=36 fp32=1.543254e-12 fp64=1.543256e-12)
+ok  case 2 RAINNCV: fp32=5.530706e-02 fp64=5.530707e-02 rel=2.118e-07
+ok  case 3 TH  : nsig=40 worst_rel=1.896e-07 (k=0 fp32=2.703705e+02 fp64=2.703704e+02)
+ok  case 3 QV  : nsig=40 worst_rel=9.202e-06 (k=37 fp32=6.666736e-08 fp64=6.666675e-08)
+ok  case 3 QC  : nsig= 2 worst_rel=2.357e-04 (k=0 fp32=2.828197e-05 fp64=2.827530e-05)
+ok  case 3 QI  : nsig=40 worst_rel=1.065e-05 (k=0 fp32=8.867552e-06 fp64=8.867457e-06)
+ok  case 3 QS  : nsig=40 worst_rel=3.095e-06 (k=0 fp32=4.294535e-05 fp64=4.294522e-05)
+ok  case 3 QH  : nsig=22 worst_rel=3.702e-06 (k=39 fp32=1.916263e-08 fp64=1.916256e-08)
+ok  case 3 CCW : nsig= 2 worst_rel=2.358e-04 (k=0 fp32=1.054972e+08 fp64=1.054724e+08)
+ok  case 3 CCI : nsig=40 worst_rel=1.361e-06 (k=33 fp32=7.762298e+03 fp64=7.762287e+03)
+ok  case 3 CSW : nsig=39 worst_rel=1.930e-06 (k=38 fp32=1.706442e-01 fp64=1.706438e-01)
+ok  case 3 CHW : nsig=22 worst_rel=7.412e-07 (k=38 fp32=2.617172e+00 fp64=2.617170e+00)
+ok  case 3 CN  : nsig= 2 worst_rel=2.358e-04 (k=0 fp32=1.054972e+08 fp64=1.054724e+08)
+ok  case 3 VHW : nsig=22 worst_rel=3.627e-06 (k=39 fp32=3.832529e-11 fp64=3.832516e-11)
+ok  case 3 RAINNCV: fp32=1.292581e-03 fp64=1.292581e-03 rel=1.908e-07
+ok  case 4 TH  : nsig=40 worst_rel=5.353e-07 (k=25 fp32=3.509106e+02 fp64=3.509108e+02)
+ok  case 4 QV  : nsig=40 worst_rel=3.077e-05 (k=25 fp32=1.500326e-03 fp64=1.500280e-03)
+ok  case 4 QC  : nsig=10 worst_rel=1.140e-05 (k=1 fp32=6.086058e-04 fp64=6.085989e-04)
+ok  case 4 QR  : nsig=17 worst_rel=1.682e-06 (k=4 fp32=1.274132e-03 fp64=1.274130e-03)
+ok  case 4 QI  : nsig=27 worst_rel=1.270e-05 (k=28 fp32=3.467696e-05 fp64=3.467652e-05)
+ok  case 4 QS  : nsig=40 worst_rel=1.791e-04 (k=25 fp32=2.069565e-04 fp64=2.069936e-04)
+ok  case 4 QH  : nsig=38 worst_rel=3.745e-05 (k=25 fp32=1.977540e-04 fp64=1.977614e-04)
+ok  case 4 CCW : nsig=10 worst_rel=6.489e-06 (k=7 fp32=2.147442e+08 fp64=2.147428e+08)
+ok  case 4 CRW : nsig=17 worst_rel=3.144e-06 (k=4 fp32=1.292693e+05 fp64=1.292689e+05)
+ok  case 4 CCI : nsig=27 worst_rel=1.264e-05 (k=28 fp32=3.480114e+05 fp64=3.480070e+05)
+ok  case 4 CSW : nsig=40 worst_rel=1.791e-04 (k=25 fp32=1.052007e+04 fp64=1.052196e+04)
+ok  case 4 CHW : nsig=38 worst_rel=3.783e-05 (k=25 fp32=4.711777e+03 fp64=4.711955e+03)
+ok  case 4 VHW : nsig=39 worst_rel=3.742e-05 (k=25 fp32=3.962581e-07 fp64=3.962729e-07)
+ok  case 4 RAINNCV: fp32=5.836652e-02 fp64=5.836654e-02 rel=3.908e-07
+ok  case 5 TH  : nsig=40 worst_rel=1.517e-07 (k=3 fp32=2.910696e+02 fp64=2.910696e+02)
+ok  case 5 QV  : nsig=40 worst_rel=4.216e-06 (k=36 fp32=1.309050e-05 fp64=1.309056e-05)
+ok  case 5 QR  : nsig=17 worst_rel=1.190e-05 (k=3 fp32=2.880279e-04 fp64=2.880313e-04)
+ok  case 5 QS  : nsig=33 worst_rel=2.303e-06 (k=21 fp32=1.082328e-04 fp64=1.082331e-04)
+ok  case 5 QH  : nsig=25 worst_rel=5.828e-07 (k=34 fp32=1.311801e-07 fp64=1.311800e-07)
+ok  case 5 CRW : nsig=17 worst_rel=1.199e-05 (k=3 fp32=4.728956e+04 fp64=4.729013e+04)
+WARN case 5 CSW : nsig=33 worst_rel=3.474e+02 (k=1 fp32=3.474013e+01 fp64=0.000000e+00)
+ok  case 5 CHW : nsig=24 worst_rel=1.071e-06 (k=33 fp32=9.413495e+00 fp64=9.413485e+00)
+ok  case 5 VHW : nsig=25 worst_rel=5.192e-07 (k=33 fp32=6.729113e-10 fp64=6.729110e-10)
+ok  case 5 RAINNCV: fp32=1.414414e-02 fp64=1.414415e-02 rel=3.819e-07
+  case 5 fields beyond 25% band on significant cells:
+    CSW rel=3.474e+02 at k=1: fp32=3.474013e+01 fp64=0.000000e+00
+ok  case 6 TH  : nsig=40 worst_rel=5.377e-05 (k=1 fp32=2.950000e+02 fp64=2.950159e+02)
+ok  case 6 QV  : nsig=40 worst_rel=4.555e-04 (k=1 fp32=1.409938e-02 fp64=1.409296e-02)
+WARN case 6 QC  : nsig= 7 worst_rel=7.130e-01 (k=0 fp32=1.429777e-06 fp64=4.982556e-06)
+ok  case 6 CCW : nsig= 7 worst_rel=4.023e-07 (k=0 fp32=4.672098e+05 fp64=4.672100e+05)
+ok  case 6 CN  : nsig= 6 worst_rel=7.349e-08 (k=2 fp32=6.446070e+07 fp64=6.446070e+07)
+  case 6 fields beyond 25% band on significant cells:
+    QC rel=7.130e-01 at k=0: fp32=1.429777e-06 fp64=4.982556e-06

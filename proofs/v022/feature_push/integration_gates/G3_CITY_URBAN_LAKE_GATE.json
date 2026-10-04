@@ -1,0 +1,139 @@
+{
+  "claim_boundary": "BEP/BEM/lake are cataloged and fail-closed. This proof does not claim a faithful urban/lake physics run or WRF parity.",
+  "default_unchanged": true,
+  "full_physics_landed": false,
+  "gate": "v022_g3city_urban_lake",
+  "gate_pass": true,
+  "pieces": {
+    "bem": {
+      "catalog_status": "recognized_fail_closed",
+      "code": 3,
+      "fail_closed": true,
+      "key": "sf_urban_physics",
+      "landed": false,
+      "namelist_rejects": true,
+      "oracle_files": [],
+      "oracle_status": "absent_fail_closed",
+      "reason_excerpt": "G3 URBAN fail-closed scaffold: WRF BEP+BEM combines phys/module_sf_bep.F:BEP with phys/module_sf_bem.F:BEM (~6.2k LOC total) and the Registry bep_bemscheme state package (building energy, HVAC, PV, green-roof, drainage and multi-layer urban",
+      "registry_member_count": 57,
+      "registry_members_sample": [
+        "a_u_bep",
+        "a_v_bep",
+        "a_t_bep",
+        "a_q_bep",
+        "a_e_bep",
+        "b_u_bep",
+        "b_v_bep",
+        "b_t_bep"
+      ],
+      "scaffold": true,
+      "source_exists": true,
+      "source_files": [
+        {
+          "exists": true,
+          "lines": 3536,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F",
+          "sha256": "c51ddd86871f81d5f132e63ddab2240e23886891356a7964debd4eafda9e500f"
+        },
+        {
+          "exists": true,
+          "lines": 2636,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.F",
+          "sha256": "7bc761ee592feadbaeb974b4271b956044eb02c5a4f3bf0e77af4fbabf0de8eb"
+        }
+      ],
+      "stub_raises": true,
+      "wrf_name": "multi-layer BEM"
+    },
+    "bep": {
+      "catalog_status": "recognized_fail_closed",
+      "code": 2,
+      "fail_closed": true,
+      "key": "sf_urban_physics",
+      "landed": false,
+      "namelist_rejects": true,
+      "oracle_files": [],
+      "oracle_status": "absent_fail_closed",
+      "reason_excerpt": "G3 URBAN fail-closed scaffold: WRF BEP (phys/module_sf_bep.F:BEP, ~3.5k LOC) needs the Registry bepscheme state package, urban mapping tables, vertical urban-grid carry, and a pristine-WRF single-column oracle before any GPU scan wiring. No",
+      "registry_member_count": 30,
+      "registry_members_sample": [
+        "a_u_bep",
+        "a_v_bep",
+        "a_t_bep",
+        "a_q_bep",
+        "a_e_bep",
+        "b_u_bep",
+        "b_v_bep",
+        "b_t_bep"
+      ],
+      "scaffold": true,
+      "source_exists": true,
+      "source_files": [
+        {
+          "exists": true,
+          "lines": 3536,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F",
+          "sha256": "c51ddd86871f81d5f132e63ddab2240e23886891356a7964debd4eafda9e500f"
+        }
+      ],
+      "stub_raises": true,
+      "wrf_name": "multi-layer BEP"
+    },
+    "lake": {
+      "catalog_status": "recognized_fail_closed",
+      "code": 1,
+      "fail_closed": true,
+      "key": "sf_lake_physics",
+      "landed": false,
+      "namelist_rejects": true,
+      "oracle_files": [],
+      "oracle_status": "absent_fail_closed",
+      "reason_excerpt": "G3 LAKE fail-closed scaffold: WRF lake model (phys/module_sf_lake.F:Lake/LakeMain/lakeini, ~5.4k LOC) needs lake depth/category initialization, snow/ice/water column carry, tridiagonal thermal solves, hydrology, Monin-Obukhov fluxes and a p",
+      "registry_member_count": 23,
+      "registry_members_sample": [
+        "lakedepth2d",
+        "savedtke12d",
+        "snowdp2d",
+        "h2osno2d",
+        "snl2d",
+        "t_grnd2d",
+        "t_lake3d",
+        "lake_icefrac3d"
+      ],
+      "scaffold": true,
+      "source_exists": true,
+      "source_files": [
+        {
+          "exists": true,
+          "lines": 5399,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.F",
+          "sha256": "b173ad8328ecc0aa6bb6e6306a9c6af4dc876b39dc5d304fe221122983214b98"
+        }
+      ],
+      "stub_raises": true,
+      "wrf_name": "WRF lake model"
+    }
+  },
+  "small_grid_static_plausibility": {
+    "checks": {
+      "active_lake_cells_present": true,
+      "active_urban_cells_present": true,
+      "finite_lake_depth": true,
+      "finite_lakemask": true,
+      "finite_t_skin": true,
+      "finite_urban_fraction": true,
+      "lake_depth_positive_on_lake": true,
+      "t_skin_range_k": true,
+      "urban_fraction_range": true
+    },
+    "counts": {
+      "lake_cells": 2,
+      "nx": 3,
+      "ny": 3,
+      "urban_cells": 4
+    },
+    "note": "Static 3x3 urban/lake input plausibility only. Active physics is intentionally not executed because G3 schemes fail closed without their WRF oracle and faithful kernel.",
+    "passed": true,
+    "physics_executed": false
+  }
+}

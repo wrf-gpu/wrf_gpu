@@ -1,0 +1,20 @@
+{
+  "acceptance": "positive control passes and perturbed negative control fails",
+  "command": [
+    "<USER_HOME>/miniconda3/bin/python3",
+    "<USER_HOME>/src/wrf_gpu2_wt/v023-valscripts-gpt/proofs/v023/validation/paired_baseline_field_compare.py",
+    "--self-test",
+    "--out-json",
+    "proofs/v023/validation/results/a2_canary_gate_fieldtol_selftest_field_compare_selftest.json"
+  ],
+  "field_compare_selftest": "proofs/v023/validation/results/a2_canary_gate_fieldtol_selftest_field_compare_selftest.json",
+  "gate": "A2",
+  "generated_utc": "2026-07-03T07:42:03.229364+00:00",
+  "method": "field-tolerance-vs-fresh-paired-baseline; no stored digest",
+  "mode": "self-test",
+  "returncode": 0,
+  "schema": "v023-a2-canary-fieldtol-v1",
+  "stderr": "",
+  "stdout": "",
+  "verdict": "PASS"
+}

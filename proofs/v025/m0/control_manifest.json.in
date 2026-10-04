@@ -1,0 +1,87 @@
+{
+  "artifacts": {
+    "reason": "populated by the proof manifest at Phase C",
+    "status": "PENDING",
+    "value": null
+  },
+  "cpu_executable_hash": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b",
+  "effective_model_config": {
+    "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+    "status": "PENDING",
+    "value": null
+  },
+  "entrypoint": {
+    "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+    "status": "PENDING",
+    "value": null
+  },
+  "generated_at_utc": "2026-07-27T12:38:55.924532+00:00",
+  "hardware": {
+    "clocks_power_policy": {
+      "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+      "status": "PENDING",
+      "value": null
+    },
+    "cpu_affinity": "12-rank CPU arm pinned to a quiet 12-core set; recorded per arm",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "prepared_runtime_aot_state": {
+      "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+      "status": "PENDING",
+      "value": null
+    }
+  },
+  "input_and_config_hashes": {
+    "bundle": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+    "expected_sha256": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    },
+    "independently_verified": true,
+    "observed_sha256": {
+      "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+      "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+      "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+    }
+  },
+  "note": "CONTROL-v025 becomes final only when every field below is measured and the independent critic accepts. The immutable tag is created by the MANAGER, not by this worker (contract \u00a75.1).",
+  "schema": "wrf_gpu2.v025.m0.control_manifest.v1.TEMPLATE",
+  "source": {
+    "candidate_commit": "a1fa459cbcf193c240fa376a5b0e7e4b0e97741a",
+    "src_gpuwrf_tree": "796aa24528876ef06c0cec198c1a0d16fbe94d10",
+    "tree_identical_to_worker_head": true
+  },
+  "status": "TEMPLATE_NOT_FINAL",
+  "timing_definitions": {
+    "cached_load": {
+      "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+      "status": "PENDING",
+      "value": null
+    },
+    "cold_compile": {
+      "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+      "status": "PENDING",
+      "value": null
+    },
+    "cpu_step_sum": "sum of domain-1 'Timing for main' lines over the actual advance",
+    "cpu_wallclock": "end-to-end launcher wallclock over identical boundaries",
+    "warm_step": {
+      "reason": "requires a coordinated GPU window (contract \u00a713); not measured on CPU",
+      "status": "PENDING",
+      "value": null
+    }
+  },
+  "toolchain": {
+    "cuda": null,
+    "driver": null,
+    "jax": null,
+    "jaxlib": null,
+    "package_lock": {
+      "reason": "emit with --pip-freeze at control-freeze time",
+      "status": "PENDING",
+      "value": null
+    },
+    "profiler": null,
+    "python": "3.13.11"
+  }
+}

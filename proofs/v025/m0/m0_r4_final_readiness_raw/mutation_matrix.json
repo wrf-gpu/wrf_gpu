@@ -1,0 +1,79 @@
+{
+  "one_mutation_per_gate": true,
+  "results": {
+    "H0_ROOTS": {
+      "fails": true,
+      "mutation": "point the fixed R4 proof root at the occupied proofs/v025/m0/autotune0_three_window",
+      "observed": "BLOCKED",
+      "reason": "the generation is no longer vacant"
+    },
+    "H1_REAL_C1_BOUNDARY": {
+      "fails": true,
+      "mutation": "restore the fixed R3 C1 CPU root in the real _c1_command",
+      "observed": {
+        "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "matches_fixed_r4_root": false,
+        "owner_cpu_preflight_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "status": "BLOCKED",
+        "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3"
+      },
+      "reason": "the root the real _c1_command hands the real child is not the fixed R4 root the outer owner pre-staged the CPU arm into, so the in-lock comparison and the pre-lock staging name different generations -- the exact divergence class that blocked 5356a37d"
+    },
+    "H2_PRODUCTION_ANALYSER": {
+      "fails": true,
+      "mutation": "use every leaf as the numerator instead of source-named leaves",
+      "observed": {
+        "binding_numerator": 2574776,
+        "required_numerator": 2567009
+      },
+      "reason": "the binding 99.7% figure is the source-named deepest-leaf numerator 2,567,009, not all leaves 2,574,776"
+    },
+    "H3_PACKET_BINDING": {
+      "fails": true,
+      "mutation": "point the outer owner command at an Opus worker worktree",
+      "observed": {
+        "declared_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+        "every_repository_path_below_stable_worktree": false,
+        "recomputed_sha256": "93da97d85379b86459f9c09a14ba2cecc8823aef4d0098942b6f5ea34e7da7ac",
+        "reproduces": true,
+        "resolved_paths": [
+          {
+            "below_stable_worktree": false,
+            "is_interpreter": true,
+            "path": "<USER_HOME>/miniconda3/bin/python3.13"
+          },
+          {
+            "below_stable_worktree": false,
+            "is_interpreter": false,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-w2-launch-readiness-opus/scripts/v025/m0_three_window_executor.py"
+          }
+        ]
+      },
+      "reason": "an executable path does not resolve below the stable worktree"
+    },
+    "H4_RETAINED_IDENTITY": {
+      "fails": true,
+      "mutation": "flip one retained R3 file hash",
+      "observed": {
+        "expected_aggregate_sha256": "e675a06e7dee5efdefe282492c53499864f3ac6a8d23e15f586f894c9c78c259",
+        "mutated_aggregate_sha256": "e84264fd520c86e0435b86d14bfa33e158c22c278697301a30d08dcee351de7c"
+      },
+      "reason": "the before/after aggregate no longer matches"
+    },
+    "H5_DEVICE_DENIAL": {
+      "fails": true,
+      "mutation": "load an accelerator module into the readiness process",
+      "observed": [
+        "pynvml"
+      ],
+      "reason": "an accelerator module was reachable during CPU-only work"
+    },
+    "H6_SUITE_AND_TREE": {
+      "fails": true,
+      "mutation": "one failing test in the full tests/v025 JUnit",
+      "observed": "BLOCKED",
+      "reason": "the full suite is not green"
+    }
+  },
+  "status": "PASS"
+}

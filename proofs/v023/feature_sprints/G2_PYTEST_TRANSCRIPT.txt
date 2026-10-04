@@ -1,0 +1,22 @@
+plugins: zarr-3.1.6, anyio-4.12.1
+collecting ... collected 17 items
+
+tests/test_v023_moving_nest_operational.py::test_unit_move_bitwise_overlap_and_parent_fill PASSED [  5%]
+tests/test_v023_moving_nest_operational.py::test_move_conserves_dry_mass_and_energy_proxies PASSED [ 11%]
+tests/test_v023_moving_nest_operational.py::test_exposed_fill_reproduces_linear_fields_exactly PASSED [ 17%]
+tests/test_v023_moving_nest_operational.py::test_zero_move_run_bit_identical_to_static_path PASSED [ 23%]
+tests/test_v023_moving_nest_operational.py::test_full_run_with_move_stays_finite_and_records_move PASSED [ 29%]
+tests/test_v023_moving_nest_operational.py::test_moving_with_two_way_feedback_stays_finite PASSED [ 35%]
+tests/test_v023_moving_nest_operational.py::test_feedback_after_move_uses_rebuilt_edge_not_stale_weights PASSED [ 41%]
+tests/test_v023_moving_nest_operational.py::test_analytic_linear_field_through_moves_is_machine_exact PASSED [ 47%]
+tests/test_v023_moving_nest_operational.py::test_analytic_vortex_following_tracks_the_feature PASSED [ 52%]
+tests/test_v023_moving_nest_operational.py::test_vortex_tracker_finds_low_on_real_hydrostatic_state PASSED [ 58%]
+tests/test_v023_moving_nest_operational.py::test_fail_closed_unknown_mode_and_bad_prescriptions PASSED [ 64%]
+tests/test_v023_moving_nest_operational.py::test_fail_closed_non_flat_terrain PASSED [ 70%]
+tests/test_v023_moving_nest_operational.py::test_fail_closed_corral_violation_at_initial_placement PASSED [ 76%]
+tests/test_v023_moving_nest_operational.py::test_fail_closed_active_land_carry PASSED [ 82%]
+tests/test_v023_moving_nest_operational.py::test_corral_blocks_move_at_the_fence_without_error PASSED [ 88%]
+tests/test_v023_moving_nest_operational.py::test_adaptive_dt_drives_root_and_pins_child_cadence PASSED [ 94%]
+tests/test_v023_moving_nest_operational.py::test_cfl_diagnostics_match_hand_computation PASSED [100%]
+
+======================== 17 passed in 86.44s (0:01:26) =========================

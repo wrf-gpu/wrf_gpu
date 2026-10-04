@@ -1,0 +1,690 @@
+{
+  "claim_boundary": "BEP, BEP+BEM, and WRF lake are REFERENCE_ONLY. This proof validates WRF source/object/Registry presence and fail-closed wiring only; it does not claim numerical WRF parity or an operational JAX kernel.",
+  "compiler_probe": {
+    "any_available": true,
+    "available": {},
+    "candidates": {
+      "flang": null,
+      "flang-new": null,
+      "ftn": null,
+      "gfortran": null,
+      "ifort": null,
+      "ifx": null,
+      "mpif90": null,
+      "mpifort": null,
+      "nvfortran": null
+    },
+    "conda_wrfbuild": {
+      "available": true,
+      "error": null,
+      "version": "GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0"
+    }
+  },
+  "cpu_only": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_PLATFORM_NAME": "cpu"
+  },
+  "default_unchanged": true,
+  "fortran_compile_probe": {
+    "compile_only_pass": true,
+    "compiled_objects": [
+      "module_bep_bem_helper_probe.o",
+      "module_sf_bem_probe.o",
+      "module_sf_bep_probe.o",
+      "module_sf_lake_probe.o",
+      "module_sf_urban_probe.o"
+    ],
+    "note": "Compile-only probe; it does not build or run a numerical WRF single-column driver.",
+    "ran": true,
+    "rc_by_module": {
+      "bem": 0,
+      "bep": 0,
+      "helper": 0,
+      "lake": 0,
+      "urban": 0
+    },
+    "returncode": 0,
+    "stderr_tail": [],
+    "stdout_tail": [
+      "lake_rc=0",
+      "helper_rc=0",
+      "urban_rc=0",
+      "bep_rc=0",
+      "bem_rc=0",
+      "module_bep_bem_helper_probe.o",
+      "module_sf_bem_probe.o",
+      "module_sf_bep_probe.o",
+      "module_sf_lake_probe.o",
+      "module_sf_urban_probe.o"
+    ]
+  },
+  "full_physics_landed": false,
+  "gate_pass": true,
+  "generated_utc": "2026-07-03T01:40:20.294445+00:00",
+  "pieces": {
+    "bem": {
+      "catalog_alternative": "Use sf_urban_physics=0 for operational runs; carry BEP+BEM as its own urban-canopy milestone with bep_bemscheme state, BEM static tables, and a numerical WRF oracle before scan wiring.",
+      "catalog_reason": "G3 BEP+BEM urban canopy is REFERENCE_ONLY: pristine-WRF source/object inventory and Registry carry metadata are staged for phys/module_sf_bep.F:BEP plus phys/module_sf_bem.F:BEM, but no numerical WRF single-column parity fixture or faithful JAX kernel is shipped. It is accepted only for oracle/reference development and fail-closed in the operational GPU scan.",
+      "catalog_status": "reference_only",
+      "code": 3,
+      "extra_state_members_count": 27,
+      "gate_ok": true,
+      "id": "bem",
+      "key": "sf_urban_physics",
+      "label": "WRF BEP+BEM urban canopy",
+      "landed": false,
+      "module_files": [
+        {
+          "bytes": 17225,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.mod",
+          "sha256": "d43e473330920c2f2b9e158c776c6cd7ff51b022e7354430eb0d4ab439994ed0"
+        },
+        {
+          "bytes": 5172,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.mod",
+          "sha256": "4889ef1bf27f6343078dde46fe8d6420d1e4040754b2cb341922db71d755cf04"
+        },
+        {
+          "bytes": 9286,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.mod",
+          "sha256": "8106d83705b6d33d42d9427c64f3cf8248d2e2f6fe64d28a2353026879ee019e"
+        }
+      ],
+      "numerical_oracle": {
+        "compile_only_probe_pass": true,
+        "fortran_compiler_available": true,
+        "parity_claim": false,
+        "reason": "gfortran is available through the wrfbuild conda environment and the WRF Urban/Lake modules pass a compile-only probe. A fresh numerical standalone oracle was deferred because BEP/BEM/Lake need the full WRF initialization/static-table/state ABI (urban-map and BEM tables, bepscheme/bep_bemscheme carry, lakeini lake/snow/soil/lake-column carry) before a single-column driver can produce meaningful WRF reference outputs.",
+        "status": "standalone_numerical_oracle_deferred_wrf_dependency_depth"
+      },
+      "object_files": [
+        {
+          "bytes": 147792,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.o",
+          "sha256": "9e34247f3112b47277bcc9191711394dec09dd9aafc9767dc5766f2364ffb153"
+        },
+        {
+          "bytes": 54424,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.o",
+          "sha256": "642915ffa01ef7d75ce68e6d5f75959f52d2537415449d26fa39b746bd14288a"
+        },
+        {
+          "bytes": 214560,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.o",
+          "sha256": "5a051db35e36c9708b5b916fe0fd350871b6b0d50ecd299b13c612af0741eae7"
+        },
+        {
+          "bytes": 1024,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bep_bem_helper.o",
+          "sha256": "831141f303f6b7f21cfa7d7cf79fff9ac4ff8abe2284cab83df0f70028ef13f9"
+        }
+      ],
+      "oracle_status": "reference_only_inventory",
+      "registry_member_count": 57,
+      "registry_member_match": true,
+      "registry_members_sample": [
+        "a_u_bep",
+        "a_v_bep",
+        "a_t_bep",
+        "a_q_bep",
+        "a_e_bep",
+        "b_u_bep",
+        "b_v_bep",
+        "b_t_bep",
+        "b_q_bep",
+        "b_e_bep"
+      ],
+      "registry_package": {
+        "line": "package   bep_bemscheme  sf_urban_physics==3         -             state:a_u_bep,a_v_bep,a_t_bep,a_q_bep,a_e_bep,b_u_bep,b_v_bep,b_t_bep,b_q_bep,b_e_bep,dlg_bep,dl_u_bep,sf_bep,vl_bep,trb_urb4d,tw1_urb4d,tw2_urb4d,tgb_urb4d,tlev_urb3d,qlev_urb3d,tw1lev_urb3d,tw2lev_urb3d,tglev_urb3d,tflev_urb3d,sf_ac_urb3d,lf_ac_urb3d,cm_ac_urb3d,sfvent_urb3d,lfvent_urb3d,sfwin1_urb3d,sfwin2_urb3d,sfw1_urb3d,sfw2_urb3d,sfr_urb3d,sfg_urb3d,hi_urb2d,lp_urb2d,hgt_urb2d,lb_urb2d,trl_urb3d,tgl_urb3d,tbl_urb3d,tsk_rural,ep_pv_urb3d,t_pv_urb3d,trv_urb4d,qr_urb4d,qgr_urb3d,tgr_urb3d,drain_urb4d,draingr_urb3d,sfrv_urb3d,lfrv_urb3d,dgr_urb3d,dg_urb3d,lfr_urb3d,lfg_urb3d",
+        "line_number": 3151,
+        "members": [
+          "a_u_bep",
+          "a_v_bep",
+          "a_t_bep",
+          "a_q_bep",
+          "a_e_bep",
+          "b_u_bep",
+          "b_v_bep",
+          "b_t_bep",
+          "b_q_bep",
+          "b_e_bep",
+          "dlg_bep",
+          "dl_u_bep",
+          "sf_bep",
+          "vl_bep",
+          "trb_urb4d",
+          "tw1_urb4d",
+          "tw2_urb4d",
+          "tgb_urb4d",
+          "tlev_urb3d",
+          "qlev_urb3d",
+          "tw1lev_urb3d",
+          "tw2lev_urb3d",
+          "tglev_urb3d",
+          "tflev_urb3d",
+          "sf_ac_urb3d",
+          "lf_ac_urb3d",
+          "cm_ac_urb3d",
+          "sfvent_urb3d",
+          "lfvent_urb3d",
+          "sfwin1_urb3d",
+          "sfwin2_urb3d",
+          "sfw1_urb3d",
+          "sfw2_urb3d",
+          "sfr_urb3d",
+          "sfg_urb3d",
+          "hi_urb2d",
+          "lp_urb2d",
+          "hgt_urb2d",
+          "lb_urb2d",
+          "trl_urb3d",
+          "tgl_urb3d",
+          "tbl_urb3d",
+          "tsk_rural",
+          "ep_pv_urb3d",
+          "t_pv_urb3d",
+          "trv_urb4d",
+          "qr_urb4d",
+          "qgr_urb3d",
+          "tgr_urb3d",
+          "drain_urb4d",
+          "draingr_urb3d",
+          "sfrv_urb3d",
+          "lfrv_urb3d",
+          "dgr_urb3d",
+          "dg_urb3d",
+          "lfr_urb3d",
+          "lfg_urb3d"
+        ],
+        "package": "bep_bemscheme",
+        "present": true
+      },
+      "registry_terms": {},
+      "scaffold": true,
+      "scan": {
+        "error": "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, ra_lw_physics in {0,1,4,31}). The following selected schemes are NOT scan-wired: sf_urban_physics=3 (BEP+BEM urban canopy/building-energy model (phys/module_sf_bep.F:BEP + module_sf_bem.F:BEM) needs the Registry bep_bemscheme carry, urban/BEM static tables, pristine-WRF oracle, and faithful JAX kernel before scan wiring)",
+        "scan_rejects": true
+      },
+      "source_files": [
+        {
+          "bytes": 137197,
+          "exists": true,
+          "lines": 3536,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F",
+          "sha256": "c51ddd86871f81d5f132e63ddab2240e23886891356a7964debd4eafda9e500f"
+        },
+        {
+          "bytes": 82950,
+          "exists": true,
+          "lines": 2636,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.F",
+          "sha256": "7bc761ee592feadbaeb974b4271b956044eb02c5a4f3bf0e77af4fbabf0de8eb"
+        },
+        {
+          "bytes": 171089,
+          "exists": true,
+          "lines": 4191,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.F",
+          "sha256": "623868c74c4b9d579e9c3811e9c334d731394c2afbfea7d693221626fbf0b0ea"
+        },
+        {
+          "bytes": 136,
+          "exists": true,
+          "lines": 4,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bep_bem_helper.F",
+          "sha256": "79403e10104e23fc2a44eb7cf9c0a33c10fabed3b963c9ccb0ea0bfd29072b6d"
+        }
+      ],
+      "stub_raises": true,
+      "undefined_symbol_audit": [
+        {
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.o",
+          "ran": true,
+          "returncode": 0,
+          "undefined_count": 47,
+          "undefined_symbols_sample": [
+            "_ZGVbN4vv_powf",
+            "__module_bep_bem_helper_MOD_nurbm",
+            "__module_sf_urban_MOD_aksb_tbl",
+            "__module_sf_urban_MOD_aksg_tbl",
+            "__module_sf_urban_MOD_aksr_tbl",
+            "__module_sf_urban_MOD_albb_tbl",
+            "__module_sf_urban_MOD_albg_tbl",
+            "__module_sf_urban_MOD_albr_tbl",
+            "__module_sf_urban_MOD_building_width_tbl",
+            "__module_sf_urban_MOD_capb_tbl",
+            "__module_sf_urban_MOD_capg_tbl",
+            "__module_sf_urban_MOD_capr_tbl",
+            "__module_sf_urban_MOD_epsb_tbl",
+            "__module_sf_urban_MOD_epsg_tbl",
+            "__module_sf_urban_MOD_epsr_tbl",
+            "__module_sf_urban_MOD_height_bin_tbl",
+            "__module_sf_urban_MOD_hpercent_bin_tbl",
+            "__module_sf_urban_MOD_icate",
+            "__module_sf_urban_MOD_numdir_tbl",
+            "__module_sf_urban_MOD_numhgt_tbl",
+            "__module_sf_urban_MOD_street_direction_tbl",
+            "__module_sf_urban_MOD_street_width_tbl",
+            "__module_sf_urban_MOD_tblend_tbl",
+            "__module_sf_urban_MOD_tglend_tbl"
+          ]
+        },
+        {
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.o",
+          "ran": true,
+          "returncode": 0,
+          "undefined_count": 13,
+          "undefined_symbols_sample": [
+            "_gfortran_st_write",
+            "_gfortran_st_write_done",
+            "_gfortran_stop_string",
+            "_gfortran_transfer_character_write",
+            "_gfortran_transfer_integer_write",
+            "atanf",
+            "free",
+            "logf",
+            "malloc",
+            "memcpy",
+            "memset",
+            "powf",
+            "wrf_error_fatal3_"
+          ]
+        }
+      ],
+      "validation": {
+        "validate_namelist_accepts_reference": true,
+        "validate_namelist_error": null,
+        "validate_operational_error": "Unsupported namelist/config option(s) for the GPU-WRF faithful path:\n- physics.sf_urban_physics=3 (multi-layer BEM): oracle-backed WRF v4 urban-canopy scheme, but NOT operationally wired into the GPU forecast scan. Running it would SILENTLY use a DIFFERENT scheme than requested (the operational urban-canopy path runs the implemented scheme instead) or route through a missing kernel -- refusing rather than producing a silent wrong-scheme run. Operationally-wired sf_urban_physics values: 0. Action: Use sf_urban_physics=0 for operational runs; carry BEP+BEM as its own urban-canopy milestone with bep_bemscheme state, BEM static tables, and a numerical WRF oracle before scan wiring.",
+        "validate_operational_rejects": true
+      },
+      "wrf_name": "multi-layer BEM"
+    },
+    "bep": {
+      "catalog_alternative": "Use sf_urban_physics=0 for operational runs; carry BEP as its own urban-canopy milestone with Registry bepscheme state, urban static tables, and a numerical WRF oracle before scan wiring.",
+      "catalog_reason": "G3 BEP urban canopy is REFERENCE_ONLY: pristine-WRF source/object inventory and Registry carry metadata are staged for phys/module_sf_bep.F:BEP, but no numerical WRF single-column parity fixture or faithful JAX kernel is shipped. It is accepted only for oracle/reference development and fail-closed in the operational GPU scan.",
+      "catalog_status": "reference_only",
+      "code": 2,
+      "extra_state_members_count": 0,
+      "gate_ok": true,
+      "id": "bep",
+      "key": "sf_urban_physics",
+      "label": "WRF BEP urban canopy",
+      "landed": false,
+      "module_files": [
+        {
+          "bytes": 17225,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.mod",
+          "sha256": "d43e473330920c2f2b9e158c776c6cd7ff51b022e7354430eb0d4ab439994ed0"
+        },
+        {
+          "bytes": 9286,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.mod",
+          "sha256": "8106d83705b6d33d42d9427c64f3cf8248d2e2f6fe64d28a2353026879ee019e"
+        }
+      ],
+      "numerical_oracle": {
+        "compile_only_probe_pass": true,
+        "fortran_compiler_available": true,
+        "parity_claim": false,
+        "reason": "gfortran is available through the wrfbuild conda environment and the WRF Urban/Lake modules pass a compile-only probe. A fresh numerical standalone oracle was deferred because BEP/BEM/Lake need the full WRF initialization/static-table/state ABI (urban-map and BEM tables, bepscheme/bep_bemscheme carry, lakeini lake/snow/soil/lake-column carry) before a single-column driver can produce meaningful WRF reference outputs.",
+        "status": "standalone_numerical_oracle_deferred_wrf_dependency_depth"
+      },
+      "object_files": [
+        {
+          "bytes": 147792,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.o",
+          "sha256": "9e34247f3112b47277bcc9191711394dec09dd9aafc9767dc5766f2364ffb153"
+        },
+        {
+          "bytes": 214560,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.o",
+          "sha256": "5a051db35e36c9708b5b916fe0fd350871b6b0d50ecd299b13c612af0741eae7"
+        },
+        {
+          "bytes": 1024,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bep_bem_helper.o",
+          "sha256": "831141f303f6b7f21cfa7d7cf79fff9ac4ff8abe2284cab83df0f70028ef13f9"
+        }
+      ],
+      "oracle_status": "reference_only_inventory",
+      "registry_member_count": 30,
+      "registry_member_match": true,
+      "registry_members_sample": [
+        "a_u_bep",
+        "a_v_bep",
+        "a_t_bep",
+        "a_q_bep",
+        "a_e_bep",
+        "b_u_bep",
+        "b_v_bep",
+        "b_t_bep",
+        "b_q_bep",
+        "b_e_bep"
+      ],
+      "registry_package": {
+        "line": "package   bepscheme      sf_urban_physics==2         -             state:a_u_bep,a_v_bep,a_t_bep,a_q_bep,a_e_bep,b_u_bep,b_v_bep,b_t_bep,b_q_bep,b_e_bep,dlg_bep,dl_u_bep,sf_bep,vl_bep,trb_urb4d,tw1_urb4d,tw2_urb4d,tgb_urb4d,sfw1_urb3d,sfw2_urb3d,sfr_urb3d,sfg_urb3d,hi_urb2d,lp_urb2d,hgt_urb2d,lb_urb2d,trl_urb3d,tgl_urb3d,tbl_urb3d,tsk_rural",
+        "line_number": 3150,
+        "members": [
+          "a_u_bep",
+          "a_v_bep",
+          "a_t_bep",
+          "a_q_bep",
+          "a_e_bep",
+          "b_u_bep",
+          "b_v_bep",
+          "b_t_bep",
+          "b_q_bep",
+          "b_e_bep",
+          "dlg_bep",
+          "dl_u_bep",
+          "sf_bep",
+          "vl_bep",
+          "trb_urb4d",
+          "tw1_urb4d",
+          "tw2_urb4d",
+          "tgb_urb4d",
+          "sfw1_urb3d",
+          "sfw2_urb3d",
+          "sfr_urb3d",
+          "sfg_urb3d",
+          "hi_urb2d",
+          "lp_urb2d",
+          "hgt_urb2d",
+          "lb_urb2d",
+          "trl_urb3d",
+          "tgl_urb3d",
+          "tbl_urb3d",
+          "tsk_rural"
+        ],
+        "package": "bepscheme",
+        "present": true
+      },
+      "registry_terms": {},
+      "scaffold": true,
+      "scan": {
+        "error": "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, ra_lw_physics in {0,1,4,31}). The following selected schemes are NOT scan-wired: sf_urban_physics=2 (BEP urban canopy (phys/module_sf_bep.F:BEP) needs the Registry bepscheme carry, urban-map/static tables, pristine-WRF oracle, and faithful JAX kernel before scan wiring)",
+        "scan_rejects": true
+      },
+      "source_files": [
+        {
+          "bytes": 137197,
+          "exists": true,
+          "lines": 3536,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F",
+          "sha256": "c51ddd86871f81d5f132e63ddab2240e23886891356a7964debd4eafda9e500f"
+        },
+        {
+          "bytes": 171089,
+          "exists": true,
+          "lines": 4191,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.F",
+          "sha256": "623868c74c4b9d579e9c3811e9c334d731394c2afbfea7d693221626fbf0b0ea"
+        },
+        {
+          "bytes": 136,
+          "exists": true,
+          "lines": 4,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bep_bem_helper.F",
+          "sha256": "79403e10104e23fc2a44eb7cf9c0a33c10fabed3b963c9ccb0ea0bfd29072b6d"
+        }
+      ],
+      "stub_raises": true,
+      "undefined_symbol_audit": [
+        {
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.o",
+          "ran": true,
+          "returncode": 0,
+          "undefined_count": 47,
+          "undefined_symbols_sample": [
+            "_ZGVbN4vv_powf",
+            "__module_bep_bem_helper_MOD_nurbm",
+            "__module_sf_urban_MOD_aksb_tbl",
+            "__module_sf_urban_MOD_aksg_tbl",
+            "__module_sf_urban_MOD_aksr_tbl",
+            "__module_sf_urban_MOD_albb_tbl",
+            "__module_sf_urban_MOD_albg_tbl",
+            "__module_sf_urban_MOD_albr_tbl",
+            "__module_sf_urban_MOD_building_width_tbl",
+            "__module_sf_urban_MOD_capb_tbl",
+            "__module_sf_urban_MOD_capg_tbl",
+            "__module_sf_urban_MOD_capr_tbl",
+            "__module_sf_urban_MOD_epsb_tbl",
+            "__module_sf_urban_MOD_epsg_tbl",
+            "__module_sf_urban_MOD_epsr_tbl",
+            "__module_sf_urban_MOD_height_bin_tbl",
+            "__module_sf_urban_MOD_hpercent_bin_tbl",
+            "__module_sf_urban_MOD_icate",
+            "__module_sf_urban_MOD_numdir_tbl",
+            "__module_sf_urban_MOD_numhgt_tbl",
+            "__module_sf_urban_MOD_street_direction_tbl",
+            "__module_sf_urban_MOD_street_width_tbl",
+            "__module_sf_urban_MOD_tblend_tbl",
+            "__module_sf_urban_MOD_tglend_tbl"
+          ]
+        },
+        {
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_urban.o",
+          "ran": true,
+          "returncode": 0,
+          "undefined_count": 33,
+          "undefined_symbols_sample": [
+            "_gfortran_adjustl",
+            "_gfortran_compare_string",
+            "_gfortran_concat_string",
+            "_gfortran_runtime_error_at",
+            "_gfortran_st_close",
+            "_gfortran_st_open",
+            "_gfortran_st_read",
+            "_gfortran_st_read_done",
+            "_gfortran_st_write",
+            "_gfortran_st_write_done",
+            "_gfortran_string_index",
+            "_gfortran_string_len_trim",
+            "_gfortran_string_trim",
+            "_gfortran_transfer_array",
+            "_gfortran_transfer_character",
+            "_gfortran_transfer_character_write",
+            "_gfortran_transfer_integer",
+            "_gfortran_transfer_integer_write",
+            "_gfortran_transfer_real",
+            "_gfortran_transfer_real_write",
+            "atan2f",
+            "atanf",
+            "expf",
+            "free"
+          ]
+        }
+      ],
+      "validation": {
+        "validate_namelist_accepts_reference": true,
+        "validate_namelist_error": null,
+        "validate_operational_error": "Unsupported namelist/config option(s) for the GPU-WRF faithful path:\n- physics.sf_urban_physics=2 (multi-layer BEP): oracle-backed WRF v4 urban-canopy scheme, but NOT operationally wired into the GPU forecast scan. Running it would SILENTLY use a DIFFERENT scheme than requested (the operational urban-canopy path runs the implemented scheme instead) or route through a missing kernel -- refusing rather than producing a silent wrong-scheme run. Operationally-wired sf_urban_physics values: 0. Action: Use sf_urban_physics=0 for operational runs; carry BEP as its own urban-canopy milestone with Registry bepscheme state, urban static tables, and a numerical WRF oracle before scan wiring.",
+        "validate_operational_rejects": true
+      },
+      "wrf_name": "multi-layer BEP"
+    },
+    "lake": {
+      "catalog_alternative": "Use sf_lake_physics=0 for operational runs; carry the WRF lake model as its own milestone with lakeini/state carry, lake-column numerics, and a numerical WRF oracle before scan wiring.",
+      "catalog_reason": "G3 WRF lake model is REFERENCE_ONLY: pristine-WRF source/object inventory and Registry carry metadata are staged for phys/module_sf_lake.F:Lake/LakeMain/lakeini, but no numerical WRF single-column parity fixture or faithful JAX kernel is shipped. It is accepted only for oracle/reference development and fail-closed in the operational GPU scan.",
+      "catalog_status": "reference_only",
+      "code": 1,
+      "extra_state_members_count": 0,
+      "gate_ok": true,
+      "id": "lake",
+      "key": "sf_lake_physics",
+      "label": "WRF lake model",
+      "landed": false,
+      "module_files": [
+        {
+          "bytes": 9210,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.mod",
+          "sha256": "f486ff1ab2b697e2b3b7f61388f74dbbb5fc2ba32870b648ba0252c9d7558999"
+        }
+      ],
+      "numerical_oracle": {
+        "compile_only_probe_pass": true,
+        "fortran_compiler_available": true,
+        "parity_claim": false,
+        "reason": "gfortran is available through the wrfbuild conda environment and the WRF Urban/Lake modules pass a compile-only probe. A fresh numerical standalone oracle was deferred because BEP/BEM/Lake need the full WRF initialization/static-table/state ABI (urban-map and BEM tables, bepscheme/bep_bemscheme carry, lakeini lake/snow/soil/lake-column carry) before a single-column driver can produce meaningful WRF reference outputs.",
+        "status": "standalone_numerical_oracle_deferred_wrf_dependency_depth"
+      },
+      "object_files": [
+        {
+          "bytes": 155208,
+          "exists": true,
+          "lines": null,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.o",
+          "sha256": "c9d8817f10d2f317c1f5d80cea3001a7d2757d7798665c51be4a47eb7ad6573c"
+        }
+      ],
+      "oracle_status": "reference_only_inventory",
+      "registry_member_count": 23,
+      "registry_member_match": true,
+      "registry_members_sample": [
+        "lakedepth2d",
+        "savedtke12d",
+        "snowdp2d",
+        "h2osno2d",
+        "snl2d",
+        "t_grnd2d",
+        "t_lake3d",
+        "lake_icefrac3d",
+        "z_lake3d",
+        "dz_lake3d"
+      ],
+      "registry_package": {
+        "line_number": null,
+        "members": [],
+        "package": null,
+        "present": null
+      },
+      "registry_terms": {
+        "lake_depth": {
+          "match_count": 1,
+          "matches": [
+            {
+              "line": "state    real   lake_depth       ij     misc        1         -     i012rd=(interp_mask_water_field:lu_index,islake)        \"lake_depth\"         \"lake depth\" \"m\"",
+              "line_number": 881
+            }
+          ],
+          "present": true
+        },
+        "sf_lake_physics": {
+          "match_count": 1,
+          "matches": [
+            {
+              "line": "rconfig  integer    sf_lake_physics          namelist,physics   max_domains    0       -   \"sf_lake_physics\"           \"activate lake model  0=no, 1=yes\"   \"\"",
+              "line_number": 3358
+            }
+          ],
+          "present": true
+        }
+      },
+      "scaffold": true,
+      "scan": {
+        "error": "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, ra_lw_physics in {0,1,4,31}). The following selected schemes are NOT scan-wired: sf_lake_physics=1 (WRF lake model (phys/module_sf_lake.F:Lake/LakeMain/lakeini) needs lake-depth/category initialization, snow/ice/water carry, pristine-WRF oracle, and faithful JAX kernel before scan wiring)",
+        "scan_rejects": true
+      },
+      "source_files": [
+        {
+          "bytes": 229098,
+          "exists": true,
+          "lines": 5399,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.F",
+          "sha256": "b173ad8328ecc0aa6bb6e6306a9c6af4dc876b39dc5d304fe221122983214b98"
+        }
+      ],
+      "stub_raises": true,
+      "undefined_symbol_audit": [
+        {
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.o",
+          "ran": true,
+          "returncode": 0,
+          "undefined_count": 21,
+          "undefined_symbols_sample": [
+            "_ZGVbN2v_exp",
+            "_ZGVbN2vv_pow",
+            "_gfortran_st_write",
+            "_gfortran_st_write_done",
+            "_gfortran_string_trim",
+            "_gfortran_transfer_character_write",
+            "_gfortran_transfer_integer_write",
+            "_gfortran_transfer_real_write",
+            "atan",
+            "exp",
+            "free",
+            "log",
+            "malloc",
+            "memmove",
+            "memset",
+            "pow",
+            "powf",
+            "sin",
+            "wrf_debug_",
+            "wrf_error_fatal3_",
+            "wrf_message_"
+          ]
+        }
+      ],
+      "validation": {
+        "validate_namelist_accepts_reference": true,
+        "validate_namelist_error": null,
+        "validate_operational_error": "Unsupported namelist/config option(s) for the GPU-WRF faithful path:\n- physics.sf_lake_physics=1 (WRF lake model): oracle-backed WRF v4 lake-model scheme, but NOT operationally wired into the GPU forecast scan. Running it would SILENTLY use a DIFFERENT scheme than requested (the operational lake-model path runs the implemented scheme instead) or route through a missing kernel -- refusing rather than producing a silent wrong-scheme run. Operationally-wired sf_lake_physics values: 0. Action: Use sf_lake_physics=0 for operational runs; carry the WRF lake model as its own milestone with lakeini/state carry, lake-column numerics, and a numerical WRF oracle before scan wiring.",
+        "validate_operational_rejects": true
+      },
+      "wrf_name": "WRF lake model"
+    }
+  },
+  "proof": "v023-g3-urban-bep-bem-lake-reference-only-oracle-gate",
+  "recommended_milestone": "Create a dedicated urban/lake milestone to build fresh WRF Fortran single-column savepoints, freeze the BEP/BEM/lake carry interfaces, and only then port faithful JAX kernels.",
+  "small_grid_static_plausibility": {
+    "checks": {
+      "active_lake_cells_present": true,
+      "active_urban_cells_present": true,
+      "finite_lake_depth": true,
+      "finite_lakemask": true,
+      "finite_t_skin": true,
+      "finite_urban_fraction": true,
+      "lake_depth_positive_on_lake": true,
+      "t_skin_range_k": true,
+      "urban_fraction_range": true
+    },
+    "counts": {
+      "lake_cells": 2,
+      "nx": 3,
+      "ny": 3,
+      "urban_cells": 4
+    },
+    "passed": true,
+    "physics_executed": false
+  },
+  "wrf_registry": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
+  "wrf_root": "<USER_HOME>/src/wrf_pristine/WRF"
+}

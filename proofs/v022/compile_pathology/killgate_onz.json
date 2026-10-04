@@ -1,0 +1,28 @@
+{
+  "algo": "onz",
+  "algo_desc": "O(nz)_boulac_forced_as_default_in_full_operational_jit",
+  "hours": 1,
+  "compile_timeout_s": 1800,
+  "verdict": "STILL-PATHOLOGICAL",
+  "cold_compile_timed_out": null,
+  "cold_compile_completed": false,
+  "cold_compile_plus_run_s": null,
+  "compile_wall_s": null,
+  "warm_run_walls_s": [],
+  "peak_rss_gb_observed_before_stop": 15.181,
+  "observed_elapsed_s_before_stop": 727,
+  "observed_vs_dense_compile_wall_x": 14.122,
+  "observed_vs_dense_cold_plus_run_x": 8.677,
+  "observed_vs_dense_peak_rss_x": 1.839,
+  "dense_reference": {
+    "cold_compile_plus_run_s": 83.78,
+    "compile_wall_s": 51.48,
+    "peak_rss_gb": 8.257,
+    "warm_run_min_s": 32.3
+  },
+  "slow_compile_alarm_observed": true,
+  "manual_stop": true,
+  "manual_stop_reason": "Relative verdict was conclusive before the 1800s cap: dense completed cold+run in 83.78s with 8.257 GiB peak RSS, while O(nz) was still compiling after 727s, had emitted XLA Very slow compile alarm, and had reached 15.181 GiB RSS. Stopped to protect the concurrent 12-rank corpus WRF and proceed to higher-value R0.",
+  "decision": "K1 O(nz) remains opt-in; not a clean default until the first-crossing search is restructured.",
+  "harness_note": "Fresh real-case inputs per call avoid JAX donated-array reuse; this is the fixed harness result."
+}

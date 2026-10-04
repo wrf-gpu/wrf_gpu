@@ -1,0 +1,32 @@
+{
+  "schema": "v022_r0_baseline_only_verdict",
+  "verdict": "RAM_REDUCTION_PREMISE_MOOT",
+  "reason": "On the sound fixed-shape harness, fused 3-domain cold compile peak RSS is 22858 MiB / 22.32 GiB, far below the old roughly 60 GiB premise. Memory-fitting flags were stopped as unnecessary by manager scope.",
+  "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20250121/cpu",
+  "invalid_attempt": {
+    "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20240901/cpu",
+    "reason": "broken wrfinput_d01/wrfbdy_d01 symlink targets",
+    "results_jsonl": "proofs/v022/r0_flag_sweep/results_maxdom3_20260626T125204Z.jsonl"
+  },
+  "baseline": {
+    "results_jsonl": "proofs/v022/r0_flag_sweep/results_maxdom3_20260626T_validinput_20250121.jsonl",
+    "cache_dir": "/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121",
+    "cold_compile_wall_s": 1121.7621,
+    "cold_peak_rss_mib": 22858.1015625,
+    "cold_peak_rss_gib": 22.322,
+    "warm_peak_rss_mib": 12035.17578125,
+    "warm_s_per_root_step": 28.7823,
+    "aot_blob_loaded_count": 5,
+    "aot_blob_load_fail_count": 0,
+    "jit_fused_recompile_in_warm": false,
+    "bit_identical_ref_equal": true,
+    "digest_sha256": "d7908da589dfcd9787c44302f8b1cfed1d5b32cf510fb6d9a056e0c16bb0c37d",
+    "all_finite": true
+  },
+  "partial_mfe1": {
+    "status": "stopped_by_scope_after_baseline_verdict",
+    "evidence_before_stop": "d01 compile took 2m23 and the run was entering fused cold compile at roughly 16 GiB RSS; no evidence of a decisive memory win before manager stopped R0."
+  },
+  "decision": "Do not pursue R0 memory-fitting flags as a v0.22 default path. Ship-the-blob / AOT cache remains the practical answer for compile time.",
+  "follow_up": "Re-measure 9-nest fused cold-compile peak RSS on the sound harness before treating the old roughly 60 GiB compile-RAM number as real."
+}

@@ -1,0 +1,138 @@
+{
+  "argv": [
+    "<USER_HOME>/src/wrf_gpu2_wt/v023-g2-fable/src/gpuwrf/validation/moving_nest_operational_gate.py",
+    "proofs/v023/feature_sprints/G2_OPERATIONAL_GATE.json"
+  ],
+  "checks": {
+    "adaptive_dt": {
+      "dt_log": [
+        {
+          "dt_s": 6.0,
+          "max_horiz_cfl": 0.02,
+          "max_vert_cfl": 0.0,
+          "reason": "starting_time_step",
+          "step": 1
+        },
+        {
+          "dt_s": 7.2,
+          "max_horiz_cfl": 0.020523886609721247,
+          "max_vert_cfl": 0.0005478073979076663,
+          "reason": "max_increase_cap",
+          "step": 2
+        },
+        {
+          "dt_s": 8.6,
+          "max_horiz_cfl": 0.025293843570296508,
+          "max_vert_cfl": 0.0013603496172523333,
+          "reason": "max_increase_cap",
+          "step": 3
+        }
+      ],
+      "final_child_boundary_cadence_s": 8.6,
+      "final_child_dt_s": 2.8666666666666667,
+      "final_parent_dt_s": 8.6,
+      "finite": {
+        "d01": true,
+        "d02": true
+      }
+    },
+    "conservation": {
+      "overlap_dry_mass_delta_pa": 0.0,
+      "overlap_mu_theta_energy_delta": 0.0,
+      "total_dry_mass_rel_err_vs_uniform_analytic": 1.1344669101237723e-16
+    },
+    "fail_closed_named_reasons": [
+      "moving nest d02: unknown mode 'teleport'; supported: ('prescribed', 'vortex_following')",
+      "moving nest d02: initial placement i,j=(5,5) violates corral_dist=8 (allowed i in [9,15], j in [9,13]); shrink corral_dist or enlarge the parent",
+      "moving nest d02: prescribed move at parent step 1 exceeds one parent cell per axis per event (WRF moves at most +-1; split it into multiple events)"
+    ],
+    "full_run_with_move": {
+      "child_theta_range_k": [
+        298.30182807383255,
+        299.9905519944833
+      ],
+      "finite": {
+        "d01": true,
+        "d02": true
+      },
+      "move_events": [
+        [
+          "move",
+          "d01",
+          "d02",
+          2,
+          5,
+          5,
+          6,
+          5
+        ]
+      ]
+    },
+    "linear_field_exposed_fill_max_abs_err_k": 5.684341886080802e-14,
+    "unit_move": {
+      "carry_scratch_overlap_bitwise": {
+        "muts": true,
+        "rthraten": true,
+        "t_2ave": true,
+        "u_save": true,
+        "ww": true
+      },
+      "exposed_equals_parent_interp_bitwise": {
+        "theta": true,
+        "u": true,
+        "v": true
+      },
+      "feedback_weights_rebuilt": true,
+      "force_weights_rebuilt": true,
+      "moved_start": [
+        6,
+        5
+      ],
+      "overlap_bitwise": {
+        "mu_total": true,
+        "p_total": true,
+        "ph_perturbation": true,
+        "qv": true,
+        "theta": true,
+        "u": true,
+        "v": true,
+        "w": true
+      },
+      "start": [
+        5,
+        5
+      ]
+    },
+    "vortex_tracker_real_state": {
+      "abs_err_m": [
+        0.0,
+        0.0
+      ],
+      "found_center_m": [
+        24000.0,
+        21000.0
+      ],
+      "true_center_m": [
+        24000.0,
+        21000.0
+      ]
+    },
+    "zero_move_bit_identical_to_static_path": true
+  },
+  "schema": "gpuwrf.v023.moving_nest_operational_gate",
+  "schema_version": 1,
+  "transfer_audit": {
+    "gpu_used": false,
+    "host_device_transfer_inside_timestep_loop": false,
+    "note": "CPU-lane gate; moves are host choreography (WRF-faithful), vortex tracker reads 3 fields at vortex_interval cadence only."
+  },
+  "verdict": "PASS",
+  "wrf_reference": {
+    "adaptive_dt": "dyn_em/adapt_timestep_em.F::adapt_timestep/calc_dt",
+    "corral": "namelist corral_dist",
+    "exposed_fill": "nest re-initialization interpolation from parent (SINT registration)",
+    "moving_driver": "share/mediation_nest_move.F::med_nest_move/time_for_move2",
+    "root": "<USER_HOME>/src/wrf_pristine",
+    "state_shift": "dyn_em/shift_domain_em.F (registry-wide array shift)"
+  }
+}

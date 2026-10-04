@@ -1,0 +1,4372 @@
+{
+  "case_config": {
+    "bl_pbl_physics": 5,
+    "cu_physics": 1,
+    "cudt_min": 5.0,
+    "damp_opt": 3,
+    "dampcoef": 0.2,
+    "diff_6th_factor": 0.12,
+    "diff_6th_opt": 2,
+    "diff_opt": 1,
+    "dt": 54.0,
+    "dx": 9000.0,
+    "dy": 9000.0,
+    "epssm": 0.5,
+    "gwd_opt": 1,
+    "hybrid_opt": 2,
+    "km_opt": 4,
+    "max_dom": 1,
+    "moist_adv_opt": 1,
+    "mp_physics": 8,
+    "nested": false,
+    "non_hydrostatic": true,
+    "nx": 120,
+    "ny": 70,
+    "nz": 44,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "radt_min": 30.0,
+    "scalar_adv_opt": 1,
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4,
+    "sf_urban_physics": 0,
+    "spec_bdy_width": 5,
+    "specified": true,
+    "w_damping": 1,
+    "zdamp": 5000.0
+  },
+  "contract_section": "\u00a76.6 static census; the pre-registered reference for the \u00a79 GPU census",
+  "environment": {
+    "backend_note": "lowered and compiled for the CPU backend. Absolute XLA:CPU launch counts are NOT the GPU launch counts; the cross-check \u00a79 must satisfy is the RELATIVE family attribution and the convert/dtype fingerprint, both of which are backend-stable, plus the zero-transfer property.",
+    "host": "user-battlestation",
+    "jax_platforms": {
+      "device_count": 1,
+      "platforms": [
+        "cpu"
+      ]
+    },
+    "python": "3.13.11"
+  },
+  "family_attribution": {
+    "dycore.advection": {
+      "converts": 0,
+      "launch_proxy": 220,
+      "operators": 7
+    },
+    "dycore.damping": {
+      "converts": 0,
+      "launch_proxy": 3,
+      "operators": 3
+    },
+    "dycore.diffusion": {
+      "converts": 0,
+      "launch_proxy": 98,
+      "operators": 6
+    },
+    "dycore.eos": {
+      "converts": 0,
+      "launch_proxy": 13,
+      "operators": 5
+    },
+    "dycore.geopotential": {
+      "converts": 0,
+      "launch_proxy": 11,
+      "operators": 1
+    },
+    "dycore.mass": {
+      "converts": 0,
+      "launch_proxy": 7,
+      "operators": 1
+    },
+    "dycore.momentum": {
+      "converts": 0,
+      "launch_proxy": 23,
+      "operators": 2
+    },
+    "dycore.pgf": {
+      "converts": 0,
+      "launch_proxy": 49,
+      "operators": 4
+    },
+    "dycore.small_step": {
+      "converts": 0,
+      "launch_proxy": 21,
+      "operators": 1
+    },
+    "dycore.vertical_coordinate": {
+      "converts": 0,
+      "launch_proxy": 5,
+      "operators": 5
+    },
+    "dycore.vertical_implicit": {
+      "converts": 0,
+      "launch_proxy": 198,
+      "operators": 6
+    },
+    "physics.cumulus": {
+      "converts": 0,
+      "launch_proxy": 720,
+      "operators": 1
+    },
+    "physics.gwd": {
+      "converts": 0,
+      "launch_proxy": 94,
+      "operators": 1
+    },
+    "physics.microphysics": {
+      "converts": 0,
+      "launch_proxy": 362,
+      "operators": 1
+    },
+    "physics.pbl": {
+      "converts": 0,
+      "launch_proxy": 327,
+      "operators": 1
+    },
+    "physics.radiation": {
+      "converts": 1,
+      "launch_proxy": 1294,
+      "operators": 2
+    },
+    "physics.surface_layer": {
+      "converts": 0,
+      "launch_proxy": 98,
+      "operators": 1
+    }
+  },
+  "generated_at_utc": "2026-07-27T14:27:07.582835+00:00",
+  "largest_temporaries_bytes": [
+    [
+      "mynn_pbl",
+      1147709904
+    ],
+    [
+      "rrtmg_lw",
+      784530152
+    ],
+    [
+      "thompson_microphysics",
+      383613560
+    ],
+    [
+      "advect_moisture_scalars",
+      365433600
+    ],
+    [
+      "rrtmg_sw",
+      191423504
+    ],
+    [
+      "kain_fritsch_cumulus",
+      116967008
+    ],
+    [
+      "advect_w_flux",
+      39312000
+    ],
+    [
+      "gwdo_gravity_wave_drag",
+      38792232
+    ],
+    [
+      "advect_u_flux",
+      38505600
+    ],
+    [
+      "advect_v_flux",
+      38505600
+    ],
+    [
+      "horizontal_diffusion_coord_scalar_tendency",
+      35955056
+    ],
+    [
+      "large_step_horizontal_pgf",
+      33336048
+    ],
+    [
+      "advect_scalar_flux",
+      32592000
+    ],
+    [
+      "large_step_coriolis",
+      24465008
+    ],
+    [
+      "advance_w",
+      23993672
+    ]
+  ],
+  "operators": [
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f32": 35,
+        "f64": 934,
+        "pred": 2,
+        "s32": 5
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "small_step_prep_wrf",
+      "family": "dycore.small_step",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 4
+          },
+          "f32_to_f64": 4,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 4
+        },
+        "dtype_tokens_optimized": {
+          "f32": 755,
+          "f64": 253,
+          "pred": 2,
+          "s32": 5
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 41662784,
+          "generated_code_bytes": 0,
+          "output_bytes": 90049660,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 24
+      },
+      "hlo_bytes": {
+        "optimized": 81139,
+        "stablehlo": 105867
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 2,
+        "add": 39,
+        "broadcast": 49,
+        "compare": 2,
+        "concatenate": 8,
+        "constant": 23,
+        "copy": 81,
+        "divide": 9,
+        "fusion": 21,
+        "maximum": 4,
+        "multiply": 33,
+        "negate": 2,
+        "parameter": 135,
+        "power": 1,
+        "select": 2,
+        "slice": 28,
+        "subtract": 10
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 75933568,
+        "generated_code_bytes": 0,
+        "output_bytes": 145319792,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.small_step_prep",
+      "name": "small_step_prep",
+      "seconds": 0.14853036899876315,
+      "static_launch_proxy": 21,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 121,
+        "pred": 3
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "calc_p_rho_wrf",
+      "family": "dycore.eos",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 60,
+          "f64": 76,
+          "pred": 3
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 7493328,
+          "generated_code_bytes": 0,
+          "output_bytes": 8870424,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 2
+      },
+      "hlo_bytes": {
+        "optimized": 13300,
+        "stablehlo": 4740
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 3,
+        "add": 4,
+        "broadcast": 13,
+        "compare": 3,
+        "constant": 4,
+        "copy": 1,
+        "divide": 2,
+        "fusion": 2,
+        "multiply": 10,
+        "negate": 1,
+        "parameter": 26,
+        "select": 3,
+        "slice": 2,
+        "subtract": 3
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 14986656,
+        "generated_code_bytes": 0,
+        "output_bytes": 8870424,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.calc_p_rho",
+      "name": "calc_p_rho",
+      "seconds": 0.03343322599539533,
+      "static_launch_proxy": 2,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 134,
+        "pred": 3
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "calc_p_rho_step",
+      "family": "dycore.eos",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 65,
+          "f64": 85,
+          "pred": 3
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 8971728,
+          "generated_code_bytes": 0,
+          "output_bytes": 8870424,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 3
+      },
+      "hlo_bytes": {
+        "optimized": 14748,
+        "stablehlo": 5117
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 3,
+        "add": 5,
+        "broadcast": 14,
+        "compare": 3,
+        "constant": 5,
+        "divide": 2,
+        "fusion": 3,
+        "multiply": 11,
+        "negate": 1,
+        "parameter": 29,
+        "select": 3,
+        "slice": 2,
+        "subtract": 4
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 17943456,
+        "generated_code_bytes": 0,
+        "output_bytes": 8870424,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.calc_p_rho",
+      "name": "calc_p_rho_step",
+      "seconds": 0.0358963749895338,
+      "static_launch_proxy": 3,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 117,
+        "pred": 3
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "_calc_al_p",
+      "family": "dycore.eos",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 60,
+          "f64": 72,
+          "pred": 3
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 7493328,
+          "generated_code_bytes": 0,
+          "output_bytes": 5913616,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 2
+      },
+      "hlo_bytes": {
+        "optimized": 12959,
+        "stablehlo": 4657
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 3,
+        "add": 4,
+        "broadcast": 13,
+        "compare": 3,
+        "constant": 4,
+        "divide": 2,
+        "fusion": 2,
+        "multiply": 10,
+        "negate": 1,
+        "parameter": 26,
+        "select": 3,
+        "slice": 2,
+        "subtract": 3
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 14986656,
+        "generated_code_bytes": 0,
+        "output_bytes": 5913616,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.calc_p_rho",
+      "name": "calc_al_p_kernel",
+      "seconds": 0.03192374500213191,
+      "static_launch_proxy": 2,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 175
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "diagnose_pressure_al_alt",
+      "family": "dycore.eos",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 152,
+          "f64": 26
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 6048716,
+          "generated_code_bytes": 0,
+          "output_bytes": 5913624,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 4
+      },
+      "hlo_bytes": {
+        "optimized": 23770,
+        "stablehlo": 10378
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 16,
+        "broadcast": 21,
+        "constant": 5,
+        "divide": 5,
+        "fusion": 4,
+        "log": 2,
+        "maximum": 2,
+        "multiply": 11,
+        "parameter": 33,
+        "power": 1,
+        "slice": 14,
+        "subtract": 4
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 12097432,
+        "generated_code_bytes": 0,
+        "output_bytes": 8870424,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "diagnose_pressure_al_alt",
+      "seconds": 0.04746420400624629,
+      "static_launch_proxy": 4,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 86
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "moisture_coupling_factors",
+      "family": "dycore.eos",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 86
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 8870400,
+          "generated_code_bytes": 0,
+          "output_bytes": 2990256,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 2
+      },
+      "hlo_bytes": {
+        "optimized": 11881,
+        "stablehlo": 8006
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 14,
+        "broadcast": 4,
+        "concatenate": 4,
+        "constant": 4,
+        "divide": 2,
+        "fusion": 2,
+        "multiply": 2,
+        "parameter": 18,
+        "slice": 4
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 17740800,
+        "generated_code_bytes": 0,
+        "output_bytes": 5980496,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "moisture_coupling_factors",
+      "seconds": 0.07658332699793391,
+      "static_launch_proxy": 2,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 574,
+        "s32": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "horizontal_pressure_gradient",
+      "family": "dycore.pgf",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 574,
+          "s32": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 12131852,
+          "generated_code_bytes": 0,
+          "output_bytes": 5980512,
+          "temporary_bytes": 9378776
+        },
+        "static_launch_proxy": 22
+      },
+      "hlo_bytes": {
+        "optimized": 96924,
+        "stablehlo": 40461
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 2,
+        "add": 42,
+        "broadcast": 48,
+        "concatenate": 32,
+        "constant": 20,
+        "divide": 4,
+        "dynamic-update-slice": 2,
+        "fusion": 22,
+        "maximum": 2,
+        "multiply": 48,
+        "negate": 2,
+        "pad": 2,
+        "parameter": 108,
+        "slice": 66,
+        "subtract": 14
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 24263704,
+        "generated_code_bytes": 0,
+        "output_bytes": 11960992,
+        "temporary_bytes": 18757040
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "horizontal_pressure_gradient",
+      "seconds": 0.2025589230033802,
+      "static_launch_proxy": 22,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 685,
+        "s32": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "large_step_horizontal_pgf",
+      "family": "dycore.pgf",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 302,
+          "f64": 449,
+          "s32": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 18046328,
+          "generated_code_bytes": 0,
+          "output_bytes": 5980496,
+          "temporary_bytes": 33268120
+        },
+        "static_launch_proxy": 19
+      },
+      "hlo_bytes": {
+        "optimized": 91945,
+        "stablehlo": 47849
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 62,
+        "broadcast": 61,
+        "concatenate": 36,
+        "constant": 23,
+        "divide": 8,
+        "dynamic-update-slice": 2,
+        "fusion": 19,
+        "log": 2,
+        "maximum": 1,
+        "multiply": 59,
+        "negate": 2,
+        "pad": 2,
+        "parameter": 128,
+        "power": 1,
+        "slice": 80,
+        "subtract": 18
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 36092656,
+        "generated_code_bytes": 0,
+        "output_bytes": 5980496,
+        "temporary_bytes": 33336048
+      },
+      "module": "gpuwrf.dynamics.core.rk_addtend_dry",
+      "name": "large_step_horizontal_pgf",
+      "seconds": 0.17658213400864042,
+      "static_launch_proxy": 19,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 333
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "large_step_coriolis",
+      "family": "dycore.momentum",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 157,
+          "f64": 195
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 4840472,
+          "generated_code_bytes": 0,
+          "output_bytes": 5980496,
+          "temporary_bytes": 27421080
+        },
+        "static_launch_proxy": 15
+      },
+      "hlo_bytes": {
+        "optimized": 46229,
+        "stablehlo": 31974
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 24,
+        "broadcast": 24,
+        "concatenate": 24,
+        "constant": 8,
+        "divide": 5,
+        "fusion": 15,
+        "multiply": 29,
+        "negate": 1,
+        "parameter": 62,
+        "slice": 40,
+        "subtract": 1
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 9680944,
+        "generated_code_bytes": 0,
+        "output_bytes": 5980496,
+        "temporary_bytes": 24465008
+      },
+      "module": "gpuwrf.dynamics.core.rk_addtend_dry",
+      "name": "large_step_coriolis",
+      "seconds": 0.1252964110026369,
+      "static_launch_proxy": 15,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 276
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "large_step_horizontal_curvature",
+      "family": "dycore.momentum",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 101,
+          "f64": 199
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 4672192,
+          "generated_code_bytes": 0,
+          "output_bytes": 5980496,
+          "temporary_bytes": 3261216
+        },
+        "static_launch_proxy": 8
+      },
+      "hlo_bytes": {
+        "optimized": 36471,
+        "stablehlo": 17753
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 23,
+        "broadcast": 29,
+        "concatenate": 4,
+        "constant": 11,
+        "divide": 4,
+        "fusion": 8,
+        "multiply": 33,
+        "pad": 2,
+        "parameter": 42,
+        "slice": 44,
+        "subtract": 8
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 9344384,
+        "generated_code_bytes": 0,
+        "output_bytes": 5980496,
+        "temporary_bytes": 3293952
+      },
+      "module": "gpuwrf.dynamics.core.rk_addtend_dry",
+      "name": "large_step_horizontal_curvature",
+      "seconds": 0.08663528399483766,
+      "static_launch_proxy": 8,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 87,
+        "s32": 2
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "x_face_pressure_dpn",
+      "family": "dycore.pgf",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 87,
+          "s32": 2
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478764,
+          "generated_code_bytes": 0,
+          "output_bytes": 1524600,
+          "temporary_bytes": 2981472
+        },
+        "static_launch_proxy": 4
+      },
+      "hlo_bytes": {
+        "optimized": 12736,
+        "stablehlo": 7300
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 5,
+        "broadcast": 7,
+        "concatenate": 2,
+        "constant": 5,
+        "dynamic-update-slice": 1,
+        "fusion": 4,
+        "multiply": 7,
+        "pad": 1,
+        "parameter": 18,
+        "slice": 9
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2957528,
+        "generated_code_bytes": 0,
+        "output_bytes": 3049200,
+        "temporary_bytes": 5962880
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "x_face_pressure_dpn",
+      "seconds": 0.0579283840052085,
+      "static_launch_proxy": 4,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 87,
+        "s32": 2
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "y_face_pressure_dpn",
+      "family": "dycore.pgf",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 87,
+          "s32": 2
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478764,
+          "generated_code_bytes": 0,
+          "output_bytes": 1533600,
+          "temporary_bytes": 2999040
+        },
+        "static_launch_proxy": 4
+      },
+      "hlo_bytes": {
+        "optimized": 12738,
+        "stablehlo": 7300
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 5,
+        "broadcast": 7,
+        "concatenate": 2,
+        "constant": 5,
+        "dynamic-update-slice": 1,
+        "fusion": 4,
+        "multiply": 7,
+        "pad": 1,
+        "parameter": 18,
+        "slice": 9
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2957528,
+        "generated_code_bytes": 0,
+        "output_bytes": 3067200,
+        "temporary_bytes": 5998080
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "y_face_pressure_dpn",
+      "seconds": 0.0443707300000824,
+      "static_launch_proxy": 4,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 165
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "mu_continuity_tendency",
+      "family": "dycore.mass",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 165
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 3193128,
+          "generated_code_bytes": 0,
+          "output_bytes": 33600,
+          "temporary_bytes": 1614424
+        },
+        "static_launch_proxy": 7
+      },
+      "hlo_bytes": {
+        "optimized": 21037,
+        "stablehlo": 9324
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 11,
+        "broadcast": 13,
+        "concatenate": 4,
+        "constant": 3,
+        "divide": 2,
+        "fusion": 7,
+        "multiply": 11,
+        "parameter": 40,
+        "reduce": 1,
+        "reduce-window": 1,
+        "slice": 8,
+        "subtract": 2
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 6386256,
+        "generated_code_bytes": 0,
+        "output_bytes": 67200,
+        "temporary_bytes": 3228656
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "mu_continuity_tendency",
+      "seconds": 0.06893934900290333,
+      "static_launch_proxy": 7,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 7837,
+        "s32": 215
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "calc_coef_w_wrf_coefficients",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 2924,
+          "f64": 6122,
+          "s32": 215
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 3025064,
+          "generated_code_bytes": 0,
+          "output_bytes": 9072024,
+          "temporary_bytes": 3158400
+        },
+        "static_launch_proxy": 133
+      },
+      "hlo_bytes": {
+        "optimized": 787961,
+        "stablehlo": 414465
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 347,
+        "bitcast": 559,
+        "broadcast": 1127,
+        "constant": 394,
+        "copy": 1,
+        "divide": 217,
+        "dynamic-update-slice": 128,
+        "fusion": 133,
+        "multiply": 1082,
+        "negate": 85,
+        "pad": 3,
+        "parameter": 1395,
+        "slice": 991,
+        "subtract": 44
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 6050128,
+        "generated_code_bytes": 0,
+        "output_bytes": 9072024,
+        "temporary_bytes": 3158400
+      },
+      "module": "gpuwrf.dynamics.acoustic_wrf",
+      "name": "calc_coef_w",
+      "seconds": 1.0624124759924598,
+      "static_launch_proxy": 133,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 220,
+        "pred": 8,
+        "s64": 63
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "thomas_solve_scan",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 220,
+          "pred": 8,
+          "s64": 63
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 6048000,
+          "generated_code_bytes": 0,
+          "output_bytes": 3024016,
+          "temporary_bytes": 5880264
+        },
+        "static_launch_proxy": 19
+      },
+      "hlo_bytes": {
+        "optimized": 24836,
+        "stablehlo": 8389
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2,
+        "bitcast": 9,
+        "broadcast": 2,
+        "compare": 2,
+        "concatenate": 2,
+        "constant": 10,
+        "copy": 4,
+        "dynamic-slice": 5,
+        "dynamic-update-slice": 2,
+        "fusion": 19,
+        "get-tuple-element": 15,
+        "multiply": 3,
+        "parameter": 41,
+        "reverse": 3,
+        "slice": 10,
+        "subtract": 2
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 12096000,
+        "generated_code_bytes": 0,
+        "output_bytes": 6048016,
+        "temporary_bytes": 11760264
+      },
+      "module": "gpuwrf.dynamics.tridiag_solve",
+      "name": "thomas_solve_scan",
+      "seconds": 0.10373756500484888,
+      "static_launch_proxy": 19,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 1078,
+        "pred": 14,
+        "s32": 17,
+        "s64": 63
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advance_w_wrf",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 1
+          },
+          "f32_to_f64": 1,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 1
+        },
+        "dtype_tokens_optimized": {
+          "f32": 387,
+          "f64": 805,
+          "pred": 14,
+          "s32": 17,
+          "s64": 63
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 28729268,
+          "generated_code_bytes": 0,
+          "output_bytes": 9004824,
+          "temporary_bytes": 20833864
+        },
+        "static_launch_proxy": 38
+      },
+      "hlo_bytes": {
+        "optimized": 131161,
+        "stablehlo": 62266
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 4,
+        "add": 58,
+        "bitcast": 35,
+        "broadcast": 98,
+        "compare": 8,
+        "concatenate": 5,
+        "constant": 77,
+        "copy": 7,
+        "divide": 8,
+        "dynamic-slice": 5,
+        "dynamic-update-slice": 12,
+        "fusion": 37,
+        "get-tuple-element": 15,
+        "multiply": 125,
+        "negate": 2,
+        "pad": 1,
+        "parameter": 181,
+        "reverse": 3,
+        "select": 6,
+        "sign": 1,
+        "sine": 2,
+        "slice": 107,
+        "subtract": 23
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 57458536,
+        "generated_code_bytes": 0,
+        "output_bytes": 9004824,
+        "temporary_bytes": 23993672
+      },
+      "module": "gpuwrf.dynamics.core.advance_w",
+      "name": "advance_w",
+      "seconds": 0.2539698269974906,
+      "static_launch_proxy": 37,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 91,
+        "s32": 2
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "pg_buoy_w_dry",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 36,
+          "f64": 64,
+          "s32": 2
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1546132,
+          "generated_code_bytes": 0,
+          "output_bytes": 3024000,
+          "temporary_bytes": 67200
+        },
+        "static_launch_proxy": 3
+      },
+      "hlo_bytes": {
+        "optimized": 10817,
+        "stablehlo": 4909
+      },
+      "hlo_op_histogram_optimized": {
+        "bitcast": 4,
+        "broadcast": 9,
+        "constant": 7,
+        "divide": 1,
+        "dynamic-update-slice": 1,
+        "fusion": 3,
+        "multiply": 9,
+        "negate": 1,
+        "pad": 1,
+        "parameter": 18,
+        "slice": 7,
+        "subtract": 3
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 3092264,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 67200
+      },
+      "module": "gpuwrf.dynamics.core.advance_w",
+      "name": "pg_buoy_w_dry",
+      "seconds": 0.03610426699742675,
+      "static_launch_proxy": 3,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 160,
+        "s32": 2
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "pg_buoy_w_moist",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 160,
+          "s32": 2
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 3091912,
+          "generated_code_bytes": 0,
+          "output_bytes": 3024016,
+          "temporary_bytes": 1478400
+        },
+        "static_launch_proxy": 5
+      },
+      "hlo_bytes": {
+        "optimized": 18288,
+        "stablehlo": 8987
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 4,
+        "bitcast": 6,
+        "broadcast": 14,
+        "constant": 10,
+        "divide": 3,
+        "dynamic-update-slice": 1,
+        "fusion": 5,
+        "multiply": 17,
+        "negate": 1,
+        "pad": 2,
+        "parameter": 31,
+        "slice": 12,
+        "subtract": 5
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 6183824,
+        "generated_code_bytes": 0,
+        "output_bytes": 6048016,
+        "temporary_bytes": 2956800
+      },
+      "module": "gpuwrf.dynamics.core.advance_w",
+      "name": "pg_buoy_w_moist",
+      "seconds": 0.054686518997186795,
+      "static_launch_proxy": 5,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 47
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "moist_cqw_calc_face",
+      "family": "dycore.vertical_implicit",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 47
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 8870400,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 5490,
+        "stablehlo": 2079
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 6,
+        "broadcast": 1,
+        "constant": 2,
+        "fusion": 1,
+        "multiply": 1,
+        "pad": 1,
+        "parameter": 12,
+        "slice": 2
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 17740800,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.advance_w",
+      "name": "moist_cqw_calc_face",
+      "seconds": 0.03789543099992443,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 79,
+        "pred": 2,
+        "s32": 2
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "w_damp_vertical_cfl",
+      "family": "dycore.damping",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 79,
+          "pred": 2,
+          "s32": 2
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 4570136,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 10130,
+        "stablehlo": 5192
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 2,
+        "add": 3,
+        "broadcast": 10,
+        "compare": 2,
+        "constant": 8,
+        "copy": 1,
+        "divide": 1,
+        "dynamic-update-slice": 1,
+        "fusion": 1,
+        "multiply": 6,
+        "negate": 1,
+        "parameter": 14,
+        "select": 2,
+        "sign": 1,
+        "slice": 6
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 9140272,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.core.advance_w",
+      "name": "w_damp_vertical_cfl",
+      "seconds": 0.03485921700485051,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 516,
+        "pred": 50,
+        "s32": 8,
+        "s64": 40
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "rhs_ph_wrf",
+      "family": "dycore.geopotential",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 181,
+          "f64": 388,
+          "pred": 50,
+          "s32": 8,
+          "s64": 40
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 9242248,
+          "generated_code_bytes": 0,
+          "output_bytes": 3024000,
+          "temporary_bytes": 6382112
+        },
+        "static_launch_proxy": 11
+      },
+      "hlo_bytes": {
+        "optimized": 87045,
+        "stablehlo": 40398
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 44,
+        "and": 4,
+        "bitcast": 18,
+        "broadcast": 78,
+        "compare": 20,
+        "constant": 48,
+        "divide": 3,
+        "dynamic-update-slice": 4,
+        "fusion": 11,
+        "iota": 4,
+        "multiply": 68,
+        "negate": 4,
+        "or": 6,
+        "pad": 5,
+        "parameter": 79,
+        "select": 10,
+        "slice": 70,
+        "subtract": 29
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 18484496,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 6449312
+      },
+      "module": "gpuwrf.dynamics.core.rhs_ph",
+      "name": "rhs_ph",
+      "seconds": 0.1305547609954374,
+      "static_launch_proxy": 11,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 31
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "mass_level_pressure",
+      "family": "dycore.vertical_coordinate",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 31
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 33956,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 3465,
+        "stablehlo": 1591
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2,
+        "broadcast": 4,
+        "fusion": 1,
+        "multiply": 1,
+        "parameter": 8
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 67912,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.hybrid_eta",
+      "name": "hybrid_mass_level_pressure",
+      "seconds": 0.02708734798943624,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 31
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "face_level_pressure",
+      "family": "dycore.vertical_coordinate",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 31
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 33964,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 3465,
+        "stablehlo": 1591
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2,
+        "broadcast": 4,
+        "fusion": 1,
+        "multiply": 1,
+        "parameter": 8
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 67928,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.hybrid_eta",
+      "name": "hybrid_face_level_pressure",
+      "seconds": 0.025402275001397356,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 24
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "mass_weight",
+      "family": "dycore.vertical_coordinate",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 24
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 33952,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 2951,
+        "stablehlo": 1321
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 1,
+        "broadcast": 3,
+        "fusion": 1,
+        "multiply": 1,
+        "parameter": 6
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 67904,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.hybrid_eta",
+      "name": "hybrid_mass_weight",
+      "seconds": 0.02339788900280837,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 24
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "face_weight",
+      "family": "dycore.vertical_coordinate",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 24
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 33960,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 2951,
+        "stablehlo": 1321
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 1,
+        "broadcast": 3,
+        "fusion": 1,
+        "multiply": 1,
+        "parameter": 6
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 67920,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.hybrid_eta",
+      "name": "hybrid_face_weight",
+      "seconds": 0.0235291610006243,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 35
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "pressure_thickness",
+      "family": "dycore.vertical_coordinate",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 35
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 33964,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 5059,
+        "stablehlo": 2255
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 1,
+        "add": 2,
+        "broadcast": 4,
+        "fusion": 1,
+        "multiply": 1,
+        "parameter": 8,
+        "slice": 2,
+        "subtract": 1
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 67928,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.hybrid_eta",
+      "name": "hybrid_pressure_thickness",
+      "seconds": 0.034242762994836085,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 284,
+        "s32": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advect_scalar_flux",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 284,
+          "s32": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478928,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 16296000
+        },
+        "static_launch_proxy": 14
+      },
+      "hlo_bytes": {
+        "optimized": 39961,
+        "stablehlo": 18029537
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 15,
+        "bitcast": 4,
+        "broadcast": 15,
+        "concatenate": 12,
+        "constant": 23,
+        "dynamic-update-slice": 2,
+        "fusion": 14,
+        "multiply": 31,
+        "pad": 1,
+        "parameter": 46,
+        "slice": 38,
+        "subtract": 21
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2957856,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 32592000
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "advect_scalar_flux",
+      "seconds": 0.43722490199434105,
+      "static_launch_proxy": 14,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 388,
+        "s32": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advect_u_flux",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 388,
+          "s32": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1491248,
+          "generated_code_bytes": 0,
+          "output_bytes": 1490720,
+          "temporary_bytes": 19252800
+        },
+        "static_launch_proxy": 16
+      },
+      "hlo_bytes": {
+        "optimized": 52893,
+        "stablehlo": 18031311
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 26,
+        "bitcast": 4,
+        "broadcast": 25,
+        "concatenate": 13,
+        "constant": 33,
+        "dynamic-update-slice": 2,
+        "fusion": 16,
+        "multiply": 47,
+        "negate": 1,
+        "pad": 1,
+        "parameter": 64,
+        "slice": 42,
+        "subtract": 32
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2982496,
+        "generated_code_bytes": 0,
+        "output_bytes": 2981440,
+        "temporary_bytes": 38505600
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "advect_u_flux",
+      "seconds": 0.41160907498851884,
+      "static_launch_proxy": 16,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 388,
+        "s32": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advect_v_flux",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 388,
+          "s32": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1500048,
+          "generated_code_bytes": 0,
+          "output_bytes": 1499520,
+          "temporary_bytes": 19252800
+        },
+        "static_launch_proxy": 16
+      },
+      "hlo_bytes": {
+        "optimized": 52563,
+        "stablehlo": 18166127
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 26,
+        "bitcast": 4,
+        "broadcast": 25,
+        "concatenate": 13,
+        "constant": 33,
+        "dynamic-update-slice": 2,
+        "fusion": 16,
+        "multiply": 47,
+        "negate": 1,
+        "pad": 1,
+        "parameter": 64,
+        "slice": 42,
+        "subtract": 32
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 3000096,
+        "generated_code_bytes": 0,
+        "output_bytes": 2999040,
+        "temporary_bytes": 38505600
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "advect_v_flux",
+      "seconds": 0.38405866399989463,
+      "static_launch_proxy": 16,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 366,
+        "s32": 8
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advect_w_flux",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 366,
+          "s32": 8
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1512528,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 19656000
+        },
+        "static_launch_proxy": 17
+      },
+      "hlo_bytes": {
+        "optimized": 54545,
+        "stablehlo": 18041836
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 23,
+        "broadcast": 21,
+        "concatenate": 12,
+        "constant": 43,
+        "dynamic-update-slice": 7,
+        "fusion": 17,
+        "multiply": 42,
+        "negate": 1,
+        "pad": 4,
+        "parameter": 53,
+        "sign": 2,
+        "slice": 45,
+        "subtract": 28
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 3025056,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 39312000
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "advect_w_flux",
+      "seconds": 0.4097783209872432,
+      "static_launch_proxy": 17,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 10861,
+        "pred": 66,
+        "s32": 24
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "advect_moisture_scalars",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 10861,
+          "pred": 66,
+          "s32": 24
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 8904880,
+          "generated_code_bytes": 0,
+          "output_bytes": 8870448,
+          "temporary_bytes": 182716800
+        },
+        "static_launch_proxy": 150
+      },
+      "hlo_bytes": {
+        "optimized": 1107993,
+        "stablehlo": 18253774
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 102,
+        "add": 1069,
+        "bitcast": 24,
+        "broadcast": 1136,
+        "compare": 66,
+        "concatenate": 122,
+        "constant": 691,
+        "divide": 10,
+        "dynamic-update-slice": 12,
+        "fusion": 150,
+        "maximum": 240,
+        "minimum": 210,
+        "multiply": 2089,
+        "pad": 12,
+        "parameter": 1626,
+        "select": 66,
+        "slice": 488,
+        "subtract": 1032
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 17809760,
+        "generated_code_bytes": 0,
+        "output_bytes": 17740848,
+        "temporary_bytes": 365433600
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "advect_moisture_scalars",
+      "seconds": 4.0209268479957245,
+      "static_launch_proxy": 150,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 94
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "flux5_face_periodic",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 94
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 2969120,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 5913600
+        },
+        "static_launch_proxy": 6
+      },
+      "hlo_bytes": {
+        "optimized": 14878,
+        "stablehlo": 6033
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 6,
+        "broadcast": 6,
+        "concatenate": 5,
+        "constant": 6,
+        "fusion": 6,
+        "multiply": 8,
+        "parameter": 14,
+        "sign": 1,
+        "slice": 12,
+        "subtract": 6
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 5938240,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 11827200
+      },
+      "module": "gpuwrf.dynamics.flux_advection",
+      "name": "flux5_face_periodic",
+      "seconds": 0.05594413899234496,
+      "static_launch_proxy": 6,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 6
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "positive_definite_limiter",
+      "family": "dycore.advection",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 6
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478400,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 993,
+        "stablehlo": 499
+      },
+      "hlo_op_histogram_optimized": {
+        "copy": 1,
+        "parameter": 1
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2956800,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.limiters",
+      "name": "positive_definite_limiter",
+      "seconds": 0.010934224002994597,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 373,
+        "s32": 12
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "horizontal_deformation_2d",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 373,
+          "s32": 12
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 2990240,
+          "generated_code_bytes": 0,
+          "output_bytes": 4435224,
+          "temporary_bytes": 9005592
+        },
+        "static_launch_proxy": 21
+      },
+      "hlo_bytes": {
+        "optimized": 51757,
+        "stablehlo": 33714
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 27,
+        "broadcast": 41,
+        "concatenate": 5,
+        "constant": 40,
+        "dynamic-update-slice": 8,
+        "fusion": 21,
+        "multiply": 35,
+        "pad": 8,
+        "parameter": 52,
+        "slice": 52,
+        "subtract": 12
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 5980480,
+        "generated_code_bytes": 0,
+        "output_bytes": 8870424,
+        "temporary_bytes": 18011120
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "horizontal_deformation_2d",
+      "seconds": 0.1430227870005183,
+      "static_launch_proxy": 21,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 521,
+        "s32": 12
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "smag2d_horizontal_km",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 521,
+          "s32": 12
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 3057440,
+          "generated_code_bytes": 0,
+          "output_bytes": 2956816,
+          "temporary_bytes": 11996824
+        },
+        "static_launch_proxy": 26
+      },
+      "hlo_bytes": {
+        "optimized": 69968,
+        "stablehlo": 36940
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 38,
+        "bitcast": 6,
+        "broadcast": 60,
+        "concatenate": 8,
+        "constant": 46,
+        "divide": 2,
+        "dynamic-update-slice": 8,
+        "fusion": 26,
+        "minimum": 2,
+        "multiply": 62,
+        "pad": 8,
+        "parameter": 74,
+        "slice": 62,
+        "sqrt": 2,
+        "subtract": 19
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 6114880,
+        "generated_code_bytes": 0,
+        "output_bytes": 5913616,
+        "temporary_bytes": 23993456
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "smag2d_horizontal_km",
+      "seconds": 0.1587976470036665,
+      "static_launch_proxy": 26,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 737,
+        "s32": 12
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "horizontal_diffusion_coord_scalar_tendency",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 737,
+          "s32": 12
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 4705712,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 17977624
+        },
+        "static_launch_proxy": 29
+      },
+      "hlo_bytes": {
+        "optimized": 101297,
+        "stablehlo": 46963
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 55,
+        "bitcast": 3,
+        "broadcast": 80,
+        "concatenate": 22,
+        "constant": 49,
+        "divide": 4,
+        "dynamic-update-slice": 8,
+        "fusion": 29,
+        "minimum": 1,
+        "multiply": 100,
+        "pad": 8,
+        "parameter": 107,
+        "slice": 100,
+        "sqrt": 2,
+        "subtract": 31
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 9411424,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 35955056
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "horizontal_diffusion_coord_scalar_tendency",
+      "seconds": 0.2193662019999465,
+      "static_launch_proxy": 29,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 202,
+        "pred": 19,
+        "s64": 9
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "wrf_sixth_order_scalar_tendf",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 202,
+          "pred": 19,
+          "s64": 9
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1579552,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 10348800
+        },
+        "static_launch_proxy": 9
+      },
+      "hlo_bytes": {
+        "optimized": 35174,
+        "stablehlo": 18701
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 10,
+        "and": 3,
+        "bitcast": 4,
+        "broadcast": 18,
+        "compare": 8,
+        "concatenate": 16,
+        "constant": 8,
+        "fusion": 9,
+        "iota": 2,
+        "multiply": 24,
+        "parameter": 28,
+        "select": 5,
+        "slice": 32,
+        "subtract": 18
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 3159104,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 20697600
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "wrf_sixth_order_scalar_tendf",
+      "seconds": 0.09487219699076377,
+      "static_launch_proxy": 9,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 142,
+        "pred": 4
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "sixth_order_diffusion_tendency",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 142,
+          "pred": 4
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478400,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 10348800
+        },
+        "static_launch_proxy": 9
+      },
+      "hlo_bytes": {
+        "optimized": 22917,
+        "stablehlo": 13278
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 5,
+        "broadcast": 4,
+        "compare": 4,
+        "concatenate": 12,
+        "constant": 4,
+        "fusion": 9,
+        "multiply": 14,
+        "parameter": 18,
+        "select": 4,
+        "slice": 24,
+        "subtract": 18
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2956800,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 20697600
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "sixth_order_diffusion_tendency",
+      "seconds": 0.08037966600386426,
+      "static_launch_proxy": 9,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 85,
+        "s32": 3
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "dry_brunt_vaisala_squared",
+      "family": "dycore.diffusion",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 85,
+          "s32": 3
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 2990400,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 100800
+        },
+        "static_launch_proxy": 4
+      },
+      "hlo_bytes": {
+        "optimized": 12134,
+        "stablehlo": 5241
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2,
+        "bitcast": 4,
+        "broadcast": 6,
+        "constant": 10,
+        "divide": 4,
+        "dynamic-update-slice": 2,
+        "fusion": 4,
+        "maximum": 1,
+        "multiply": 4,
+        "pad": 1,
+        "parameter": 13,
+        "reduce": 1,
+        "reduce-window": 1,
+        "slice": 8,
+        "subtract": 4
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 5980800,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 201600
+      },
+      "module": "gpuwrf.dynamics.explicit_diffusion",
+      "name": "dry_brunt_vaisala_squared",
+      "seconds": 0.061166339000919834,
+      "static_launch_proxy": 4,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 37
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "apply_rayleigh_w",
+      "family": "dycore.damping",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 37
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1512000,
+          "generated_code_bytes": 0,
+          "output_bytes": 1512000,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 6543,
+        "stablehlo": 3908
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 3,
+        "broadcast": 9,
+        "clamp": 1,
+        "concatenate": 1,
+        "constant": 7,
+        "divide": 1,
+        "fusion": 1,
+        "iota": 1,
+        "multiply": 4,
+        "parameter": 2,
+        "subtract": 1
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 3024000,
+        "generated_code_bytes": 0,
+        "output_bytes": 3024000,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.damping",
+      "name": "apply_rayleigh_w",
+      "seconds": 0.035657483007526025,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 6
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "apply_smdiv_pressure",
+      "family": "dycore.damping",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 6
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 1478400,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 0
+        },
+        "static_launch_proxy": 1
+      },
+      "hlo_bytes": {
+        "optimized": 993,
+        "stablehlo": 489
+      },
+      "hlo_op_histogram_optimized": {
+        "copy": 1,
+        "parameter": 1
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 2956800,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 0
+      },
+      "module": "gpuwrf.dynamics.damping",
+      "name": "apply_smdiv_pressure",
+      "seconds": 0.009859676007181406,
+      "static_launch_proxy": 1,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f32": 35,
+        "f64": 30593,
+        "pred": 3426,
+        "s32": 2696,
+        "s64": 293
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "thompson_adapter",
+      "family": "physics.microphysics",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 1751,
+          "f64": 29388,
+          "pred": 3426,
+          "s32": 2696,
+          "s64": 293
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 37057760,
+          "generated_code_bytes": 0,
+          "output_bytes": 38570216,
+          "temporary_bytes": 406024504
+        },
+        "static_launch_proxy": 362
+      },
+      "hlo_bytes": {
+        "optimized": 5342997,
+        "stablehlo": 176170513
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2631,
+        "and": 1171,
+        "bitcast": 381,
+        "broadcast": 4097,
+        "clamp": 428,
+        "compare": 1944,
+        "constant": 3977,
+        "convert": 323,
+        "copy": 655,
+        "divide": 187,
+        "floor": 500,
+        "fusion": 362,
+        "get-tuple-element": 131,
+        "maximum": 1644,
+        "minimum": 467,
+        "multiply": 4675,
+        "negate": 238,
+        "not": 76,
+        "or": 49,
+        "parameter": 4357,
+        "power": 91,
+        "select": 1673,
+        "slice": 103,
+        "subtract": 404,
+        "transpose": 525
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 66723520,
+        "generated_code_bytes": 0,
+        "output_bytes": 69714376,
+        "temporary_bytes": 383613560
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "thompson_microphysics",
+      "seconds": 5.197796970998752,
+      "static_launch_proxy": 362,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {
+          "f32->f64": 2,
+          "f64->f32": 22
+        },
+        "f32_to_f64": 2,
+        "f64_to_f32": 22,
+        "other": 0,
+        "total": 24
+      },
+      "dtype_tokens_optimized": {
+        "f32": 11095,
+        "f64": 12212,
+        "pred": 935,
+        "s32": 143,
+        "s64": 593
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "mynn_adapter",
+      "family": "physics.pbl",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 13620,
+          "f64": 9992,
+          "pred": 937,
+          "s32": 143,
+          "s64": 593
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 34100960,
+          "generated_code_bytes": 0,
+          "output_bytes": 38570216,
+          "temporary_bytes": 1137293904
+        },
+        "static_launch_proxy": 326
+      },
+      "hlo_bytes": {
+        "optimized": 3306805,
+        "stablehlo": 614792
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2183,
+        "and": 146,
+        "bitcast": 1441,
+        "broadcast": 3930,
+        "clamp": 118,
+        "compare": 453,
+        "concatenate": 57,
+        "constant": 3409,
+        "convert": 177,
+        "copy": 228,
+        "divide": 103,
+        "dynamic-slice": 63,
+        "fusion": 321,
+        "get-tuple-element": 54,
+        "iota": 65,
+        "maximum": 374,
+        "minimum": 219,
+        "multiply": 3739,
+        "negate": 62,
+        "parameter": 1722,
+        "reduce-window": 25,
+        "select": 402,
+        "slice": 1518,
+        "subtract": 1290,
+        "transpose": 130
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 65245120,
+        "generated_code_bytes": 0,
+        "output_bytes": 69714376,
+        "temporary_bytes": 1147709904
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "mynn_pbl",
+      "seconds": 2.531945121998433,
+      "static_launch_proxy": 327,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {
+          "f32->f64": 3,
+          "f64->f32": 19
+        },
+        "f32_to_f64": 3,
+        "f64_to_f32": 19,
+        "other": 0,
+        "total": 22
+      },
+      "dtype_tokens_optimized": {
+        "f32": 12585,
+        "f64": 3047,
+        "pred": 123,
+        "s32": 305,
+        "s64": 25
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "surface_adapter",
+      "family": "physics.surface_layer",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {
+            "f64->f32": 2
+          },
+          "f32_to_f64": 0,
+          "f64_to_f32": 2,
+          "other": 0,
+          "total": 2
+        },
+        "dtype_tokens_optimized": {
+          "f32": 13196,
+          "f64": 2421,
+          "pred": 126,
+          "s32": 305,
+          "s64": 25
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 38334560,
+          "generated_code_bytes": 0,
+          "output_bytes": 38570216,
+          "temporary_bytes": 13515784
+        },
+        "static_launch_proxy": 101
+      },
+      "hlo_bytes": {
+        "optimized": 1830963,
+        "stablehlo": 413121
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 1939,
+        "atan2": 12,
+        "bitcast": 1261,
+        "broadcast": 2573,
+        "clamp": 70,
+        "compare": 77,
+        "constant": 2535,
+        "convert": 198,
+        "copy": 109,
+        "divide": 46,
+        "floor": 26,
+        "fusion": 98,
+        "gather": 32,
+        "get-tuple-element": 13,
+        "log": 35,
+        "maximum": 53,
+        "minimum": 4,
+        "multiply": 3089,
+        "negate": 15,
+        "parameter": 468,
+        "power": 38,
+        "select": 85,
+        "slice": 1178,
+        "subtract": 1225,
+        "transpose": 28
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 69277120,
+        "generated_code_bytes": 0,
+        "output_bytes": 69714376,
+        "temporary_bytes": 13381384
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "mynn_surface_layer",
+      "seconds": 1.16029446599714,
+      "static_launch_proxy": 98,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {
+          "f32->f64": 10,
+          "f64->f32": 51
+        },
+        "f32_to_f64": 10,
+        "f64_to_f32": 51,
+        "other": 0,
+        "total": 61
+      },
+      "dtype_tokens_optimized": {
+        "f32": 12005,
+        "f64": 14103,
+        "pred": 3032,
+        "s32": 5431,
+        "s64": 589,
+        "u32": 370
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "rrtmg_lw_theta_tendency",
+      "family": "physics.radiation",
+      "fp32_arm": {
+        "error": "TypeError: lax.dynamic_update_slice requires arguments to have the same dtypes, got float64, float32."
+      },
+      "hlo_bytes": {
+        "optimized": 6248083,
+        "stablehlo": 8431639
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 3266,
+        "and": 484,
+        "bitcast": 2287,
+        "broadcast": 5111,
+        "clamp": 454,
+        "compare": 1718,
+        "concatenate": 40,
+        "constant": 4006,
+        "convert": 455,
+        "copy": 561,
+        "divide": 95,
+        "dynamic-slice": 90,
+        "fusion": 497,
+        "gather": 447,
+        "get-tuple-element": 618,
+        "maximum": 117,
+        "minimum": 109,
+        "multiply": 3986,
+        "pad": 62,
+        "parameter": 1986,
+        "remainder": 42,
+        "select": 1301,
+        "slice": 1174,
+        "subtract": 1392,
+        "transpose": 111
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 31248000,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 784530152
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "rrtmg_lw",
+      "seconds": 4.486398136999924,
+      "static_launch_proxy": 498,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {
+          "f32->f64": 1
+        },
+        "f32_to_f64": 1,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 1
+      },
+      "converts_stablehlo": {
+        "by_transition": {
+          "f32->f64": 23,
+          "f64->f32": 186
+        },
+        "f32_to_f64": 23,
+        "f64_to_f32": 186,
+        "other": 0,
+        "total": 209
+      },
+      "dtype_tokens_optimized": {
+        "f32": 180661,
+        "f64": 2401,
+        "pred": 15598,
+        "s32": 9598,
+        "s64": 3315,
+        "u32": 318
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "rrtmg_sw_theta_tendency",
+      "family": "physics.radiation",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {
+            "f32->f64": 1
+          },
+          "f32_to_f64": 1,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 1
+        },
+        "dtype_tokens_optimized": {
+          "f32": 181347,
+          "f64": 1356,
+          "pred": 15598,
+          "s32": 9596,
+          "s64": 3315,
+          "u32": 318
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 17808000,
+          "generated_code_bytes": 0,
+          "output_bytes": 1478400,
+          "temporary_bytes": 177222672
+        },
+        "static_launch_proxy": 795
+      },
+      "hlo_bytes": {
+        "optimized": 33512688,
+        "stablehlo": 6541298
+      },
+      "hlo_op_histogram_optimized": {
+        "abs": 892,
+        "add": 11464,
+        "and": 1506,
+        "bitcast": 8407,
+        "broadcast": 18370,
+        "clamp": 6304,
+        "compare": 13469,
+        "constant": 13212,
+        "convert": 2587,
+        "copy": 500,
+        "divide": 169,
+        "dynamic-slice": 5229,
+        "dynamic-update-slice": 358,
+        "fusion": 789,
+        "gather": 224,
+        "get-tuple-element": 412,
+        "maximum": 5818,
+        "minimum": 2036,
+        "multiply": 34156,
+        "negate": 546,
+        "parameter": 24474,
+        "reverse": 3610,
+        "select": 15515,
+        "slice": 3049,
+        "subtract": 11598
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 31180800,
+        "generated_code_bytes": 0,
+        "output_bytes": 2956800,
+        "temporary_bytes": 191423504
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "rrtmg_sw",
+      "seconds": 15.70900133899704,
+      "static_launch_proxy": 796,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f32": 35,
+        "f64": 2233,
+        "pred": 448,
+        "s32": 733,
+        "s64": 306
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "gwdo_adapter",
+      "family": "physics.gwd",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 2092,
+          "f64": 120,
+          "pred": 448,
+          "s32": 733,
+          "s64": 306
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 38536160,
+          "generated_code_bytes": 0,
+          "output_bytes": 38570216,
+          "temporary_bytes": 19438632
+        },
+        "static_launch_proxy": 88
+      },
+      "hlo_bytes": {
+        "optimized": 397316,
+        "stablehlo": 1797293
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 163,
+        "and": 61,
+        "bitcast": 163,
+        "broadcast": 425,
+        "clamp": 18,
+        "compare": 156,
+        "constant": 338,
+        "convert": 51,
+        "copy": 93,
+        "divide": 22,
+        "dynamic-slice": 27,
+        "fusion": 93,
+        "gather": 9,
+        "get-tuple-element": 30,
+        "iota": 22,
+        "maximum": 28,
+        "multiply": 186,
+        "negate": 22,
+        "or": 28,
+        "parameter": 449,
+        "reduce": 10,
+        "select": 128,
+        "slice": 112,
+        "subtract": 34,
+        "transpose": 34
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 69680320,
+        "generated_code_bytes": 0,
+        "output_bytes": 69714376,
+        "temporary_bytes": 38792232
+      },
+      "module": "gpuwrf.coupling.physics_couplers",
+      "name": "gwdo_gravity_wave_drag",
+      "seconds": 0.5139172509952914,
+      "static_launch_proxy": 94,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "converts_optimized": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "converts_stablehlo": {
+        "by_transition": {},
+        "f32_to_f64": 0,
+        "f64_to_f32": 0,
+        "other": 0,
+        "total": 0
+      },
+      "dtype_tokens_optimized": {
+        "f64": 27652,
+        "pred": 5104,
+        "s32": 3278,
+        "s64": 5650
+      },
+      "dtype_tokens_stablehlo": {},
+      "entrypoint": "step_kf_column",
+      "family": "physics.cumulus",
+      "fp32_arm": {
+        "converts_optimized": {
+          "by_transition": {},
+          "f32_to_f64": 0,
+          "f64_to_f32": 0,
+          "other": 0,
+          "total": 0
+        },
+        "dtype_tokens_optimized": {
+          "f32": 147,
+          "f64": 27518,
+          "pred": 5104,
+          "s32": 3278,
+          "s64": 5650
+        },
+        "memory_analysis": {
+          "alias_bytes": 0,
+          "argument_bytes": 10449440,
+          "generated_code_bytes": 0,
+          "output_bytes": 360512,
+          "temporary_bytes": 116967008
+        },
+        "static_launch_proxy": 720
+      },
+      "hlo_bytes": {
+        "optimized": 6026079,
+        "stablehlo": 2748980
+      },
+      "hlo_op_histogram_optimized": {
+        "add": 2752,
+        "and": 675,
+        "bitcast": 1829,
+        "broadcast": 3531,
+        "clamp": 153,
+        "compare": 2106,
+        "concatenate": 150,
+        "constant": 3606,
+        "convert": 306,
+        "copy": 169,
+        "dynamic-slice": 489,
+        "floor": 211,
+        "fusion": 720,
+        "gather": 161,
+        "get-tuple-element": 536,
+        "iota": 211,
+        "maximum": 169,
+        "minimum": 158,
+        "multiply": 2962,
+        "not": 210,
+        "or": 226,
+        "parameter": 5541,
+        "select": 2460,
+        "slice": 148,
+        "subtract": 2079
+      },
+      "jit_arguments": 270,
+      "memory_analysis": {
+        "alias_bytes": 0,
+        "argument_bytes": 20898880,
+        "generated_code_bytes": 0,
+        "output_bytes": 360512,
+        "temporary_bytes": 116967008
+      },
+      "module": "gpuwrf.physics.cumulus_kf",
+      "name": "kain_fritsch_cumulus",
+      "seconds": 3.7913573080004426,
+      "static_launch_proxy": 720,
+      "status": "LOWERED",
+      "transfer_primitives_in_hlo": {}
+    },
+    {
+      "entrypoint": "noahmp_surface_step",
+      "error": "ConcretizationTypeError: Abstract tracer value encountered where concrete value is expected: traced array with shape int32[]\nThe problem arose with the `float` function. If trying to convert the data type of a value, try using `x.astype(float)` or `jnp.array(x, float)` instead.\nThe error occurred while tracing the function program at <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/scripts/v025/build_hlo_census.py:186 for jit. This value became a tracer due to JAX operations on these lines:\n\n  operation a:f64[44,70,120] = mul 1.6083623693379792:f64[] b\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/noahmp_surface_hook.py:110:14 (_build_column_view)\n\n  operation a:f64[44,70,120] = add 1.0:f64[] b\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/noahmp_surface_hook.py:110:8 (_build_column_view)\n\n  operation a:f64[44,70,120] = max b 1.0:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:13 (_temperature_from_theta)\n\n  operation a:f64[44,70,120] = div b 100000.0:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:13 (_temperature_from_theta)\n\n  operation a:f64[44,70,120] = pow b 0.2858565737051793:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:12 (_temperature_from_theta)\n\n(Additional originating lines are not shown.)\n\nSee https://docs.jax.dev/en/latest/errors.html#jax.errors.ConcretizationTypeError",
+      "family": "physics.land_surface",
+      "module": "gpuwrf.coupling.noahmp_surface_hook",
+      "name": "noahmp_land_surface",
+      "status": "NOT_LOWERED"
+    }
+  ],
+  "phase": "A6 (CPU-only; no GPU import, query, compile, or run)",
+  "profiler_dry_runs": {
+    "gpu_touch_note": "only --version was executed; neither nsys --version nor ncu --version initialises a CUDA context or queries the device",
+    "gpu_touched": false,
+    "ncu": {
+      "path": "/usr/local/cuda/bin/ncu",
+      "present": true,
+      "version": [
+        "NVIDIA (R) Nsight Compute Command Line Profiler",
+        "Copyright (c) 2018-2025 NVIDIA Corporation",
+        "Version 2025.4.1.0 (build 37053803) (public-release)"
+      ],
+      "version_rc": 0
+    },
+    "nsys": {
+      "path": "/usr/local/cuda/bin/nsys",
+      "present": true,
+      "version": [
+        "NVIDIA Nsight Systems version 2025.5.2.266-255236693005v0"
+      ],
+      "version_rc": 0
+    },
+    "planned_commands": {
+      "baseline_census_ncu": "scripts/with_gpu_lock.sh --label v0250-m0-baseline-census -- ncu --set full --target-processes all --replay-mode kernel --metrics sm__sass_thread_inst_executed_op_fadd_pred_on.sum,sm__sass_thread_inst_executed_op_fmul_pred_on.sum,sm__sass_thread_inst_executed_op_ffma_pred_on.sum,sm__sass_thread_inst_executed_op_dadd_pred_on.sum,sm__sass_thread_inst_executed_op_dmul_pred_on.sum,sm__sass_thread_inst_executed_op_dfma_pred_on.sum,dram__bytes.sum,lts__t_bytes.sum,sm__warps_active.avg.pct_of_peak_sustained_active -o <DATA_ROOT>/wrf_gpu2/v025/m0/raw/ncu_baseline python scripts/v025/run_gpu_arm.py --window baseline-census --single-step",
+      "baseline_census_nsys": "scripts/with_gpu_lock.sh --label v0250-m0-baseline-census -- nsys profile --trace=cuda,nvtx,osrt --cuda-memory-usage=true --force-overwrite=true -o <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline python scripts/v025/run_gpu_arm.py --window baseline-census --case fast-v025",
+      "note": "the FLOP counters above are what \u00a78's F_measured is built from. \u00a716 makes an unavailable counter a BLOCKED denominator, never a licence to reuse the report's +/-2x estimate, so the ncu run reports counter availability first."
+    }
+  },
+  "schema": "wrf_gpu2.v025.m0.hlo_dtype_transfer_census.v1",
+  "seconds_total": 90.19181308899715,
+  "state_source": {
+    "absent_variables": [],
+    "boundary_leaves": "zero-filled; no lateral-boundary operator is classified from them",
+    "dims": {
+      "DateStrLen": 19,
+      "Time": 1,
+      "bottom_top": 44,
+      "bottom_top_stag": 45,
+      "seed_dim_stag": 8,
+      "snow_layers_stag": 3,
+      "snso_layers_stag": 7,
+      "soil_layers_stag": 4,
+      "south_north": 70,
+      "south_north_stag": 71,
+      "west_east": 120,
+      "west_east_stag": 121
+    },
+    "land_state": {
+      "mavail_note": "MAVAIL absent; cold-started from WRF LANDUSE.TBL SLMO by LU_INDEX.",
+      "roughness_note": "ZNT absent; roughness_m cold-started from WRF LANDUSE.TBL SFZ0 by LU_INDEX.",
+      "source": "gpuwrf.io.land_state.load_prescribed_land_state",
+      "source_file": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfinput_d01"
+    },
+    "namelist": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+    "namelist_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032",
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+    "stage_pair": {
+      "construction": "current + (current - previous) * dt/3600 over 19 prognostic fields",
+      "current_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+      "dt_s": 54.0,
+      "fields": [
+        "Ni",
+        "Nr",
+        "mu_perturbation",
+        "mu_total",
+        "p_perturbation",
+        "p_total",
+        "ph_perturbation",
+        "ph_total",
+        "qc",
+        "qg",
+        "qi",
+        "qke",
+        "qr",
+        "qs",
+        "qv",
+        "theta",
+        "u",
+        "v",
+        "w"
+      ],
+      "previous_wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_00:00:00",
+      "why": "a stage pair whose two members are the same array makes every WRF small-step work prime identically zero and the map vacuous"
+    },
+    "state_source_is_real": true,
+    "surface_flux_handles": "theta_flux = HFX/(rho_sfc*cp), qv_flux = QFX/rho_sfc from real wrfout HFX/QFX/PSFC/T2",
+    "theta_convention": "State.theta = THM + 300 (moist theta_m, use_theta_m=1)",
+    "theta_source": "THM",
+    "valid_times": [
+      "2026-07-26_01:00:18"
+    ],
+    "wrfinput_sha256": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0",
+    "wrfout": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/wrfout_d01_2026-07-26_01:00:18",
+    "wrfout_sha256": "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5"
+  },
+  "static_transfer_audit": {
+    "files_scanned": [
+      "src/gpuwrf/dynamics/core/acoustic.py",
+      "src/gpuwrf/dynamics/core/advance_w.py",
+      "src/gpuwrf/dynamics/core/calc_p_rho.py",
+      "src/gpuwrf/dynamics/core/coupled.py",
+      "src/gpuwrf/dynamics/core/dycore.py",
+      "src/gpuwrf/dynamics/core/rhs_ph.py",
+      "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "src/gpuwrf/dynamics/core/small_step_finish.py",
+      "src/gpuwrf/dynamics/core/small_step_prep.py",
+      "src/gpuwrf/dynamics/acoustic_wrf.py",
+      "src/gpuwrf/dynamics/flux_advection.py",
+      "src/gpuwrf/dynamics/explicit_diffusion.py",
+      "src/gpuwrf/dynamics/tridiag_solve.py",
+      "src/gpuwrf/coupling/physics_couplers.py",
+      "src/gpuwrf/coupling/driver.py"
+    ],
+    "hit_count": 35,
+    "hits_by_idiom": {
+      "explicit device->host copy": 15,
+      "host synchronisation barrier": 1,
+      "numpy materialisation of a device array": 19
+    },
+    "host_sync_idiom_hits": [
+      {
+        "code": "data = np.asarray(group[var][side][:], dtype=dtype)",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 224
+      },
+      {
+        "code": "data = np.asarray(transform(data, side), dtype=dtype)",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 226
+      },
+      {
+        "code": "data = np.asarray(_load(run, domain, var, history_index), dtype=dtype)",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 236
+      },
+      {
+        "code": "data = np.asarray(_load(run, domain, var, history_index), dtype=dtype)",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 248
+      },
+      {
+        "code": "block_until_ready(current)",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "block_until_ready\\(",
+        "label": "host synchronisation barrier",
+        "line": 1149
+      },
+      {
+        "code": "\"U\": np.asarray(jax.device_get(state.u), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1163
+      },
+      {
+        "code": "\"V\": np.asarray(jax.device_get(state.v), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1164
+      },
+      {
+        "code": "\"W\": np.asarray(jax.device_get(state.w), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1165
+      },
+      {
+        "code": "\"T\": np.asarray(jax.device_get(state.theta - P0_THETA_OFFSET_K), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1166
+      },
+      {
+        "code": "\"QVAPOR\": np.asarray(jax.device_get(state.qv), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1167
+      },
+      {
+        "code": "\"P\": np.asarray(jax.device_get(state.p), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1168
+      },
+      {
+        "code": "\"PH\": np.asarray(jax.device_get(state.ph), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1169
+      },
+      {
+        "code": "\"MU\": np.asarray(jax.device_get(state.mu), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1170
+      },
+      {
+        "code": "\"U10\": np.asarray(jax.device_get(surface.u10), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1171
+      },
+      {
+        "code": "\"V10\": np.asarray(jax.device_get(surface.v10), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1172
+      },
+      {
+        "code": "\"T2\": np.asarray(jax.device_get(surface.t2), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1173
+      },
+      {
+        "code": "\"Q2\": np.asarray(jax.device_get(surface.q2), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1174
+      },
+      {
+        "code": "\"UST\": np.asarray(jax.device_get(surface.fluxes.ustar), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1175
+      },
+      {
+        "code": "\"HFX_KIN\": np.asarray(jax.device_get(surface.fluxes.theta_flux), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1176
+      },
+      {
+        "code": "\"QFX_KIN\": np.asarray(jax.device_get(surface.fluxes.qv_flux), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "jax\\.device_get\\(",
+        "label": "explicit device->host copy",
+        "line": 1177
+      },
+      {
+        "code": "\"lead_hours\": np.asarray(float(lead_hours), dtype=np.float32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1178
+      },
+      {
+        "code": "\"mass_shape\": np.asarray([grid.nz, grid.ny, grid.nx], dtype=np.int32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1179
+      },
+      {
+        "code": "\"wrf_staggered_extent\": np.asarray([grid.nz + 1, grid.ny + 1, grid.nx + 1], dtype=np.int32),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1180
+      },
+      {
+        "code": "\"run_start_label\": np.asarray(run_start_label),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1181
+      },
+      {
+        "code": "\"container_note\": np.asarray(\"npz proof container; dimensions match WRF variable staggering\"),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1182
+      },
+      {
+        "code": "\"all_state_leaves_finite\": bool(np.asarray(jnp.all(finite))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1231
+      },
+      {
+        "code": "\"theta_min_k\": float(np.asarray(jnp.min(state.theta))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1232
+      },
+      {
+        "code": "\"theta_max_k\": float(np.asarray(jnp.max(state.theta))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1233
+      },
+      {
+        "code": "\"qv_min_kg_kg\": float(np.asarray(jnp.min(state.qv))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1234
+      },
+      {
+        "code": "\"qv_max_kg_kg\": float(np.asarray(jnp.max(state.qv))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1235
+      },
+      {
+        "code": "\"u_abs_max_m_s\": float(np.asarray(jnp.max(jnp.abs(state.u)))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1236
+      },
+      {
+        "code": "\"v_abs_max_m_s\": float(np.asarray(jnp.max(jnp.abs(state.v)))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1237
+      },
+      {
+        "code": "\"w_abs_max_m_s\": float(np.asarray(jnp.max(jnp.abs(state.w)))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1238
+      },
+      {
+        "code": "\"p_min_pa\": float(np.asarray(jnp.min(state.p))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1239
+      },
+      {
+        "code": "\"p_max_pa\": float(np.asarray(jnp.max(state.p))),",
+        "file": "src/gpuwrf/coupling/driver.py",
+        "idiom": "(?<![A-Za-z_.])np\\.asarray\\(",
+        "label": "numpy materialisation of a device array",
+        "line": 1240
+      }
+    ],
+    "method": "lexical scan for device->host synchronisation idioms in the timestep path. It over-reports by design: a hit inside a debug-only or setup branch is not a live transfer. Every hit is listed so a reviewer can dismiss it explicitly rather than trust an aggregate. jnp.asarray is deliberately NOT a hit -- it is a device constructor, and matching it drowns the real signal.",
+    "phase_b_confirmation": "the authoritative audit is the nsys trace-based gpuwrf.profiling.transfer_audit.write_transfer_audit, which needs a GPU window"
+  },
+  "totals": {
+    "convert_growth_fp32_vs_fp64": 7,
+    "convert_growth_note": "every extra convert in the fp32 arm is an fp64 island or a promotion boundary paying for itself in dtype churn; \u00a710's minimal island set is what keeps this number down",
+    "converts_optimized_sum_fp32_arm": 8,
+    "converts_optimized_sum_fp64_arm": 1,
+    "not_lowered": [
+      {
+        "error": "ConcretizationTypeError: Abstract tracer value encountered where concrete value is expected: traced array with shape int32[]\nThe problem arose with the `float` function. If trying to convert the data type of a value, try using `x.astype(float)` or `jnp.array(x, float)` instead.\nThe error occurred while tracing the function program at <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/scripts/v025/build_hlo_census.py:186 for jit. This value became a tracer due to JAX operations on these lines:\n\n  operation a:f64[44,70,120] = mul 1.6083623693379792:f64[] b\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/noahmp_surface_hook.py:110:14 (_build_column_view)\n\n  operation a:f64[44,70,120] = add 1.0:f64[] b\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/noahmp_surface_hook.py:110:8 (_build_column_view)\n\n  operation a:f64[44,70,120] = max b 1.0:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:13 (_temperature_from_theta)\n\n  operation a:f64[44,70,120] = div b 100000.0:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:13 (_temperature_from_theta)\n\n  operation a:f64[44,70,120] = pow b 0.2858565737051793:f64[]\n    from line <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-setup-opus/src/gpuwrf/coupling/physics_couplers.py:459:12 (_temperature_from_theta)\n\n(Additional originating lines are not shown.)\n\nSee https://docs.jax.dev/en/latest/errors.html#jax.errors.ConcretizationTypeError",
+        "name": "noahmp_land_surface"
+      }
+    ],
+    "operators_inventoried": 49,
+    "operators_lowered": 48,
+    "static_launch_proxy_sum": 3543
+  }
+}

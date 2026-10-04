@@ -1,0 +1,78 @@
+{
+  "case": {
+    "domain": "d01",
+    "dt_rk": 54.0,
+    "dt_s": 54.0,
+    "dts_rk": 13.5,
+    "lead_seconds": null,
+    "number_of_small_timesteps": 4,
+    "rk_step": 3,
+    "run_boundary": true,
+    "run_physics": false,
+    "specified_branch": true
+  },
+  "chain": {
+    "argument_bytes": 104833320,
+    "converts_inside_acoustic_loop": {
+      "computations_reachable_from_loop": 239,
+      "computations_total": 888,
+      "in_loop": 57,
+      "in_loop_by_transition": {
+        "-> f32[68,118]": 48,
+        "-> f32[70,120]": 8,
+        "-> f64[68,118]": 1
+      },
+      "in_loop_converted_elements_per_substep": 460376,
+      "loop_bodies_detected": 3,
+      "outside_loop": 2260,
+      "total": 2317
+    },
+    "converts_optimized": {
+      "by_transition": {
+        "f32->f64": 2,
+        "f64->f32": 18
+      },
+      "f32_to_f64": 2,
+      "f64_to_f32": 18,
+      "other": 0,
+      "total": 20
+    },
+    "dtype_tokens_optimized": {
+      "f32": 30155,
+      "f64": 7346,
+      "pred": 348,
+      "s32": 359,
+      "s64": 128
+    },
+    "generated_code_bytes": 0,
+    "lower_and_compile_seconds": 8.132836488017347,
+    "meta": {
+      "acoustic_substeps": 4,
+      "dt_rk": 54.0,
+      "dts_rk": 13.5,
+      "h_sca_adv_order": 5,
+      "hypsometric_opt": 2,
+      "mode": "mixed_perturb_fp32",
+      "rk_step": 3,
+      "run_boundary": true,
+      "run_physics": false
+    },
+    "optimized_hlo_bytes": 3920229,
+    "output_bytes": 101331816,
+    "stablehlo_bytes": 1290608,
+    "static_launch_proxy": 878,
+    "temporary_bytes": 90744064
+  },
+  "environment": {
+    "device_count": 1,
+    "platforms": [
+      "cpu"
+    ]
+  },
+  "label": "gpt_final_isolated_candidate",
+  "schema": "wrf_gpu2.v025.m1.round2_gpt_critic_specified_branch.v1",
+  "scope_limit": "Specified-branch CPU/static lower bound only: no production apply_halo, fresh stage-omega/tendency construction, boundary interpolation, physics, GPU time, or peak VRAM.",
+  "seconds_total": 19.343944110005395,
+  "source_tree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m1-round3-gpt-final-critic/src",
+  "source_tree_gpuwrf_sha256": "6f253ddbedb68bd91020025ab9de3e83bcea96e1b22e2f167445c416995c1e00"
+}

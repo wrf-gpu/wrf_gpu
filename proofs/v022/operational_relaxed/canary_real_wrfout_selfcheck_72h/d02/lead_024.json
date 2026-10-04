@@ -1,0 +1,589 @@
+{
+  "baselines_present": [
+    "cpu_wrf"
+  ],
+  "baselines_unavailable": [
+    "strict_gpu",
+    "aemet_obs"
+  ],
+  "case_id": "CANARY-L2-D02-REAL-WRFOUT-SELFCHECK",
+  "divergence_growth": {
+    "T2": {
+      "detail": {
+        "envelope_factor": 5.0,
+        "late_growth_in_envelope_units": 0.0,
+        "late_slope_tol": 0.25,
+        "saturating": true,
+        "within_envelope": true
+      },
+      "divergence_series": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "early_slope_per_lead": 0.0,
+      "envelope": 1.360786199569702e-06,
+      "final_over_envelope": 0.0,
+      "late_slope_per_lead": 0.0,
+      "late_slope_ratio": 0.0,
+      "max_over_envelope": 0.0,
+      "pass": true,
+      "passes_flag": true,
+      "regime": "BOUNDED",
+      "status": "OK"
+    },
+    "U10": {
+      "detail": {
+        "envelope_factor": 5.0,
+        "late_growth_in_envelope_units": 0.0,
+        "late_slope_tol": 0.25,
+        "saturating": true,
+        "within_envelope": true
+      },
+      "divergence_series": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "early_slope_per_lead": 0.0,
+      "envelope": 1.8988984823226928e-06,
+      "final_over_envelope": 0.0,
+      "late_slope_per_lead": 0.0,
+      "late_slope_ratio": 0.0,
+      "max_over_envelope": 0.0,
+      "pass": true,
+      "passes_flag": true,
+      "regime": "BOUNDED",
+      "status": "OK"
+    },
+    "V10": {
+      "detail": {
+        "envelope_factor": 5.0,
+        "late_growth_in_envelope_units": 0.0,
+        "late_slope_tol": 0.25,
+        "saturating": true,
+        "within_envelope": true
+      },
+      "divergence_series": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "early_slope_per_lead": 0.0,
+      "envelope": 2.2750751972198484e-06,
+      "final_over_envelope": 0.0,
+      "late_slope_per_lead": 0.0,
+      "late_slope_ratio": 0.0,
+      "max_over_envelope": 0.0,
+      "pass": true,
+      "passes_flag": true,
+      "regime": "BOUNDED",
+      "status": "OK"
+    }
+  },
+  "domain": "d02",
+  "enric_signoff": {
+    "recorded": false,
+    "ref": null,
+    "required": false
+  },
+  "hard_guards": {
+    "all_hard_guards_pass": false,
+    "clamp_limiter_audit": {
+      "pass": false,
+      "reason": "--candidate-guards missing clamp_limiter_audit",
+      "status": "UNAVAILABLE"
+    },
+    "conservation": {
+      "dry_mass_relative_residual": 0.004665448437441525,
+      "field_pass": {
+        "dry_mass_relative_residual": {
+          "basis": "absolute_margin_no_strict_guard",
+          "pass": false,
+          "threshold": 1e-06,
+          "value": 0.004665448437441525
+        },
+        "moist_static_energy_relative_residual": {
+          "basis": "absolute_margin_no_strict_guard",
+          "pass": false,
+          "threshold": 1e-05,
+          "value": 0.002073923085483562
+        },
+        "water_relative_residual": {
+          "basis": "absolute_margin_no_strict_guard",
+          "pass": false,
+          "threshold": 1e-05,
+          "value": 0.26135525048801245
+        }
+      },
+      "final_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+      "initial_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "method": "wrfout_proxy_domain_integral",
+      "moist_static_energy_relative_residual": 0.002073923085483562,
+      "note": "Proxy from wrfout MU/MUB, QVAPOR, and T. Full on-device closure should be supplied via --candidate-guards.",
+      "pass": false,
+      "status": "FAIL",
+      "water_relative_residual": 0.26135525048801245
+    },
+    "finite": {
+      "file_count": 2,
+      "files": [
+        {
+          "fields": {
+            "T2": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "U10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "V10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            }
+          },
+          "inf": 0,
+          "nan": 0,
+          "path": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+          "readable": true
+        },
+        {
+          "fields": {
+            "T2": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "U10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "V10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            }
+          },
+          "inf": 0,
+          "nan": 0,
+          "path": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+          "readable": true
+        }
+      ],
+      "inf": 0,
+      "nan": 0,
+      "pass": true,
+      "status": "PASS"
+    },
+    "output_cadence": {
+      "pass": true,
+      "present_leads": [
+        24,
+        72
+      ],
+      "requested_leads": [
+        24,
+        72
+      ],
+      "status": "PASS"
+    },
+    "restart_equivalence": {
+      "pass": false,
+      "reason": "--restart-dir or guard restart_equivalence not supplied",
+      "status": "UNAVAILABLE"
+    },
+    "transfer_audit": {
+      "pass": false,
+      "reason": "--candidate-guards missing transfer_audit",
+      "status": "UNAVAILABLE"
+    }
+  },
+  "lead_hours": 24,
+  "lever_config": {},
+  "lever_id": "v022_eval_real_wrfout_selfcheck",
+  "provenance": {
+    "bands_path": "/tmp/claude-1000/-home-user-src-wrf-gpu2/5a8a44d1-6d87-4194-9587-0d0c3c635b20/scratchpad/wt_eval/src/gpuwrf/validation/operational_relaxed_bands.json",
+    "candidate_dir": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+    "contract_ref": ".agent/decisions/ADR-OPERATIONAL-RELAXED-TIER.md#3.4",
+    "cpu_wrf_dir": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+    "init_time_source": "--init",
+    "init_time_utc": "2026-05-01T18:00:00+00:00",
+    "restart_dir": null,
+    "strict_gpu_dir": null,
+    "wrf_fortran_reference": "<USER_HOME>/src/wrf_pristine"
+  },
+  "reject_reasons": [],
+  "schema": "OperationalRelaxedGate",
+  "schema_version": 1,
+  "skill_bands": {
+    "T2": {
+      "candidate_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "cpu_wrf_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "field": "T2",
+      "lead_hours": 24,
+      "status": "PASS",
+      "strict_wrfout": null,
+      "tier_o_cpu_shape_band": {
+        "nrmse": 0.0,
+        "nrmse_max": 0.2,
+        "nrmse_pass": true,
+        "pearson_min": 0.98,
+        "pearson_pass": true,
+        "pearson_r": 1.0
+      },
+      "tier_o_delta_band": {
+        "delta_rmse": null,
+        "delta_rmse_max": 0.5,
+        "pass": false
+      },
+      "tier_o_pass": false,
+      "tier_o_reject_reasons": [
+        "strict baseline unavailable",
+        "T2 delta_rmse=None > 0.5"
+      ],
+      "units": "K",
+      "validation_band": {
+        "pass": true,
+        "rmse_max": 3.0
+      },
+      "validation_band_pass": true,
+      "vs_cpu_wrf": {
+        "bias": 0.0,
+        "candidate_std": 0.8748874164522582,
+        "finite_pair_fraction": 1.0,
+        "mae": 0.0,
+        "max_abs_error": 0.0,
+        "nrmse": 0.0,
+        "pass": true,
+        "pearson_r": 1.0,
+        "reference_std": 0.8748874164522582,
+        "rmse": 0.0,
+        "sample_count": 10494,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK"
+      }
+    },
+    "U10": {
+      "candidate_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "cpu_wrf_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "field": "U10",
+      "lead_hours": 24,
+      "status": "PASS",
+      "strict_wrfout": null,
+      "tier_o_delta_band": {
+        "delta_rmse": null,
+        "delta_rmse_max": 0.7,
+        "pass": false
+      },
+      "tier_o_pass": false,
+      "tier_o_reject_reasons": [
+        "strict baseline unavailable",
+        "U10 delta_rmse=None > 0.7",
+        "U10 rmse_ratio_to_strict=None > 1.15"
+      ],
+      "tier_o_wind_band": {
+        "candidate_cpu_rmse": 0.0,
+        "divergence_pass": true,
+        "divergence_regime": "BOUNDED",
+        "ratio_pass": false,
+        "rmse_ratio_to_strict": null,
+        "rmse_ratio_to_strict_max": 1.15,
+        "strict_cpu_rmse": null
+      },
+      "units": "m s-1",
+      "validation_band": {
+        "pass": true,
+        "rmse_max": 7.5
+      },
+      "validation_band_pass": true,
+      "vs_cpu_wrf": {
+        "bias": 0.0,
+        "candidate_std": 1.5933731363160868,
+        "finite_pair_fraction": 1.0,
+        "mae": 0.0,
+        "max_abs_error": 0.0,
+        "nrmse": 0.0,
+        "pass": true,
+        "pearson_r": 0.9999999999999999,
+        "reference_std": 1.5933731363160868,
+        "rmse": 0.0,
+        "sample_count": 10494,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK"
+      }
+    },
+    "V10": {
+      "candidate_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "cpu_wrf_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_20260615T024626Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+      "field": "V10",
+      "lead_hours": 24,
+      "status": "PASS",
+      "strict_wrfout": null,
+      "tier_o_delta_band": {
+        "delta_rmse": null,
+        "delta_rmse_max": 0.7,
+        "pass": false
+      },
+      "tier_o_pass": false,
+      "tier_o_reject_reasons": [
+        "strict baseline unavailable",
+        "V10 delta_rmse=None > 0.7",
+        "V10 rmse_ratio_to_strict=None > 1.15"
+      ],
+      "tier_o_wind_band": {
+        "candidate_cpu_rmse": 0.0,
+        "divergence_pass": true,
+        "divergence_regime": "BOUNDED",
+        "ratio_pass": false,
+        "rmse_ratio_to_strict": null,
+        "rmse_ratio_to_strict_max": 1.15,
+        "strict_cpu_rmse": null
+      },
+      "units": "m s-1",
+      "validation_band": {
+        "pass": true,
+        "rmse_max": 7.5
+      },
+      "validation_band_pass": true,
+      "vs_cpu_wrf": {
+        "bias": 0.0,
+        "candidate_std": 1.828570957026391,
+        "finite_pair_fraction": 1.0,
+        "mae": 0.0,
+        "max_abs_error": 0.0,
+        "nrmse": 0.0,
+        "pass": true,
+        "pearson_r": 0.9999999999999999,
+        "reference_std": 1.828570957026391,
+        "rmse": 0.0,
+        "sample_count": 10494,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK"
+      }
+    }
+  },
+  "tier_o_band_pass": false,
+  "validation_band_pass": true,
+  "verdict": "TIER_O_REJECTED"
+}

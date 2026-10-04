@@ -1,0 +1,11 @@
+gate=b2_p0_m9_perf
+session=proofs/v023/validation/results/dryrun_work/b2_p0_m9_perf_20260703T075952Z/ab
+base_ref=HEAD
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=GPUWRF_P0_M9_REDUCTION=0
+candidate_env=GPUWRF_P0_M9_REDUCTION=1
+dryrun=1

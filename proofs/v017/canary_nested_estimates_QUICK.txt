@@ -1,0 +1,48 @@
+CANARY NESTED TRAINING GRID — QUICK PROJECTION (2026-06-14, ~15 min, PRE-RUN)
+=============================================================================
+Author: Opus 4.8 grid-design + CPU/GPU benchmark lead (autonomous)
+Status: QUICK PROJECTION ONLY. Measured CPU result + measured GPU result follow.
+
+FINAL NESTED GRID (9km all -> 3km all -> 1km all-7-islands):
+  d01 9km : e_we=92  e_sn=64  (mass 91x63 = 5,733 cols)   819 x 567 km   cu=1
+  d02 3km : e_we=208 e_sn=124 (mass 207x123 = 25,461 cols) 621 x 369 km  cu=0
+  d03 1km : e_we=520 e_sn=280 (mass 519x279 = 144,801 cols) 519 x 279 km cu=0  <-- AC1_FIT
+  center 28.535 N, -15.755 W ; e_vert=45 ; ratio 3,3 ; time-ratio 3,3 ; feedback=0
+  precision fp64 (1km gated-fp32 nonfinite) ; flag GPUWRF_MYNN_BOULAC_ONZ=1
+  NOTE: d03 snapped to AC1_FIT (519x279=144,801<=147k OOM ceiling), NOT AC1_SMALL
+        (560x280=156,800) which G1 MEASURED as OOM-RISK on this 32GiB card.
+        AC1_FIT covers all 7 islands + Lobos (~25km E/W, ~37km N/S buffer).
+
+PROJECTION BASIS (measured, NOT scaled from the single-Tenerife guess):
+  Reused the EXISTING operational L3 5-domain CPU-WRF run (same case 20260428_18z,
+  same operational physics mp8/bl5/sf4/ra4/cu1, 28 ranks nproc 7x4) whose rsl.out
+  already contains ~21h of measured per-domain step timing. Measured warm medians:
+    d01 9km  3.473 s/step  (5,487 cols)   = 633 us/col  (28-rank over-decomposed)
+    d02 3km  1.088 s/step  (10,494 cols)  = 104 us/col
+    1km nests pooled       0.246 s        (14,012 cols) = 17.5 us/col/step
+  -> measured full operational L3 (9/3/1/1/1) 24h @28 ranks ~ 11.9 h (near-complete).
+
+CPU 24h @28 RANKS, NESTED 9/3/1 (AC1_FIT) — QUICK PROJECTION:
+    d01 9km : 4,800 steps  x 3.63 s = ~4.8 h
+    d02 3km : 14,400 steps x 2.64 s = ~10.6 h   (linear scale 10.5k->25.5k cols; conservative)
+    d03 1km : 43,200 steps x 2.54 s = ~30.4 h   (17.5 us/col x 144,801 cols; DOMINATES)
+  -------------------------------------------------------------
+  PROJECTED CPU 24h TOTAL ~ 46 h  (~1.9 DAYS)  @ 28 ranks
+  (d03 1km is ~66% of wall; this is why the full 24h CPU run is impractical -> extrapolate)
+
+GPU 24h (warm, forecast-only) — QUICK PROJECTION:
+  From G1 MEASURED 1km fp64 BouLac-ONZ: 590 ms/step at 146,475 cols (RTX 5090).
+    d03 1km new (144,801 cols) ~ 583 ms/step.
+    dt=2 (match CPU): 43,200 steps -> ~7.0 h     (d03 only)
+    dt=3 (validated larger 1km dt): 28,800 steps -> ~4.7 h  (d03 only)
+  + d01/d02 GPU steps are small (~minutes) IF live-coupled fits; ELSE replay (sequential).
+  PROJECTED GPU 24h ~ 5-7 h (d03-dominated), capability TBD (live-coupled vs replay,
+  peak VRAM) — to be MEASURED under the GPU lock behind G1.
+
+PROJECTED CPU/GPU FACTOR ~ 7-10x  (46 h CPU / ~5-7 h GPU).
+  Honest framing: the GPU advantage here is 1km-CAPABILITY (a single all-islands
+  1km grid in one card-night) — NOT a single-GPU fp64 raw-speed miracle.
+
+CONFIDENCE: CPU HIGH (extrapolated from a near-complete measured operational run of
+  the SAME physics/machine; only d03 area-scaled). GPU MEDIUM (G1 step measured on a
+  tiled light proxy; live-coupled-vs-replay + full-physics VRAM not yet measured here).

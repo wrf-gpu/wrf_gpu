@@ -1,0 +1,87 @@
+{
+  "schema": "v022_k2_dt_ladder_gate_summary",
+  "verdict": "PASS",
+  "best_safe_rung": "R4",
+  "best_safe_config": {
+    "dt_s": 18.0,
+    "n_sound": 7
+  },
+  "best_forecast_hour_speedup_vs_R1": 1.8012339725705453,
+  "best_s_per_step_ratio_vs_R1": 0.9993149293265969,
+  "cz_gt_1_exercised": false,
+  "cz_gt_1_finding": "not exercised by this GPU wrfout-frame diagnostic; worst Cz=0.726228 at R4, so Cz>1 tolerance remains unproven here",
+  "runs": {
+    "R1": {
+      "dt_s": 10.0,
+      "n_sound": 10,
+      "status": "OK",
+      "verdict": "PIPELINE_GREEN",
+      "steady_per_hour_wall_s": 34.671104083012324,
+      "s_per_step": 0.096308622452812,
+      "worst_C_horiz": 0.2358143933614095,
+      "worst_C_total": 0.6274050195749341,
+      "worst_Cz": 0.3957474255299308,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.000479785948815207,
+      "within_operational_band": true,
+      "worst_rmse_over_band": null,
+      "forecast_hour_speedup_vs_R1": 1.0
+    },
+    "R2": {
+      "dt_s": 12.0,
+      "n_sound": 9,
+      "status": "OK",
+      "verdict": "PIPELINE_GREEN",
+      "steady_per_hour_wall_s": 28.58121164300246,
+      "s_per_step": 0.09527070547667488,
+      "worst_C_horiz": 0.28286105346679685,
+      "worst_C_total": 0.7557702532665309,
+      "worst_Cz": 0.4778637286083277,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.00046968329488075787,
+      "within_operational_band": true,
+      "worst_rmse_over_band": 0.14805855839837886,
+      "forecast_hour_speedup_vs_R1": 1.213073277510992
+    },
+    "R3": {
+      "dt_s": 15.0,
+      "n_sound": 8,
+      "status": "OK",
+      "verdict": "PIPELINE_GREEN",
+      "steady_per_hour_wall_s": 23.9144072009949,
+      "s_per_step": 0.09964336333747875,
+      "worst_C_horiz": 0.5123291587829589,
+      "worst_C_total": 1.1394147992110497,
+      "worst_Cz": 0.6270856404280907,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.0005662303739818668,
+      "within_operational_band": true,
+      "worst_rmse_over_band": 0.47503929978833725,
+      "forecast_hour_speedup_vs_R1": 1.449799854606888
+    },
+    "R4": {
+      "dt_s": 18.0,
+      "n_sound": 7,
+      "status": "OK",
+      "verdict": "PIPELINE_GREEN",
+      "steady_per_hour_wall_s": 19.24852884799475,
+      "s_per_step": 0.09624264423997374,
+      "worst_C_horiz": 0.42370244979858396,
+      "worst_C_total": 1.1439332100139943,
+      "worst_Cz": 0.7262277160869923,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.0004499595079317641,
+      "within_operational_band": true,
+      "worst_rmse_over_band": 0.5049179721779125,
+      "forecast_hour_speedup_vs_R1": 1.8012339725705453
+    }
+  },
+  "notes": [
+    "All four rungs were PIPELINE_GREEN, finite, bounded, conserving under short-run mass drift cap, and R2-R4 stayed within operational band vs R1.",
+    "Forecast-hour wall is the relevant wallclock win for dt/n_sound; per-step cost remains roughly flat."
+  ]
+}

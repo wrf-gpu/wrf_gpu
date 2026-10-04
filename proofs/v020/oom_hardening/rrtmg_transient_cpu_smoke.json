@@ -1,0 +1,25 @@
+{
+  "env": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_PLATFORM_NAME": "cpu",
+    "XLA_PYTHON_CLIENT_ALLOCATOR": null,
+    "XLA_PYTHON_CLIENT_PREALLOCATE": null
+  },
+  "rows": [
+    {
+      "column_mode": "tiled",
+      "kind": "lw",
+      "memory": {
+        "available": false,
+        "platform": "cpu",
+        "reason": "no JAX GPU device"
+      },
+      "ncol": 8,
+      "nlev": 16,
+      "nrep": 1,
+      "tile_cols": 4
+    }
+  ],
+  "schema": "GpuwrfRrtmgTransientReproducer",
+  "schema_version": 1
+}

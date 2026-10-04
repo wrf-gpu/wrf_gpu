@@ -1,0 +1,67 @@
+{
+  "schema": "v0.21.0-aot-cheapkey-compile-headline",
+  "branch": "worker/opus/vnext-parallel-compile",
+  "commit": "63032d24",
+  "worktree": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile",
+  "case": "<DATA_ROOT>/wrf_downscale/runs/20240901/cpu",
+  "status": "COLD_MEASURED__WARM_LOAD_FAIL_9NEST_RELEASE_BLOCKER",
+  "blocker_evidence": "proofs/v021/blocker_9nest_cheapkey/EVIDENCE.md",
+  "ram_methodology_note": "peak host RAM for de-fuse SEQUENTIAL = per-process /usr/bin/time -v Max RSS (== /proc VmHWM); PARALLEL_COMPILE=0 so no spawn children, time -v captures whole footprint. System-wide free/meminfo (~50GB) is CONTAMINATED by 0:2 12-rank CPU corpus + page cache and is reported only as a labeled upper bound.",
+  "step0_derisk_3domain": {
+    "verdict": "PASS",
+    "cross_process_warm_loaded": {"d01": "loaded=true source=aot_blob hlo=706d8b8964e3", "d02": "loaded=true source=aot_blob hlo=94742c79c7bd", "d03": "loaded=true source=aot_blob hlo=74d9ba5d12f0"},
+    "fallbacks": 0,
+    "warm_slow_compile_alarms": 0,
+    "in_loop_aot_loads": 88,
+    "note": "fresh process, different GPU lock token, loaded all 3 compiled executables directly from AOT blobs; NO re-lowering. cheap-key cross-process fix CONFIRMED on real nest path."
+  },
+  "cold_3domain_defuse_bonus": {
+    "verdict": "PASS",
+    "wall_total_s": 2176.1,
+    "wall_forecast_only_s": 2010.4,
+    "root_steps": 200,
+    "wrfout_files": 8,
+    "all_domains_finite": true,
+    "clean_peak_rss_GB": 18.3,
+    "cpu_match": {"frames_compared": 8, "worst_T2_max_abs_K": 2.96, "worst_T2_max_rel": 0.0103, "any_gpu_nonfinite": false}
+  },
+  "cold_9nest_defuse": {
+    "status": "COMPLETE",
+    "start_epoch": 1782392428,
+    "cold_compile_wall_min": 60,
+    "cold_compile_wall_note": "process-start -> all 9 AOT blobs serialized (RAM-log 451 lines x8s = 3608s)",
+    "clean_peak_rss_GB": 27.6,
+    "clean_peak_rss_kB_time_v": 28977396,
+    "clean_peak_rss_source": "/usr/bin/time -v Maximum resident set size == /proc/PID/status VmHWM",
+    "system_wide_used_GB_contaminated": 52.0,
+    "all_9_blobs_serialized": true,
+    "integration_finite": "PASS (in-process loaded=true x168+, ~19 root steps, no NaN, no finite-raise)",
+    "per_domain_compile_breakdown": {
+      "d01": "~15 min (incl JAX init + 9-domain input load)",
+      "d02_to_d06": "~3-8 min each",
+      "d07_d08_d09": "~13-18 min each (large 1km inner domains, multiple ~2.5min shape-variant lowers)",
+      "total_very_slow_compile_alarms": 8
+    },
+    "cpu_match": "NOT REACHED on 9-nest (first CPU-comparable frame sim 18:20 ~108min wall away + #123 OOM risk); carried by 3-domain CPU-match"
+  },
+  "warm_9nest_defuse": {
+    "status": "RELEASE_BLOCKING_FINDING — cross-process AOT warm-load FAILS on 9-nest",
+    "loaded_true_x9": "FAIL (loaded=true=0; every domain re-lowered)",
+    "root_cause": "warm process computes a DIFFERENT cheap_key than cold for the SAME domain/identical HLO -> fallback:missing -> jit-compiled+aot-captured (re-lower). Non-deterministic cold->warm cheap_key at max_dom=9.",
+    "evidence_key_mismatch": {
+      "d01": {"cold_wrote": "k_95b6cc99...", "warm_requested": "k_8dd5141b...", "hlo": "706d8b8964e3 (identical)"},
+      "d02": {"cold_wrote": "k_2ea33b6d...", "warm_requested": "k_48004e1e..."},
+      "d03": "re-lowered", "d04+": "re-lowering"
+    },
+    "contrast": "3-domain de-risk (ck3seq) cross-process warm PASSED (loaded=true x3, key matched k_95b6cc99). 9-nest does NOT. So the cheap-key cross-process determinism fix holds for 3-dom but breaks at max_dom=9.",
+    "headline_impact": "the v0.21.0 AOT warm-start 'seconds' headline is DEFEATED on the real 9-nest target: warm = full ~60min re-lower, NOT a fast blob load.",
+    "diagnostic_tool_for_investigation": "proofs/v021/parallel_compile/cheapkey_xproc_components.py (dumps cheap_key subcomponents for cross-process diff)",
+    "warm_load_wall_s": "N/A (re-lower, not load)",
+    "s_per_frame": "measurable during the (re-lowered) integration — pending",
+    "cpu_match": "pending (warm will integrate after re-lower; or carried by 3-domain)"
+  },
+  "cited_rows": {
+    "vorher_fused_no_aot": {"peak_ram_GB": 60, "cold_compile_min": "50-60", "warm_relower_min": 30, "source": "V0210_DEPLOY_STATE.md L64,71,91 (estimate accepted by the user)"},
+    "aot_only_defuse_parallel_prewarm": {"peak_ram_GB": 65, "prewarm_min": 25, "prewarm_wall_s": 1503, "warm_load": "seconds (same mechanism as measured seq warm)", "source": "V0210_DEPLOY_STATE.md L81,85"}
+  }
+}

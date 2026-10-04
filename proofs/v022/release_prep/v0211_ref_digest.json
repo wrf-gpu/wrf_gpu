@@ -1,0 +1,30 @@
+{
+  "all_finite": true,
+  "basis": "Fresh v0.21.1 matched-env/AOT warm baseline. Three warm reruns reused the same AOT blobs and produced the same digest.",
+  "bytes": 367594272,
+  "invalidated_old_ref": {
+    "reason": "Stale cold-compile/autotune artifact: same source, HLO, and XLA flags can serialize different executable blobs after independent cold compiles.",
+    "sha256": "519cd3e5c69561d750189ad694e1300bc729df4a0e6348d670d055eb0ab6db8e",
+    "tag": "v0211_ref_capture_20250121"
+  },
+  "leaves": 178,
+  "sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4",
+  "tag": "fresh_v0211_matched_warmdet_20250121",
+  "warm_reruns": [
+    {
+      "loaded_aot_only": true,
+      "log": "proofs/v022/release_prep/logs/fresh_v0211_warmdet_5c4_1_20250121.log",
+      "sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4"
+    },
+    {
+      "loaded_aot_only": true,
+      "log": "proofs/v022/release_prep/logs/fresh_v0211_warmdet_5c4_2_20250121.log",
+      "sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4"
+    },
+    {
+      "loaded_aot_only": true,
+      "log": "proofs/v022/release_prep/logs/fresh_v0211_warmdet_5c4_3_20250121.log",
+      "sha256": "9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4"
+    }
+  ]
+}

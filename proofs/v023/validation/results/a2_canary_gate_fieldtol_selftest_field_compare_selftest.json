@@ -1,0 +1,17 @@
+{
+  "generated_utc": "2026-07-03T07:42:03.192244+00:00",
+  "negative_control": {
+    "expected": "FAIL",
+    "rc": 1,
+    "verdict": "FAIL"
+  },
+  "note": "CPU-only tiny NetCDF wrfout fixtures; no JAX, CUDA, or model execution.",
+  "positive_control": {
+    "expected": "PASS",
+    "rc": 0,
+    "verdict": "PASS"
+  },
+  "schema": "v023-paired-baseline-field-compare-self-test-v1",
+  "tmp_dir": "/tmp/v023_field_compare_2vclsgdg",
+  "verdict": "PASS"
+}

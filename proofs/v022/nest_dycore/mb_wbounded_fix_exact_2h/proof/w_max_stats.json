@@ -1,0 +1,164 @@
+{
+  "case": "mb_wbounded_fix_exact_2h",
+  "fixed": {
+    "d01": [
+      {
+        "distance_to_lateral_edge_cells": 33,
+        "edge4_max_abs_w_m_s": 0.8980915546417236,
+        "file": "wrfout_d01_2024-08-06_12:20:06",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 2.311203718185425,
+        "max_abs_w_m_s": 2.311203718185425,
+        "max_index_kji": [
+          11,
+          33,
+          61
+        ]
+      },
+      {
+        "distance_to_lateral_edge_cells": 32,
+        "edge4_max_abs_w_m_s": 1.0584869384765625,
+        "file": "wrfout_d01_2024-08-06_12:40:12",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 4.129059791564941,
+        "max_abs_w_m_s": 4.129059791564941,
+        "max_index_kji": [
+          12,
+          32,
+          61
+        ]
+      },
+      {
+        "distance_to_lateral_edge_cells": 23,
+        "edge4_max_abs_w_m_s": 1.3300445079803467,
+        "file": "wrfout_d01_2024-08-06_13:00:18",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 3.5711259841918945,
+        "max_abs_w_m_s": 3.5711259841918945,
+        "max_index_kji": [
+          10,
+          23,
+          65
+        ]
+      },
+      {
+        "distance_to_lateral_edge_cells": 14,
+        "edge4_max_abs_w_m_s": 1.3960353136062622,
+        "file": "wrfout_d01_2024-08-06_13:20:24",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 3.6199259757995605,
+        "max_abs_w_m_s": 3.6199259757995605,
+        "max_index_kji": [
+          11,
+          14,
+          49
+        ]
+      },
+      {
+        "distance_to_lateral_edge_cells": 30,
+        "edge4_max_abs_w_m_s": 1.4367560148239136,
+        "file": "wrfout_d01_2024-08-06_13:40:30",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 3.5820441246032715,
+        "max_abs_w_m_s": 3.5820441246032715,
+        "max_index_kji": [
+          12,
+          30,
+          61
+        ]
+      }
+    ],
+    "d02": [
+      {
+        "distance_to_lateral_edge_cells": 27,
+        "edge4_max_abs_w_m_s": 4.579975128173828,
+        "file": "wrfout_d02_2024-08-06_13:00:00",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 8.035907745361328,
+        "max_abs_w_m_s": 8.035907745361328,
+        "max_index_kji": [
+          11,
+          27,
+          117
+        ]
+      },
+      {
+        "distance_to_lateral_edge_cells": 93,
+        "edge4_max_abs_w_m_s": 3.0290417671203613,
+        "file": "wrfout_d02_2024-08-06_14:00:00",
+        "finite_fraction": 1.0,
+        "interior4_max_abs_w_m_s": 7.066464900970459,
+        "max_abs_w_m_s": 7.066464900970459,
+        "max_index_kji": [
+          12,
+          111,
+          161
+        ]
+      }
+    ]
+  },
+  "gpu_dir": "proofs/v022/nest_dycore/mb_wbounded_fix_exact_2h/out",
+  "notes": [
+    "Native dt, standalone live-nested d01..d02, fresh JIT (GPUWRF_NESTED_AOT=0).",
+    "edge4 is the four-cell lateral boundary band; interior4 excludes that band.",
+    "Fix contains no W-value masking, nan_to_num, isfinite guard, or W clip/clamp."
+  ],
+  "previous_false_pass_d01_max_abs_w_m_s": [
+    {
+      "edge4_max_abs_w_m_s": 44.0388,
+      "file": "wrfout_d01_2024-08-06_12:20:06",
+      "interior4_max_abs_w_m_s": 2.31,
+      "max_abs_w_m_s": 44.0388,
+      "max_index_kji": [
+        29,
+        0,
+        128
+      ]
+    },
+    {
+      "edge4_max_abs_w_m_s": 287.702,
+      "file": "wrfout_d01_2024-08-06_12:40:12",
+      "interior4_max_abs_w_m_s": 4.13,
+      "max_abs_w_m_s": 287.702,
+      "max_index_kji": [
+        28,
+        0,
+        128
+      ]
+    },
+    {
+      "edge4_max_abs_w_m_s": 2065.948,
+      "file": "wrfout_d01_2024-08-06_13:00:18",
+      "interior4_max_abs_w_m_s": 3.57,
+      "max_abs_w_m_s": 2065.948,
+      "max_index_kji": [
+        27,
+        0,
+        128
+      ]
+    },
+    {
+      "edge4_max_abs_w_m_s": 14531.26,
+      "file": "wrfout_d01_2024-08-06_13:20:24",
+      "interior4_max_abs_w_m_s": 3.62,
+      "max_abs_w_m_s": 14531.26,
+      "max_index_kji": [
+        26,
+        0,
+        128
+      ]
+    },
+    {
+      "edge4_max_abs_w_m_s": 99325.2,
+      "file": "wrfout_d01_2024-08-06_13:40:30",
+      "interior4_max_abs_w_m_s": 3.59,
+      "max_abs_w_m_s": 99325.2,
+      "max_index_kji": [
+        26,
+        0,
+        128
+      ]
+    }
+  ],
+  "schema": "montblanc_w_bounded_stats_v1"
+}

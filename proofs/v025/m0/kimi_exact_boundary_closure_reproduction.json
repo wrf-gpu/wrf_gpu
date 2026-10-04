@@ -1,0 +1,102 @@
+{
+  "schema": "wrf_gpu2.v025.m0.kimi_exact_boundary_closure_reproduction.v1",
+  "reviewer": "Kimi K3 thinking-max (independent, device-denied)",
+  "date": "2026-07-28",
+  "candidate": {
+    "commit": "e36e66156759ebe6d165f80c26a22a23596ff498",
+    "worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair",
+    "worktree_clean_before_and_after": true,
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7"
+  },
+  "execution_control": {
+    "JAX_PLATFORMS": "cpu",
+    "CUDA_VISIBLE_DEVICES": "",
+    "taskset": "0-3",
+    "python": "<USER_HOME>/miniconda3/bin/python (3.13.11)",
+    "jax": "0.10.0",
+    "jax_devices_observed": ["CpuDevice(id=0)"],
+    "gpu_actions": []
+  },
+  "commands": [
+    {"cmd": "git log -1 / git status --porcelain / git rev-parse HEAD:src/gpuwrf", "rc": 0,
+     "result": "exact commit e36e6615; clean tree; tree a6885ceded260df2f5777d7366d75a5d38947cb7"},
+    {"cmd": "pytest -q tests/v025 -p no:cacheprovider", "rc": 0,
+     "result": "711 passed, 2 skipped in 61.15s (repeat with -rs: 58.59s; skips = 2 intentional test_cpu_guard.py:75 device-coordination guards)"},
+    {"cmd": "refresh_m0_exact_boundary_evidence.py --input proofs/v025/m0/m0_exact_boundary_cpu_evidence.json --output /tmp/kimi_closure_refresh.json", "rc": 0,
+     "result": "source/plan contracts PASS; 14/14 mutations rejected; exact_child_unchanged=true; accelerator_modules_imported=[]; device_touched=false; output proof byte-stable modulo timestamps/refresh-metadata"},
+    {"cmd": "validate_m0_instrumentation_diff.py --base a1fa459c --adr .agent/decisions/ADR-036-v025-m0-evidence-hook.md", "rc": 0,
+     "result": "PASS; working_production_source_matches_candidate=true"},
+    {"cmd": "child._verified_product_functions() under cpu_guard (independent AST recompute)", "rc": 0,
+     "result": "8/8 EXPECTED_FUNCTION_AST_SHA256 pins recomputed and MATCH on the live production tree"},
+    {"cmd": "validate_cancellation_map.py proofs/v025/m0/cancellation_map.json --require-complete", "rc": 0, "result": "PASS"},
+    {"cmd": "validate_fast_pair.py proofs/v025/m0/fast_case_qualification.json --require-fresh-cpu", "rc": 1,
+     "result": "honest structured MISSING (cold/cached/gpu-arm economy unmeasured)"},
+    {"cmd": "validate_pallas_viability.py / recompute_efficiency.py --check / validate_kernel_census.py --min-attribution 0.95 / validate_m0_manifest.py / close_sprint.py", "rc": 1,
+     "result": "honest structured MISSING; PROOF_MANIFEST.json absent by design"},
+    {"cmd": "in-memory source-contract probe 1: move argument hashing + lowered-text hashing after the readiness stamp", "rc": 0,
+     "result": "ACCEPTED by validate_source_texts (R1 repair is contract-compatible)"},
+    {"cmd": "in-memory source-contract probe 2 (control): remove jax.block_until_ready", "rc": 0,
+     "result": "REJECTED by validate_source_texts as expected"},
+    {"cmd": "in-memory source-contract probe 3: delete argument hashing entirely", "rc": 0,
+     "result": "accepted (hashing is proof-value, not safety-pinned; informational)"}
+  ],
+  "proof_hashes_verified": {
+    "m0_exact_boundary_cpu_evidence.json": "3f07f72db80addf4c706fe39f17178c36741cd408f891daa9236f6ccd5c68646",
+    "m0_exact_boundary_cpu_tests.xml": "40751985b917c9e3f22a7ba151d04865a2d9955f060a4a8dd8c1ec282cd668d5",
+    "pallas_fast_savepoint_manifest.json": "3f840cca38dedc196fb5d023dcec037f405eff59d42c535f9dc9fee444653e0f",
+    "adr036_gate_repair_cpu_evidence.json": "af2b8dc9a212cabe44985eef920efef41f10184c1cfa0131643a6f28986012e6",
+    "adr036_gate_repair_cpu_tests.xml": "e1a023a03c7f183504021df5b67b0231748e6cc719242c726913765aad7b351d",
+    "autotune0_three_window_plan.json": "6aa7a8bdf1361d07c7b972e3b46223132b5b14848e6255a96c7af13c66b8f28c",
+    "autotune0_three_window_dry_run.json": "12fde55703a93c1f003de221292d15baab13efb8a37d8d176c09456d2852aeeb",
+    "autotune0_three_window_failure_matrix.json": "2cc38b65ef81f67a231ce09b2365e84f17b9323a712d1b229759bb31d543db26",
+    "m0_instrumentation_diff_validation.json": "7c26df5c323230246e0a5b55b07a32a454dc41e50295fd123beea769de80f6d5",
+    "m0_default_path_overhead.json": "e649ad448229a5835a1a94a6f4c0b6bf669879328ee1d628c605348cb97941ed",
+    "all_match_worker_claims": true
+  },
+  "refresh_legitimacy": {
+    "expensive_observation_child_sha256": "13dade2bbadafa21f9e27b0d7e6844d2e9f799fad01e9ad4b43ac7b5133b86c7",
+    "current_child_file_sha256": "13dade2bbadafa21f9e27b0d7e6844d2e9f799fad01e9ad4b43ac7b5133b86c7",
+    "child_unchanged": true,
+    "pre_refresh_proof_sha256": "d5298c78c4354237177fc10e877dd92d5b10dd4bb738a5d0c47319e31837c7dc",
+    "embedded_six_checks_all_true": true,
+    "changed_static_sources": [
+      "scripts/v025/build_m0_exact_boundary_evidence.py",
+      "scripts/v025/m0_exact_boundary_contract.py",
+      "scripts/v025/m0_three_window_executor.py",
+      "scripts/v025/m0_vram_sampler.py",
+      "scripts/v025/m0_window_parent.py",
+      "scripts/v025/prepare_m0_matched_pair.py",
+      "scripts/v025/prepare_pallas_fast_savepoint.py",
+      "scripts/v025/refresh_m0_exact_boundary_evidence.py"
+    ],
+    "stale_proof_loophole_found": false
+  },
+  "embedded_observation_reverified": {
+    "argument_sha256": "55e2e600b89ed1ce5ff11a98306bd12dfd8652cfd13f2dc815f65215aa6a86eb",
+    "argument_leaves": 125,
+    "argument_elements": 16524355,
+    "treedef_sha256": "647656e876953aaaf6a9fc8a8942c885697a793e515d3659b04051718f887a3c",
+    "lowered_stablehlo_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5",
+    "lowered_stablehlo_bytes": 222295811,
+    "result_sha256": "41ea21b86ee898e2547e055dedbc60af83cd851eb0db557057e6f717508d1e6e",
+    "cpu_readiness_seconds": 81.242206654,
+    "cpu_integration_seconds": 1705.687125181,
+    "cpu_times_are_not_gpu_economy_evidence": true
+  },
+  "check6_decision": {
+    "hashing_contaminates_parent_launch_to_ready": true,
+    "causes_host_transfer_inside_measured_window": true,
+    "can_falsely_fail_600s_or_60s_gates": true,
+    "margin_evidence": "W1b cold attempt EARLY_STOP at 601.4s vs 600s bar; estimated proof-hashing overhead 2-4s; 3-7% of the 60s cached budget",
+    "required_repair": "move argument_identity hashing and lowered_text/lowered_sha256 after the executable_ready_monotonic_ns stamp, before the mode branches; rerun full CPU oracle",
+    "repair_probe_verified_contract_compatible": true
+  },
+  "downstream_mechanically_missing": {
+    "w1_result_to_wrfout_adapter": "MISSING (fast pair validator rc 1; _post_w1_qualification refuses; AUTOTUNE0_QUALIFIED unwritable; W2/W3 transitively blocked)",
+    "w2_postlock_exporter_census": "MISSING (postlock_export_and_census_status / nsys_export_and_census markers)",
+    "typed_ffi_fallback_smoke": "MISSING (typed_ffi_fallback_smoke.ran=false; W3 refuses PALLAS_BLOCKED)",
+    "device_results_W1_W2_W3_native_pallas": "MISSING"
+  },
+  "oracle_rerun": "not run: no concrete contradiction; contract permits skipping the hour-long real-FAST oracle",
+  "verdict": "ACCEPT_WITH_REQUIRED_CPU_REPAIR"
+}

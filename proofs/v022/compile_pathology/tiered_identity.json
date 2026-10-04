@@ -1,0 +1,6 @@
+{
+  "verdict": "NOT_RUN_ONZ_COMPILE_PATHOLOGICAL",
+  "reason": "O(nz) did not finish cold compile before the evidence-based manual stop, so no onz state dump exists for tiered field identity.",
+  "dense_state_present": true,
+  "onz_state_present": false
+}

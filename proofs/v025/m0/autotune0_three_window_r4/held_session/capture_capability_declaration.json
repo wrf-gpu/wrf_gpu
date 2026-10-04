@@ -1,0 +1,242 @@
+{
+  "accepted_residual": "CPU lower() proves exact argument/tracing reachability but cannot prove later device compile/link or measured device values",
+  "available": {
+    "event_level_family_join": {
+      "provider": "W2 CUDA-kernel event/name join",
+      "status": "AVAILABLE"
+    },
+    "exact_kernels_per_step_denominator": {
+      "provider": "same exact FAST StableHLO plus W2 integration-clipped kernel events",
+      "status": "AVAILABLE"
+    },
+    "integration_clipped_gpu_busy": {
+      "provider": "W2 NVTX/CUDA projection for GPUWRF_M0_FORECAST_INTEGRATION",
+      "status": "AVAILABLE"
+    },
+    "inter_kernel_gap_distribution": {
+      "provider": "W2 integration-clipped event gaps",
+      "status": "AVAILABLE"
+    },
+    "kernel_duration_distribution": {
+      "provider": "W2 kernel event durations",
+      "status": "AVAILABLE"
+    },
+    "launch_latency_distribution": {
+      "provider": "W2 runtime-to-kernel correlation",
+      "status": "AVAILABLE"
+    },
+    "peak_vram": {
+      "provider": "W2 same-process allocator plus lock-owner sampler",
+      "status": "AVAILABLE"
+    },
+    "profiler_perturbation": {
+      "provider": "W2 profiled / W3 clean matched pair",
+      "status": "AVAILABLE"
+    },
+    "transfer_audit": {
+      "provider": "W2 CUDA memcpy/memset event audit",
+      "status": "AVAILABLE"
+    }
+  },
+  "boundary": {
+    "content_sha256": "b63fe65231f5b56ea612b0fd0a0420fc8d5ee48c9adde80940c238eb59ebec34",
+    "file_sha256": "780a7ed49a71903871fa040078de21e6f94a6f7847635915a4a45df4153c1a0a",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/cpu_real_boundary_preflight.json",
+    "stablehlo_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5"
+  },
+  "content_address": {
+    "algorithm": "sha256",
+    "sha256": "0a74cc3bd6e9dab9ab52421b57cf071cd2ce7220fcca1e2032b120f51146e185"
+  },
+  "coordination_action": false,
+  "denominator": {
+    "configured_cross_check": {
+      "derivation": "Fraction(str(hours))*3600/Fraction(str(dt_s))",
+      "exact_steps": 360,
+      "forecast_interval_seconds": 3600.0,
+      "hours": 1.0,
+      "integral": true,
+      "timestep_seconds": 10.0
+    },
+    "count_matches_configuration": true,
+    "entry_function": "main",
+    "loop_count": 4,
+    "method": "exact-lowered-trip-count",
+    "segment_trip_counts": [
+      179,
+      1,
+      179,
+      1
+    ],
+    "segments": [
+      {
+        "comparison": "LT",
+        "condition_bound": 179,
+        "end_step": 179,
+        "index": 0,
+        "index_ssa": "%60",
+        "iota_ssa": "%58",
+        "start_step": 1,
+        "trip_count": 179
+      },
+      {
+        "comparison": "LT",
+        "condition_bound": 1,
+        "end_step": 180,
+        "index": 1,
+        "index_ssa": "%64",
+        "iota_ssa": "%62",
+        "start_step": 180,
+        "trip_count": 1
+      },
+      {
+        "comparison": "LT",
+        "condition_bound": 179,
+        "end_step": 359,
+        "index": 2,
+        "index_ssa": "%68",
+        "iota_ssa": "%66",
+        "start_step": 181,
+        "trip_count": 179
+      },
+      {
+        "comparison": "LT",
+        "condition_bound": 1,
+        "end_step": 360,
+        "index": 3,
+        "index_ssa": "%72",
+        "iota_ssa": "%70",
+        "start_step": 360,
+        "trip_count": 1
+      }
+    ],
+    "stablehlo_sha256": "25be79df47a6f5664aa08cb5dc287466a11c9c10b174f9e1ef23e8bf36015ba5",
+    "status": "PASS",
+    "steps": 360
+  },
+  "device_action": false,
+  "fallback_invariants": {
+    "insufficient_w2_w3_time_stops_before_w2": {
+      "mechanism": "the live graph requires the combined 2,000-second W2+W3 reservation before invoking W2",
+      "sources": [
+        "executor"
+      ],
+      "status": "PASS"
+    },
+    "no_extra_device_arm_after_w2_hash_and_w3_stop": {
+      "mechanism": "the immutable held graph ends at W3; all subsequent stages are post-lock CPU analysis of the hash-bound W2 capture",
+      "sources": [
+        "executor",
+        "postlock"
+      ],
+      "status": "PASS"
+    },
+    "postcapture_analysis_after_lock_release": {
+      "mechanism": "the outer owner creates the session lock-release proof before either POSTLOCK analysis stage",
+      "sources": [
+        "executor"
+      ],
+      "status": "PASS"
+    },
+    "postcapture_failure_preserves_raw_capture_and_readonly_sqlite": {
+      "mechanism": "one private SQLite is created after release; subsequent reports use READ_EXISTING and bind both raw-report and SQLite hashes",
+      "sources": [
+        "export",
+        "postlock"
+      ],
+      "status": "PASS"
+    },
+    "raw_capture_hash_bound_before_postlock_analysis": {
+      "mechanism": "analyze_w2 passes the W2 manager-bound .nsys-rep SHA-256 as expected_source_sha256 before export",
+      "sources": [
+        "postlock",
+        "export"
+      ],
+      "status": "PASS"
+    }
+  },
+  "integration_clip": {
+    "GPUWRF_M0_EVIDENCE": "UNSET",
+    "emitter": "scripts/v025/m0_exact_boundary_child.py",
+    "emitter_source": {
+      "all_required_tokens_present": true,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_exact_boundary_child.py",
+      "required_tokens": [
+        "RANGE_NAME = \"GPUWRF_M0_FORECAST_INTEGRATION\"",
+        "with jax.profiler.TraceAnnotation(RANGE_NAME):",
+        "jax.block_until_ready(result)"
+      ],
+      "sha256": "f4d7e0f85351ab03dc590db237d2a14c054c66c2847d524cf1547f6750c00fa3"
+    },
+    "emitter_symbol": "run_boundary",
+    "parent_source": {
+      "all_required_tokens_present": true,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_window_parent.py",
+      "required_tokens": [
+        "\"GPUWRF_M0_EVIDENCE\",",
+        "*EVIDENCE_ENV,",
+        "step1.nsys_command(inner, out_root=stage_root)"
+      ],
+      "sha256": "f67bd3e414616cf45e1ecd9c4695232cdb0b19143292c258a11710562592ae29"
+    },
+    "parent_strips_production_evidence_environment": true,
+    "production_operational_mode_emitter": false,
+    "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+    "status": "AVAILABLE"
+  },
+  "invariant_source_identities": {
+    "executor": {
+      "all_required_tokens_present": true,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py",
+      "required_tokens": [
+        "if stage == \"W2_PROFILED_CAPTURE\":",
+        "\"W2_AND_W3_REMAINING_BUDGET\"",
+        "core_session.W2_W3_REQUIRED_SECONDS",
+        "build_session_lock_release_proof(",
+        "stage = \"POSTLOCK_W3_PAIR\"",
+        "stage = \"POSTLOCK_W2_EXPORT_CENSUS\""
+      ],
+      "sha256": "068409eed7b6e69dfd94e6f9444fe26cbd3806978b142044284ebafea1f4bfa2"
+    },
+    "export": {
+      "all_required_tokens_present": true,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/nsys_export.py",
+      "required_tokens": [
+        "\"--force-export=true\"",
+        "\"READ_EXISTING\"",
+        "\"private_sqlite_sha256\"",
+        "expected_source_sha256"
+      ],
+      "sha256": "f83b7d61a37f695ed38655e4ea65dd8922efff66b6b917f156d87afa4925bc25"
+    },
+    "postlock": {
+      "all_required_tokens_present": true,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_postlock_census.py",
+      "required_tokens": [
+        "expected_source_sha256=artifacts[\"source_rep\"][\"sha256\"]",
+        "analyze_w2("
+      ],
+      "sha256": "aebcad92605170d81040b94d17fe9e906eb6779a1162dc71681857821dc62ad1"
+    }
+  },
+  "missing": {
+    "achieved_dram_gb_per_s": {
+      "reason": "the frozen nsys capture has no achieved-DRAM-throughput counter",
+      "status": "MISSING"
+    },
+    "occupancy_and_stall_counters": {
+      "reason": "the frozen capture has no Nsight Compute occupancy/stall counters",
+      "status": "MISSING"
+    },
+    "run_physics_false": {
+      "reason": "the frozen FAST call has run_physics=True and no second device arm is authorized",
+      "status": "MISSING"
+    }
+  },
+  "schema": "wrf_gpu2.v025.m0.review10_fallback_capability.v1",
+  "signature": {
+    "scheme": "sha256-canonical-json-content-signature",
+    "signed_sha256": "0a74cc3bd6e9dab9ab52421b57cf071cd2ce7220fcca1e2032b120f51146e185"
+  },
+  "status": "PASS"
+}

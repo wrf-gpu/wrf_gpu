@@ -1,0 +1,74 @@
+{
+  "case": {
+    "domain": "d01",
+    "dt_rk": 54.0,
+    "dt_s": 54.0,
+    "dts_rk": 13.5,
+    "lead_seconds": null,
+    "number_of_small_timesteps": 4,
+    "rk_step": 3,
+    "run_boundary": true,
+    "run_physics": false,
+    "specified_branch": true
+  },
+  "chain": {
+    "argument_bytes": 104833320,
+    "converts_inside_acoustic_loop": {
+      "computations_reachable_from_loop": 239,
+      "computations_total": 883,
+      "in_loop": 0,
+      "in_loop_by_transition": {},
+      "in_loop_converted_elements_per_substep": 0,
+      "loop_bodies_detected": 3,
+      "outside_loop": 162,
+      "total": 162
+    },
+    "converts_optimized": {
+      "by_transition": {
+        "f32->f64": 4,
+        "f64->f32": 1
+      },
+      "f32_to_f64": 4,
+      "f64_to_f32": 1,
+      "other": 0,
+      "total": 5
+    },
+    "dtype_tokens_optimized": {
+      "f32": 369,
+      "f64": 36001,
+      "pred": 348,
+      "s32": 359,
+      "s64": 128
+    },
+    "generated_code_bytes": 0,
+    "lower_and_compile_seconds": 7.505089392012451,
+    "meta": {
+      "acoustic_substeps": 4,
+      "dt_rk": 54.0,
+      "dts_rk": 13.5,
+      "h_sca_adv_order": 5,
+      "hypsometric_opt": 2,
+      "mode": "mixed_perturb_fp32",
+      "rk_step": 3,
+      "run_boundary": true,
+      "run_physics": false
+    },
+    "optimized_hlo_bytes": 3680344,
+    "output_bytes": 102911016,
+    "stablehlo_bytes": 1292674,
+    "static_launch_proxy": 873,
+    "temporary_bytes": 181395480
+  },
+  "environment": {
+    "device_count": 1,
+    "platforms": [
+      "cpu"
+    ]
+  },
+  "label": "gpt_final_isolated_pre",
+  "schema": "wrf_gpu2.v025.m1.round2_gpt_critic_specified_branch.v1",
+  "scope_limit": "Specified-branch CPU/static lower bound only: no production apply_halo, fresh stage-omega/tendency construction, boundary interpolation, physics, GPU time, or peak VRAM.",
+  "seconds_total": 18.336307917983504,
+  "source_tree": "/tmp/v025-r3-gpt-critic-parent.WrJQo6/src",
+  "source_tree_gpuwrf_sha256": "6ac5ae505c67644aa5f4e54701cc21e8eb97612cfd537b5fdd111660b6974378"
+}

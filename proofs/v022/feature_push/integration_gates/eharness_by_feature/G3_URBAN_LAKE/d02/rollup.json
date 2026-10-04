@@ -1,0 +1,2586 @@
+{
+  "candidate_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate",
+  "case_id": "CANARY-L2-D02-SMALLEST-TILE-SYNTHETIC",
+  "cpu_wrf_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf",
+  "divergence_growth": {
+    "fields": {
+      "T2": {
+        "detail": {
+          "envelope_factor": 5.0,
+          "late_growth_in_envelope_units": 0.0,
+          "late_slope_tol": 0.25,
+          "saturating": true,
+          "within_envelope": true
+        },
+        "divergence_series": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "early_slope_per_lead": 0.0,
+        "envelope": 2.327910364826508e-06,
+        "final_over_envelope": 0.0,
+        "late_slope_per_lead": 0.0,
+        "late_slope_ratio": 0.0,
+        "max_over_envelope": 0.0,
+        "pass": true,
+        "passes_flag": true,
+        "regime": "BOUNDED",
+        "status": "OK"
+      },
+      "U10": {
+        "detail": {
+          "envelope_factor": 5.0,
+          "late_growth_in_envelope_units": 0.0,
+          "late_slope_tol": 0.25,
+          "saturating": true,
+          "within_envelope": true
+        },
+        "divergence_series": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "early_slope_per_lead": 0.0,
+        "envelope": 4.687127762998003e-07,
+        "final_over_envelope": 0.0,
+        "late_slope_per_lead": 0.0,
+        "late_slope_ratio": 0.0,
+        "max_over_envelope": 0.0,
+        "pass": true,
+        "passes_flag": true,
+        "regime": "BOUNDED",
+        "status": "OK"
+      },
+      "V10": {
+        "detail": {
+          "envelope_factor": 5.0,
+          "late_growth_in_envelope_units": 0.0,
+          "late_slope_tol": 0.25,
+          "saturating": true,
+          "within_envelope": true
+        },
+        "divergence_series": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "early_slope_per_lead": 0.0,
+        "envelope": 3.7300938325999254e-07,
+        "final_over_envelope": 0.0,
+        "late_slope_per_lead": 0.0,
+        "late_slope_ratio": 0.0,
+        "max_over_envelope": 0.0,
+        "pass": true,
+        "passes_flag": true,
+        "regime": "BOUNDED",
+        "status": "OK"
+      }
+    },
+    "leads": [
+      0,
+      24,
+      72,
+      120
+    ],
+    "status": "OK"
+  },
+  "domain": "d02",
+  "fields": [
+    "T2",
+    "U10",
+    "V10"
+  ],
+  "gate_mode": "operational-relaxed",
+  "gate_pass": true,
+  "hard_guards": {
+    "all_hard_guards_pass": true,
+    "clamp_limiter_audit": {
+      "dynamic_total_count": 0,
+      "new_term_keys": [],
+      "pass": true,
+      "source": "candidate-guards",
+      "status": "PASS"
+    },
+    "conservation": {
+      "dry_mass_relative_residual": 0.0,
+      "field_pass": {
+        "dry_mass_relative_residual": {
+          "basis": "strict_plus_margin",
+          "pass": true,
+          "threshold": 1e-06,
+          "value": 0.0
+        },
+        "moist_static_energy_relative_residual": {
+          "basis": "strict_plus_margin",
+          "pass": true,
+          "threshold": 1e-05,
+          "value": 0.0
+        },
+        "water_relative_residual": {
+          "basis": "strict_plus_margin",
+          "pass": true,
+          "threshold": 1e-05,
+          "value": 0.0
+        }
+      },
+      "moist_static_energy_relative_residual": 0.0,
+      "pass": true,
+      "status": "PASS",
+      "water_relative_residual": 0.0
+    },
+    "finite": {
+      "file_count": 3,
+      "files": [
+        {
+          "fields": {
+            "MU": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "MUB": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "PSFC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T2": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "U10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "V10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLAT": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLONG": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            }
+          },
+          "inf": 0,
+          "nan": 0,
+          "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+          "readable": true
+        },
+        {
+          "fields": {
+            "MU": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "MUB": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "PSFC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T2": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "U10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "V10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLAT": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLONG": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            }
+          },
+          "inf": 0,
+          "nan": 0,
+          "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+          "readable": true
+        },
+        {
+          "fields": {
+            "MU": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "MUB": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "PSFC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "T2": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "U10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "V10": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLAT": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            },
+            "XLONG": {
+              "inf": 0,
+              "nan": 0,
+              "status": "OK"
+            }
+          },
+          "inf": 0,
+          "nan": 0,
+          "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "readable": true
+        }
+      ],
+      "inf": 0,
+      "nan": 0,
+      "pass": true,
+      "status": "PASS"
+    },
+    "output_cadence": {
+      "pass": true,
+      "present_leads": [
+        24,
+        72,
+        120
+      ],
+      "requested_leads": [
+        24,
+        72,
+        120
+      ],
+      "status": "PASS"
+    },
+    "restart_equivalence": {
+      "fields": {
+        "MU": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "MUB": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "PSFC": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "QVAPOR": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "RAINC": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "RAINNC": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "T": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "T2": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "Times": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "U10": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "V10": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "XLAT": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        },
+        "XLONG": {
+          "max_abs": 0.0,
+          "pass": true,
+          "status": "OK"
+        }
+      },
+      "lead_hours": 120,
+      "left": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+      "pass": true,
+      "right": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe/wrfout_d02_2026-05-26_18:00:00",
+      "status": "PASS"
+    },
+    "transfer_audit": {
+      "new_in_loop_transfers": 0,
+      "pass": true,
+      "status": "PASS"
+    }
+  },
+  "init_time_source": "--init",
+  "init_time_utc": "2026-05-21T18:00:00+00:00",
+  "lead_hours": [
+    24,
+    72,
+    120
+  ],
+  "lead_payloads": [
+    {
+      "baselines_present": [
+        "cpu_wrf",
+        "strict_gpu"
+      ],
+      "baselines_unavailable": [
+        "aemet_obs"
+      ],
+      "case_id": "CANARY-L2-D02-SMALLEST-TILE-SYNTHETIC",
+      "divergence_growth": {
+        "T2": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 2.327910364826508e-06,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "U10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 4.687127762998003e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "V10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 3.7300938325999254e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        }
+      },
+      "domain": "d02",
+      "enric_signoff": {
+        "recorded": false,
+        "ref": null,
+        "required": true
+      },
+      "hard_guards": {
+        "all_hard_guards_pass": true,
+        "clamp_limiter_audit": {
+          "dynamic_total_count": 0,
+          "new_term_keys": [],
+          "pass": true,
+          "source": "candidate-guards",
+          "status": "PASS"
+        },
+        "conservation": {
+          "dry_mass_relative_residual": 0.0,
+          "field_pass": {
+            "dry_mass_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-06,
+              "value": 0.0
+            },
+            "moist_static_energy_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            },
+            "water_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            }
+          },
+          "moist_static_energy_relative_residual": 0.0,
+          "pass": true,
+          "status": "PASS",
+          "water_relative_residual": 0.0
+        },
+        "finite": {
+          "file_count": 3,
+          "files": [
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+              "readable": true
+            }
+          ],
+          "inf": 0,
+          "nan": 0,
+          "pass": true,
+          "status": "PASS"
+        },
+        "output_cadence": {
+          "pass": true,
+          "present_leads": [
+            24,
+            72,
+            120
+          ],
+          "requested_leads": [
+            24,
+            72,
+            120
+          ],
+          "status": "PASS"
+        },
+        "restart_equivalence": {
+          "fields": {
+            "MU": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "MUB": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "PSFC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T2": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "Times": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "U10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "V10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLAT": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLONG": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            }
+          },
+          "lead_hours": 120,
+          "left": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "pass": true,
+          "right": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe/wrfout_d02_2026-05-26_18:00:00",
+          "status": "PASS"
+        },
+        "transfer_audit": {
+          "new_in_loop_transfers": 0,
+          "pass": true,
+          "status": "PASS"
+        }
+      },
+      "lead_hours": 24,
+      "lever_config": {},
+      "lever_id": "G3_URBAN_LAKE",
+      "provenance": {
+        "bands_path": "/tmp/claude-1000/-home-user-src-wrf-gpu2/5a8a44d1-6d87-4194-9587-0d0c3c635b20/scratchpad/wt_v022_integration_gpt/src/gpuwrf/validation/operational_relaxed_bands.json",
+        "candidate_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate",
+        "contract_ref": ".agent/decisions/ADR-OPERATIONAL-RELAXED-TIER.md#3.4",
+        "cpu_wrf_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf",
+        "init_time_source": "--init",
+        "init_time_utc": "2026-05-21T18:00:00+00:00",
+        "restart_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe",
+        "strict_gpu_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu",
+        "wrf_fortran_reference": "<USER_HOME>/src/wrf_pristine"
+      },
+      "reject_reasons": [],
+      "schema": "OperationalRelaxedGate",
+      "schema_version": 1,
+      "skill_bands": {
+        "T2": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-22_18:00:00",
+          "field": "T2",
+          "lead_hours": 24,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-22_18:00:00",
+          "tier_o_cpu_shape_band": {
+            "nrmse": 0.0,
+            "nrmse_max": 0.2,
+            "nrmse_pass": true,
+            "pearson_min": 0.98,
+            "pearson_pass": true,
+            "pearson_r": 1.0
+          },
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 0.5,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "units": "K",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 3.0
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "U10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-22_18:00:00",
+          "field": "U10",
+          "lead_hours": 24,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299674,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299674,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-22_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 0.7,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299674,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299674,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299674,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299674,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "V10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-22_18:00:00",
+          "field": "V10",
+          "lead_hours": 24,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492375,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492375,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-22_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 0.7,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492375,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492375,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492375,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492375,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        }
+      },
+      "tier_o_band_pass": true,
+      "validation_band_pass": true,
+      "verdict": "TIER_O_ACCEPTED"
+    },
+    {
+      "baselines_present": [
+        "cpu_wrf",
+        "strict_gpu"
+      ],
+      "baselines_unavailable": [
+        "aemet_obs"
+      ],
+      "case_id": "CANARY-L2-D02-SMALLEST-TILE-SYNTHETIC",
+      "divergence_growth": {
+        "T2": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 2.327910364826508e-06,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "U10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 4.687127762998003e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "V10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 3.7300938325999254e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        }
+      },
+      "domain": "d02",
+      "enric_signoff": {
+        "recorded": false,
+        "ref": null,
+        "required": true
+      },
+      "hard_guards": {
+        "all_hard_guards_pass": true,
+        "clamp_limiter_audit": {
+          "dynamic_total_count": 0,
+          "new_term_keys": [],
+          "pass": true,
+          "source": "candidate-guards",
+          "status": "PASS"
+        },
+        "conservation": {
+          "dry_mass_relative_residual": 0.0,
+          "field_pass": {
+            "dry_mass_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-06,
+              "value": 0.0
+            },
+            "moist_static_energy_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            },
+            "water_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            }
+          },
+          "moist_static_energy_relative_residual": 0.0,
+          "pass": true,
+          "status": "PASS",
+          "water_relative_residual": 0.0
+        },
+        "finite": {
+          "file_count": 3,
+          "files": [
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+              "readable": true
+            }
+          ],
+          "inf": 0,
+          "nan": 0,
+          "pass": true,
+          "status": "PASS"
+        },
+        "output_cadence": {
+          "pass": true,
+          "present_leads": [
+            24,
+            72,
+            120
+          ],
+          "requested_leads": [
+            24,
+            72,
+            120
+          ],
+          "status": "PASS"
+        },
+        "restart_equivalence": {
+          "fields": {
+            "MU": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "MUB": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "PSFC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T2": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "Times": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "U10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "V10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLAT": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLONG": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            }
+          },
+          "lead_hours": 120,
+          "left": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "pass": true,
+          "right": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe/wrfout_d02_2026-05-26_18:00:00",
+          "status": "PASS"
+        },
+        "transfer_audit": {
+          "new_in_loop_transfers": 0,
+          "pass": true,
+          "status": "PASS"
+        }
+      },
+      "lead_hours": 72,
+      "lever_config": {},
+      "lever_id": "G3_URBAN_LAKE",
+      "provenance": {
+        "bands_path": "/tmp/claude-1000/-home-user-src-wrf-gpu2/5a8a44d1-6d87-4194-9587-0d0c3c635b20/scratchpad/wt_v022_integration_gpt/src/gpuwrf/validation/operational_relaxed_bands.json",
+        "candidate_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate",
+        "contract_ref": ".agent/decisions/ADR-OPERATIONAL-RELAXED-TIER.md#3.4",
+        "cpu_wrf_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf",
+        "init_time_source": "--init",
+        "init_time_utc": "2026-05-21T18:00:00+00:00",
+        "restart_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe",
+        "strict_gpu_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu",
+        "wrf_fortran_reference": "<USER_HOME>/src/wrf_pristine"
+      },
+      "reject_reasons": [],
+      "schema": "OperationalRelaxedGate",
+      "schema_version": 1,
+      "skill_bands": {
+        "T2": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-24_18:00:00",
+          "field": "T2",
+          "lead_hours": 72,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-24_18:00:00",
+          "tier_o_cpu_shape_band": {
+            "nrmse": 0.0,
+            "nrmse_max": null,
+            "nrmse_pass": true,
+            "pearson_min": 0.95,
+            "pearson_pass": true,
+            "pearson_r": 1.0
+          },
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.0,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "units": "K",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 3.0
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "U10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-24_18:00:00",
+          "field": "U10",
+          "lead_hours": 72,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-24_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.2,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "V10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-24_18:00:00",
+          "field": "V10",
+          "lead_hours": 72,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.056568542494923796,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.056568542494923796,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-24_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.2,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.056568542494923796,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.056568542494923796,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.056568542494923796,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.056568542494923796,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        }
+      },
+      "tier_o_band_pass": true,
+      "validation_band_pass": true,
+      "verdict": "TIER_O_ACCEPTED"
+    },
+    {
+      "baselines_present": [
+        "cpu_wrf",
+        "strict_gpu"
+      ],
+      "baselines_unavailable": [
+        "aemet_obs"
+      ],
+      "case_id": "CANARY-L2-D02-SMALLEST-TILE-SYNTHETIC",
+      "divergence_growth": {
+        "T2": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 2.327910364826508e-06,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "U10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 4.687127762998003e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        },
+        "V10": {
+          "detail": {
+            "envelope_factor": 5.0,
+            "late_growth_in_envelope_units": 0.0,
+            "late_slope_tol": 0.25,
+            "saturating": true,
+            "within_envelope": true
+          },
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "early_slope_per_lead": 0.0,
+          "envelope": 3.7300938325999254e-07,
+          "final_over_envelope": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "max_over_envelope": 0.0,
+          "pass": true,
+          "passes_flag": true,
+          "regime": "BOUNDED",
+          "status": "OK"
+        }
+      },
+      "domain": "d02",
+      "enric_signoff": {
+        "recorded": false,
+        "ref": null,
+        "required": true
+      },
+      "hard_guards": {
+        "all_hard_guards_pass": true,
+        "clamp_limiter_audit": {
+          "dynamic_total_count": 0,
+          "new_term_keys": [],
+          "pass": true,
+          "source": "candidate-guards",
+          "status": "PASS"
+        },
+        "conservation": {
+          "dry_mass_relative_residual": 0.0,
+          "field_pass": {
+            "dry_mass_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-06,
+              "value": 0.0
+            },
+            "moist_static_energy_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            },
+            "water_relative_residual": {
+              "basis": "strict_plus_margin",
+              "pass": true,
+              "threshold": 1e-05,
+              "value": 0.0
+            }
+          },
+          "moist_static_energy_relative_residual": 0.0,
+          "pass": true,
+          "status": "PASS",
+          "water_relative_residual": 0.0
+        },
+        "finite": {
+          "file_count": 3,
+          "files": [
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-22_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-24_18:00:00",
+              "readable": true
+            },
+            {
+              "fields": {
+                "MU": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "MUB": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "PSFC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "QVAPOR": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "RAINNC": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "T2": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "U10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "V10": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLAT": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                },
+                "XLONG": {
+                  "inf": 0,
+                  "nan": 0,
+                  "status": "OK"
+                }
+              },
+              "inf": 0,
+              "nan": 0,
+              "path": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+              "readable": true
+            }
+          ],
+          "inf": 0,
+          "nan": 0,
+          "pass": true,
+          "status": "PASS"
+        },
+        "output_cadence": {
+          "pass": true,
+          "present_leads": [
+            24,
+            72,
+            120
+          ],
+          "requested_leads": [
+            24,
+            72,
+            120
+          ],
+          "status": "PASS"
+        },
+        "restart_equivalence": {
+          "fields": {
+            "MU": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "MUB": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "PSFC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "QVAPOR": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "RAINNC": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "T2": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "Times": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "U10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "V10": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLAT": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            },
+            "XLONG": {
+              "max_abs": 0.0,
+              "pass": true,
+              "status": "OK"
+            }
+          },
+          "lead_hours": 120,
+          "left": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "pass": true,
+          "right": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe/wrfout_d02_2026-05-26_18:00:00",
+          "status": "PASS"
+        },
+        "transfer_audit": {
+          "new_in_loop_transfers": 0,
+          "pass": true,
+          "status": "PASS"
+        }
+      },
+      "lead_hours": 120,
+      "lever_config": {},
+      "lever_id": "G3_URBAN_LAKE",
+      "provenance": {
+        "bands_path": "/tmp/claude-1000/-home-user-src-wrf-gpu2/5a8a44d1-6d87-4194-9587-0d0c3c635b20/scratchpad/wt_v022_integration_gpt/src/gpuwrf/validation/operational_relaxed_bands.json",
+        "candidate_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate",
+        "contract_ref": ".agent/decisions/ADR-OPERATIONAL-RELAXED-TIER.md#3.4",
+        "cpu_wrf_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf",
+        "init_time_source": "--init",
+        "init_time_utc": "2026-05-21T18:00:00+00:00",
+        "restart_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/restart_probe",
+        "strict_gpu_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu",
+        "wrf_fortran_reference": "<USER_HOME>/src/wrf_pristine"
+      },
+      "reject_reasons": [],
+      "schema": "OperationalRelaxedGate",
+      "schema_version": 1,
+      "skill_bands": {
+        "T2": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-26_18:00:00",
+          "field": "T2",
+          "lead_hours": 120,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-26_18:00:00",
+          "tier_o_cpu_shape_band": {
+            "nrmse": 0.0,
+            "nrmse_max": null,
+            "nrmse_pass": true,
+            "pearson_min": 0.93,
+            "pearson_pass": true,
+            "pearson_r": 1.0
+          },
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.0,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "units": "K",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 3.0
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.3304037933599875,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.3304037933599875,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "U10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-26_18:00:00",
+          "field": "U10",
+          "lead_hours": 120,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-26_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.8,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.08539125638299673,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.08539125638299673,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        },
+        "V10": {
+          "candidate_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/candidate/wrfout_d02_2026-05-26_18:00:00",
+          "cpu_wrf_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/cpu_wrf/wrfout_d02_2026-05-26_18:00:00",
+          "field": "V10",
+          "lead_hours": 120,
+          "status": "PASS",
+          "strict_vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492381,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492381,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "strict_wrfout": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu/wrfout_d02_2026-05-26_18:00:00",
+          "tier_o_delta_band": {
+            "delta_rmse": 0.0,
+            "delta_rmse_max": 1.8,
+            "pass": true
+          },
+          "tier_o_pass": true,
+          "tier_o_reject_reasons": [],
+          "tier_o_wind_band": {
+            "candidate_cpu_rmse": 0.0,
+            "divergence_pass": true,
+            "divergence_regime": "BOUNDED",
+            "ratio_pass": true,
+            "rmse_ratio_to_strict": 1.0,
+            "rmse_ratio_to_strict_max": 1.15,
+            "strict_cpu_rmse": 0.0
+          },
+          "units": "m s-1",
+          "validation_band": {
+            "pass": true,
+            "rmse_max": 7.5
+          },
+          "validation_band_pass": true,
+          "vs_cpu_wrf": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492381,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492381,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          },
+          "vs_strict": {
+            "bias": 0.0,
+            "candidate_std": 0.05656854249492381,
+            "finite_pair_fraction": 1.0,
+            "mae": 0.0,
+            "max_abs_error": 0.0,
+            "nrmse": 0.0,
+            "pass": true,
+            "pearson_r": 1.0,
+            "reference_std": 0.05656854249492381,
+            "rmse": 0.0,
+            "sample_count": 30,
+            "shape": [
+              5,
+              6
+            ],
+            "status": "OK"
+          }
+        }
+      },
+      "tier_o_band_pass": true,
+      "validation_band_pass": true,
+      "verdict": "TIER_O_ACCEPTED"
+    }
+  ],
+  "lever_id": "G3_URBAN_LAKE",
+  "reject_reasons": [],
+  "schema": "V022OperationalRelaxedGateDomainRollup",
+  "schema_version": 1,
+  "strict_dir": "/tmp/gpuwrf_v022_eval_G3_URBAN_LAKE/strict_gpu",
+  "tier_o_pass": true,
+  "validation_backlog_pass": true,
+  "verdict": "PASS"
+}

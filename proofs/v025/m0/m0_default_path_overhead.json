@@ -1,0 +1,38 @@
+{
+  "added_ns_per_forecast_call": 243.22794999999996,
+  "alternating_order": true,
+  "default_off_ns_per_call_median": 315.405785,
+  "default_off_ns_per_call_samples": [
+    319.081715,
+    312.27076,
+    311.330755,
+    315.202385,
+    317.2031,
+    315.405785,
+    324.72841
+  ],
+  "device_policy": "CPU only; no device query/import/lock/request/test",
+  "direct_ns_per_call_median": 72.177835,
+  "direct_ns_per_call_samples": [
+    72.295635,
+    71.36468,
+    72.177835,
+    73.817045,
+    74.47205,
+    70.07487,
+    70.041315
+  ],
+  "iterations_per_repeat": 200000,
+  "max_added_ns_per_forecast_call": 10000,
+  "repeats": 7,
+  "schema": "wrf_gpu2.v025.m0.default_path_overhead.v1",
+  "scope": "Python dispatch envelope once per whole forecast integration; jitted timestep body separately pinned by semantic AST identity",
+  "startup_import": {
+    "added_ms": 0.0,
+    "added_top_level_imports": [],
+    "hook_only_imports": "lazy-enabled-path-only",
+    "max_added_ms": 0.0,
+    "method": "semantic-validator-top-level-import-identity"
+  },
+  "status": "PASS"
+}

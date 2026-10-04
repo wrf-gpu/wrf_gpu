@@ -1,0 +1,11 @@
+gate=b5_k1_boulac
+session=proofs/v023/validation/results/dryrun_work/b5_k1_boulac_20260703T075952Z/ab
+base_ref=HEAD
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=GPUWRF_MYNN_BOULAC_ONZ=0
+candidate_env=GPUWRF_MYNN_BOULAC_ONZ=1
+dryrun=1

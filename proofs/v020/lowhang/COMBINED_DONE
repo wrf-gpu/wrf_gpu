@@ -1,0 +1,5 @@
+v0.20.0 lowhang integration + combined-speedup measurement: COMPLETE 2026-06-22.
+Branch: worker/integration/v020-lowhang. Nest: canary_all7 (all-7 9-domain, d03-d09 @1km).
+HEADLINE: byte-identical ~1.05-1.10x vs v0.19 fp64 (~1.50-1.58x vs CPU-WRF 12-rank), cuda_async-driven (~45 s/fc-h).
+Identity: 1926/1926 vars byte-identical (incl cuda_async). cuda_async fit: no OOM, peak 14.99GB flat over 12h (0.21%), -122MiB vs platform.
+Sync: root:1 kept. See COMBINED_SPEEDUP.md.

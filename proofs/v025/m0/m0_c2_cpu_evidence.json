@@ -1,0 +1,4754 @@
+{
+  "complete_adversarial_census": {
+    "arithmetic": {
+      "device_time_exact": true,
+      "families_exact": true,
+      "four_steps_exact": true,
+      "launches_exact": true,
+      "ordinary_and_radiation_present": true,
+      "top_level_ok": true,
+      "zero_timestep_host_device_transfers": true
+    },
+    "census": {
+      "census_sha256": "12b528b6eb099709d86b3949d8e120d21baba54cf6326ee2ac48e358543eb22c",
+      "cpu_closure_status": "CPU_C1_C2_GREEN_GPU_WINDOWS_MISSING",
+      "device_time_attribution": {
+        "attributed_device_time_share": 1.0,
+        "attributed_launch_share": 1.0,
+        "families": {
+          "dycore.advection": {
+            "device_time_ns": 320.0,
+            "device_time_share": 0.08533333333333333,
+            "launches": 3
+          },
+          "physics.cumulus": {
+            "device_time_ns": 1350.0,
+            "device_time_share": 0.36,
+            "launches": 4
+          },
+          "physics.microphysics": {
+            "device_time_ns": 950.0,
+            "device_time_share": 0.25333333333333335,
+            "launches": 4
+          },
+          "physics.pbl": {
+            "device_time_ns": 530.0,
+            "device_time_share": 0.14133333333333334,
+            "launches": 3
+          },
+          "physics.radiation": {
+            "device_time_ns": 600.0,
+            "device_time_share": 0.16,
+            "launches": 1
+          }
+        },
+        "measured_dycore_share_of_known": 0.08533333333333333,
+        "measured_physics_share_of_known": 0.9146666666666666,
+        "meets_attribution_bar": true,
+        "static_proxy_reference": {
+          "dycore_share": 0.183,
+          "note": "the static proxy is a CPU-backend instruction-count proxy. It is the pre-registered thing this measurement must agree or disagree with; a disagreement is a result, not an error, and per manager decision e5df2364 neither number alone authorises an M2 reorder.",
+          "physics_share": 0.817,
+          "radiation_share": 0.365,
+          "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU)"
+        },
+        "status": "PASS",
+        "total_device_time_ns": 3750.0,
+        "total_launches": 15,
+        "unknown_device_time_share": 0.0,
+        "unknown_launch_share": 0.0
+      },
+      "export": {
+        "exports": {
+          "cuda_api_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_api_sum.csv",
+            "report": "cuda_api_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_api_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_api_trace.csv",
+            "report": "cuda_api_trace",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_gpu_kern_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_kern_sum.csv",
+            "report": "cuda_gpu_kern_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_gpu_mem_size_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_mem_size_sum.csv",
+            "report": "cuda_gpu_mem_size_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_gpu_mem_time_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_mem_time_sum.csv",
+            "report": "cuda_gpu_mem_time_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_gpu_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_sum.csv",
+            "report": "cuda_gpu_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "cuda_gpu_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_trace.csv",
+            "report": "cuda_gpu_trace",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "nvtx_gpu_proj_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/nvtx_gpu_proj_sum.csv",
+            "report": "nvtx_gpu_proj_sum",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          },
+          "nvtx_pushpop_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/nvtx_pushpop_trace.csv",
+            "report": "nvtx_pushpop_trace",
+            "returncode": 0,
+            "run_id": "cpu-complete-census-fixture",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+            "source_rep_bytes": 1234,
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "status": "OK"
+          }
+        },
+        "fixture_complete": true,
+        "manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "required": [
+          "nvtx_pushpop_trace",
+          "cuda_gpu_kern_sum",
+          "cuda_gpu_trace"
+        ],
+        "required_unusable": [],
+        "run_id": "cpu-complete-census-fixture",
+        "schema": "wrf_gpu2.v025.m0.nsys_export.v2",
+        "source_rep": "/cpu-complete-fixture/capture.nsys-rep",
+        "source_rep_bytes": 1234,
+        "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "OK"
+      },
+      "family_census": {
+        "dycore.advection": {
+          "device_time_ns": 320.0,
+          "device_time_share": 0.08533333333333333,
+          "launches": 3
+        },
+        "physics.cumulus": {
+          "device_time_ns": 1350.0,
+          "device_time_share": 0.36,
+          "launches": 4
+        },
+        "physics.microphysics": {
+          "device_time_ns": 950.0,
+          "device_time_share": 0.25333333333333335,
+          "launches": 4
+        },
+        "physics.pbl": {
+          "device_time_ns": 530.0,
+          "device_time_share": 0.14133333333333334,
+          "launches": 3
+        },
+        "physics.radiation": {
+          "device_time_ns": 600.0,
+          "device_time_share": 0.16,
+          "launches": 1
+        }
+      },
+      "gates_not_pass": [],
+      "hlo": {
+        "a6_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/hlo_dtype_transfer_census.json",
+        "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+        "compiled_memory_analysis": "MISSING",
+        "dtype_and_convert_census": {
+          "exact_compiled_program": {
+            "convert_operation_count": 2,
+            "dtype_token_counts": {
+              "f32": 100,
+              "f64": 3
+            }
+          },
+          "per_operator": [
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f32": 35,
+                "f64": 934,
+                "pred": 2,
+                "s32": 5
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.small_step",
+              "name": "small_step_prep"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 121,
+                "pred": 3
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.eos",
+              "name": "calc_p_rho"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 134,
+                "pred": 3
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.eos",
+              "name": "calc_p_rho_step"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 117,
+                "pred": 3
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.eos",
+              "name": "calc_al_p_kernel"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 175
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.eos",
+              "name": "diagnose_pressure_al_alt"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 86
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.eos",
+              "name": "moisture_coupling_factors"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 574,
+                "s32": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.pgf",
+              "name": "horizontal_pressure_gradient"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 685,
+                "s32": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.pgf",
+              "name": "large_step_horizontal_pgf"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 333
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.momentum",
+              "name": "large_step_coriolis"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 276
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.momentum",
+              "name": "large_step_horizontal_curvature"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 87,
+                "s32": 2
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.pgf",
+              "name": "x_face_pressure_dpn"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 87,
+                "s32": 2
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.pgf",
+              "name": "y_face_pressure_dpn"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 165
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.mass",
+              "name": "mu_continuity_tendency"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 7837,
+                "s32": 215
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "calc_coef_w"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 220,
+                "pred": 8,
+                "s64": 63
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "thomas_solve_scan"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 1078,
+                "pred": 14,
+                "s32": 17,
+                "s64": 63
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "advance_w"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 91,
+                "s32": 2
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "pg_buoy_w_dry"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 160,
+                "s32": 2
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "pg_buoy_w_moist"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 47
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_implicit",
+              "name": "moist_cqw_calc_face"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 79,
+                "pred": 2,
+                "s32": 2
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.damping",
+              "name": "w_damp_vertical_cfl"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 516,
+                "pred": 50,
+                "s32": 8,
+                "s64": 40
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.geopotential",
+              "name": "rhs_ph"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 31
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_coordinate",
+              "name": "hybrid_mass_level_pressure"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 31
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_coordinate",
+              "name": "hybrid_face_level_pressure"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 24
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_coordinate",
+              "name": "hybrid_mass_weight"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 24
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_coordinate",
+              "name": "hybrid_face_weight"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 35
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.vertical_coordinate",
+              "name": "hybrid_pressure_thickness"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 284,
+                "s32": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "advect_scalar_flux"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 388,
+                "s32": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "advect_u_flux"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 388,
+                "s32": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "advect_v_flux"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 366,
+                "s32": 8
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "advect_w_flux"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 10861,
+                "pred": 66,
+                "s32": 24
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "advect_moisture_scalars"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 94
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "flux5_face_periodic"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 6
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.advection",
+              "name": "positive_definite_limiter"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 373,
+                "s32": 12
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "horizontal_deformation_2d"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 521,
+                "s32": 12
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "smag2d_horizontal_km"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 737,
+                "s32": 12
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "horizontal_diffusion_coord_scalar_tendency"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 202,
+                "pred": 19,
+                "s64": 9
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "wrf_sixth_order_scalar_tendf"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 142,
+                "pred": 4
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "sixth_order_diffusion_tendency"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 85,
+                "s32": 3
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.diffusion",
+              "name": "dry_brunt_vaisala_squared"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 37
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.damping",
+              "name": "apply_rayleigh_w"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 6
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "dycore.damping",
+              "name": "apply_smdiv_pressure"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f32": 35,
+                "f64": 30593,
+                "pred": 3426,
+                "s32": 2696,
+                "s64": 293
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.microphysics",
+              "name": "thompson_microphysics"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {
+                  "f32->f64": 2,
+                  "f64->f32": 22
+                },
+                "f32_to_f64": 2,
+                "f64_to_f32": 22,
+                "other": 0,
+                "total": 24
+              },
+              "dtype_tokens_optimized": {
+                "f32": 11095,
+                "f64": 12212,
+                "pred": 935,
+                "s32": 143,
+                "s64": 593
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.pbl",
+              "name": "mynn_pbl"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {
+                  "f32->f64": 3,
+                  "f64->f32": 19
+                },
+                "f32_to_f64": 3,
+                "f64_to_f32": 19,
+                "other": 0,
+                "total": 22
+              },
+              "dtype_tokens_optimized": {
+                "f32": 12585,
+                "f64": 3047,
+                "pred": 123,
+                "s32": 305,
+                "s64": 25
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.surface_layer",
+              "name": "mynn_surface_layer"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {
+                  "f32->f64": 10,
+                  "f64->f32": 51
+                },
+                "f32_to_f64": 10,
+                "f64_to_f32": 51,
+                "other": 0,
+                "total": 61
+              },
+              "dtype_tokens_optimized": {
+                "f32": 12005,
+                "f64": 14103,
+                "pred": 3032,
+                "s32": 5431,
+                "s64": 589,
+                "u32": 370
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.radiation",
+              "name": "rrtmg_lw"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {
+                  "f32->f64": 1
+                },
+                "f32_to_f64": 1,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 1
+              },
+              "converts_stablehlo": {
+                "by_transition": {
+                  "f32->f64": 23,
+                  "f64->f32": 186
+                },
+                "f32_to_f64": 23,
+                "f64_to_f32": 186,
+                "other": 0,
+                "total": 209
+              },
+              "dtype_tokens_optimized": {
+                "f32": 180661,
+                "f64": 2401,
+                "pred": 15598,
+                "s32": 9598,
+                "s64": 3315,
+                "u32": 318
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.radiation",
+              "name": "rrtmg_sw"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f32": 35,
+                "f64": 2233,
+                "pred": 448,
+                "s32": 733,
+                "s64": 306
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.gwd",
+              "name": "gwdo_gravity_wave_drag"
+            },
+            {
+              "converts_optimized": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "converts_stablehlo": {
+                "by_transition": {},
+                "f32_to_f64": 0,
+                "f64_to_f32": 0,
+                "other": 0,
+                "total": 0
+              },
+              "dtype_tokens_optimized": {
+                "f64": 27652,
+                "pred": 5104,
+                "s32": 3278,
+                "s64": 5650
+              },
+              "dtype_tokens_stablehlo": {},
+              "family": "physics.cumulus",
+              "name": "kain_fritsch_cumulus"
+            },
+            {
+              "converts_optimized": null,
+              "converts_stablehlo": null,
+              "dtype_tokens_optimized": null,
+              "dtype_tokens_stablehlo": null,
+              "family": "physics.land_surface",
+              "name": "noahmp_land_surface"
+            }
+          ]
+        },
+        "family_labels": [
+          "dycore.advection",
+          "dycore.damping",
+          "dycore.diffusion",
+          "dycore.eos",
+          "dycore.geopotential",
+          "dycore.mass",
+          "dycore.momentum",
+          "dycore.pgf",
+          "dycore.small_step",
+          "dycore.vertical_coordinate",
+          "dycore.vertical_implicit",
+          "physics.cumulus",
+          "physics.gwd",
+          "physics.land_surface",
+          "physics.microphysics",
+          "physics.pbl",
+          "physics.radiation",
+          "physics.surface_layer"
+        ],
+        "fixture_complete": true,
+        "largest_temporaries": [
+          {
+            "family": "physics.pbl",
+            "operator": "mynn_pbl",
+            "temporary_bytes": 1147709904
+          },
+          {
+            "family": "physics.radiation",
+            "operator": "rrtmg_lw",
+            "temporary_bytes": 784530152
+          },
+          {
+            "family": "physics.microphysics",
+            "operator": "thompson_microphysics",
+            "temporary_bytes": 383613560
+          },
+          {
+            "family": "dycore.advection",
+            "operator": "advect_moisture_scalars",
+            "temporary_bytes": 365433600
+          },
+          {
+            "family": "physics.radiation",
+            "operator": "rrtmg_sw",
+            "temporary_bytes": 191423504
+          },
+          {
+            "family": "physics.cumulus",
+            "operator": "kain_fritsch_cumulus",
+            "temporary_bytes": 116967008
+          },
+          {
+            "family": "dycore.advection",
+            "operator": "advect_w_flux",
+            "temporary_bytes": 39312000
+          },
+          {
+            "family": "physics.gwd",
+            "operator": "gwdo_gravity_wave_drag",
+            "temporary_bytes": 38792232
+          },
+          {
+            "family": "dycore.advection",
+            "operator": "advect_u_flux",
+            "temporary_bytes": 38505600
+          },
+          {
+            "family": "dycore.advection",
+            "operator": "advect_v_flux",
+            "temporary_bytes": 38505600
+          },
+          {
+            "family": "dycore.diffusion",
+            "operator": "horizontal_diffusion_coord_scalar_tendency",
+            "temporary_bytes": 35955056
+          },
+          {
+            "family": "dycore.pgf",
+            "operator": "large_step_horizontal_pgf",
+            "temporary_bytes": 33336048
+          },
+          {
+            "family": "dycore.advection",
+            "operator": "advect_scalar_flux",
+            "temporary_bytes": 32592000
+          },
+          {
+            "family": "dycore.momentum",
+            "operator": "large_step_coriolis",
+            "temporary_bytes": 24465008
+          },
+          {
+            "family": "dycore.vertical_implicit",
+            "operator": "advance_w",
+            "temporary_bytes": 23993672
+          },
+          {
+            "family": "dycore.diffusion",
+            "operator": "smag2d_horizontal_km",
+            "temporary_bytes": 23993456
+          },
+          {
+            "family": "dycore.diffusion",
+            "operator": "wrf_sixth_order_scalar_tendf",
+            "temporary_bytes": 20697600
+          },
+          {
+            "family": "dycore.diffusion",
+            "operator": "sixth_order_diffusion_tendency",
+            "temporary_bytes": 20697600
+          },
+          {
+            "family": "dycore.pgf",
+            "operator": "horizontal_pressure_gradient",
+            "temporary_bytes": 18757040
+          },
+          {
+            "family": "dycore.diffusion",
+            "operator": "horizontal_deformation_2d",
+            "temporary_bytes": 18011120
+          }
+        ],
+        "operator_count": 49,
+        "operator_names_sha256": "eb5fef428848d0ce253234503bdadad7c1eb4e1460fb67fd94ac854c63d70b0d",
+        "peak_live_buffers": 987654321,
+        "peak_live_buffers_reason": "requires a hash-bound compiler buffer-assignment/live-range export",
+        "status": "PASS"
+      },
+      "honest_missing_policy": "no top-level OK while any required C1/C2 sub-gate is MISSING/BLOCKED",
+      "integration_scope": {
+        "boundary_kind": "integration",
+        "boundary_source": "nvtx_pushpop_trace",
+        "capture_run_id": "cpu-complete-census-fixture",
+        "duration_ns": 10000.0,
+        "end_ns": 10000.0,
+        "mechanically_verified": true,
+        "production_derived": true,
+        "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+        "run_id": "cpu-complete-census-fixture",
+        "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+        "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "start_ns": 0.0,
+        "status": "OK"
+      },
+      "inter_kernel_gap_ns": {
+        "count": 14,
+        "max": 1440.0,
+        "median": 20.0,
+        "min": 20.0,
+        "p95": 1375.0,
+        "p99": 1426.9999999999998,
+        "status": "PASS",
+        "sum": 4260.0
+      },
+      "kernel_summary_crosscheck": {
+        "rule": "whole-capture summary totals must enclose exact-range trace totals",
+        "scoped_device_time_ns": 3750.0,
+        "scoped_launches": 15,
+        "status": "PASS",
+        "whole_capture_device_time_ns": 3750.0,
+        "whole_capture_launches": 15
+      },
+      "launch_duration_ns": {
+        "count": 15,
+        "max": 600.0,
+        "median": 200.0,
+        "min": 100.0,
+        "p95": 459.99999999999983,
+        "p99": 571.9999999999999,
+        "status": "PASS",
+        "sum": 3750.0
+      },
+      "measurement_partition": {
+        "m0_core_m1_blocking": {
+          "fields": [
+            "ordinary_and_cadence_step_classes",
+            "kernels_and_device_time_per_step",
+            "family_launch_and_device_time_shares",
+            "top_kernel_duration_distributions",
+            "inter_kernel_gaps_and_tail_kernels",
+            "timestamped_integration_range_transfer_audit",
+            "launch_and_device_time_attribution",
+            "profiler_perturbation",
+            "cold_cached_and_clean_timing",
+            "single_case_vram_and_host_rss"
+          ],
+          "governed_by_required_gates": true,
+          "source": "nsys plus bound sidecars/clean arm"
+        },
+        "m0_deferred_m2": {
+          "fields": [
+            "registers_per_thread",
+            "achieved_occupancy",
+            "stall_distribution",
+            "dram_bytes",
+            "l2_bytes",
+            "source_location"
+          ],
+          "governed_by_required_gates": false,
+          "source": "ncu",
+          "status": "MISSING_UNTIL_M2",
+          "waived": false
+        }
+      },
+      "production_derived": true,
+      "production_representativeness": {
+        "a6_used_for_this_gate": false,
+        "candidate_binding": {
+          "run_id": "cpu-complete-census-fixture",
+          "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "candidate_rank_shares": {
+          "dycore.advection": 0.08533333333333333,
+          "physics.cumulus": 0.36,
+          "physics.microphysics": 0.25333333333333335,
+          "physics.pbl": 0.14133333333333334,
+          "physics.radiation": 0.16
+        },
+        "checks": {
+          "active_d01_schemes": true,
+          "cadence_events": true,
+          "family_coverage": true,
+          "top_family_rank": true
+        },
+        "family_coverage": 1.0,
+        "min_family_coverage": 0.95,
+        "min_spearman": 0.8,
+        "missing_cadence_events": [],
+        "missing_reference_families": [],
+        "missing_schemes": [],
+        "rank_families": [
+          "physics.cumulus",
+          "physics.microphysics",
+          "physics.radiation",
+          "physics.pbl",
+          "dycore.advection"
+        ],
+        "reference_binding": {
+          "run_id": "production-reference-fixture",
+          "source_rep": {
+            "path": "/cpu-complete-fixture/reference.nsys-rep",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "reference_kind": "matched two-domain production trace",
+        "reference_rank_shares": {
+          "dycore.advection": 320.0,
+          "physics.cumulus": 1350.0,
+          "physics.microphysics": 950.0,
+          "physics.pbl": 530.0,
+          "physics.radiation": 600.0
+        },
+        "spearman": 1.0,
+        "status": "PASS"
+      },
+      "raw_artifacts": {
+        "exports": {
+          "cuda_api_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_api_sum.csv",
+            "sha256": "8888888888888888888888888888888888888888888888888888888888888888"
+          },
+          "cuda_api_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_api_trace.csv",
+            "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+          },
+          "cuda_gpu_kern_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_kern_sum.csv",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          },
+          "cuda_gpu_mem_size_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_mem_size_sum.csv",
+            "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+          },
+          "cuda_gpu_mem_time_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_mem_time_sum.csv",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "cuda_gpu_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_sum.csv",
+            "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+          },
+          "cuda_gpu_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/cuda_gpu_trace.csv",
+            "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "nvtx_gpu_proj_sum": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/nvtx_gpu_proj_sum.csv",
+            "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+          },
+          "nvtx_pushpop_trace": {
+            "data_rows": 16,
+            "path": "/cpu-complete-fixture/nvtx_pushpop_trace.csv",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          }
+        },
+        "source_rep": "/cpu-complete-fixture/capture.nsys-rep",
+        "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "release_provenance": {
+        "release_before_analysis": true,
+        "run_id": "cpu-complete-census-fixture",
+        "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+      },
+      "required_gates": {
+        "attribution": {
+          "attributed_device_time_share": 1.0,
+          "attributed_launch_share": 1.0,
+          "families": {
+            "dycore.advection": {
+              "device_time_ns": 320.0,
+              "device_time_share": 0.08533333333333333,
+              "launches": 3
+            },
+            "physics.cumulus": {
+              "device_time_ns": 1350.0,
+              "device_time_share": 0.36,
+              "launches": 4
+            },
+            "physics.microphysics": {
+              "device_time_ns": 950.0,
+              "device_time_share": 0.25333333333333335,
+              "launches": 4
+            },
+            "physics.pbl": {
+              "device_time_ns": 530.0,
+              "device_time_share": 0.14133333333333334,
+              "launches": 3
+            },
+            "physics.radiation": {
+              "device_time_ns": 600.0,
+              "device_time_share": 0.16,
+              "launches": 1
+            }
+          },
+          "measured_dycore_share_of_known": 0.08533333333333333,
+          "measured_physics_share_of_known": 0.9146666666666666,
+          "meets_attribution_bar": true,
+          "static_proxy_reference": {
+            "dycore_share": 0.183,
+            "note": "the static proxy is a CPU-backend instruction-count proxy. It is the pre-registered thing this measurement must agree or disagree with; a disagreement is a result, not an error, and per manager decision e5df2364 neither number alone authorises an M2 reorder.",
+            "physics_share": 0.817,
+            "radiation_share": 0.365,
+            "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU)"
+          },
+          "status": "PASS",
+          "total_device_time_ns": 3750.0,
+          "total_launches": 15,
+          "unknown_device_time_share": 0.0,
+          "unknown_launch_share": 0.0
+        },
+        "clean_w3": {
+          "status": "PASS"
+        },
+        "export": {
+          "manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "problems": [],
+          "required": [
+            "nvtx_pushpop_trace",
+            "cuda_gpu_kern_sum",
+            "cuda_gpu_trace"
+          ],
+          "status": "PASS"
+        },
+        "hlo_completeness": {
+          "evidence": {
+            "a6_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/hlo_dtype_transfer_census.json",
+            "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+            "compiled_memory_analysis": "MISSING",
+            "dtype_and_convert_census": {
+              "exact_compiled_program": {
+                "convert_operation_count": 2,
+                "dtype_token_counts": {
+                  "f32": 100,
+                  "f64": 3
+                }
+              },
+              "per_operator": [
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 35,
+                    "f64": 934,
+                    "pred": 2,
+                    "s32": 5
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.small_step",
+                  "name": "small_step_prep"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 121,
+                    "pred": 3
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.eos",
+                  "name": "calc_p_rho"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 134,
+                    "pred": 3
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.eos",
+                  "name": "calc_p_rho_step"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 117,
+                    "pred": 3
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.eos",
+                  "name": "calc_al_p_kernel"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 175
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.eos",
+                  "name": "diagnose_pressure_al_alt"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 86
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.eos",
+                  "name": "moisture_coupling_factors"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 574,
+                    "s32": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.pgf",
+                  "name": "horizontal_pressure_gradient"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 685,
+                    "s32": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.pgf",
+                  "name": "large_step_horizontal_pgf"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 333
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.momentum",
+                  "name": "large_step_coriolis"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 276
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.momentum",
+                  "name": "large_step_horizontal_curvature"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 87,
+                    "s32": 2
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.pgf",
+                  "name": "x_face_pressure_dpn"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 87,
+                    "s32": 2
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.pgf",
+                  "name": "y_face_pressure_dpn"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 165
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.mass",
+                  "name": "mu_continuity_tendency"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 7837,
+                    "s32": 215
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "calc_coef_w"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 220,
+                    "pred": 8,
+                    "s64": 63
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "thomas_solve_scan"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 1078,
+                    "pred": 14,
+                    "s32": 17,
+                    "s64": 63
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "advance_w"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 91,
+                    "s32": 2
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "pg_buoy_w_dry"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 160,
+                    "s32": 2
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "pg_buoy_w_moist"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 47
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_implicit",
+                  "name": "moist_cqw_calc_face"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 79,
+                    "pred": 2,
+                    "s32": 2
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.damping",
+                  "name": "w_damp_vertical_cfl"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 516,
+                    "pred": 50,
+                    "s32": 8,
+                    "s64": 40
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.geopotential",
+                  "name": "rhs_ph"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 31
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_coordinate",
+                  "name": "hybrid_mass_level_pressure"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 31
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_coordinate",
+                  "name": "hybrid_face_level_pressure"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 24
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_coordinate",
+                  "name": "hybrid_mass_weight"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 24
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_coordinate",
+                  "name": "hybrid_face_weight"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 35
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.vertical_coordinate",
+                  "name": "hybrid_pressure_thickness"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 284,
+                    "s32": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "advect_scalar_flux"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 388,
+                    "s32": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "advect_u_flux"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 388,
+                    "s32": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "advect_v_flux"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 366,
+                    "s32": 8
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "advect_w_flux"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 10861,
+                    "pred": 66,
+                    "s32": 24
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "advect_moisture_scalars"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 94
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "flux5_face_periodic"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 6
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.advection",
+                  "name": "positive_definite_limiter"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 373,
+                    "s32": 12
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "horizontal_deformation_2d"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 521,
+                    "s32": 12
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "smag2d_horizontal_km"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 737,
+                    "s32": 12
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "horizontal_diffusion_coord_scalar_tendency"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 202,
+                    "pred": 19,
+                    "s64": 9
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "wrf_sixth_order_scalar_tendf"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 142,
+                    "pred": 4
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "sixth_order_diffusion_tendency"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 85,
+                    "s32": 3
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.diffusion",
+                  "name": "dry_brunt_vaisala_squared"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 37
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.damping",
+                  "name": "apply_rayleigh_w"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 6
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "dycore.damping",
+                  "name": "apply_smdiv_pressure"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 35,
+                    "f64": 30593,
+                    "pred": 3426,
+                    "s32": 2696,
+                    "s64": 293
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.microphysics",
+                  "name": "thompson_microphysics"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {
+                      "f32->f64": 2,
+                      "f64->f32": 22
+                    },
+                    "f32_to_f64": 2,
+                    "f64_to_f32": 22,
+                    "other": 0,
+                    "total": 24
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 11095,
+                    "f64": 12212,
+                    "pred": 935,
+                    "s32": 143,
+                    "s64": 593
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.pbl",
+                  "name": "mynn_pbl"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {
+                      "f32->f64": 3,
+                      "f64->f32": 19
+                    },
+                    "f32_to_f64": 3,
+                    "f64_to_f32": 19,
+                    "other": 0,
+                    "total": 22
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 12585,
+                    "f64": 3047,
+                    "pred": 123,
+                    "s32": 305,
+                    "s64": 25
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.surface_layer",
+                  "name": "mynn_surface_layer"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {
+                      "f32->f64": 10,
+                      "f64->f32": 51
+                    },
+                    "f32_to_f64": 10,
+                    "f64_to_f32": 51,
+                    "other": 0,
+                    "total": 61
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 12005,
+                    "f64": 14103,
+                    "pred": 3032,
+                    "s32": 5431,
+                    "s64": 589,
+                    "u32": 370
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.radiation",
+                  "name": "rrtmg_lw"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {
+                      "f32->f64": 1
+                    },
+                    "f32_to_f64": 1,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 1
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {
+                      "f32->f64": 23,
+                      "f64->f32": 186
+                    },
+                    "f32_to_f64": 23,
+                    "f64_to_f32": 186,
+                    "other": 0,
+                    "total": 209
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 180661,
+                    "f64": 2401,
+                    "pred": 15598,
+                    "s32": 9598,
+                    "s64": 3315,
+                    "u32": 318
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.radiation",
+                  "name": "rrtmg_sw"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f32": 35,
+                    "f64": 2233,
+                    "pred": 448,
+                    "s32": 733,
+                    "s64": 306
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.gwd",
+                  "name": "gwdo_gravity_wave_drag"
+                },
+                {
+                  "converts_optimized": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "converts_stablehlo": {
+                    "by_transition": {},
+                    "f32_to_f64": 0,
+                    "f64_to_f32": 0,
+                    "other": 0,
+                    "total": 0
+                  },
+                  "dtype_tokens_optimized": {
+                    "f64": 27652,
+                    "pred": 5104,
+                    "s32": 3278,
+                    "s64": 5650
+                  },
+                  "dtype_tokens_stablehlo": {},
+                  "family": "physics.cumulus",
+                  "name": "kain_fritsch_cumulus"
+                },
+                {
+                  "converts_optimized": null,
+                  "converts_stablehlo": null,
+                  "dtype_tokens_optimized": null,
+                  "dtype_tokens_stablehlo": null,
+                  "family": "physics.land_surface",
+                  "name": "noahmp_land_surface"
+                }
+              ]
+            },
+            "family_labels": [
+              "dycore.advection",
+              "dycore.damping",
+              "dycore.diffusion",
+              "dycore.eos",
+              "dycore.geopotential",
+              "dycore.mass",
+              "dycore.momentum",
+              "dycore.pgf",
+              "dycore.small_step",
+              "dycore.vertical_coordinate",
+              "dycore.vertical_implicit",
+              "physics.cumulus",
+              "physics.gwd",
+              "physics.land_surface",
+              "physics.microphysics",
+              "physics.pbl",
+              "physics.radiation",
+              "physics.surface_layer"
+            ],
+            "fixture_complete": true,
+            "largest_temporaries": [
+              {
+                "family": "physics.pbl",
+                "operator": "mynn_pbl",
+                "temporary_bytes": 1147709904
+              },
+              {
+                "family": "physics.radiation",
+                "operator": "rrtmg_lw",
+                "temporary_bytes": 784530152
+              },
+              {
+                "family": "physics.microphysics",
+                "operator": "thompson_microphysics",
+                "temporary_bytes": 383613560
+              },
+              {
+                "family": "dycore.advection",
+                "operator": "advect_moisture_scalars",
+                "temporary_bytes": 365433600
+              },
+              {
+                "family": "physics.radiation",
+                "operator": "rrtmg_sw",
+                "temporary_bytes": 191423504
+              },
+              {
+                "family": "physics.cumulus",
+                "operator": "kain_fritsch_cumulus",
+                "temporary_bytes": 116967008
+              },
+              {
+                "family": "dycore.advection",
+                "operator": "advect_w_flux",
+                "temporary_bytes": 39312000
+              },
+              {
+                "family": "physics.gwd",
+                "operator": "gwdo_gravity_wave_drag",
+                "temporary_bytes": 38792232
+              },
+              {
+                "family": "dycore.advection",
+                "operator": "advect_u_flux",
+                "temporary_bytes": 38505600
+              },
+              {
+                "family": "dycore.advection",
+                "operator": "advect_v_flux",
+                "temporary_bytes": 38505600
+              },
+              {
+                "family": "dycore.diffusion",
+                "operator": "horizontal_diffusion_coord_scalar_tendency",
+                "temporary_bytes": 35955056
+              },
+              {
+                "family": "dycore.pgf",
+                "operator": "large_step_horizontal_pgf",
+                "temporary_bytes": 33336048
+              },
+              {
+                "family": "dycore.advection",
+                "operator": "advect_scalar_flux",
+                "temporary_bytes": 32592000
+              },
+              {
+                "family": "dycore.momentum",
+                "operator": "large_step_coriolis",
+                "temporary_bytes": 24465008
+              },
+              {
+                "family": "dycore.vertical_implicit",
+                "operator": "advance_w",
+                "temporary_bytes": 23993672
+              },
+              {
+                "family": "dycore.diffusion",
+                "operator": "smag2d_horizontal_km",
+                "temporary_bytes": 23993456
+              },
+              {
+                "family": "dycore.diffusion",
+                "operator": "wrf_sixth_order_scalar_tendf",
+                "temporary_bytes": 20697600
+              },
+              {
+                "family": "dycore.diffusion",
+                "operator": "sixth_order_diffusion_tendency",
+                "temporary_bytes": 20697600
+              },
+              {
+                "family": "dycore.pgf",
+                "operator": "horizontal_pressure_gradient",
+                "temporary_bytes": 18757040
+              },
+              {
+                "family": "dycore.diffusion",
+                "operator": "horizontal_deformation_2d",
+                "temporary_bytes": 18011120
+              }
+            ],
+            "operator_count": 49,
+            "operator_names_sha256": "eb5fef428848d0ce253234503bdadad7c1eb4e1460fb67fd94ac854c63d70b0d",
+            "peak_live_buffers": 987654321,
+            "peak_live_buffers_reason": "requires a hash-bound compiler buffer-assignment/live-range export",
+            "status": "PASS"
+          },
+          "status": "PASS"
+        },
+        "host_ram": {
+          "evidence": {
+            "peak_process_tree_rss_bytes": 4294967296,
+            "run_id": "cpu-complete-census-fixture",
+            "schema": "wrf_gpu2.v025.m0.process_tree_rss.v1",
+            "status": "PASS"
+          },
+          "reason": null,
+          "status": "PASS"
+        },
+        "integration_scope": {
+          "boundary_kind": "integration",
+          "boundary_source": "nvtx_pushpop_trace",
+          "capture_run_id": "cpu-complete-census-fixture",
+          "duration_ns": 10000.0,
+          "end_ns": 10000.0,
+          "mechanically_verified": true,
+          "production_derived": true,
+          "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+          "run_id": "cpu-complete-census-fixture",
+          "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+          "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "start_ns": 0.0,
+          "status": "PASS"
+        },
+        "production_representativeness": {
+          "a6_used_for_this_gate": false,
+          "candidate_binding": {
+            "run_id": "cpu-complete-census-fixture",
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "candidate_rank_shares": {
+            "dycore.advection": 0.08533333333333333,
+            "physics.cumulus": 0.36,
+            "physics.microphysics": 0.25333333333333335,
+            "physics.pbl": 0.14133333333333334,
+            "physics.radiation": 0.16
+          },
+          "checks": {
+            "active_d01_schemes": true,
+            "cadence_events": true,
+            "family_coverage": true,
+            "top_family_rank": true
+          },
+          "family_coverage": 1.0,
+          "min_family_coverage": 0.95,
+          "min_spearman": 0.8,
+          "missing_cadence_events": [],
+          "missing_reference_families": [],
+          "missing_schemes": [],
+          "rank_families": [
+            "physics.cumulus",
+            "physics.microphysics",
+            "physics.radiation",
+            "physics.pbl",
+            "dycore.advection"
+          ],
+          "reference_binding": {
+            "run_id": "production-reference-fixture",
+            "source_rep": {
+              "path": "/cpu-complete-fixture/reference.nsys-rep",
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "reference_kind": "matched two-domain production trace",
+          "reference_rank_shares": {
+            "dycore.advection": 320.0,
+            "physics.cumulus": 1350.0,
+            "physics.microphysics": 950.0,
+            "physics.pbl": 530.0,
+            "physics.radiation": 600.0
+          },
+          "spearman": 1.0,
+          "status": "PASS"
+        },
+        "profiler_perturbation": {
+          "class": "LOW",
+          "identity": {
+            "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "order": [
+            "profiled-fixture",
+            "clean-fixture"
+          ],
+          "overhead_fraction": 0.1,
+          "profiled_seconds": 11.0,
+          "status": "PASS",
+          "unprofiled_seconds": 10.0,
+          "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+        },
+        "source_binding": {
+          "candidate_source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "exact_child_run_id": "cpu-complete-census-fixture",
+          "release_binding": {
+            "release_before_analysis": true,
+            "run_id": "cpu-complete-census-fixture",
+            "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+          },
+          "run_id": "cpu-complete-census-fixture",
+          "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "status": "PASS"
+        },
+        "step_classes": {
+          "classes": {
+            "ordinary": {
+              "device_time_per_step_ns": {
+                "count": 3,
+                "max": 1000.0,
+                "median": 900.0,
+                "min": 750.0,
+                "p95": 990.0,
+                "p99": 998.0,
+                "status": "PASS",
+                "sum": 2650.0
+              },
+              "indices": [
+                1,
+                2,
+                3
+              ],
+              "kernels_per_step": {
+                "count": 3,
+                "max": 4.0,
+                "median": 4.0,
+                "min": 4.0,
+                "p95": 4.0,
+                "p99": 4.0,
+                "status": "PASS",
+                "sum": 12.0
+              },
+              "steps": 3
+            },
+            "radiation": {
+              "device_time_per_step_ns": {
+                "count": 1,
+                "max": 1100.0,
+                "median": 1100.0,
+                "min": 1100.0,
+                "p95": 1100.0,
+                "p99": 1100.0,
+                "status": "PASS",
+                "sum": 1100.0
+              },
+              "indices": [
+                0
+              ],
+              "kernels_per_step": {
+                "count": 1,
+                "max": 3.0,
+                "median": 3.0,
+                "min": 3.0,
+                "p95": 3.0,
+                "p99": 3.0,
+                "status": "PASS",
+                "sum": 3.0
+              },
+              "steps": 1
+            }
+          },
+          "derivation": {
+            "marker_prefix": "GPUWRF_M0_TIMESTEP",
+            "method": "explicit-indexed-production-NVTX-step-ranges"
+          },
+          "derived_steps": 4,
+          "expected_radiation_steps": 1,
+          "expected_steps": 4,
+          "radiation_cadence_steps": 4,
+          "reason": null,
+          "status": "PASS",
+          "steps": [
+            {
+              "device_time_ns": 1100.0,
+              "end_ns": 2400.0,
+              "families": {
+                "physics.cumulus": {
+                  "device_time_ns": 300.0,
+                  "launches": 1
+                },
+                "physics.microphysics": {
+                  "device_time_ns": 200.0,
+                  "launches": 1
+                },
+                "physics.radiation": {
+                  "device_time_ns": 600.0,
+                  "launches": 1
+                }
+              },
+              "has_radiation": true,
+              "index": 0,
+              "kernel_launches": 3,
+              "start_ns": 100.0
+            },
+            {
+              "device_time_ns": 1000.0,
+              "end_ns": 4800.0,
+              "families": {
+                "dycore.advection": {
+                  "device_time_ns": 100.0,
+                  "launches": 1
+                },
+                "physics.cumulus": {
+                  "device_time_ns": 400.0,
+                  "launches": 1
+                },
+                "physics.microphysics": {
+                  "device_time_ns": 300.0,
+                  "launches": 1
+                },
+                "physics.pbl": {
+                  "device_time_ns": 200.0,
+                  "launches": 1
+                }
+              },
+              "has_radiation": false,
+              "index": 1,
+              "kernel_launches": 4,
+              "start_ns": 2500.0
+            },
+            {
+              "device_time_ns": 900.0,
+              "end_ns": 7200.0,
+              "families": {
+                "dycore.advection": {
+                  "device_time_ns": 120.0,
+                  "launches": 1
+                },
+                "physics.cumulus": {
+                  "device_time_ns": 350.0,
+                  "launches": 1
+                },
+                "physics.microphysics": {
+                  "device_time_ns": 250.0,
+                  "launches": 1
+                },
+                "physics.pbl": {
+                  "device_time_ns": 180.0,
+                  "launches": 1
+                }
+              },
+              "has_radiation": false,
+              "index": 2,
+              "kernel_launches": 4,
+              "start_ns": 4900.0
+            },
+            {
+              "device_time_ns": 750.0,
+              "end_ns": 9900.0,
+              "families": {
+                "dycore.advection": {
+                  "device_time_ns": 100.0,
+                  "launches": 1
+                },
+                "physics.cumulus": {
+                  "device_time_ns": 300.0,
+                  "launches": 1
+                },
+                "physics.microphysics": {
+                  "device_time_ns": 200.0,
+                  "launches": 1
+                },
+                "physics.pbl": {
+                  "device_time_ns": 150.0,
+                  "launches": 1
+                }
+              },
+              "has_radiation": false,
+              "index": 3,
+              "kernel_launches": 4,
+              "start_ns": 7300.0
+            }
+          ]
+        },
+        "summary_crosscheck": {
+          "rule": "whole-capture summary totals must enclose exact-range trace totals",
+          "scoped_device_time_ns": 3750.0,
+          "scoped_launches": 15,
+          "status": "PASS",
+          "whole_capture_device_time_ns": 3750.0,
+          "whole_capture_launches": 15
+        },
+        "taxonomy": {
+          "a6_operator_count": 49,
+          "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+          "attribution_threshold": 0.95,
+          "family_patterns": [
+            [
+              "rrtmg",
+              "physics.radiation"
+            ],
+            [
+              "radiation",
+              "physics.radiation"
+            ],
+            [
+              "thompson",
+              "physics.microphysics"
+            ],
+            [
+              "microphys",
+              "physics.microphysics"
+            ],
+            [
+              "mynn",
+              "physics.pbl"
+            ],
+            [
+              "pbl",
+              "physics.pbl"
+            ],
+            [
+              "sfclay",
+              "physics.surface_layer"
+            ],
+            [
+              "surface_layer",
+              "physics.surface_layer"
+            ],
+            [
+              "noahmp",
+              "physics.land_surface"
+            ],
+            [
+              "kf_",
+              "physics.cumulus"
+            ],
+            [
+              "cumulus",
+              "physics.cumulus"
+            ],
+            [
+              "gwdo",
+              "physics.gwd"
+            ],
+            [
+              "advect",
+              "dycore.advection"
+            ],
+            [
+              "flux5",
+              "dycore.advection"
+            ],
+            [
+              "thomas",
+              "dycore.vertical_implicit"
+            ],
+            [
+              "advance_w",
+              "dycore.vertical_implicit"
+            ],
+            [
+              "calc_coef_w",
+              "dycore.vertical_implicit"
+            ],
+            [
+              "rhs_ph",
+              "dycore.geopotential"
+            ],
+            [
+              "small_step_prep",
+              "dycore.small_step"
+            ],
+            [
+              "calc_p_rho",
+              "dycore.eos"
+            ],
+            [
+              "diagnose_pressure",
+              "dycore.eos"
+            ],
+            [
+              "pressure_gradient",
+              "dycore.pgf"
+            ],
+            [
+              "pgf",
+              "dycore.pgf"
+            ],
+            [
+              "coriolis",
+              "dycore.momentum"
+            ],
+            [
+              "curvature",
+              "dycore.momentum"
+            ],
+            [
+              "mu_continuity",
+              "dycore.mass"
+            ],
+            [
+              "hybrid",
+              "dycore.vertical_coordinate"
+            ],
+            [
+              "diffusion",
+              "dycore.diffusion"
+            ],
+            [
+              "smag",
+              "dycore.diffusion"
+            ],
+            [
+              "deformation",
+              "dycore.diffusion"
+            ],
+            [
+              "damp",
+              "dycore.damping"
+            ],
+            [
+              "smdiv",
+              "dycore.damping"
+            ]
+          ],
+          "family_patterns_sha256": "3f869dbf6ee9286a3af8f1a078fafc87b5fa3a8914ee7d0b7d9b1dfc1427a918",
+          "independent_launch_and_time_bars": true,
+          "status": "PASS"
+        },
+        "timing_completeness": {
+          "status": "PASS",
+          "values": {
+            "cached_readiness": 5.0,
+            "clean_status": "PASS",
+            "clean_warm_integration": 10.0,
+            "cold_readiness": 20.0,
+            "profiled_warm_integration": 10.0,
+            "profiler_perturbation": {
+              "class": "LOW",
+              "identity": {
+                "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "order": [
+                "profiled-fixture",
+                "clean-fixture"
+              ],
+              "overhead_fraction": 0.1,
+              "profiled_seconds": 11.0,
+              "status": "PASS",
+              "unprofiled_seconds": 10.0,
+              "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+            }
+          }
+        },
+        "transfer_audit": {
+          "host_device_in_loop": 0,
+          "integration_scope": {
+            "boundary_kind": "integration",
+            "boundary_source": "nvtx_pushpop_trace",
+            "capture_run_id": "cpu-complete-census-fixture",
+            "duration_ns": 10000.0,
+            "end_ns": 10000.0,
+            "mechanically_verified": true,
+            "production_derived": true,
+            "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+            "run_id": "cpu-complete-census-fixture",
+            "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+            "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "start_ns": 0.0,
+            "status": "OK"
+          },
+          "offending": [],
+          "rows_in_loop": 16,
+          "rule": "\u00a77 forbids host/device transfer inside the timestep loop without an ADR",
+          "status": "PASS"
+        },
+        "vram": {
+          "allocator": {
+            "peak_bytes_in_use": 2147483648,
+            "peak_bytes_reserved": 3221225472
+          },
+          "lock_owner_total_residency": {
+            "peak_baseline_subtracted_bytes": 3221225472,
+            "run_id": "cpu-complete-census-fixture",
+            "sampling_quality": {
+              "status": "PASS"
+            },
+            "schema": "wrf_gpu2.v025.m0.lock_owner_total_residency.v1",
+            "status": "PASS"
+          },
+          "reason": null,
+          "status": "PASS"
+        }
+      },
+      "resources": {
+        "host_ram": {
+          "evidence": {
+            "peak_process_tree_rss_bytes": 4294967296,
+            "run_id": "cpu-complete-census-fixture",
+            "schema": "wrf_gpu2.v025.m0.process_tree_rss.v1",
+            "status": "PASS"
+          },
+          "reason": null,
+          "status": "PASS"
+        },
+        "vram": {
+          "allocator": {
+            "peak_bytes_in_use": 2147483648,
+            "peak_bytes_reserved": 3221225472
+          },
+          "lock_owner_total_residency": {
+            "peak_baseline_subtracted_bytes": 3221225472,
+            "run_id": "cpu-complete-census-fixture",
+            "sampling_quality": {
+              "status": "PASS"
+            },
+            "schema": "wrf_gpu2.v025.m0.lock_owner_total_residency.v1",
+            "status": "PASS"
+          },
+          "reason": null,
+          "status": "PASS"
+        }
+      },
+      "run_id": "cpu-complete-census-fixture",
+      "schema": "wrf_gpu2.v025.m0.postlock_kernel_census.v1",
+      "source_binding": {
+        "candidate_source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "exact_child_run_id": "cpu-complete-census-fixture",
+        "release_binding": {
+          "release_before_analysis": true,
+          "run_id": "cpu-complete-census-fixture",
+          "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1"
+        },
+        "run_id": "cpu-complete-census-fixture",
+        "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "PASS"
+      },
+      "status": "OK",
+      "step_census": {
+        "classes": {
+          "ordinary": {
+            "device_time_per_step_ns": {
+              "count": 3,
+              "max": 1000.0,
+              "median": 900.0,
+              "min": 750.0,
+              "p95": 990.0,
+              "p99": 998.0,
+              "status": "PASS",
+              "sum": 2650.0
+            },
+            "indices": [
+              1,
+              2,
+              3
+            ],
+            "kernels_per_step": {
+              "count": 3,
+              "max": 4.0,
+              "median": 4.0,
+              "min": 4.0,
+              "p95": 4.0,
+              "p99": 4.0,
+              "status": "PASS",
+              "sum": 12.0
+            },
+            "steps": 3
+          },
+          "radiation": {
+            "device_time_per_step_ns": {
+              "count": 1,
+              "max": 1100.0,
+              "median": 1100.0,
+              "min": 1100.0,
+              "p95": 1100.0,
+              "p99": 1100.0,
+              "status": "PASS",
+              "sum": 1100.0
+            },
+            "indices": [
+              0
+            ],
+            "kernels_per_step": {
+              "count": 1,
+              "max": 3.0,
+              "median": 3.0,
+              "min": 3.0,
+              "p95": 3.0,
+              "p99": 3.0,
+              "status": "PASS",
+              "sum": 3.0
+            },
+            "steps": 1
+          }
+        },
+        "derivation": {
+          "marker_prefix": "GPUWRF_M0_TIMESTEP",
+          "method": "explicit-indexed-production-NVTX-step-ranges"
+        },
+        "derived_steps": 4,
+        "expected_radiation_steps": 1,
+        "expected_steps": 4,
+        "radiation_cadence_steps": 4,
+        "reason": null,
+        "status": "PASS",
+        "steps": [
+          {
+            "device_time_ns": 1100.0,
+            "end_ns": 2400.0,
+            "families": {
+              "physics.cumulus": {
+                "device_time_ns": 300.0,
+                "launches": 1
+              },
+              "physics.microphysics": {
+                "device_time_ns": 200.0,
+                "launches": 1
+              },
+              "physics.radiation": {
+                "device_time_ns": 600.0,
+                "launches": 1
+              }
+            },
+            "has_radiation": true,
+            "index": 0,
+            "kernel_launches": 3,
+            "start_ns": 100.0
+          },
+          {
+            "device_time_ns": 1000.0,
+            "end_ns": 4800.0,
+            "families": {
+              "dycore.advection": {
+                "device_time_ns": 100.0,
+                "launches": 1
+              },
+              "physics.cumulus": {
+                "device_time_ns": 400.0,
+                "launches": 1
+              },
+              "physics.microphysics": {
+                "device_time_ns": 300.0,
+                "launches": 1
+              },
+              "physics.pbl": {
+                "device_time_ns": 200.0,
+                "launches": 1
+              }
+            },
+            "has_radiation": false,
+            "index": 1,
+            "kernel_launches": 4,
+            "start_ns": 2500.0
+          },
+          {
+            "device_time_ns": 900.0,
+            "end_ns": 7200.0,
+            "families": {
+              "dycore.advection": {
+                "device_time_ns": 120.0,
+                "launches": 1
+              },
+              "physics.cumulus": {
+                "device_time_ns": 350.0,
+                "launches": 1
+              },
+              "physics.microphysics": {
+                "device_time_ns": 250.0,
+                "launches": 1
+              },
+              "physics.pbl": {
+                "device_time_ns": 180.0,
+                "launches": 1
+              }
+            },
+            "has_radiation": false,
+            "index": 2,
+            "kernel_launches": 4,
+            "start_ns": 4900.0
+          },
+          {
+            "device_time_ns": 750.0,
+            "end_ns": 9900.0,
+            "families": {
+              "dycore.advection": {
+                "device_time_ns": 100.0,
+                "launches": 1
+              },
+              "physics.cumulus": {
+                "device_time_ns": 300.0,
+                "launches": 1
+              },
+              "physics.microphysics": {
+                "device_time_ns": 200.0,
+                "launches": 1
+              },
+              "physics.pbl": {
+                "device_time_ns": 150.0,
+                "launches": 1
+              }
+            },
+            "has_radiation": false,
+            "index": 3,
+            "kernel_launches": 4,
+            "start_ns": 7300.0
+          }
+        ]
+      },
+      "tail_kernels": [
+        {
+          "duration_ns": 600.0,
+          "name": "rrtmg_lw_kernel",
+          "start_ns": 150.0
+        },
+        {
+          "duration_ns": 400.0,
+          "name": "kf_cumulus_kernel",
+          "start_ns": 2550.0
+        },
+        {
+          "duration_ns": 350.0,
+          "name": "kf_cumulus_kernel",
+          "start_ns": 4950.0
+        },
+        {
+          "duration_ns": 300.0,
+          "name": "kf_cumulus_kernel",
+          "start_ns": 770.0
+        },
+        {
+          "duration_ns": 300.0,
+          "name": "kf_cumulus_kernel",
+          "start_ns": 7350.0
+        },
+        {
+          "duration_ns": 300.0,
+          "name": "thompson_microphysics_kernel",
+          "start_ns": 2970.0
+        },
+        {
+          "duration_ns": 250.0,
+          "name": "thompson_microphysics_kernel",
+          "start_ns": 5320.0
+        },
+        {
+          "duration_ns": 200.0,
+          "name": "mynn_pbl_kernel",
+          "start_ns": 3290.0
+        },
+        {
+          "duration_ns": 200.0,
+          "name": "thompson_microphysics_kernel",
+          "start_ns": 1090.0
+        },
+        {
+          "duration_ns": 200.0,
+          "name": "thompson_microphysics_kernel",
+          "start_ns": 7670.0
+        },
+        {
+          "duration_ns": 180.0,
+          "name": "mynn_pbl_kernel",
+          "start_ns": 5590.0
+        },
+        {
+          "duration_ns": 150.0,
+          "name": "mynn_pbl_kernel",
+          "start_ns": 7890.0
+        },
+        {
+          "duration_ns": 120.0,
+          "name": "advect_u_flux_kernel",
+          "start_ns": 5790.0
+        },
+        {
+          "duration_ns": 100.0,
+          "name": "advect_u_flux_kernel",
+          "start_ns": 3510.0
+        },
+        {
+          "duration_ns": 100.0,
+          "name": "advect_u_flux_kernel",
+          "start_ns": 8060.0
+        }
+      ],
+      "taxonomy": {
+        "a6_operator_count": 49,
+        "a6_sha256": "69c075578056538e4ed86c5ef61ca5be642d56cbe6d8eb9bff5c646194653f6b",
+        "attribution_threshold": 0.95,
+        "family_patterns": [
+          [
+            "rrtmg",
+            "physics.radiation"
+          ],
+          [
+            "radiation",
+            "physics.radiation"
+          ],
+          [
+            "thompson",
+            "physics.microphysics"
+          ],
+          [
+            "microphys",
+            "physics.microphysics"
+          ],
+          [
+            "mynn",
+            "physics.pbl"
+          ],
+          [
+            "pbl",
+            "physics.pbl"
+          ],
+          [
+            "sfclay",
+            "physics.surface_layer"
+          ],
+          [
+            "surface_layer",
+            "physics.surface_layer"
+          ],
+          [
+            "noahmp",
+            "physics.land_surface"
+          ],
+          [
+            "kf_",
+            "physics.cumulus"
+          ],
+          [
+            "cumulus",
+            "physics.cumulus"
+          ],
+          [
+            "gwdo",
+            "physics.gwd"
+          ],
+          [
+            "advect",
+            "dycore.advection"
+          ],
+          [
+            "flux5",
+            "dycore.advection"
+          ],
+          [
+            "thomas",
+            "dycore.vertical_implicit"
+          ],
+          [
+            "advance_w",
+            "dycore.vertical_implicit"
+          ],
+          [
+            "calc_coef_w",
+            "dycore.vertical_implicit"
+          ],
+          [
+            "rhs_ph",
+            "dycore.geopotential"
+          ],
+          [
+            "small_step_prep",
+            "dycore.small_step"
+          ],
+          [
+            "calc_p_rho",
+            "dycore.eos"
+          ],
+          [
+            "diagnose_pressure",
+            "dycore.eos"
+          ],
+          [
+            "pressure_gradient",
+            "dycore.pgf"
+          ],
+          [
+            "pgf",
+            "dycore.pgf"
+          ],
+          [
+            "coriolis",
+            "dycore.momentum"
+          ],
+          [
+            "curvature",
+            "dycore.momentum"
+          ],
+          [
+            "mu_continuity",
+            "dycore.mass"
+          ],
+          [
+            "hybrid",
+            "dycore.vertical_coordinate"
+          ],
+          [
+            "diffusion",
+            "dycore.diffusion"
+          ],
+          [
+            "smag",
+            "dycore.diffusion"
+          ],
+          [
+            "deformation",
+            "dycore.diffusion"
+          ],
+          [
+            "damp",
+            "dycore.damping"
+          ],
+          [
+            "smdiv",
+            "dycore.damping"
+          ]
+        ],
+        "family_patterns_sha256": "3f869dbf6ee9286a3af8f1a078fafc87b5fa3a8914ee7d0b7d9b1dfc1427a918",
+        "independent_launch_and_time_bars": true,
+        "status": "PASS"
+      },
+      "timing": {
+        "cached_readiness": 5.0,
+        "clean_status": "PASS",
+        "clean_warm_integration": 10.0,
+        "cold_readiness": 20.0,
+        "profiled_warm_integration": 10.0,
+        "profiler_perturbation": {
+          "class": "LOW",
+          "identity": {
+            "event_mix_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "integration_scope_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "workload_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "order": [
+            "profiled-fixture",
+            "clean-fixture"
+          ],
+          "overhead_fraction": 0.1,
+          "profiled_seconds": 11.0,
+          "status": "PASS",
+          "unprofiled_seconds": 10.0,
+          "why_it_matters": "a device-time census read off a heavily perturbed run is a census of the instrumented run, not of production"
+        }
+      },
+      "top_kernel_distributions": [
+        {
+          "achieved_occupancy": "MISSING",
+          "dram_bytes": "MISSING",
+          "duration_ns": {
+            "count": 4,
+            "max": 400.0,
+            "median": 325.0,
+            "min": 300.0,
+            "p95": 392.5,
+            "p99": 398.5,
+            "status": "PASS",
+            "sum": 1350.0
+          },
+          "family": "physics.cumulus",
+          "l2_bytes": "MISSING",
+          "launches": 4,
+          "name": "kf_cumulus_kernel",
+          "registers_per_thread": "MISSING",
+          "source_location": "MISSING",
+          "stall_distribution": "MISSING"
+        },
+        {
+          "achieved_occupancy": "MISSING",
+          "dram_bytes": "MISSING",
+          "duration_ns": {
+            "count": 4,
+            "max": 300.0,
+            "median": 225.0,
+            "min": 200.0,
+            "p95": 292.5,
+            "p99": 298.5,
+            "status": "PASS",
+            "sum": 950.0
+          },
+          "family": "physics.microphysics",
+          "l2_bytes": "MISSING",
+          "launches": 4,
+          "name": "thompson_microphysics_kernel",
+          "registers_per_thread": "MISSING",
+          "source_location": "MISSING",
+          "stall_distribution": "MISSING"
+        },
+        {
+          "achieved_occupancy": "MISSING",
+          "dram_bytes": "MISSING",
+          "duration_ns": {
+            "count": 1,
+            "max": 600.0,
+            "median": 600.0,
+            "min": 600.0,
+            "p95": 600.0,
+            "p99": 600.0,
+            "status": "PASS",
+            "sum": 600.0
+          },
+          "family": "physics.radiation",
+          "l2_bytes": "MISSING",
+          "launches": 1,
+          "name": "rrtmg_lw_kernel",
+          "registers_per_thread": "MISSING",
+          "source_location": "MISSING",
+          "stall_distribution": "MISSING"
+        },
+        {
+          "achieved_occupancy": "MISSING",
+          "dram_bytes": "MISSING",
+          "duration_ns": {
+            "count": 3,
+            "max": 200.0,
+            "median": 180.0,
+            "min": 150.0,
+            "p95": 198.0,
+            "p99": 199.6,
+            "status": "PASS",
+            "sum": 530.0
+          },
+          "family": "physics.pbl",
+          "l2_bytes": "MISSING",
+          "launches": 3,
+          "name": "mynn_pbl_kernel",
+          "registers_per_thread": "MISSING",
+          "source_location": "MISSING",
+          "stall_distribution": "MISSING"
+        },
+        {
+          "achieved_occupancy": "MISSING",
+          "dram_bytes": "MISSING",
+          "duration_ns": {
+            "count": 3,
+            "max": 120.0,
+            "median": 100.0,
+            "min": 100.0,
+            "p95": 118.0,
+            "p99": 119.6,
+            "status": "PASS",
+            "sum": 320.0
+          },
+          "family": "dycore.advection",
+          "l2_bytes": "MISSING",
+          "launches": 3,
+          "name": "advect_u_flux_kernel",
+          "registers_per_thread": "MISSING",
+          "source_location": "MISSING",
+          "stall_distribution": "MISSING"
+        }
+      ],
+      "transfer_audit": {
+        "host_device_in_loop": 0,
+        "integration_scope": {
+          "boundary_kind": "integration",
+          "boundary_source": "nvtx_pushpop_trace",
+          "capture_run_id": "cpu-complete-census-fixture",
+          "duration_ns": 10000.0,
+          "end_ns": 10000.0,
+          "mechanically_verified": true,
+          "production_derived": true,
+          "range_name": "GPUWRF_M0_FORECAST_INTEGRATION",
+          "run_id": "cpu-complete-census-fixture",
+          "schema": "wrf_gpu2.v025.m0.integration_scope.v1",
+          "source_rep_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "start_ns": 0.0,
+          "status": "OK"
+        },
+        "offending": [],
+        "rows_in_loop": 16,
+        "rule": "\u00a77 forbids host/device transfer inside the timestep loop without an ADR",
+        "status": "PASS"
+      }
+    },
+    "expected_device_time_ns": 3750.0,
+    "expected_launches": 15,
+    "fixture_is_device_evidence": false,
+    "status": "PASS"
+  },
+  "complete_fixture_is_device_evidence": false,
+  "device_action": false,
+  "fail_closed_matrix": {
+    "attacks": [
+      {
+        "detail": {
+          "gates_not_pass": [
+            "export"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "export_blocked",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "export"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "required_table_empty",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "export"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "export_record_wrong_run",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "export"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "export_record_wrong_source",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "source_binding"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "release_wrong_run",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "source_binding",
+            "vram",
+            "host_ram"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "exact_child_wrong_run",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "source_binding"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "candidate_stale_source",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "integration_scope",
+            "step_classes",
+            "attribution",
+            "transfer_audit",
+            "production_representativeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_nvtx",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "integration_scope",
+            "step_classes",
+            "attribution",
+            "transfer_audit",
+            "production_representativeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "wrong_integration_range",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "step_classes",
+            "attribution",
+            "transfer_audit",
+            "production_representativeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "empty_cuda_trace",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "exception": "KeyError: 'start_ns'"
+        },
+        "name": "aggregate_transfer_substitution",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "transfer_audit"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "host_device_copy_in_loop",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "attribution",
+            "summary_crosscheck"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "launch_attribution_below_95",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "attribution",
+            "summary_crosscheck"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "time_attribution_below_95",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "step_classes",
+            "production_representativeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_radiation_cadence",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "summary_crosscheck"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "kernel_summary_understates_trace",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "profiler_perturbation"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_profiler_pair",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "clean_w3",
+            "timing_completeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_clean_w3",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "host_ram"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_host_rss",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "vram"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_residency",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "hlo_completeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "missing_hlo_live_buffers",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "production_representativeness"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "production_workload_mismatch",
+        "rejected": true
+      },
+      {
+        "detail": {
+          "gates_not_pass": [
+            "transfer_audit"
+          ],
+          "status": "BLOCKED"
+        },
+        "name": "synthetic_production_scope",
+        "rejected": true
+      }
+    ],
+    "rejected": 23,
+    "status": "PASS",
+    "total": 23
+  },
+  "frozen_gate_inventory": {
+    "complete_49_operator_a6_census_arithmetic": "PASS",
+    "fresh_jax_free_cpu_process": "PASS",
+    "hash_bound_real_nsys_export_path": "PASS",
+    "incomplete_real_w1b_remains_blocked": "PASS",
+    "launch_and_device_time_thresholds_independent": "PASS",
+    "ncu_only_m2_fields": "MISSING_UNTIL_M2_NOT_WAIVED",
+    "real_w2_device_census": "MISSING",
+    "real_w3_clean_timing": "MISSING",
+    "release_before_analysis": "PASS",
+    "timestamped_in_range_transfer_audit": "PASS"
+  },
+  "generated_at_utc": "2026-07-28T19:34:12.820203+00:00",
+  "measurement_partition": {
+    "m0_core_m1_blocking": {
+      "fields": [
+        "ordinary_and_cadence_step_classes",
+        "kernels_and_device_time_per_step",
+        "family_launch_and_device_time_shares",
+        "top_kernel_duration_distributions",
+        "inter_kernel_gaps_and_tail_kernels",
+        "timestamped_integration_range_transfer_audit",
+        "launch_and_device_time_attribution",
+        "profiler_perturbation",
+        "cold_cached_and_clean_timing",
+        "single_case_vram_and_host_rss"
+      ],
+      "governed_by_required_gates": true,
+      "source": "nsys plus bound sidecars/clean arm"
+    },
+    "m0_deferred_m2": {
+      "fields": [
+        "registers_per_thread",
+        "achieved_occupancy",
+        "stall_distribution",
+        "dram_bytes",
+        "l2_bytes",
+        "source_location"
+      ],
+      "governed_by_required_gates": false,
+      "source": "ncu",
+      "status": "MISSING_UNTIL_M2",
+      "waived": false
+    }
+  },
+  "real_incomplete_w1b_postlock_path": {
+    "analysis": {
+      "accelerator_modules_imported": [],
+      "export": {
+        "exports": {
+          "cuda_api_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_api_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 1901,
+            "command": "nsys stats --report cuda_api_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "cd8ae90d2d79ed3e764efb021dda95f90ddf9c4778cca02003677f8c08012006",
+            "data_rows": 22,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_api_sum.csv",
+            "replacement": false,
+            "report": "cuda_api_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "c875c36c92985f03088f8df2d81ebe8706f7b565957cca31e89f1bc911480773",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "cuda_api_trace": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_api_trace",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 181373,
+            "command": "nsys stats --report cuda_api_trace --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "41dc17f2206975606ea8a210d80a6515beafec0ba19f5b7601631cd35fe4adfe",
+            "data_rows": 2831,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_api_trace.csv",
+            "replacement": false,
+            "report": "cuda_api_trace",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "104fbeb6f5116f863f3b8c9e77844283eebb605635351c3c34a380958deec121",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "cuda_gpu_kern_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_gpu_kern_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 510,
+            "command": "nsys stats --report cuda_gpu_kern_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "ec066148937bc0f1cb56d72b38411c9872304f9d8d363927cbebdc8977894528",
+            "data_rows": 0,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_gpu_kern_sum.csv",
+            "reason": "the report produced no data rows. That is NOT a measurement of zero; it is an absent measurement.",
+            "replacement": false,
+            "report": "cuda_gpu_kern_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "1eaa3959160b7f252825f3d852c67749269f4485695c0f7f873fba248067e51f",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "EMPTY"
+          },
+          "cuda_gpu_mem_size_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_gpu_mem_size_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 545,
+            "command": "nsys stats --report cuda_gpu_mem_size_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "e9ed0a0bd2499ce1b5385ec46675a790601f03efabb0352ac99b362e87939578",
+            "data_rows": 1,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_gpu_mem_size_sum.csv",
+            "replacement": false,
+            "report": "cuda_gpu_mem_size_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "5f54b8cc0929558e0b0da4add917bba8596f380766fdce9756301aee3299ec09",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "cuda_gpu_mem_time_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_gpu_mem_time_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 561,
+            "command": "nsys stats --report cuda_gpu_mem_time_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "6f81035130852a5194607f1de5a6f18fc8db24ed14c58f2a760707f56eee2c71",
+            "data_rows": 1,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_gpu_mem_time_sum.csv",
+            "replacement": false,
+            "report": "cuda_gpu_mem_time_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "3bc194b7277af6dc1089344cd13e34c9222829d1979410484126364d1f12389c",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "cuda_gpu_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_gpu_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 577,
+            "command": "nsys stats --report cuda_gpu_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "c4de968ff26c087c4e8d7b34395c004d46f0f8b587da3d3dd22e14d24c9ec181",
+            "data_rows": 1,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_gpu_sum.csv",
+            "replacement": false,
+            "report": "cuda_gpu_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "c50d5243d22e58d21b656364740d80d9cc190097333a612c7006d26a95b71d62",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "cuda_gpu_trace": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "cuda_gpu_trace",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 1382,
+            "command": "nsys stats --report cuda_gpu_trace --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "03159226560a29930bac7ed80818c89d30d0a08abdcf63236f743fea37e9d7b8",
+            "data_rows": 8,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/cuda_gpu_trace.csv",
+            "replacement": false,
+            "report": "cuda_gpu_trace",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "1b8e0f448b9b9cb008b85e166b41b9913f2428ca9baf29377a16f6794392742c",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          },
+          "nvtx_gpu_proj_sum": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "nvtx_gpu_proj_sum",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 413,
+            "command": "nsys stats --report nvtx_gpu_proj_sum --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "4b026fa6f363b8a66dff97765d3ff98a6334bdc2be96d67dd234973a2e49271b",
+            "data_rows": 0,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/nvtx_gpu_proj_sum.csv",
+            "reason": "the report produced no data rows. That is NOT a measurement of zero; it is an absent measurement.",
+            "replacement": false,
+            "report": "nvtx_gpu_proj_sum",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "e6ca6f4be80dd28904a07908ddf44e1a8e3c2c3ff6665125effc93d739ee0b67",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "EMPTY"
+          },
+          "nvtx_pushpop_trace": {
+            "argv": [
+              "nsys",
+              "stats",
+              "--report",
+              "nvtx_pushpop_trace",
+              "--format",
+              "csv",
+              "--output",
+              "-",
+              "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+            ],
+            "atomic_publish": true,
+            "bytes": 39387900,
+            "command": "nsys stats --report nvtx_pushpop_trace --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+            "command_sha256": "98cf6021abd249550575fd77da3391b1bff38bcf09a6e1e04be3b9b8f5b0cdca",
+            "data_rows": 157080,
+            "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports/step1_pushpop.csv",
+            "replacement": false,
+            "report": "nvtx_pushpop_trace",
+            "returncode": 0,
+            "run_id": "cpu-w1b-postlock-path",
+            "sha256": "73d441e93b41fdf8b979c895098ea8211ba062722a498a841af1b04b5b66961e",
+            "source_rep_bytes": 8941065,
+            "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+            "status": "OK"
+          }
+        },
+        "manifest_sha256": "ddc8494c1da50452950eed6e4aa3516d6d9366da39f041224f4102d077c3760b",
+        "note": "`nsys stats` on an existing .nsys-rep is CPU-only file processing; it opens no device, which is why this runs after the GPU is released.",
+        "output_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/exports",
+        "required": [
+          "nvtx_pushpop_trace",
+          "cuda_gpu_kern_sum",
+          "cuda_gpu_trace"
+        ],
+        "required_unusable": [
+          "cuda_gpu_kern_sum"
+        ],
+        "run_id": "cpu-w1b-postlock-path",
+        "schema": "wrf_gpu2.v025.m0.nsys_export.v2",
+        "source_rep": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+        "source_rep_bytes": 8941065,
+        "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+        "status": "BLOCKED",
+        "tool_version": {
+          "argv": [
+            "nsys",
+            "--version"
+          ],
+          "command_sha256": "b3ca5c5f6ff7b3563470582d37ca5e5da8392ff32c99738647374284e0a500ec",
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "NVIDIA Nsight Systems version 2025.5.2.266-255236693005v0"
+        }
+      },
+      "export_status": "BLOCKED",
+      "gates_not_pass": [
+        "export",
+        "integration_scope",
+        "step_classes",
+        "attribution",
+        "summary_crosscheck",
+        "transfer_audit",
+        "host_ram",
+        "profiler_perturbation",
+        "clean_w3",
+        "timing_completeness",
+        "hlo_completeness",
+        "production_representativeness"
+      ],
+      "lock_environment_present": {
+        "GPUWRF_GPU_LOCK_HELD": false,
+        "GPUWRF_GPU_LOCK_HOLDER_FILE": false,
+        "GPUWRF_GPU_LOCK_TOKEN": false
+      },
+      "parse_errors": {
+        "cuda_gpu_kern_sum": "ProfilerParseError: no cuda_gpu_kern_sum header row found. Expected a CSV header containing 'Name' and 'Instances'; got first line: NOTICE: Existing SQLite export found: <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.sqlite"
+      },
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.post.json",
+      "release_before_analysis": true,
+      "required_unusable": [
+        "cuda_gpu_kern_sum"
+      ],
+      "sha256": "3d98f49351f60f2ff11d73632c8cfa23df7adc294ff850d3603f3223bfd6f001",
+      "status": "BLOCKED"
+    },
+    "device_action": false,
+    "manager_result": {
+      "bytes": 1424,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.window.json",
+      "sha256": "52910421ec92f7958b2da496dbef53f4fc36c681a7b16d33281e7f5b7d6442b9"
+    },
+    "path_status": "BLOCKED_AS_REQUIRED",
+    "release_proof": {
+      "analysis_launched": false,
+      "created_by_pid": 3479792,
+      "device_action": false,
+      "lock_wrapper_process_exited": true,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.lock-release.json",
+      "run_id": "cpu-w1b-postlock-path",
+      "schema": "wrf_gpu2.v025.m0.lock_release_proof.v1",
+      "sha256": "42bd9d60e2ba041069f94e553c9e4b28af92d998ceb49a986ffd75bf14ab3778",
+      "status": "LOCK_WRAPPER_RETURNED",
+      "window": "W2",
+      "window_result_bytes": 1424,
+      "window_result_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1/w2.window.json",
+      "window_result_sha256": "52910421ec92f7958b2da496dbef53f4fc36c681a7b16d33281e7f5b7d6442b9",
+      "wrapper_command": [
+        "CPU_DRY_LOCK_WRAPPER_RETURN_FIXTURE"
+      ],
+      "wrapper_command_sha256": "385e03a21651defe85ac79ff4dcd9a54365db67457caea740dba860cf32e2b44",
+      "wrapper_returncode": 0,
+      "wrapper_returned_at_utc": "2026-07-28T19:34:09.037471+00:00",
+      "wrapper_returned_monotonic_ns": 162036042665779,
+      "wrapper_started_at_utc": "2026-07-28T19:34:09.037459+00:00",
+      "wrapper_started_monotonic_ns": 162036042665778
+    },
+    "run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_residual_postlock_20260728_r1",
+    "source_report": {
+      "bytes": 8941065,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+      "sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c"
+    },
+    "status": "PASS"
+  },
+  "schema": "wrf_gpu2.v025.m0.c2_cpu_closure.v1",
+  "status": "PASS"
+}

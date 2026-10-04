@@ -1,0 +1,14 @@
+{
+  "current_milestone": "SMOKE",
+  "exit_policy": "zero because no previous snapshot was available",
+  "improved_within_tolerance": [],
+  "newly_failing": [],
+  "newly_passing": [],
+  "output_path": "/tmp/wrf_gpu2_oracle/proofs/regression/regression_check_NONE_to_SMOKE.json",
+  "pass_count_decreased": false,
+  "previous_milestone": null,
+  "schema": "OracleBaselineRegressionCheck",
+  "schema_version": 1,
+  "status": "NO_PREVIOUS_SNAPSHOT",
+  "worsened_within_tolerance": []
+}

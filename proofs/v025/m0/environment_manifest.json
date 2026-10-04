@@ -1,0 +1,33 @@
+{
+  "cpu_model": "AMD Ryzen 9 9950X 16-Core Processor",
+  "generated_at_utc": "2026-07-27T12:38:55.805481+00:00",
+  "git_branch": "worker/opus/v0250-m0-setup",
+  "git_commit": "2f79cf5afc515f060c1104e80aa39ca04c7f39e7",
+  "host": "user-battlestation",
+  "jax": "0.10.0",
+  "jax_backend_probe_note": "NOT probed: importing a GPU backend counts as a GPU touch under contract \u00a713 and requires dual-manager coordination first",
+  "jax_backends_available": null,
+  "jaxlib": "0.10.0",
+  "kernel": "7.0.0-28-generic",
+  "logical_cpus": 32,
+  "mpirun": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+  "mpirun_version": [
+    "mpirun (Open MPI) 5.0.10"
+  ],
+  "ncu_path": "/usr/local/cuda/bin/ncu",
+  "nsys_path": "/usr/local/cuda/bin/nsys",
+  "nvcc_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Tue_Dec_16_07:23:41_PM_PST_2025\nCuda compilation tools, release 13.1, V13.1.115\nBuild cuda_13.1.r13.1/compiler.37061995_0",
+  "nvidia_smi_query": "NVIDIA GeForce RTX 5090, 32607 MiB, 595.84, P1, 3135 MHz, 575.00 W",
+  "pending": {
+    "gpu_clocks_and_power_policy_under_load": "requires a coordinated GPU window",
+    "package_lock": "emitted separately by --pip-freeze"
+  },
+  "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+  "python": "3.13.11",
+  "python_prefix": "<USER_HOME>/miniconda3",
+  "schema": "wrf_gpu2.v025.m0.environment_manifest.v1",
+  "src_gpuwrf_tree": "796aa24528876ef06c0cec198c1a0d16fbe94d10",
+  "wrf_exe": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe",
+  "wrf_exe_realpath": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+  "wrf_exe_sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+}

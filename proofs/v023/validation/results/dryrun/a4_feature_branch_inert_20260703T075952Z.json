@@ -1,0 +1,8 @@
+{
+  "gate": "a4_feature_branch_inert",
+  "generated_utc": "2026-07-03T07:59:52.107426+00:00",
+  "message": "A4 feature commands staged only.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

@@ -1,0 +1,348 @@
+{
+  "amendments": {
+    "amendment_5": {
+      "commit": "9c53ce6296447cd6cdac017b85e96c4d11922cb6",
+      "git_blob_oid": "075fe21a84439c8dd6d8274397eb9107b457d4d9",
+      "path": ".agent/sprints/2026-07-27-v0250-m0-setup/AMENDMENT_5_M0_CORE_EXIT.md",
+      "sha256": "153fa5c60efccccc2665b7e454ccfd36bc970eb8af6f308bb9388d4219080da8"
+    },
+    "manager_amendment_01": {
+      "commit": "9c53ce6296447cd6cdac017b85e96c4d11922cb6",
+      "git_blob_oid": "cf8ba4d30316b34efebeee3c668791ba7bf880af",
+      "path": ".agent/sprints/2026-07-27-v0250-m0-setup/MANAGER_C1_C2_AMENDMENT_01.md",
+      "sha256": "4b62b5458e7970db14c5eec66b0eade5086ffc483927e44b07a9439b1aab1c02"
+    },
+    "r8_r9_adjudication": {
+      "commit": "78aa07a9ce8c06630e3d7b327d487d895572dcec",
+      "git_blob_oid": "b7cb473ba4a36a1de6c85007d609987d4a072425",
+      "path": ".agent/decisions/V0250-ROADMAP.md",
+      "sha256": "01c0fc4715add2d36587659c2319ddf27a026e37397f8f0cf4b754a8565a7328"
+    }
+  },
+  "attempt_provenance": {
+    "r6": {
+      "authority": {
+        "commit": "9c53ce6296447cd6cdac017b85e96c4d11922cb6",
+        "git_blob_oid": "cf8ba4d30316b34efebeee3c668791ba7bf880af",
+        "path": ".agent/sprints/2026-07-27-v0250-m0-setup/MANAGER_C1_C2_AMENDMENT_01.md",
+        "sha256": "4b62b5458e7970db14c5eec66b0eade5086ffc483927e44b07a9439b1aab1c02"
+      },
+      "exit_provenance": "manager SIGINT to dedicated PGID 3275882",
+      "runtime_or_session_limit": false,
+      "status": "INVALID_HIBERNATION_SPANNED"
+    },
+    "r7": {
+      "repair": "single-core pre-JAX XLA guard",
+      "status": "INVALIDATED_DEADLOCK_DISCRIMINATOR"
+    },
+    "r8": {
+      "accepted_as_c1_proof": false,
+      "artifacts": {
+        "process_tree_rss": {
+          "bytes": 1863,
+          "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/ineligible_precreated_wrfout_process_tree_rss.json",
+          "sha256": "3af95c06eaef969be35fe826c2627154fe8ae5b51da0cc9c482d985044e9042f"
+        },
+        "stderr": {
+          "bytes": 1653130,
+          "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stderr.log",
+          "sha256": "7761b21356c3e0d2461f42dff5454d968132632609d9fd556c6c6793e1f0ffc3"
+        },
+        "stdout": {
+          "bytes": 731,
+          "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.stdout.log",
+          "sha256": "7c79951762db2b0ea7c92175b648f563e4dc0b634dcafe7f4f9eae017a6f75eb"
+        },
+        "time": {
+          "bytes": 1092,
+          "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/exact_oracle.time",
+          "sha256": "8caff058bb58151d5de864da434a20fc286b49ffab98c572769856b1c2bea6a5"
+        }
+      },
+      "elapsed_wallclock": "1:16:44",
+      "failure_boundary": "after synchronized exact invocation, at the first _publish_exact_wrfout absent-directory guard",
+      "fresh_cpu_wrf_comparator_run": false,
+      "machine_identity": {
+        "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+        "cpu_affinity": [
+          4
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "",
+          "GPUWRF_JAX_CACHE": "1",
+          "GPUWRF_JAX_CACHE_DIR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+          "GPUWRF_JAX_CACHE_LOCK": "1",
+          "JAX_PLATFORMS": "cpu",
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+        },
+        "hostname": "user-battlestation",
+        "observed_process_tree_pids": [
+          3333870,
+          3333872,
+          3333874
+        ],
+        "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+        "python": "3.13.11"
+      },
+      "max_rss_time_kib": 20899988,
+      "process_tree_peak_rss_bytes": 21454475264,
+      "reason": "BoundaryRefusal: refusing stale/pre-existing wrfout output directory: <DATA_ROOT>/wrf_gpu2/v025/m0/cpu_c1_c2_closure_20260728_r8/wrfout",
+      "science_computation_failure_observed": false,
+      "status": "RESIDUAL_EXACT_COMPUTE_COMPLETE_PUBLICATION_REFUSED",
+      "wrfout_published": false
+    },
+    "r9": {
+      "authority": {
+        "commit": "78aa07a9ce8c06630e3d7b327d487d895572dcec",
+        "git_blob_oid": "b7cb473ba4a36a1de6c85007d609987d4a072425",
+        "path": ".agent/decisions/V0250-ROADMAP.md",
+        "sha256": "01c0fc4715add2d36587659c2319ddf27a026e37397f8f0cf4b754a8565a7328"
+      },
+      "dedicated_pgid": 3403883,
+      "manager_signals": [
+        "SIGINT",
+        "SIGTERM"
+      ],
+      "status": "INVALID_MANAGER_STOPPED_NO_PUBLICATION",
+      "verified_gone_pids": [
+        3403883,
+        3403887,
+        3403888,
+        3403900
+      ]
+    }
+  },
+  "c1": {
+    "artifact": {
+      "bytes": 32357,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_c1_cpu_evidence.json",
+      "sha256": "e67bfca4997430d222575f61d3f6166e81b1259c73683aaf83531e30438004f6"
+    },
+    "status": "BLOCKED_RUNTIME_RESIDUAL"
+  },
+  "c2": {
+    "artifact": {
+      "bytes": 156748,
+      "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-c1-c2/proofs/v025/m0/m0_c2_cpu_evidence.json",
+      "sha256": "55b0d7d29781ef847163c9efa121d254ba28373ad8fc7a5ac80cd9e328a08bea"
+    },
+    "status": "PASS"
+  },
+  "closure_sha256": "f0255a4950207e46a279bc2678359f50aa0dbf99c8a08f718a2382a9e2e5631e",
+  "cpu_closure_gate": "BLOCKED",
+  "device_policy": "closed",
+  "device_queries": [],
+  "device_touched": false,
+  "generated_at_utc": "2026-07-28T19:34:12.849044+00:00",
+  "gpu_windows": {
+    "W1": "MISSING",
+    "W2": "MISSING",
+    "W3": "MISSING"
+  },
+  "kimi_f2_machine_affinity_environment_cache_identity": {
+    "proof": {
+      "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+      "cpu_affinity": [
+        4
+      ],
+      "environment": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "GPUWRF_JAX_CACHE": "1",
+        "GPUWRF_JAX_CACHE_DIR": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_exact_boundary_cache_r1",
+        "GPUWRF_JAX_CACHE_LOCK": "1",
+        "JAX_PLATFORMS": "cpu",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+      },
+      "hostname": "user-battlestation",
+      "observed_process_tree_pids": [
+        3333870,
+        3333872,
+        3333874
+      ],
+      "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+      "python": "3.13.11"
+    },
+    "status": "PASS"
+  },
+  "m0_complete": false,
+  "machine": {
+    "accelerator_modules_imported": [],
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "GPUWRF_JAX_CACHE": "0",
+      "GPUWRF_JAX_CACHE_DIR": null,
+      "GPUWRF_JAX_CACHE_LOCK": "0",
+      "JAX_PLATFORMS": "cpu",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+    },
+    "hostname": "user-battlestation",
+    "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "milestone_partition": {
+    "M0_CORE": {
+      "fields": {
+        "accepted_exact_cpu_boundary": "PASS",
+        "c1_fresh_cpu_wrf_comparator": "MISSING_NOT_RUN",
+        "c1_same_result_wrfout_runtime": "BLOCKED_R8_PUBLICATION_REFUSED",
+        "c2_jax_free_postlock_cpu_path": "PASS",
+        "different_model_review": "MISSING_MANAGER_OWNED",
+        "fast_correctness_and_resource_gates": "MISSING_GPU_WINDOWS",
+        "frozen_command_source_input_cache_tool_manifest": "PASS_CPU_SCOPE",
+        "one_session_w1_w2_w3": "MISSING_NOT_AUTHORIZED"
+      },
+      "may_open_m1": false,
+      "required_before": "M1_MECHANISM_WORK",
+      "status": "BLOCKED"
+    },
+    "M0_DEFERRED": {
+      "fields": {
+        "instruction_counter_E_baseline_T_ceiling": "M2_ENTRY",
+        "multi_size_vram_scaling_fit": "RELEVANT_MILESTONE_AND_RELEASE",
+        "native_pallas_sm120": "M2_BACKEND_BAKEOFF_ENTRY",
+        "ncu_registers_occupancy_stalls_dram_l2": "M2",
+        "two_domain_rho_family_coverage_trace": "M1_M2_PRODUCTION_REPRESENTATIVENESS"
+      },
+      "status": "MISSING_BY_NAMED_FUTURE_MILESTONE",
+      "waived": false
+    }
+  },
+  "native_pallas_verdict": "MISSING_DEFERRED_TO_M2",
+  "next_decision": "manager assigns different-model review; W1 remains forbidden until the residual is adjudicated and M0-CORE gates permit it",
+  "production_identity": {
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "status": "PASS",
+    "working_tree_changes": []
+  },
+  "receipts_consumed": [],
+  "receipts_read": [],
+  "schema": "wrf_gpu2.v025.m0.c1_c2_cpu_closure.v1",
+  "source_contract": {
+    "amendment5_one_session_two_of_three": true,
+    "authorization_before_child_import": true,
+    "clean_instrumentation_absent": true,
+    "cpu_arm_process_group_attached": true,
+    "direct_synchronized_invocation": true,
+    "evidence_builder_top_level_accelerator_imports": [],
+    "exact_lower_compile": true,
+    "exact_result_wrfout_adapter": true,
+    "executor_accelerator_imports": [],
+    "forecast_child_top_level_accelerator_imports": [],
+    "long_run_preflight_and_inhibition": true,
+    "nonzero_child_final_group_sweep": true,
+    "pallas_child_top_level_accelerator_imports": [],
+    "parent_accelerator_imports": [],
+    "parent_death_guard_accelerator_imports": [],
+    "parent_death_kills_child_process_group": true,
+    "production_function_hashes": {
+      "gpuwrf.integration.daily_pipeline._boundary_window_cadence_s": "23702a1d4d5154f523ed3dd9ec19d43fc11376ffe600b1f959595ea4c75e72db",
+      "gpuwrf.integration.daily_pipeline._build_real_case": "aff14597c9760987836e08382bf6f9d4a0f240ba69ae6caaceb4a6efc909a143",
+      "gpuwrf.integration.daily_pipeline._capture_boundary_leaves": "e02ce49fe0c62fff014f7679dc8b3e709e8b9dc6c6f746acbdb01b5f49266613",
+      "gpuwrf.integration.daily_pipeline._rewindow_boundary_leaves": "c85f42ce6e33237f3df20613ef8cc9a78cd95589ebaa880b65e86806726e83d4",
+      "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total": "4dc8690a0f6181a24f0817242501d9a7599db372bca7677b013327a1ea96ecb1",
+      "gpuwrf.runtime.operational_mode._dealias_pytree_buffers": "9e3bc0fd9be3ad694805578db05fc9bb7409646649cee82c9ff902e2f1257265",
+      "gpuwrf.runtime.operational_mode._operational_scan_state": "f0609a83ad8c7ee7421e4155a13632299495c9466ab38109ff2db2326785e1c1",
+      "gpuwrf.runtime.operational_mode._run_forecast_operational_jit": "85712542d47ada3716ea6343d5a46409957f5f70c8608f6a9e8f9f77fa0ae123"
+    },
+    "profiled_clean_shared_helper": true,
+    "profiled_exact_range": "GPUWRF_M0_FORECAST_INTEGRATION",
+    "sequential_fresh_cpu_arm_processes": true,
+    "single_core_cpu_arm_before_jax": true,
+    "source_sha256": {
+      "scripts/v025/build_m0_c1_c2_cpu_closure_evidence.py": "6ad2baccee1c82adb175431d6e1538b670bac07fa072f6994c01b1fe82e962d3",
+      "scripts/v025/build_m0_c1_c2_cpu_residual_evidence.py": "b1039a8e491f93701087fa1775efc4b48dd58bdbcab3d7d887c63d60160b6aaf",
+      "scripts/v025/build_m0_exact_boundary_evidence.py": "aa3b76f52814949af4ce957bedd36822524629a01ee242ee57cb7bbbd4be984d",
+      "scripts/v025/m0_c1_c2_cpu_proofs.py": "0238183e99607c0ad971dc302de7444c568aaa71553dfb1ea423065af46d2803",
+      "scripts/v025/m0_core_session_protocol.py": "0777aaa58d0592c65aa5d000319de37edd12534459bdd788fe5ab82ea242880a",
+      "scripts/v025/m0_exact_boundary_child.py": "51eb70a5b5acc400f7f5c78960089c1a69e6d959821df437594db118fb0945e8",
+      "scripts/v025/m0_exact_boundary_contract.py": "49625fe1654cc012d4c4b0386bb82388f191124c90f71daf181d804442b33ade",
+      "scripts/v025/m0_host_rss_sampler.py": "751fccfa46e9e185fb8e0e3f3b7f4ee0dc4e729c061e6a8769704c0de8a59779",
+      "scripts/v025/m0_long_run_controls.py": "75b1a9036b849e2925a3c4ec7c66810f653952a0ecd8ed0efdf9c68104ee3a3e",
+      "scripts/v025/m0_parent_death_guard.py": "6b05573364958d03d8d5d5d9c473fd4f23b380ef53c92453366208c7ab006986",
+      "scripts/v025/m0_postlock_census.py": "e910282dd7f613df5ae32446e598bf5e6e98546e9b918d05e7e5e30974ed6878",
+      "scripts/v025/m0_three_window_executor.py": "c305d2bab0b5ea79b8b307deadd0d56de4b7b99e66760d2709bd42b0d5661c38",
+      "scripts/v025/m0_vram_sampler.py": "b28e750b291d01d52f9074ddaf2f673db5623c46a366227a9b34d22c884275f7",
+      "scripts/v025/m0_w1_fast_pair.py": "8545cfeb7fbfd9a8b64030363c25cb2faf62dc10ea115117ca33955ab54392a4",
+      "scripts/v025/m0_window_parent.py": "d1b338699631505f66e9872b78907e4c6656b7e90a27dcc94ecc5d86fe95d4be",
+      "scripts/v025/nsys_export.py": "d8de2f2de8cb29e6d7fca34f00294c24a5fc5853a69eb9e6ddb55959ef56318b",
+      "scripts/v025/pallas_sm120_spike.py": "39abfd9a983ff8fc3d16eca3f4ef00f02a9cd2458166ae171a1e35444f92d9a2",
+      "scripts/v025/prepare_m0_matched_pair.py": "034c7ec43fc5928646a061d290c41832c13870c4177d9f89f5388f6e519cc3b6",
+      "scripts/v025/prepare_pallas_fast_savepoint.py": "36cc1083c394b5531e32b3146f2155b23840e1033941494ec82a1ff7fe674eab",
+      "scripts/v025/refresh_m0_exact_boundary_evidence.py": "6bcaf339802baf9433584a6bc44360c0e1a162bcab9455934b4bc5278c0dda4f",
+      "scripts/v025/run_fast_pair.py": "be5d3481d851f14831df1a9a053581fd0e1122378be47838c29dd18f4a2199bd"
+    },
+    "stablehlo_streamed_encoding": true,
+    "status": "PASS",
+    "wrapper_preparation_sequence": [
+      "gpuwrf.runtime.operational_mode._assert_nonzero_initial_mu_total",
+      "gpuwrf.runtime.operational_mode._operational_scan_state",
+      "gpuwrf.runtime.operational_mode._dealias_pytree_buffers"
+    ]
+  },
+  "status": "CPU_C1_C2_GREEN_GPU_WINDOWS_MISSING",
+  "terminal_status_semantics": "CPU_HANDOFF_COMPLETE_NOT_C1_OR_M0_ACCEPTANCE",
+  "tests_v025": {
+    "artifact": {
+      "bytes": 106885,
+      "path": "proofs/v025/m0/m0_c1_c2_cpu_tests.xml",
+      "sha256": "4642e195f39e4702455641e69723807b8c74b5612720a3c643e18efead1911cd"
+    },
+    "totals": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 2,
+      "tests": 791
+    }
+  },
+  "unresolved_risks": [
+    "C1 lacks an accepted same-run WRF output and fresh CPU-WRF comparator.",
+    "W1/W2/W3 and every device/resource measurement remain missing.",
+    "A different-model review is manager-owned and still missing."
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "time_step": 24,
+  "target_acoustic_substeps": null,
+  "base": "<DATA_ROOT>/wrf_downscale/canary_all7/run/namelist.input",
+  "out": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/p4_cfl_ladder_20260621T085933Z/namelists/namelist_dt24.input"
+}

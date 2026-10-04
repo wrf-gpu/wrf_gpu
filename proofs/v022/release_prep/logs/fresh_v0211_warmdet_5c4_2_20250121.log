@@ -1,0 +1,14 @@
+=== WARMDET run=2 tag=fresh_v0211_warmdet_5c4_2_20250121 cache=<gpuwrf_cache> ===
+MARKER:PROCESS_START epoch=1782570627.583 tag=fresh_v0211_warmdet_5c4_2_20250121 maxdom=3 kwarm=2 mode=fixed fixed_root_steps=2 fixed_repeats=2 defuse=0 fuse=(unset) aot=1 parallel=0
+MARKER:LOADED wall_s=42.9 root_dt=18.0 names=('d01', 'd02', 'd03')
+MARKER:PREWARM_DONE wall_s=0.0 active=False source=skip:fused-default
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.21.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_5c4b8863ae0e95a044b2761b9f5ed78679bdac961a8d83a5d03af3f2990ec0f3.xlaexec hlo=c4a3ea0d3c33
+[gpuwrf:nested-aot] domain=fused/d02 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.21.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_0bfd49f5cf3268c648ab3535a9da45fc90a44602469a7090202eed13738cbb92.xlaexec hlo=99f2f0fc95bb cheap_key=0bfd49f5cf32
+[gpuwrf:nested-aot] domain=fused/d02 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.21.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_9b5bb83fd479e8e689347913bb9b290e6d21eb526376fd93f2a51f3284416909.xlaexec hlo=99f2f0fc95bb cheap_key=9b5bb83fd479
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+CALL FIXED_FIRST root_steps=2 wall_s=110.8603 finite=True vram_mib=17427 rss_peak_mib=12201 d01_own=2
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=<gpuwrf_cache>/aot/0.21.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_5c4b8863ae0e95a044b2761b9f5ed78679bdac961a8d83a5d03af3f2990ec0f3.xlaexec hlo=c4a3ea0d3c33
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+CALL FIXED_2 root_steps=2 wall_s=52.7401 finite=True vram_mib=17456 rss_peak_mib=12201 d01_own=2
+SUMMARY tag=fresh_v0211_warmdet_5c4_2_20250121 maxdom=3 mode=fixed fixed_root_steps=2 fixed_repeats=2 first_s=110.8603 wall_total_s=163.6003 call_times_s=110.8603,52.7401 s_per_step=26.3700 s_per_fc_hour=5274.0069 vram_peak_mib=17456 rss_peak_mib=12201 vram_flat=True rss_flat=True all_finite=True final_d01_own=2
+BIT_ID tag=fresh_v0211_warmdet_5c4_2_20250121 fixed_mode=True digest_sha256=9709039c987ab45a6cfd4bc2bccf403aa0eabb0f361b7d8b61c39574fb32f4e4 digest_leaves=178 digest_bytes=367594272 digest_path=<v0220_bisect_worktree>/baseline_v0211/proofs/v021/canary_gate/ts_proof_fresh_v0211_warmdet_5c4_2_20250121/warmK_state_digest.json
