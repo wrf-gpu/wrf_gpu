@@ -55,7 +55,7 @@
 <a href="performance.html#cold-compile">First run is slow on purpose — the cold compile</a>
 <a href="performance.html#warm-cache">Warm cache &amp; seconds-fast warm start</a>
 <a href="performance.html#batched-ensemble">Batched ensemble — filling the small-grid GPU (v0.23)</a>
-<a href="performance.html#fp32">Optional fp32 mixed-precision mode</a>
+<a href="performance.html#fp32">fp32 — the default since v0.3.0</a>
 <a href="performance.html#vram">VRAM &amp; host memory sizing</a>
 <a href="performance.html#default-path-perf">Default-path work reductions (v0.23)</a>
 <a href="performance.html#scaling-energy">Scaling &amp; energy — measured vs projected</a>
@@ -78,23 +78,18 @@ scale</strong> — not a blanket single-card speedup. This page explains the one
 the seconds-fast warm start, the opt-in throughput modes, VRAM sizing, and exactly which
 performance claims are measured versus projected.</p>
 
-<div class="admon honest">
-  <div class="admon-title">v0.23.4 candidate: d03 performance regression measured, root-caused, not fixed</div>
-  <p>A dispatch-level fix leaves <strong>2-domain (d01+d02) performance unaffected</strong>
-  (measured 0.960–1.018× v0.23.3), but the production-faithful maxdom3 canary measures
-  <strong>51.67% slower</strong> (1.9668543059 → 2.9831176877 s/root-step). 79.95% of the added
-  cost is inside the FCT flux-limiter kernel's flux-renormalization computation. Every quick-fix
-  candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll
-  substitution) was falsified or rejected with evidence, and a Nsight Compute hardware
-  measurement confirmed the kernel is <strong>occupancy/latency-bound, not bandwidth-bound</strong>
-  (DRAM throughput 20.3% of peak, achieved occupancy 15.6%), ruling out a reduced-precision fix
-  and identifying concurrent sibling-domain scheduling as the mechanistically-mapped next lever
-  (design-scoped, not implemented). The investigation is closed; this regression ships as a known,
-  understood limitation. The accepted all-physics
-  nine-domain stress replay used
-  5,744.407 s warm model wall for one forecast hour, with 16,624 MiB peak VRAM and
-  35,773,432 kB peak host RSS. That stress workload proves correctness and capacity, not
-  cross-version performance.</p>
+<div class="admon measured">
+  <div class="admon-title">v0.3.0 measured throughput (RTX 5090)</div>
+  <p>GPU rates are whole-run (startup and output included); the CPU-WRF references (12 cores) are
+  defined in METHODS:
+  two-domain 9/3&nbsp;km Canary 24&nbsp;h <strong>4.12&nbsp;s per forecast hour</strong> (CPU-WRF 92.3&nbsp;s,
+  <strong>22.4×</strong>); four three-domain Tenerife forecasts sharing the GPU
+  <strong>9.68&nbsp;s per case-hour</strong> (CPU-WRF 3&nbsp;×&nbsp;4 cores 123.4&nbsp;s, <strong>12.75×</strong>; N=3 and N=4
+  within 0.5%, the GPU is saturated); the six-case 72&nbsp;h production batch (two waves of three)
+  <strong>6.28&nbsp;s per case-hour</strong> (19.6×). Methods, energy and receipts:
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/METHODS.md">METHODS</a> and
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/PROVENANCE.md">PROVENANCE</a>.
+  The sections below describe earlier releases and opt-in modes; their numbers are historical.</p>
 </div>
 
 <div class="admon honest">
@@ -148,9 +143,9 @@ directly and skips the multi-tens-of-minutes re-lower the old cache still paid.<
 <div class="admon note">
   <div class="admon-title">Scope of the compile-cache win</div>
   <p>The warm start is faster at <em>getting a run started</em>, <strong>not</strong> at running
-  the forecast itself. Warm forecast throughput (seconds per forecast-hour) is unchanged from v0.20
-  and the default path is byte-identical — the warm start rides the same fused runtime executable,
-  it just loads it from disk in seconds instead of re-lowering it.</p>
+  the forecast itself. Warm forecast throughput (seconds per forecast-hour) is set by
+  the model kernels — the warm start rides the same compiled executable and just loads it from disk
+  in seconds instead of re-lowering it.</p>
 </div>
 
 <h2 id="batched-ensemble">Batched ensemble — filling the small-grid GPU (v0.23)<a class="headerlink" href="#batched-ensemble" aria-label="Permalink">¶</a></h2>
@@ -223,8 +218,12 @@ v0.23.2 the separator accepts commas (the older <code>:</code>-only contract sti
   there, run sequentially or use a bigger card.</p>
 </div>
 
-<h2 id="fp32">Optional fp32 mixed-precision mode<a class="headerlink" href="#fp32" aria-label="Permalink">¶</a></h2>
-<p>The default path is pure fp64 and byte-identical. The opt-in
+<h2 id="fp32">fp32 — the default since v0.3.0<a class="headerlink" href="#fp32" aria-label="Permalink">¶</a></h2>
+<p>Since v0.3.0 the default path runs fused fp32 kernels (WRF's own single precision; double precision
+only where WRF uses it) — this is where the speed comes from on GPUs whose fp64 rate is a small
+fraction of fp32. <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off. The rest of this section
+describes the older v0.20 opt-in mode, kept for reference; its numbers are historical.</p>
+<p>The opt-in
 <code>GPUWRF_ACOUSTIC_PRECISION_MODE=mixed_perturb_fp32_v020</code> mode is
 <strong>capability/VRAM-only</strong>, not a speedup:</p>
 <ul>

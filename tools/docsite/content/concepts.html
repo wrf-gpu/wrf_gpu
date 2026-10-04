@@ -31,10 +31,10 @@ shared source.</p>
   <li><strong>Fused, timestep-scale kernels.</strong> The integrator compiles into a few large
   fused programs rather than a storm of tiny kernel launches, so the GPU stays busy instead of
   waiting on launch overhead.</li>
-  <li><strong>fp64 dynamical core.</strong> The core integrates in double precision, which the
-  pressure-gradient / buoyancy cancellation in a nonhydrostatic model requires for stability and
-  identity. An <a href="performance.html#fp32">opt-in fp32 mode</a> exists for capability/VRAM,
-  not as the default.</li>
+  <li><strong>WRF's precision.</strong> Since v0.3.0 the default path runs fused fp32 kernels —
+  WRF's own single precision — with double precision only where WRF itself uses it, revalidated
+  against CPU-WRF. <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off; see
+  <a href="performance.html#fp32">Performance → fp32</a>.</li>
   <li><strong>No masking on the result path.</strong> There is no clamping, no
   <code>nan_to_num</code>, and no silent substitution of a scheme. If state goes non-finite, a
   default-on guard aborts with the exact location instead of hiding it.</li>
@@ -86,10 +86,10 @@ commands on the <a href="validation.html">Validation</a> page.</p>
 <p>When two goals conflict, wrf_gpu resolves them in a fixed order:</p>
 <p style="font-size:1.15rem;text-align:center;font-family:var(--mono);margin:1rem 0;">
   stability&nbsp; &gt; &nbsp;identity&nbsp; &gt; &nbsp;speed&nbsp; &gt; &nbsp;memory</p>
-<p>A result is never destabilized or altered to go faster or fit in less memory. The default path
-stays fp64 and performance features (batched ensembles, fp32, fused warm-start) are
-<strong>opt-in or value-preserving</strong>. Proven WRF-fidelity fixes may intentionally move
-results, as v0.23.4 does; affected trajectories must then be revalidated. See
+<p>A result is never destabilized or altered to go faster or fit in less memory. Since v0.3.0 the default path
+runs the validated fp32 kernels (WRF's own single precision), revalidated against CPU-WRF; other
+performance features stay <strong>opt-in or value-preserving</strong>. Proven WRF-fidelity fixes may
+intentionally move results, as v0.23.4 and v0.3.0 do; affected trajectories must then be revalidated. See
 <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
 
 <h2 id="agent-driven">Agent-driven development</h2>

@@ -91,14 +91,12 @@ pre-supplied <code>wrfbdy_d02</code>). Mechanics: <a href="nesting.html">Nesting
 
 <h2 id="restart">Restart</h2>
 
-<div class="admon warn">
-  <div class="admon-title">Operational restart is not wired yet</div>
-  <p>The repository has full-state/full-carry serializer foundations, but a current
-  NetCDF boundary-schema regression still fails part of the structural CPU suite, and
-  the public <code>gpuwrf run</code> command does not write or resume operational
-  restarts. This is true for both single-domain and nested runs:
-  <code>restart</code>/<code>restart_interval</code> do not provide crash recovery on
-  this path. An interrupted run currently restarts from its initial state.</p>
+<div class="admon note">
+  <div class="admon-title">Restart: nested runs only</div>
+  <p>Nested runs (<code>max_dom &gt; 1</code>) write verified, rotating checkpoint generations with
+<code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> and resume in the same output stream with
+<code>--resume-checkpoint GEN</code>. Single-domain runs refuse these flags with a named reason, and the
+namelist <code>restart</code>/<code>restart_interval</code> settings do not provide crash recovery.</p>
 </div>
 
 <h2 id="two-way-nesting">Two-way nesting (<code>--feedback</code>)</h2>

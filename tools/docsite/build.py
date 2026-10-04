@@ -72,7 +72,7 @@ SITE = [
     ]),
     ("Reference", [
         ("version-history", "Version History",          "Version History",
-         "Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23.4 nine-nest correctness release."),
+         "Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.3.0 fused-fp32 GPU release."),
         ("credits",      "Credits, License & Citation", "Credits, License & Citation",
          "Credit to the WRF/NCAR/UCAR team, the AI authorship of this rewrite, licensing notes, and how to cite the project."),
         ("glossary",     "Glossary",                    "Glossary",

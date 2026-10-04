@@ -53,18 +53,17 @@ and New-Tiedtke cumulus schemes require (see <a href="physics.html">Physics Opti
   but do not close it (see <a href="validation.html">Validation</a>).</p>
 </div>
 
-<h2 id="precision">fp64 by default</h2>
-<p>The dynamical core runs in <strong>fp64</strong> by default. Double precision is needed around the
-<strong>pressure-gradient / buoyancy cancellation</strong>, where the difference of two large,
-nearly-equal terms would lose accuracy in single precision. The fp64 path is the validated,
-byte-identical default.</p>
+<h2 id="precision">Precision: WRF's single precision by default</h2>
+<p>Since v0.3.0 the dynamical core runs WRF's own single precision (fp32) by default, with double
+precision only where WRF itself uses it — as in WRF's standard single-precision build. The fp32 path
+is checked against original CPU-WRF on the 24&nbsp;h release gate. <code>GPUWRF_FAST_DEFAULTS=0</code> selects the earlier fp64 path.</p>
 
 <div class="admon honest">
-  <div class="admon-title">fp32 is opt-in and capability-only</div>
-  <p>An opt-in mixed-precision fp32 mode exists, but it buys VRAM (−14.4%) and cell capability
-  (~1.16×), <strong>not</strong> single-card speed (throughput ratio ≈0.91), and its fidelity is
-  verified only at the 1&nbsp;h lead. The default remains pure fp64. See
-  <a href="performance.html">Performance</a>.</p>
+  <div class="admon-title">fp32 is the default since v0.3.0</div>
+  <p>The default path runs the validated fp32 kernels (WRF's own single precision; double precision
+  only where WRF uses it), checked against CPU-WRF on the 24&nbsp;h release gate.
+  <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off. The older opt-in mixed-precision
+  acoustic mode is described under <a href="performance.html#fp32">Performance</a>.</p>
 </div>
 
 <h2 id="diffusion">Horizontal diffusion</h2>

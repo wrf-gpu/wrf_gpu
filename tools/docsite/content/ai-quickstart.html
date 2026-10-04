@@ -63,29 +63,27 @@ long each wait should take, roughly like this:</p>
 </ol>
 <div class="admon note">
   <div class="admon-title">Time estimates the agent will quote</div>
-  <p>One-time cold compile (no output): ~½–2 min single-domain, ~8–12 min nested, tens of minutes
-  for the big all-7 nest; later runs hit the warm cache and start in seconds. Warm nested throughput
-  is on the order of hundreds of seconds per forecast-hour (grid-dependent) — the agent refines the
+  <p>The first run of a new grid or version includes a one-time compile: the bundled Swiss single-domain
+  example took 380&nbsp;s for its cold 24&nbsp;h run versus 26&nbsp;s warm (grid-dependent; nested cases compile
+  longer). Later runs hit the warm cache. Warm throughput on an RTX 5090 is a few seconds per forecast hour for the
+  two-domain Canary case (4.12&nbsp;s; grid-dependent) — the agent refines the
   ETA from observed progress. See <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
 </div>
 
 <h2 id="honesty">The agent stays honest</h2>
 <p>The operator runbook instructs the agent to relay the same honesty this guide holds:</p>
 <ul>
-  <li>v0.23.4 is a <strong>prepared candidate</strong>: 2-domain (d01+d02)
-  configurations have no measured regression, but 3-domain/9-domain configurations that engage
-  <code>d03</code> are 51.67% slower than v0.23.3 — measured, root-caused (occupancy/latency-
-  bound, not bandwidth-bound), and understood, but not fixed. The current
-  published release is v0.23.3, and the agent must disclose this before a 3+/9-domain run and
-  must not recommend or present v0.23.4 as shipped;</li>
-  <li>the default path is <strong>fp64</strong>; v0.23.4 correctness fixes intentionally change
-  ice-sensitive results, while opt-in modes stay opt-in;</li>
+  <li>v0.3.0 is the current release. The release gate covers <strong>6 Tenerife cases × 3 domains × 24&nbsp;h</strong>: 375 output fields compared with original CPU-WRF, 62 of them with frozen per-variable limits (D6), <strong>0 bound failures</strong>, all compared values finite. Beyond 24&nbsp;h, a complete six-case comparison on an earlier internal build of v0.3.0 (identical
+except the Noah-MP albedo/snow-aging fix) exceeds those limits for some 1&nbsp;km wind/rain fields in two
+of the six 72&nbsp;h cases; every affected frame is listed in the <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/VALIDATION.md">validation report</a>. The agent states this scope for
+  72&nbsp;h runs and does not claim station skill (verified separately by the ALISIOS forecasting project);</li>
+  <li>the default path runs the validated <strong>fp32</strong> kernels (WRF's own single precision;
+  double precision only where WRF uses it); <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off;</li>
   <li>unsupported namelist options <strong>fail closed</strong> — the agent will not silently swap a
   scheme, and will ask you before changing your physics;</li>
-  <li>v0.23.4 accepts a specific one-hour d01-d09 fixture, but a successful user run does
-  <strong>not</strong> close broad seasonal/configuration-independent 24–72 h forecast skill;</li>
-  <li>nested radiation uses a fixed 30-minute target and disables
-  <code>topo_shading</code>/<code>slope_rad</code>; the agent must disclose that mismatch;</li>
+  <li>a successful user run does <strong>not</strong> close broad seasonal/configuration-independent
+  24–72 h forecast skill; three-domain nests run with demand GPU memory allocation in v0.3.0 (the C-auto
+  plan covers two-domain nests; fix planned for v0.3.1);</li>
   <li>the single-domain daily path currently runs moist/scalar advection as <code>0/0</code> even
   when different values are requested, and omitted <code>time_step_sound</code> selects 10 acoustic
   substeps where WRF derives 4 on the tracked fixture; the agent reports both rather than changing

@@ -1,7 +1,7 @@
 <h1>Nesting</h1>
 
-<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — validated through
-<code>d01&nbsp;→&nbsp;…&nbsp;→&nbsp;d09</code> in v0.23.4 — entirely on the GPU. The parent domain advances and
+<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — validated on the three-domain Tenerife release gate in v0.3.0 and
+through <code>d01&nbsp;→&nbsp;…&nbsp;→&nbsp;d09</code> on the v0.23.4 one-hour fixture — entirely on the GPU. The parent domain advances and
 <strong>builds each child's lateral boundary live</strong> during the run, so you do
 <strong>not</strong> need a pre-supplied <code>wrfbdy_d02</code>. The child's initial condition comes
 from its own <code>wrfinput_d0N</code>; only <code>wrfbdy_d01</code> forces the root. There is no
@@ -41,13 +41,6 @@ forecast.</p>
   <a href="running.html">Running the Model</a> and <a href="performance.html">Performance</a>.</p>
 </div>
 
-<div class="admon warn">
-  <div class="admon-title">Nested radiation controls are not yet fully namelist-faithful</div>
-  <p>The nested runtime currently targets a fixed 30-minute radiation interval rather than
-  arbitrary namelist <code>radt</code>. It also binds <code>topo_shading</code> and
-  <code>slope_rad</code> disabled. These are disclosed v0.23.4 limitations; do not infer that a
-  differing requested cadence or terrain-radiation option was honored.</p>
-</div>
 
 <h2 id="gwd">Gravity-wave drag on nests</h2>
 <p>Orographic gravity-wave drag (<code>gwd_opt=1</code>) is <strong>default-ON on the nested 1&nbsp;km
@@ -55,9 +48,10 @@ path</strong>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory
 <a href="dynamics.html#gwd">Dynamical Core</a>.</p>
 
 <h2 id="restart">Restart</h2>
-<p>Nested operational restart is not wired yet. A structural full-carry serializer
-exists, but the live-nested driver does not emit or resume a synchronized d01+d02
-checkpoint set. See <a href="output.html#restart">Output Files</a>.</p>
+<p>Nested runs (<code>max_dom &gt; 1</code>) write verified, rotating checkpoint generations with
+<code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> and resume in the same output stream with
+<code>--resume-checkpoint GEN</code>. Single-domain runs refuse these flags with a named reason, and the
+namelist <code>restart</code>/<code>restart_interval</code> settings do not provide crash recovery. See <a href="running.html#restart">Running</a>.</p>
 
 <h2 id="two-way">Opt-in two-way feedback</h2>
 <p>Two-way nesting is <strong>opt-in</strong> via the <code>--feedback</code> flag (nested runs only).
@@ -69,8 +63,9 @@ validated wiring).</p>
 <div class="admon warn">
   <div class="admon-title">Two-way equivalence is untested (KI-11)</div>
   <p>The two-way feedback path is <strong>finite and stable</strong>, but its 24&nbsp;h real-GPU
-  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is accepted for
-  the v0.23.4 one-hour nine-domain fixture and a separate 24-hour SP2 chain; broad 24–72 h
+  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is accepted on
+  the v0.3.0 three-domain Tenerife release gate (24&nbsp;h), the v0.23.4 one-hour nine-domain fixture and
+  a separate 24-hour SP2 chain; broad 24–72 h
   equivalence remains open. Two-way is opt-in and not yet validated for equivalence.</p>
 </div>
 
