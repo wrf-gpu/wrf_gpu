@@ -89,11 +89,9 @@ pass <code>--namelist</code> to point elsewhere.</p>
 
 <h2 id="restart">Restart files</h2>
 
-<p>The repository contains complete-state/carry serializer foundations, but the current
-NetCDF boundary schema still has failing structural roundtrip tests. The public run
-path does <strong>not</strong> yet accept a restart as initialization or emit checkpoints from
-<code>restart</code>/<code>restart_interval</code>. Operational crash recovery is a
-release gate, not a currently supported input mode.</p>
+<p>A WRF <code>wrfrst</code> file is not accepted as initialization. Nested runs can resume from their own
+verified checkpoint generations (<code>--resume-checkpoint</code>); see <a href="running.html#restart">Running →
+Restart</a>.</p>
 
 <h2 id="output">What comes out</h2>
 

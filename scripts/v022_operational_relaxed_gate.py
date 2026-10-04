@@ -888,7 +888,7 @@ def build_domain_payload(args: argparse.Namespace, domain: str, bands: dict[str,
             "tier_o_band_pass": bool(tier_o_pass),
             "verdict": "TIER_O_ACCEPTED" if validation_pass and tier_o_pass and guards["all_hard_guards_pass"] else "TIER_O_REJECTED",
             "reject_reasons": lead_reasons,
-            "enric_signoff": {"required": args.gate_mode == "operational-relaxed", "recorded": False, "ref": None},
+            "owner_signoff": {"required": args.gate_mode == "operational-relaxed", "recorded": False, "ref": None},
             "provenance": {
                 "candidate_dir": str(candidate_dir),
                 "cpu_wrf_dir": str(cpu_dir),

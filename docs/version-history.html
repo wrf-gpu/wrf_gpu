@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Version History — wrf_gpu User's Guide</title>
-  <meta name="description" content="Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23.4 nine-nest correctness release.">
+  <meta name="description" content="Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.3.0 fused-fp32 GPU release.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
   <link rel="stylesheet" href="_assets/style.css">
@@ -56,7 +56,8 @@
 <div class="group-title">Reference</div>
 <a class="active" href="version-history.html">Version History</a>
 <div class="subnav">
-<a href="version-history.html#current">v0.23.4 candidate — nine-nest correctness closure, d03 performance regression understood</a>
+<a href="version-history.html#current">v0.3.0 — fused fp32 GPU kernels by default (current)</a>
+<a href="version-history.html#v0234">v0.23.4 — nine-nest correctness closure, d03 performance regression understood</a>
 <a href="version-history.html#v023">v0.23 line — batched-ensemble throughput &amp; usability</a>
 <a href="version-history.html#v022">v0.22 line — nested wall-clock &amp; features</a>
 <a href="version-history.html#v021">v0.21 line — stability + compile-cache speed</a>
@@ -74,7 +75,7 @@
 
 <p class="lead">A release-by-release summary. <code>stability &gt; identity</code> is the top
 priority, but a proven correctness repair may intentionally change results and require a
-rebaseline, as v0.23.4 does. Full per-release notes live in the
+rebaseline, as v0.23.4 and v0.3.0 do. Full per-release notes live in the
 <code>release_notes/</code> folder of the repository.</p>
 
 <div class="admon note">
@@ -85,12 +86,22 @@ rebaseline, as v0.23.4 does. Full per-release notes live in the
   <strong>opt-in</strong> and inert by default.</p>
 </div>
 
-<h2 id="current">v0.23.4 candidate — nine-nest correctness closure, d03 performance regression understood<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
+<h2 id="current">v0.3.0 — fused fp32 GPU kernels by default (current)<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
 <div class="table-scroll">
 <table>
 <thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
 <tbody>
-<tr><td><strong>v0.23.4 candidate (prepared)</strong></td><td><strong>Correctness-complete; d03 performance regression measured, root-caused, investigation closed.</strong> Closes the SP2 mass-flux seam, S2 boundary retention, V/V10 moist/scalar ordering, and Thompson late-Ni balance in one linear chain. The one-hour all-physics d01-d09 replay lands 27/27 outputs, all 177,497,511 numeric values finite, and 9 × 102 fields within the frozen gates. Dispatch-level scalar batching is validated for <strong>2-domain (d01+d02): no measured regression (0.960–1.018×)</strong>. <strong>3-domain/9-domain configurations using d03 carry a real 51.67% regression</strong> vs v0.23.3. Every quick-fix candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was falsified or rejected with evidence; a Nsight Compute hardware measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of peak, occupancy 15.6%), identifying concurrent sibling-domain scheduling as the mapped next lever (design-scoped, unimplemented). Ships as a known, understood limitation. Fixed 30-minute nested radiation cadence remains disclosed.</td><td>Intentional WRF-fidelity corrections; d01/d02 performance-neutral, d03 correct but slower; rebaseline ice-sensitive trajectories</td></tr>
+<tr><td><strong>v0.3.0</strong></td><td><strong>GPU rewrite of the hot path:</strong> fused fp32 dynamics, acoustics and column-physics kernels are on by default; WRF's DOUBLE precision islands stay double. On an RTX 5090: two-domain Canary 22.4× faster than CPU-WRF on 12 cores; four three-domain Tenerife forecasts on one GPU 12.75× CPU-WRF's throughput. WRF-order fixes to snow, water and albedo updates; full WRF history by default. Release gate: 6 Tenerife cases × 3 domains × 24&nbsp;h, 0 D6 bound failures.</td><td><strong>Changed</strong> (fp32 default + WRF-order fixes; revalidated against CPU-WRF)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v0234">v0.23.4 — nine-nest correctness closure, d03 performance regression understood<a class="headerlink" href="#v0234" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td><strong>v0.23.4</strong></td><td><strong>Correctness-complete; d03 performance regression measured, root-caused, investigation closed.</strong> Closes the SP2 mass-flux seam, S2 boundary retention, V/V10 moist/scalar ordering, and Thompson late-Ni balance in one linear chain. The one-hour all-physics d01-d09 replay lands 27/27 outputs, all 177,497,511 numeric values finite, and 9 × 102 fields within the frozen gates. Dispatch-level scalar batching is validated for <strong>2-domain (d01+d02): no measured regression (0.960–1.018×)</strong>. <strong>3-domain/9-domain configurations using d03 carry a real 51.67% regression</strong> vs v0.23.3. Every quick-fix candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was falsified or rejected with evidence; a Nsight Compute hardware measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of peak, occupancy 15.6%), identifying concurrent sibling-domain scheduling as the mapped next lever (design-scoped, unimplemented). Ships as a known, understood limitation. Fixed 30-minute nested radiation cadence remains disclosed.</td><td>Intentional WRF-fidelity corrections; d01/d02 performance-neutral, d03 correct but slower; rebaseline ice-sensitive trajectories</td></tr>
 </tbody>
 </table>
 </div>

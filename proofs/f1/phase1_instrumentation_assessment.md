@@ -4,7 +4,7 @@ Outcome: fallback path selected.
 
 Evidence:
 
-- `find ~/src -type f -name wrf.exe -print` found only legacy deprecated WRF binaries under `~/src/wrf_gpu_DEPRECATED_archived_on_github_nric_wrf_gpu/builds/`.
+- `find ~/src -type f -name wrf.exe -print` found only legacy deprecated WRF binaries under `~/src/wrf_gpu_DEPRECATED_archived_on_github_<owner>_wrf_gpu/builds/`.
 - `find ~/src -type f -name ideal.exe -print` found no `ideal.exe`.
 - `external/wrf_savepoint_patch/HOOK_INVENTORY.md` states all wrapper hook bodies are empty and active emission is still Python-orchestrated.
 - `bash external/wrf_savepoint_patch/build.sh` failed immediately because `~/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` no longer exists in this workstation layout.

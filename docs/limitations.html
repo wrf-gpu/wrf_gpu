@@ -78,26 +78,21 @@ item is tracked with a proof object. This page is the honest map of what is and 
 
 <h2 id="not-claimed">What is NOT claimed<a class="headerlink" href="#not-claimed" aria-label="Permalink">¶</a></h2>
 <ul>
-  <li><strong>v0.23.4 (prepared) d03 performance regression is real and NOT fixed.</strong>
-  3-domain (<code>maxdom3</code>) and 9-domain configurations that engage <code>d03</code> measure a
-  real <strong>51.67%</strong> slower wall-clock than v0.23.3. The investigation is closed: every
-  quick-fix candidate was falsified/rejected with evidence, and a Nsight Compute hardware
-  measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of
-  peak, occupancy 15.6%) — ruling out a reduced-precision fix and identifying concurrent
-  sibling-domain scheduling as the next lever (design-scoped, unimplemented). 2-domain (d01+d02)
-  configurations are unaffected (measured 0.960–1.018×). This is a known, understood limitation,
-  not an open question. See <a href="performance.html">Performance</a>.</li>
+  <li><strong>Validation scope is the 24&nbsp;h window on the tested configuration.</strong> The release gate covers <strong>6 Tenerife cases × 3 domains × 24&nbsp;h</strong>: 375 output fields compared with original CPU-WRF, 62 of them with frozen per-variable limits (D6), <strong>0 bound failures</strong>, all compared values finite.
+  Beyond 24&nbsp;h, a complete six-case comparison on an earlier internal build of v0.3.0 (identical
+except the Noah-MP albedo/snow-aging fix) exceeds those limits for some 1&nbsp;km wind/rain fields in two
+of the six 72&nbsp;h cases; every affected frame is listed in the <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/VALIDATION.md">validation report</a>. Station verification is done separately by the ALISIOS forecasting project.</li>
+  <li><strong>Single GPU only.</strong> MPI and multi-GPU forecasts are unsupported; independent
+  forecasts can share one card. Tested on RTX 5090 (sm_120, CUDA 13); other recent NVIDIA GPUs are
+  untested.</li>
   <li><strong>Not a universal WRF v4.</strong> Standard regional ARW configs and the common
   operational subset only. Every other scheme is classified (reference-only-with-oracle or
   documented-boundary) and <span class="pill closed">fails closed</span> with a named reason. See
   <a href="physics.html#scheme-triage">Physics → Scheme triage</a>.</li>
   <li><strong>Broad 24 h/72 h forecast-skill equivalence is open</strong> — the credibility
-  gate. v0.23.4 passes its specific 24-hour SP2 chain and one-hour nine-nest gates, but those do
-  not establish seasonal/configuration-independent equivalence. See
+  gate. v0.3.0 passes its 24-hour six-case Tenerife release gate and v0.23.4 its nine-nest gates, but
+  those do not establish seasonal/configuration-independent equivalence. See
   <a href="validation.html#skill-gate">Validation</a>.</li>
-  <li><strong>Nested radiation controls have fidelity gaps.</strong> The cadence is fixed at
-  30 minutes rather than arbitrary namelist <code>radt</code>; <code>topo_shading=1</code> and
-  <code>slope_rad=1</code> currently bind disabled on the nested runtime.</li>
   <li><strong>Some accepted dynamics controls are path-specific.</strong> The nested path honors
   <code>moist_adv_opt</code>/<code>scalar_adv_opt</code>, but the single-domain daily path currently
   runs <code>0/0</code>. Omitting <code>time_step_sound</code> also selects 10 acoustic substeps in
@@ -108,8 +103,8 @@ item is tracked with a proof object. This page is the honest map of what is and 
   fp32 cannot move it. See <a href="performance.html">Performance</a>.</li>
   <li><strong>Multi-GPU throughput is projected, not measured</strong> (one physical RTX 5090
   here). No per-watt / per-kWh at-scale claim; no head-to-head competitive benchmark.</li>
-  <li><strong>fp32 is opt-in, capability/VRAM-only</strong>, with fidelity checked only at the 1 h
-  lead. <strong>Two-way nesting</strong> is finite/stable but its 24 h equivalence is untested.
+  <li><strong>fp32 is the default since v0.3.0</strong>, validated on the 24&nbsp;h release gate (beyond 24&nbsp;h
+  see the disclosures above). <strong>Two-way nesting</strong> is finite/stable but its 24 h equivalence is untested.
   <strong>K2 multi-GPU</strong> is experimental / default-off / lab-only (periodic-BC bit-exact,
   specified-BC not yet faithful — not for production).</li>
   <li><strong>Not</strong> WPS, DFI, FDDA / grid / obs / spectral nudging, WRF-Chem, WRF-Fire,
@@ -142,15 +137,26 @@ state. No OOM-proof guarantee is made.</p>
 
 <h2 id="known-issues">Known-issues summary<a class="headerlink" href="#known-issues" aria-label="Permalink">¶</a></h2>
 <p>Full detail (symptom / ruled-out / workaround / follow-up) is in <code>KNOWN_ISSUES.md</code> in
-the repository. The current release carries these:</p>
+the repository (<a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/KNOWN_ISSUES.md">current list</a>). v0.3.0 carries these:</p>
 <div class="table-scroll">
 <table>
 <thead><tr><th>ID</th><th>Summary</th><th>Class</th></tr></thead>
 <tbody>
-<tr><td><strong>v0.23.4 d03 regression</strong></td><td>3-domain/9-domain configurations engaging <code>d03</code> measure a real 51.67% regression vs v0.23.3; 2-domain (d01+d02) unaffected. Every quick-fix candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was falsified/rejected with evidence. A Nsight Compute hardware measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of peak, occupancy 15.6%), identifying concurrent sibling-domain scheduling as the mapped next lever (design-scoped, unimplemented). Investigation closed; ships as a known limitation.</td><td>Known limitation, understood</td></tr>
-<tr><td><strong>KI-9</strong></td><td>The credibility gate: broad seasonal/configuration-independent 24–72 h forecast-skill equivalence remains open; v0.23.4 closes narrower frozen gates.</td><td>Documented gap</td></tr>
-<tr><td>Nested radiation cadence</td><td>Fixed 30-minute target; arbitrary namelist <code>radt</code> is not honored.</td><td>Disclosed physics-fidelity gap</td></tr>
-<tr><td>Nested terrain radiation</td><td><code>topo_shading</code>/<code>slope_rad</code> currently bind disabled despite accepted namelist values.</td><td>Disclosed implementation gap</td></tr>
+<tr><td><strong>Three-nest memory allocation</strong></td><td>C-auto memory plan for 2-domain nests; 3-nest currently runs with demand allocation. The launcher still measures memory for admission; v0.3.0 throughput numbers are for this shipped path.</td><td>Known issue, fix in v0.3.1</td></tr>
+<tr><td><strong>Noah ground precipitation diagnostics</strong></td><td><code>QSNOWXY</code>/<code>QRAINXY</code> hold column sums of atmospheric <code>QSNOW</code>/<code>QRAIN</code> mixing ratios — proxies with different quantity and units from Noah-MP's ground rates (mm/s).</td><td>Known issue, fix in v0.3.1</td></tr>
+<tr><td><strong>Very thin snow films</strong></td><td>The WRF <code>NOAHMP_SFLX</code> end-of-step reset (<code>SNOWH &lt;= 1e-6 m</code> or <code>SNEQV &lt;= 1e-6 mm</code>) is omitted; sub-1e-5&nbsp;mm films can remain after canopy-ice unloading.</td><td>Known issue, fix in v0.3.1</td></tr>
+<tr><td><strong>Glacier evolution</strong></td><td>Glacier-landuse cells run through ordinary Noah-MP; the dedicated <code>NOAHMP_GLACIER</code> runtime is unported.</td><td>Documented gap</td></tr>
+<tr><td><strong>Output fill conventions</strong></td><td>Some inactive carbon/water fields use zero where CPU-WRF writes its missing-value sentinel; WA/WT, ZWT and GRAIN have initialization output differences.</td><td>Disclosed, writer parity in v0.3.1</td></tr>
+<tr><td><strong>Extended-lead divergence</strong></td><td>The release gate is the 24&nbsp;h window; some 1&nbsp;km wind/rain fields exceed the limits later in 72&nbsp;h runs (every frame disclosed in the validation report).</td><td>Disclosed</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="carried-v0234">Carried from v0.23.4 (not all re-checked for v0.3.0)<a class="headerlink" href="#carried-v0234" aria-label="Permalink">¶</a></h3>
+<div class="table-scroll">
+<table>
+<thead><tr><th>ID</th><th>Summary</th><th>Class</th></tr></thead>
+<tbody>
+<tr><td><strong>KI-9</strong></td><td>The credibility gate: broad seasonal/configuration-independent 24–72 h forecast-skill equivalence remains open; v0.3.0 closes its 24&nbsp;h six-case release gate, v0.23.4 narrower frozen gates.</td><td>Documented gap</td></tr>
 <tr><td>Daily advection binding</td><td>The single-domain daily pipeline drops requested <code>moist_adv_opt</code>/<code>scalar_adv_opt</code> and runs <code>0/0</code>; the accepted nested path honors them.</td><td>Disclosed path-specific fidelity gap</td></tr>
 <tr><td>Acoustic substep / dry mass</td><td>With <code>time_step_sound</code> omitted, the runtime selects 10 substeps while pristine WRF derives 4 on the tracked fixture. A four-substep discriminator did not close the terminal comparison; dry-mass behavior remains open.</td><td>Deferred dynamics fidelity work</td></tr>
 <tr><td>Thompson sedimentation debt</td><td>Static <code>NSED_MAX=16</code> can silently cap demanded substeps; widespread exact-zero carried Ni remains unexplained. Neither was changed in v0.23.4.</td><td>Deferred future contract</td></tr>
@@ -158,7 +164,6 @@ the repository. The current release carries these:</p>
 <tr><td>Terrain ceiling</td><td>&gt; ~6000 m terrain diverges; finite guard fails closed. Deep fix is a future milestone.</td><td>Documented ceiling</td></tr>
 <tr><td>#123</td><td>Solo <code>cuda_async</code> fragmentation OOM mitigated, not fixed; co-resident mode solved by preflight.</td><td>Mitigated / carried</td></tr>
 <tr><td>Host RAM</td><td>~36 GB resident (physics tables baked as static-aux); precision-independent, no result impact; fix deferred.</td><td>Root-caused, deferred</td></tr>
-<tr><td>fp32 scope</td><td>Opt-in fp32 checked only at 1 h lead; single-domain / capability-only; OOMs on the deep nest.</td><td>Documented scope</td></tr>
 <tr><td>RAINNC</td><td>Accumulated precip 5.22 mm vs 1.0 mm bound (derived diagnostic, no skill impact); drawn red, no tolerance widening.</td><td>Bounded acceptance</td></tr>
 <tr><td>KI-3</td><td>Default operational <code>wrfout</code> is a focused 104-variable subset; a 375-variable name/order compatibility stream is opt-in.</td><td>Scope boundary</td></tr>
 <tr><td>KI-4</td><td>d02 U10 episodic final-lead under-prediction; within bar at other leads; tied to KI-9.</td><td>Documented residual</td></tr>

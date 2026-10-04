@@ -782,7 +782,7 @@
         }
       },
       "domain": "d02",
-      "enric_signoff": {
+      "owner_signoff": {
         "recorded": false,
         "ref": null,
         "required": false
@@ -1371,7 +1371,7 @@
         }
       },
       "domain": "d02",
-      "enric_signoff": {
+      "owner_signoff": {
         "recorded": false,
         "ref": null,
         "required": false
