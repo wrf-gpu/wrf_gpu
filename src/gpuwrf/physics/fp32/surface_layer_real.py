@@ -19,7 +19,7 @@ def native_real_enabled() -> bool:
     return _NATIVE_REAL
 
 
-def surface_layer_with_diagnostics_real(state, *, first_timestep=False):
+def surface_layer_with_diagnostics_real(state, *, first_timestep=False, snowh=None):
     from gpuwrf.physics.surface_layer import _surface_layer_impl
 
-    return _surface_layer_impl(state, first_timestep, jnp.float32)
+    return _surface_layer_impl(state, first_timestep, jnp.float32, snowh=snowh)

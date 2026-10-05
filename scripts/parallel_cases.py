@@ -7,11 +7,13 @@ Per-case GPU need = the product C-auto plan of that case (gpu_allocator: pool bu
 which the CLI records after a successful run of the same geometry/settings. A case without a plan runs ALONE
 first (the CLI's demand allocation) and records it; later cases with the same plan then run in parallel.
 --pool-gib P instead pins every case to a P GiB preallocated cuda_async pool (need = P + 1 GiB).
-Successful cases record their peaks next to the plan (<plan>.measured.json): host need = 1.1 x the largest VmHWM, else
---host-gb-per-case; VRAM need >= 1.1 x the largest per-PID nvidia-smi peak (and that alone admits a case whose plan is
-missing, e.g. under the vmm allocator, whose JAX memory_stats() are empty). JAX memory stats are never read.
-Admission (FIFO): sum(need) <= free VRAM at launch - margin; sum(host need) <= MemAvailable + RSS of the
-running cases - reserve; at most --max-parallel. Receipts: OUT/<name>/receipt.json (rc, wall, peak RSS, per-PID VRAM
+Successful cases record their peaks next to the plan (<plan>.measured.json), COLD (compiling, mixed or unknown) and WARM
+(every required executable loaded from a persistent AOT blob + .meta, per the case proof) separately: host need = 1.1 x the
+warm VmHWM while every artifact of the last warm run still exists, else 1.1 x the cold VmHWM, else --host-gb-per-case;
+VRAM need >= 1.1 x the largest per-PID nvidia-smi peak (and that alone admits a case whose plan is missing, e.g. under the
+vmm allocator, whose JAX memory_stats() are empty). JAX memory stats are never read.
+Admission (FIFO): sum(need) <= free VRAM at launch - margin; sum(host need) + one-compile headroom (largest cold - admitted
+need) <= MemAvailable + RSS of the running cases - reserve; at most --max-parallel. Receipts: OUT/<name>/receipt.json (rc, wall, peak RSS, per-PID VRAM
 peak from nvidia-smi every 5 s, outputs[] with publication times), OUT/parallel_run.json, OUT/gpu_dmon.log.
 """
 from __future__ import annotations
@@ -161,32 +163,110 @@ def measured(sizing: dict) -> dict:
         return {}
 
 
-def host_need_kb(sizing: dict, default_gb: float) -> tuple[int, str]:
-    peak = int(measured(sizing).get("vmhwm_kb_max", 0))
-    if peak > 0:
-        return int(peak * 1.10), "1.1 x measured VmHWM"
+def _blob_and_meta(entry: dict) -> list[str] | None:
+    """The persistent AOT artifact an executable was loaded from: [blob, meta] (both required), else None."""
+    blob, meta = entry.get("blob_path"), entry.get("meta_path")
+    return [str(blob), str(meta)] if blob and meta else None
+
+
+def cache_state(out: Path) -> dict:
+    """Was this finished case WARM? Read from the case's own proof (wrfout/proofs/nested_pipeline_run.json): EVERY
+    executable the run needed (metadata.nested_aot.domains: the root plus every fused/nested program) must have been loaded
+    from a persistent AOT artifact in this process — source "aot_blob" with its blob + .meta, or "aot_memory_cache" with
+    load_count >= 1 served by the startup prefetch (aot_prefetch.domains[name], source "aot_blob"; its cheap key may be an
+    alias of the runtime key: the prefetch registers a loaded executable under every alias with the same HLO, E149) — and
+    none may have been compiled here (compiled_memory_cache / fallback / aot_written / load_count 0 / not loaded). The
+    product's own source label is the evidence: an executable compiled in-process is labelled compiled_memory_cache. Fail closed:
+    anything unknown is cold. Returns {"warm": True|False|None, "executables": {name: [blob, meta]} (warm only),
+    "cold_executables": [names]}; no proof or no nested AOT record -> warm None (recorded as cold)."""
+    try:
+        meta = json.loads((out / "wrfout" / "proofs" / "nested_pipeline_run.json").read_text()).get("metadata") or {}
+        doms = (meta.get("nested_aot") or {}).get("domains") or {}
+        pre = (meta.get("aot_prefetch") or {}).get("domains") or {}
+    except (OSError, ValueError, AttributeError):
+        return {"warm": None, "executables": {}, "cold_executables": []}
+    if not isinstance(doms, dict) or not doms:
+        return {"warm": None, "executables": {}, "cold_executables": []}
+    exes, cold = {}, []
+    for name, d in sorted(doms.items()):
+        art = None
+        if isinstance(d, dict) and d.get("loaded") is True and not d.get("aot_written") and not d.get("error"):
+            if d.get("source") == "aot_blob":
+                art = _blob_and_meta(d)
+            elif d.get("source") == "aot_memory_cache" and int(d.get("load_count") or 0) >= 1:
+                p = pre.get(name) if isinstance(pre, dict) else None
+                if isinstance(p, dict) and p.get("source") == "aot_blob" and p.get("loaded") is True and not p.get("error"):
+                    art = _blob_and_meta(p)
+        if art:
+            exes[name] = art
+        else:
+            cold.append(name)
+    return {"warm": not cold, "executables": exes if not cold else {}, "cold_executables": cold}
+
+
+def cache_warm(sizing: dict) -> bool:
+    """Warm admission for this plan key: a warm peak was recorded AND every artifact (blob + .meta of every required
+    executable) that warm run loaded still exists (same plan key = same source, flags and geometry, so the next case loads
+    exactly those executables instead of compiling)."""
+    m = measured(sizing)
+    exes = m.get("warm_executables")
+    return (int(m.get("vmhwm_kb_warm_max", 0)) > 0 and isinstance(exes, dict) and bool(exes)
+            and all(isinstance(v, list) and len(v) == 2 and all(Path(f).is_file() for f in v) for v in exes.values()))
+
+
+def host_cold_kb(sizing: dict, default_gb: float) -> tuple[int, str]:
+    """Host need if this case COMPILES: 1.1 x the cold (compiling) VmHWM; a v0.3.0 sidecar without the cold/warm split
+    -> 1.1 x its VmHWM (a max over all runs, i.e. cold); else never less than --host-gb-per-case."""
+    m = measured(sizing)
+    cold = int(m.get("vmhwm_kb_cold_max", 0))
+    if cold > 0:
+        return int(cold * 1.10), "1.1 x measured cold VmHWM"
+    legacy = int(m.get("vmhwm_kb_max", 0))
+    if legacy > 0 and "vmhwm_kb_warm_max" not in m:
+        return int(legacy * 1.10), "1.1 x measured VmHWM"
     return int(default_gb * 1e6), "--host-gb-per-case"
+
+
+def host_need_kb(sizing: dict, default_gb: float) -> tuple[int, str]:
+    """Host need = 1.1 x the WARM VmHWM while the AOT cache is warm for this plan key (cache_warm), else the cold need.
+    A cold compile needs ~2.4x the host memory of a warm run (WN3: 14.8 vs 6.2 GB), so one max() over both would admit
+    warm production runs as if every case compiled."""
+    if cache_warm(sizing):
+        return int(int(measured(sizing)["vmhwm_kb_warm_max"]) * 1.10), "1.1 x measured warm VmHWM (AOT cache warm)"
+    return host_cold_kb(sizing, default_gb)
 
 
 def apply_vram_floor(sizing: dict) -> dict:
     """Need >= 1.1 x the measured per-PID device memory (nvidia-smi). Under the vmm allocator JAX memory_stats() is
     empty, so a C-auto plan may be missing or footprint-only; a measured peak then admits the case on its own."""
-    fb = int(measured(sizing).get("vram_peak_mib_max", 0))
+    m = measured(sizing)
+    fb = int(m.get("vram_peak_mib_max", 0))  # max over cold AND warm: warm runs peak higher in VRAM (prefetch residency)
     if fb <= 0:
         return sizing
     floor = int(fb * 1.10 * 1024**2)
+    report = {"measured_vram_peak_mib": fb, "measured_vram_peak_mib_cold": int(m.get("vram_peak_mib_cold_max", 0)) or None,
+              "measured_vram_peak_mib_warm": int(m.get("vram_peak_mib_warm_max", 0)) or None,
+              "plan_need_bytes": sizing.get("need_bytes")}  # plan vs measured: a C-auto pool reserves its plan regardless
     if sizing.get("need_bytes") is None:  # no reserved pool: the case's own preflight must see its whole need free
-        return sizing | {"source": "measured-fb", "need_bytes": floor, "measured_vram_peak_mib": fb,
-                         "child_env": {"GPUWRF_MIN_FREE_VRAM_GIB": f"{floor / GIB:.2f}"}}
-    return sizing | {"need_bytes": max(int(sizing["need_bytes"]), floor), "measured_vram_peak_mib": fb}
+        return sizing | report | {"source": "measured-fb", "need_bytes": floor,
+                                  "child_env": {"GPUWRF_MIN_FREE_VRAM_GIB": f"{floor / GIB:.2f}"}}
+    return sizing | report | {"need_bytes": max(int(sizing["need_bytes"]), floor)}
 
 
-def record_peaks(sizing: dict, vmhwm_kb: int, vram_peak_mib: int) -> None:
+def record_peaks(sizing: dict, vmhwm_kb: int, vram_peak_mib: int, state: dict | None = None) -> None:
+    """Peaks per plan key; cold (compiling, mixed or unknown) and warm (cache_state warm) recorded separately. A warm run
+    also records the artifacts it loaded (warm_executables, replaced by the latest warm run) for cache_warm()."""
     if not sizing.get("plan_path"):
         return
     old = measured(sizing)
-    new = {"vmhwm_kb_max": max(int(old.get("vmhwm_kb_max", 0)), vmhwm_kb),
-           "vram_peak_mib_max": max(int(old.get("vram_peak_mib_max", 0)), vram_peak_mib)}
+    warm = (state or {}).get("warm") is True
+    tag = "warm" if warm else "cold"
+    new = old | {"vmhwm_kb_max": max(int(old.get("vmhwm_kb_max", 0)), vmhwm_kb),
+                 "vram_peak_mib_max": max(int(old.get("vram_peak_mib_max", 0)), vram_peak_mib),
+                 f"vmhwm_kb_{tag}_max": max(int(old.get(f"vmhwm_kb_{tag}_max", 0)), vmhwm_kb),
+                 f"vram_peak_mib_{tag}_max": max(int(old.get(f"vram_peak_mib_{tag}_max", 0)), vram_peak_mib)}
+    if warm:
+        new["warm_executables"] = state["executables"]
     side = Path(sizing["plan_path"]).with_suffix(".measured.json")
     side.parent.mkdir(parents=True, exist_ok=True)
     side.write_text(json.dumps(new) + "\n")
@@ -267,6 +347,7 @@ class Case:
         self.case_dir, self.name, self.out = case_dir, name, out
         self.sizing: dict = {}
         self.host_kb, self.host_src = 0, ""
+        self.host_cold_kb = 0  # host need if this case compiles after all (one-compile headroom, see fits)
         self.proc: subprocess.Popen | None = None
         self.t0 = self.t1 = 0.0
         self.vmhwm_kb = 0
@@ -277,6 +358,7 @@ class Case:
         self.env: list[str] = []  # GPUWRF_/JAX_/XLA_/... env of the case process (receipt evidence)
         self.published: dict[str, float] = {}  # history file -> first seen (s after start): survives later compression
         self.vram_peak_mib = 0
+        self.cache: dict = {}  # cache_state() of the finished case (warm/cold evidence)
 
     def watch_outputs(self) -> None:
         for p in (self.out / "wrfout").glob("wrfout_d*"):
@@ -289,12 +371,17 @@ class Case:
 
 
 def fits(running: list[Case], case: Case, vram_capacity: int, host_capacity_kb: int, max_parallel: int) -> bool:
-    """FIFO admission of one more case next to the running ones (case.need None = sizing run, exclusive)."""
+    """FIFO admission of one more case next to the running ones (case.need None = sizing run, exclusive). Host: the sum of
+    the needs plus ONE-COMPILE HEADROOM — the largest (cold - admitted) need among them — so that one case admitted at its
+    warm need that compiles after all (e.g. an evicted blob, an env change) still fits instead of tripping the host-RAM
+    watchdog for every running case."""
     if case.need is None or any(r.need is None for r in running):
         return not running
+    group = [*running, case]
+    headroom = max(max(0, c.host_cold_kb - c.host_kb) for c in group)
     return (len(running) < max_parallel
             and sum(r.need for r in running) + case.need <= vram_capacity
-            and sum(r.host_kb for r in running) + case.host_kb <= host_capacity_kb)
+            and sum(c.host_kb for c in group) + headroom <= host_capacity_kb)
 
 
 def outputs(c: "Case") -> list[dict]:
@@ -394,6 +481,7 @@ def main(argv: list[str] | None = None, sizer=None, gpu=None, vram=None) -> int:
             if a.pool_gib is None:
                 c.sizing = apply_vram_floor(c.sizing)
             c.host_kb, c.host_src = host_need_kb(c.sizing, a.host_gb_per_case)
+            c.host_cold_kb = max(c.host_kb, host_cold_kb(c.sizing, a.host_gb_per_case)[0])
 
     try:
         size(cases)
@@ -411,7 +499,10 @@ def main(argv: list[str] | None = None, sizer=None, gpu=None, vram=None) -> int:
         print(json.dumps({"vram_total_bytes": total, "vram_free_bytes": free, "vram_capacity_bytes": vram_capacity,
                           "host_capacity_kb": host_capacity([]), "would_start_now": len(start_now),
                           "cases": [{"name": c.name, "case_dir": str(c.case_dir), **{k: v for k, v in c.sizing.items() if k != "child_env"},
-                                     "host_need_kb": c.host_kb, "host_need_source": c.host_src} for c in cases]}, indent=1))
+                                     "host_need_kb": c.host_kb, "host_need_source": c.host_src, "host_need_cold_kb": c.host_cold_kb,
+                                     "aot_cache_warm": cache_warm(c.sizing),
+                                     "measured_peaks": {k: v for k, v in measured(c.sizing).items() if k != "warm_executables"}}
+                                    for c in cases]}, indent=1))
         return 0
 
     root = a.out_root.resolve()
@@ -455,7 +546,8 @@ def main(argv: list[str] | None = None, sizer=None, gpu=None, vram=None) -> int:
                 running.remove(r)
                 done.append(r)
                 if r.rc == 0:
-                    record_peaks(r.sizing, r.vmhwm_kb, r.vram_peak_mib)
+                    r.cache = cache_state(r.out)
+                    record_peaks(r.sizing, r.vmhwm_kb, r.vram_peak_mib, r.cache)
                     with contextlib.suppress(ValueError, RuntimeError, subprocess.TimeoutExpired):
                         size(pending)  # a sizing run may have recorded the plan (and host peak) the others need
                 write_receipt(r, cli)
@@ -578,11 +670,14 @@ def write_receipt(c: Case, cli: list[str]) -> None:
            "source": source_ref(),
            "command": c.argv or [*cli, "--input-dir", str(c.case_dir), "--output-dir", str(c.out / "wrfout")],
            "sizing": {k: v for k, v in c.sizing.items()}, "host_need_kb": c.host_kb, "host_need_source": c.host_src,
+           "host_need_cold_kb": c.host_cold_kb,
            "rc": c.rc, "note": c.note, "concurrent_at_start": c.concurrent_at_start, "env": c.env}
     if c.proc is not None:
         rec |= {"pid": c.proc.pid, "start_utc": utc(c.t0), "end_utc": utc(c.t1), "wall_s": round(c.t1 - c.t0, 3),
                 "vmhwm_kb": c.vmhwm_kb, "allocator": allocator_lines(c.out / "run.log"),
-                "vram_peak_mib": c.vram_peak_mib, "cli_summary": cli_summary(c.out / "cli_stdout.json"), "outputs": outputs(c)}
+                "vram_peak_mib": c.vram_peak_mib, "aot_cache_warm": c.cache.get("warm"),
+                "aot_cold_executables": c.cache.get("cold_executables"),
+                "cli_summary": cli_summary(c.out / "cli_stdout.json"), "outputs": outputs(c)}
     (c.out / "receipt.json").write_text(json.dumps(rec, indent=1) + "\n")
 
 

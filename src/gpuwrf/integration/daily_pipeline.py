@@ -249,10 +249,8 @@ def _domain_namelist_value(run: Gen2Run, group: str, key: str, domain: str, defa
     value = run.namelist.get(group, {}).get(key, default)
     if isinstance(value, list):
         index = max(int(domain[1:]) - 1, 0)
-        if index < len(value):
-            return value[index]
-        return value[-1] if value else default
-    return value
+        value = value[min(index, len(value) - 1)] if value else default
+    return default if value is None else value
 
 
 def _lookup_attr(obj: Any, name: str, default: Any = None) -> Any:

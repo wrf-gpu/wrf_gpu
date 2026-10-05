@@ -189,6 +189,27 @@ def test_attested_run_writes_manifest(world, monkeypatch, launcher):
     assert m["input_sha256"] == {n: files[n]["sha256"] for n in manifest_mod.INPUTS}
 
 
+@pytest.mark.parametrize("resolved", [True, False])
+def test_launcher_manifest_attests_the_executed_options(world, monkeypatch, resolved):
+    arm = _arm(world, launcher=True)
+    proof = arm / "wrfout" / "proofs" / "nested_pipeline_run.json"
+    doc = json.loads(proof.read_text())
+    full = {"mp_physics": 8, "bl_pbl_physics": 5, "sf_sfclay_physics": 5, "ra_lw_physics": 4, "ra_sw_physics": 4,
+            "diff_opt": 1, "km_opt": 4, "damp_opt": 3, "dt_s": 54.0, "mass_shape": [44, 70, 120]}
+    doc["metadata"]["domains"] = {d: {"namelist": {"dt_s": 54.0, "cu_physics": 1},
+                                      **({"namelist_resolved": full} if resolved else {})} for d in ("d01", "d02", "d03")}
+    proof.write_text(json.dumps(doc))
+    out = _run(world, arm, monkeypatch)
+    manifest_mod.main()
+    diff = json.loads(out.with_name(out.stem + "_namelist_diff.json").read_text())
+    if resolved:
+        assert diff["gpu_resolved_options"] == {d: full for d in ("d01", "d02", "d03")}
+        assert "namelist_resolved" in diff["gpu_resolved_options_source"]
+    else:  # v0.3.0 proofs: the summary, labelled as such
+        assert diff["gpu_resolved_options"]["d01"] == {"dt_s": 54.0, "cu_physics": 1}
+        assert "14-control summary" in diff["gpu_resolved_options_source"]
+
+
 def test_byte_identical_input_copies_are_accepted(world, monkeypatch):
     copies = world["tmp"] / "copies"
     copies.mkdir()

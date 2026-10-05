@@ -1,5 +1,8 @@
 # Validation against original CPU-WRF
 
+Current v0.3.1 evidence and pending scopes are in [V0.3.1.md](V0.3.1.md).
+The measurements below remain the dated v0.3.0 record.
+
 v0.3.0 (internal build dead7d004, called FINAL-b during validation) Switzerland and Canary results are complete. Tenerife's FINAL-b reports
 are pending; the predecessor section below explicitly describes FINAL-a.
 
@@ -128,7 +131,7 @@ The +22 h rain event has CPU maxima 1.1865e-8 kg/kg (`QRAIN`) and 84.1134 kg‚Åª¬
 (`QNRAIN`), with GPU zero. At +21 h both have weak rain; at +23 h both are zero:
 a weak tail decays one hourly frame earlier on the GPU. It is a disclosed rain
 timing difference, with the raw flags retained. The
-[full field audit](../../examples/switzerland_d01/evidence/integrity_every_frame.json)
+full field audit
 and [example README](../../examples/switzerland_d01/README.md) provide the evidence
 and plots. Albedo has zero sentinel cells at all 25 hours; the first eight night
 frames match CPU-WRF exactly. Fixed-mask snow-aging TAUSS RMSE at +24 h is

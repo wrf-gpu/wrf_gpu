@@ -1,0 +1,437 @@
+{
+  "source_artifact": "VAL31b/cubin/wave_gate/wave_gate.json",
+  "owner_lane": "integrate",
+  "source_sha256": "c7d3377e5a83d10c94c3e114b38e0d944c3de2bd4e1c46345cf3900dbdee8388",
+  "hard_stack_gate": "PASS",
+  "max_stack_bytes": 32,
+  "runtime_status": "MEASURED_EXACT_PROGRAM_MANAGER_ACCEPTED",
+  "acceptance": {
+    "verdict": "ACCEPTED",
+    "authority": "manager",
+    "mailbox_time_utc": "2026-10-05T08:13:42Z",
+    "basis": "E189 runtime-attributed conservative flags; no A19 recompute cliff; accepted for v0.3.1 with disclosure",
+    "measured_flagged_transposes": {
+      "ordinary": {
+        "flagged_transpose_count": 8,
+        "sum_device_ms_per_root": 0.21301366666666666,
+        "max_device_ms_per_root": 0.04918399999999999
+      },
+      "radiation": {
+        "flagged_transpose_count": 8,
+        "sum_device_ms_per_root": 0.22539766666666666,
+        "max_device_ms_per_root": 0.048362666666666665
+      }
+    },
+    "disclosure": "Family times are lower bounds; shared caller symbols retain per-fusion upper bounds. Acceptance does not make these exact caller allocations or imply all geometry-specific programs were profiled.",
+    "scope": "RC2 addb342c5 actual PROD executables and original BP82; manager accepts evidence for writer-only RC3."
+  },
+  "compile_handoff_utc": "2026-10-05T08:32:11.723835+00:00",
+  "flagged_transposes": {
+    "ordinary": {
+      "n_roots": 3,
+      "flags": [
+        {
+          "domain": "d01",
+          "fusion": "input_add_multiply_select_subtract_transpose_fusion",
+          "family": "dycore: acoustic",
+          "sources": [
+            "dycore: acoustic:364",
+            "dycore: advection:147",
+            "dycore: diffusion:10"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 661,
+          "native_symbols": [
+            "input_add_multiply_select_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_multiply_select_subtract_transpose_fusion": [
+              "input_add_multiply_select_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.04918399999999999,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.8701866666666666,
+          "family_fraction_upper_bound": 0.0565212061779848
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_and_clamp_divide_maximum_power_select_transpose_fusion",
+          "family": "RRTMG",
+          "sources": [
+            "RRTMG:479",
+            "Noah-MP:173",
+            "sfclay:5"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 781,
+          "native_symbols": [
+            "input_add_and_clamp_divide_maximum_power_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_and_clamp_divide_maximum_power_select_transpose_fusion": [
+              "input_add_and_clamp_divide_maximum_power_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.037663999999999996,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.05079466666666667,
+          "family_fraction_upper_bound": 0.7414951700965979
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion",
+          "family": "Noah-MP",
+          "sources": [
+            "Noah-MP:209",
+            "sfclay:122",
+            "RRTMG:33"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 621,
+          "native_symbols": [
+            "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion": [
+              "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.03467733333333334,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.13263866666666665,
+          "family_fraction_upper_bound": 0.2614421134108707
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_broadcast_select_transpose_fusion",
+          "family": "dycore: acoustic",
+          "sources": [
+            "dycore: acoustic:372",
+            "dycore: advection:115",
+            "dycore: diffusion:10"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 646,
+          "native_symbols": [
+            "input_add_broadcast_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_broadcast_select_transpose_fusion": [
+              "input_add_broadcast_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.03288566666666667,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.8701866666666666,
+          "family_fraction_upper_bound": 0.037791508335376325
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion",
+          "family": "MYNN",
+          "sources": [
+            "MYNN:209",
+            "Noah-MP:147",
+            "sfclay:86"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 574,
+          "native_symbols": [
+            "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion": [
+              "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.03191466666666667,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.48986799999999997,
+          "family_fraction_upper_bound": 0.06514952327293612
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_clamp_compare_log_multiply_select_subtract_transpose_fusion",
+          "family": "sfclay",
+          "sources": [
+            "sfclay:267",
+            "Noah-MP:55",
+            "dycore: diffusion:4"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 524,
+          "native_symbols": [
+            "input_clamp_compare_log_multiply_select_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_clamp_compare_log_multiply_select_subtract_transpose_fusion": [
+              "input_clamp_compare_log_multiply_select_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.016202666666666667,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.09166999999999999,
+          "family_fraction_upper_bound": 0.17674993636595035
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_transpose_fusion.125",
+          "family": "physics coupling",
+          "sources": [
+            "physics coupling:268",
+            "sfclay:1"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 529,
+          "native_symbols": [
+            "input_transpose_fusion_125"
+          ],
+          "symbol_fusion_candidates": {
+            "input_transpose_fusion_125": [
+              "input_transpose_fusion.125"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.005248,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.06844800000000001,
+          "family_fraction_upper_bound": 0.07667134174848059
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_subtract_transpose_fusion",
+          "family": "physics coupling",
+          "sources": [
+            "physics coupling:285",
+            "sfclay:2"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 560,
+          "native_symbols": [
+            "input_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_subtract_transpose_fusion": [
+              "input_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.005237333333333333,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.06844800000000001,
+          "family_fraction_upper_bound": 0.0765155056880162
+        }
+      ]
+    },
+    "radiation": {
+      "n_roots": 3,
+      "flags": [
+        {
+          "domain": "d01",
+          "fusion": "input_add_multiply_select_subtract_transpose_fusion",
+          "family": "dycore: acoustic",
+          "sources": [
+            "dycore: acoustic:364",
+            "dycore: advection:147",
+            "dycore: diffusion:10"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 661,
+          "native_symbols": [
+            "input_add_multiply_select_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_multiply_select_subtract_transpose_fusion": [
+              "input_add_multiply_select_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.048362666666666665,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.8748063333333332,
+          "family_fraction_upper_bound": 0.05528385520757166
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_and_clamp_divide_maximum_power_select_transpose_fusion",
+          "family": "RRTMG",
+          "sources": [
+            "RRTMG:479",
+            "Noah-MP:173",
+            "sfclay:5"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 781,
+          "native_symbols": [
+            "input_add_and_clamp_divide_maximum_power_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_and_clamp_divide_maximum_power_select_transpose_fusion": [
+              "input_add_and_clamp_divide_maximum_power_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.040096,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 12.650610333333336,
+          "family_fraction_upper_bound": 0.003169491348124942
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion",
+          "family": "Noah-MP",
+          "sources": [
+            "Noah-MP:209",
+            "sfclay:122",
+            "RRTMG:33"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 621,
+          "native_symbols": [
+            "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion": [
+              "input_divide_maximum_multiply_reduce_select_slice_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.03481600000000001,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.13406766666666667,
+          "family_fraction_upper_bound": 0.25968975865421196
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_broadcast_select_transpose_fusion",
+          "family": "dycore: acoustic",
+          "sources": [
+            "dycore: acoustic:372",
+            "dycore: advection:115",
+            "dycore: diffusion:10"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 646,
+          "native_symbols": [
+            "input_add_broadcast_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_broadcast_select_transpose_fusion": [
+              "input_add_broadcast_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.03332266666666667,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.8748063333333332,
+          "family_fraction_upper_bound": 0.03809147853296292
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion",
+          "family": "MYNN",
+          "sources": [
+            "MYNN:209",
+            "Noah-MP:147",
+            "sfclay:86"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 574,
+          "native_symbols": [
+            "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion": [
+              "input_add_clamp_convert_divide_maximum_minimum_multiply_power_select_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.032085333333333334,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.6316050000000002,
+          "family_fraction_upper_bound": 0.05079968229088326
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_clamp_compare_log_multiply_select_subtract_transpose_fusion",
+          "family": "sfclay",
+          "sources": [
+            "sfclay:267",
+            "Noah-MP:55",
+            "dycore: diffusion:4"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 524,
+          "native_symbols": [
+            "input_clamp_compare_log_multiply_select_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_clamp_compare_log_multiply_select_subtract_transpose_fusion": [
+              "input_clamp_compare_log_multiply_select_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.026272333333333335,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.10330733333333335,
+          "family_fraction_upper_bound": 0.25431237537186774
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_subtract_transpose_fusion",
+          "family": "physics coupling",
+          "sources": [
+            "physics coupling:285",
+            "sfclay:2"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 560,
+          "native_symbols": [
+            "input_subtract_transpose_fusion"
+          ],
+          "symbol_fusion_candidates": {
+            "input_subtract_transpose_fusion": [
+              "input_subtract_transpose_fusion"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.005237333333333333,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.18719000000000005,
+          "family_fraction_upper_bound": 0.027978702566020256
+        },
+        {
+          "domain": "d01",
+          "fusion": "input_transpose_fusion.125",
+          "family": "physics coupling",
+          "sources": [
+            "physics coupling:268",
+            "sfclay:1"
+          ],
+          "is_flagged_transpose": true,
+          "hlo_instructions": 529,
+          "native_symbols": [
+            "input_transpose_fusion_125"
+          ],
+          "symbol_fusion_candidates": {
+            "input_transpose_fusion_125": [
+              "input_transpose_fusion.125"
+            ]
+          },
+          "attribution": "exact_fusion",
+          "device_ms_per_root": 0.0052053333333333335,
+          "launches_per_root": 1.0,
+          "family_device_ms_per_root_lower_bound": 0.18719000000000005,
+          "family_fraction_upper_bound": 0.027807753263172884
+        }
+      ]
+    }
+  }
+}

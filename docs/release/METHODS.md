@@ -1,6 +1,7 @@
 # Architecture and measurement methods
 
-Draft: FINAL-b measurements will replace predecessor data before publication.
+This page records v0.3.0 measurement definitions and historical parallel/energy evidence.
+For current v0.3.1 timings and validation scopes, see [V0.3.1.md](V0.3.1.md).
 
 The GPU timestep keeps WRF state on the GPU and uses fused fp32 kernels for dynamics,
 acoustics and the supported column physics. WRF DOUBLE islands remain in double
@@ -31,10 +32,10 @@ Admission checks GPU memory and host RAM. The benchmark uses measured warm per-c
 host high-water ×1.1 and an 8 GB reserve; the original cold-compile high-water is
 preserved in the receipt. Cold compilation is reported separately from cached runs.
 
-C-auto memory plan for 2-domain nests; 3-nest currently runs with demand
-allocation (known issue, fix in v0.3.1). The measured v0.3.0 Tenerife runs include
-that allocation overhead. The launcher still uses measured memory for admission;
-v0.3.1 allocator-fix sweeps are reported separately from this release.
+The measured v0.3.0 three-nest Tenerife runs used demand allocation because
+the fused d02/d03 executable was not covered by C-auto planning. v0.3.1 repairs
+that planning and warm admission. The older throughput/energy figures retain
+their original allocator/work; the v0.3.1 six-hour sweep is recorded in [V0.3.1.md](V0.3.1.md).
 
 The development-throughput comparison uses the measured LW9 WN3 baseline,
 which still reported software version 0.23.4. It is not a benchmark of the
@@ -43,12 +44,12 @@ the public-release version is stated separately in the README.
 
 ## Energy and memory
 
-CPU-WRF on twelve cores uses approximately 200 W: **maintainer measurement**. Multiplying
+The energy basis is approximately 200 W: **owner-reported power for the twelve-core CPU-WRF run**; its boundary is not recorded as package power. Multiplying
 that power by the CPU reference wall gives component energy per case-hour. The Swiss
 four-core CPU energy is unmeasured; the twelve-core value is not reused for it.
 GPU energy integrates timestamped nvidia-smi board-power samples at one-second cadence;
 unlogged endpoint tails and sampling gaps are disclosed. GPU host CPU, other system
-components and supply losses are outside this board-versus-package comparison.
+components and supply losses are outside this board-versus-reported-CPU-load comparison.
 
 Per-process GPU memory peaks and total board usage are different quantities. CUDA
 pool reservations and desktop usage are disclosed where relevant; they are not

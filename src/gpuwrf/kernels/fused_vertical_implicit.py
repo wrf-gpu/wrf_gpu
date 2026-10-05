@@ -850,6 +850,97 @@ def _advance_w_kernel_recur(
     ph_out[0, cols] = ph_ref[0, cols]
 
 
+def _advance_w_kernel_recur_sl(
+    wupd_ref, a_ref, alpha_ref, gamma_ref, rhs_ref, wsave_ref, ph1_ref, phb_ref, w_ref, ph_ref,
+    c1f_ref, c2f_ref, mut_ref, muts_ref, msfty_ref, s_ref,
+    w_out, ph_out,
+    *, nz: int, damp3: bool, keep=None, block: int = 2,
+):
+    """Blocked form of ``_advance_w_kernel_recur`` (``GPUWRF_ACOUSTIC_W_RECUR_SL=1``): the same
+    expressions in the same level order, but each loop trip handles ``block`` levels and issues all of
+    its loads before its first store, so loads wait behind possibly aliasing stores once per trip
+    instead of once per level (E137; A2 ``_level_blocks`` pattern, no loop-carried prefetch: E157).
+    block=2: Triton compile 27 s, 48 regs, 0 spills (block=4: 143-239 s + spills; full unroll: TTIR 14x,
+    compile did not finish in 10 min — E153)."""
+
+    def kept(new, old):
+        return new if keep is None else jnp.where(keep, new, old)
+
+    pid = pl.program_id(0)
+    cols = pl.ds(pid * TX, TX)
+    mut = mut_ref[cols]
+    muts = muts_ref[cols]
+    msfty = msfty_ref[cols]
+    dts = s_ref[_DTS]
+    g = s_ref[_G]
+    eps_p = 1.0 + s_ref[_EPSSM]
+
+    def blocks(levels, load, step, carry):
+        """``levels`` = (first, sign, count): level(i) = first + sign*i, i = 0..count-1, in order."""
+        first, sign, count = levels
+        def trip(b, c):
+            ks = [first + sign * (b * block + u) for u in range(block)]
+            loaded = [load(k) for k in ks]
+            for k, d in zip(ks, loaded):
+                c = step(k, d, c)
+            return c
+        carry = jax.lax.fori_loop(0, count // block, trip, carry)
+        for i in range(count // block * block, count):
+            k = first + sign * i
+            carry = step(k, load(k), carry)
+        return carry
+
+    # Thomas forward, faces 1..nz-1 stored (read back by the back substitution), face nz kept.
+    def fwd_load(j):
+        return wupd_ref[j, cols], a_ref[j, cols], alpha_ref[j, cols]
+
+    def fwd_step(j, d, wf_prev):
+        wf_j = (d[0] - (d[1] * wf_prev)) * d[2]
+        w_out[j, cols] = wf_j
+        return wf_j
+
+    w_surface = wupd_ref[0, cols]
+    wf_nzm1 = blocks((1, 1, nz - 1), fwd_load, fwd_step, w_surface)
+    wf_nz = (wupd_ref[nz, cols] - (a_ref[nz, cols] * wf_nzm1)) * alpha_ref[nz, cols]
+
+    def fin_load(k, with_w):
+        d = dict(rhs=rhs_ref[k, cols], c1f=c1f_ref[k], c2f=c2f_ref[k])
+        if with_w:
+            d.update(wf=w_out[k, cols], gamma=gamma_ref[k, cols])
+        if damp3:
+            d.update(ph1=ph1_ref[k, cols], phb=phb_ref[k, cols], wsave=wsave_ref[k, cols],
+                     ph1_top=ph1_ref[nz, cols], phb_top=phb_ref[nz, cols])
+        if keep is not None:
+            d.update(w_old=w_ref[k, cols], ph_old=ph_ref[k, cols])
+        return d
+
+    def finish(k, w_back, d):
+        w_fin = w_back
+        if damp3:
+            hk = (d["ph1"] + d["phb"]) / g
+            hbot = (d["ph1_top"] + d["phb_top"]) / g - s_ref[_HDEPTH]
+            sine = jnp.sin((s_ref[_HALF_PI] * (hk - hbot)) / s_ref[_HDEPTH])
+            ramp = (s_ref[_DAMPMAG] * sine) * sine
+            dampwt = jnp.where(hk >= hbot, ramp, jnp.zeros_like(ramp))
+            massf = d["c1f"] * mut + d["c2f"]
+            w_fin = (w_back - ((dampwt * massf) * d["wsave"])) / (1.0 + dampwt)
+        w_out[k, cols] = kept(w_fin, d.get("w_old"))
+        massf_muts = d["c1f"] * muts + d["c2f"]
+        ph_out[k, cols] = kept(d["rhs"] + ((((((msfty * 0.5) * dts) * g) * eps_p) * w_fin) / massf_muts),
+                               d.get("ph_old"))
+
+    finish(nz, wf_nz, fin_load(nz, False))
+
+    def desc_step(k, d, w_next_back):
+        w_back = d["wf"] - (d["gamma"] * w_next_back)
+        finish(k, w_back, d)
+        return w_back
+
+    blocks((nz - 1, -1, nz - 1), lambda k: fin_load(k, True), desc_step, wf_nz)
+    w_out[0, cols] = kept(w_surface, None if keep is None else w_ref[0, cols])
+    ph_out[0, cols] = ph_ref[0, cols]
+
+
 def advance_w_pallas(
     *,
     w: jax.Array,

@@ -1,0 +1,523 @@
+{
+  "source_artifact": "V31/sweep/summary.json",
+  "owner_lane": "wn3",
+  "source_sha256": "4f6f7c7ba4f3a0befaf969dd38ee6d149c40d7c4df824f11d5c18812b4874e36",
+  "hours": 6,
+  "cpu_reference_s_per_case_hour": 123.4,
+  "clock_definition": "first case process start to last phase wrfout, divided by N*6 forecast hours",
+  "init_load_included": true,
+  "compression": false,
+  "historical_FINALb_R4_compression": true,
+  "no_24h_or_energy_extrapolation": true,
+  "memavailable_floor_kb": 50436300,
+  "phases": {
+    "c0": {
+      "aggregate": {
+        "n_cases": 1,
+        "span_s": 782.87,
+        "aggregate_s_per_case_fc_h": 130.478,
+        "speedup_vs_cpu_3x4": 0.95,
+        "mean_per_case_whole_run_s_per_case_fc_h": 130.478
+      },
+      "cases": {
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 825.183,
+          "vmhwm_kb": 9038420,
+          "vram_peak_mib": 3894,
+          "aot_cache_warm": false,
+          "aot_cold_executables": [
+            "d01",
+            "fused/d02"
+          ],
+          "concurrent_at_start": 0,
+          "host_need_kb": 16000000,
+          "host_need_source": "--host-gb-per-case",
+          "host_need_cold_kb": 16000000,
+          "start_utc": "2026-10-05T07:57:54Z",
+          "end_utc": "2026-10-05T08:11:40Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791187074.844,
+          "t_last_file_epoch": 1791187857.714,
+          "n_wrfout": 21,
+          "whole_run_s": 782.87,
+          "whole_run_s_per_case_fc_h": 130.478,
+          "d01_hour_segments_s": [
+            583.926,
+            6.568,
+            8.508,
+            8.02,
+            8.46,
+            7.985
+          ],
+          "steady_h2_h6_s_per_fc_h": 7.908
+        }
+      },
+      "launcher_wall_s_per_case_hour": 137.812,
+      "dry_would_start_now": 1,
+      "dry_host_capacity_kb": 58623056,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "sizing-run",
+          "need_bytes": null,
+          "host_need_kb": 16000000,
+          "host_need_source": "--host-gb-per-case",
+          "host_need_cold_kb": 16000000,
+          "aot_cache_warm": false
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        }
+      ],
+      "peak_concurrency": 1,
+      "stop_reason": null,
+      "memavailable_floor_kb": 57823644,
+      "gpu_fb_peak_mib_dmon": 8606,
+      "sidecar_after": {
+        "vmhwm_kb_max": 9038420,
+        "vram_peak_mib_max": 3894,
+        "vmhwm_kb_cold_max": 9038420,
+        "vram_peak_mib_cold_max": 3894
+      }
+    },
+    "n1": {
+      "aggregate": {
+        "n_cases": 1,
+        "span_s": 82.009,
+        "aggregate_s_per_case_fc_h": 13.668,
+        "speedup_vs_cpu_3x4": 9.03,
+        "mean_per_case_whole_run_s_per_case_fc_h": 13.668
+      },
+      "cases": {
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 84.415,
+          "vmhwm_kb": 6142392,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 0,
+          "host_need_kb": 9942262,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:11:49Z",
+          "end_utc": "2026-10-05T08:13:14Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791187909.755,
+          "t_last_file_epoch": 1791187991.764,
+          "n_wrfout": 21,
+          "whole_run_s": 82.01,
+          "whole_run_s_per_case_fc_h": 13.668,
+          "d01_hour_segments_s": [
+            9.729,
+            6.941,
+            6.197,
+            6.584,
+            6.486,
+            6.118
+          ],
+          "steady_h2_h6_s_per_fc_h": 6.465
+        }
+      },
+      "launcher_wall_s_per_case_hour": 14.276,
+      "dry_would_start_now": 1,
+      "dry_host_capacity_kb": 66708476,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 5708878366,
+          "host_need_kb": 9942262,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": false
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        }
+      ],
+      "peak_concurrency": 1,
+      "stop_reason": null,
+      "memavailable_floor_kb": 67341068,
+      "gpu_fb_peak_mib_dmon": 10080,
+      "sidecar_after": {
+        "vmhwm_kb_max": 9038420,
+        "vram_peak_mib_max": 5354,
+        "vmhwm_kb_cold_max": 9038420,
+        "vram_peak_mib_cold_max": 3894,
+        "vmhwm_kb_warm_max": 6142392,
+        "vram_peak_mib_warm_max": 5354
+      }
+    },
+    "n3": {
+      "aggregate": {
+        "n_cases": 3,
+        "span_s": 147.615,
+        "aggregate_s_per_case_fc_h": 8.201,
+        "speedup_vs_cpu_3x4": 15.05,
+        "mean_per_case_whole_run_s_per_case_fc_h": 24.543
+      },
+      "cases": {
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 151.01,
+          "vmhwm_kb": 6102272,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 0,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:13:22Z",
+          "end_utc": "2026-10-05T08:15:53Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188002.105,
+          "t_last_file_epoch": 1791188149.123,
+          "n_wrfout": 21,
+          "whole_run_s": 147.018,
+          "whole_run_s_per_case_fc_h": 24.503,
+          "d01_hour_segments_s": [
+            22.429,
+            14.381,
+            14.869,
+            13.451,
+            14.765,
+            15.328
+          ],
+          "steady_h2_h6_s_per_fc_h": 14.559
+        },
+        "20260502_18z_a1": {
+          "rc": 0,
+          "wall_s": 151.036,
+          "vmhwm_kb": 6133116,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 1,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:13:22Z",
+          "end_utc": "2026-10-05T08:15:53Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188002.106,
+          "t_last_file_epoch": 1791188149.246,
+          "n_wrfout": 21,
+          "whole_run_s": 147.14,
+          "whole_run_s_per_case_fc_h": 24.523,
+          "d01_hour_segments_s": [
+            21.924,
+            14.712,
+            15.595,
+            13.611,
+            16.418,
+            14.43
+          ],
+          "steady_h2_h6_s_per_fc_h": 14.953
+        },
+        "20260614_18z_a1": {
+          "rc": 0,
+          "wall_s": 151.036,
+          "vmhwm_kb": 6133256,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 2,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:13:22Z",
+          "end_utc": "2026-10-05T08:15:53Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188002.107,
+          "t_last_file_epoch": 1791188149.72,
+          "n_wrfout": 21,
+          "whole_run_s": 147.613,
+          "whole_run_s_per_case_fc_h": 24.602,
+          "d01_hour_segments_s": [
+            24.697,
+            14.967,
+            15.632,
+            14.455,
+            14.131,
+            14.326
+          ],
+          "steady_h2_h6_s_per_fc_h": 14.702
+        }
+      },
+      "launcher_wall_s_per_case_hour": 8.458,
+      "dry_would_start_now": 3,
+      "dry_host_capacity_kb": 65813636,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        },
+        {
+          "name": "20260502_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        },
+        {
+          "name": "20260614_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260502_18z_a1",
+          "running": 2
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260614_18z_a1",
+          "running": 3
+        }
+      ],
+      "peak_concurrency": 3,
+      "stop_reason": null,
+      "memavailable_floor_kb": 56951532,
+      "gpu_fb_peak_mib_dmon": 20789,
+      "sidecar_after": {
+        "vmhwm_kb_max": 9038420,
+        "vram_peak_mib_max": 5354,
+        "vmhwm_kb_cold_max": 9038420,
+        "vram_peak_mib_cold_max": 3894,
+        "vmhwm_kb_warm_max": 6142392,
+        "vram_peak_mib_warm_max": 5354
+      }
+    },
+    "n4": {
+      "aggregate": {
+        "n_cases": 4,
+        "span_s": 186.587,
+        "aggregate_s_per_case_fc_h": 7.774,
+        "speedup_vs_cpu_3x4": 15.87,
+        "mean_per_case_whole_run_s_per_case_fc_h": 30.628
+      },
+      "cases": {
+        "20260220_18z_a1": {
+          "rc": 0,
+          "wall_s": 189.897,
+          "vmhwm_kb": 6141444,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 3,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:16:01Z",
+          "end_utc": "2026-10-05T08:19:11Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188161.124,
+          "t_last_file_epoch": 1791188347.624,
+          "n_wrfout": 21,
+          "whole_run_s": 186.499,
+          "whole_run_s_per_case_fc_h": 31.083,
+          "d01_hour_segments_s": [
+            26.597,
+            19.206,
+            19.66,
+            19.203,
+            19.64,
+            15.28
+          ],
+          "steady_h2_h6_s_per_fc_h": 18.598
+        },
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 189.899,
+          "vmhwm_kb": 6130072,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 0,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:16:01Z",
+          "end_utc": "2026-10-05T08:19:11Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188161.121,
+          "t_last_file_epoch": 1791188347.708,
+          "n_wrfout": 21,
+          "whole_run_s": 186.586,
+          "whole_run_s_per_case_fc_h": 31.098,
+          "d01_hour_segments_s": [
+            27.221,
+            19.242,
+            19.41,
+            19.106,
+            19.795,
+            15.351
+          ],
+          "steady_h2_h6_s_per_fc_h": 18.581
+        },
+        "20260502_18z_a1": {
+          "rc": 0,
+          "wall_s": 187.895,
+          "vmhwm_kb": 6140452,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 1,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:16:01Z",
+          "end_utc": "2026-10-05T08:19:09Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188161.121,
+          "t_last_file_epoch": 1791188344.575,
+          "n_wrfout": 21,
+          "whole_run_s": 183.453,
+          "whole_run_s_per_case_fc_h": 30.576,
+          "d01_hour_segments_s": [
+            26.551,
+            19.03,
+            18.952,
+            18.309,
+            17.95,
+            16.277
+          ],
+          "steady_h2_h6_s_per_fc_h": 18.104
+        },
+        "20260614_18z_a1": {
+          "rc": 0,
+          "wall_s": 182.739,
+          "vmhwm_kb": 6143572,
+          "vram_peak_mib": 5354,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 2,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "start_utc": "2026-10-05T08:16:01Z",
+          "end_utc": "2026-10-05T08:19:03Z",
+          "source_head": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+          "t_start_epoch": 1791188161.122,
+          "t_last_file_epoch": 1791188339.65,
+          "n_wrfout": 21,
+          "whole_run_s": 178.527,
+          "whole_run_s_per_case_fc_h": 29.755,
+          "d01_hour_segments_s": [
+            23.063,
+            17.679,
+            18.674,
+            18.803,
+            19.232,
+            17.8
+          ],
+          "steady_h2_h6_s_per_fc_h": 18.438
+        }
+      },
+      "launcher_wall_s_per_case_hour": 7.988,
+      "dry_would_start_now": 4,
+      "dry_host_capacity_kb": 65324208,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        },
+        {
+          "name": "20260502_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        },
+        {
+          "name": "20260614_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        },
+        {
+          "name": "20260220_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 6175483494,
+          "host_need_kb": 6756631,
+          "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+          "host_need_cold_kb": 9942262,
+          "aot_cache_warm": true
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260502_18z_a1",
+          "running": 2
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260614_18z_a1",
+          "running": 3
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260220_18z_a1",
+          "running": 4
+        }
+      ],
+      "peak_concurrency": 4,
+      "stop_reason": null,
+      "memavailable_floor_kb": 50436300,
+      "gpu_fb_peak_mib_dmon": 26150,
+      "sidecar_after": {
+        "vmhwm_kb_max": 9038420,
+        "vram_peak_mib_max": 5354,
+        "vmhwm_kb_cold_max": 9038420,
+        "vram_peak_mib_cold_max": 3894,
+        "vmhwm_kb_warm_max": 6143572,
+        "vram_peak_mib_warm_max": 5354
+      }
+    }
+  }
+}

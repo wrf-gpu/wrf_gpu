@@ -616,13 +616,17 @@ def _w_phase_split(state, args, cfg, *, nz, ny, nx, interpret):
     args3.update(wupd=p2["wupd"], rhs=p1["rhs"])
     damp3 = cfg.damp_opt==3 and cfg.dampcoef>0 and state.w_save is not None
     ring = cfg.specified or cfg.nested
+    # GPUWRF_ACOUSTIC_W_RECUR_SL=1: blocked recurrences (each trip of 2 levels issues its loads before
+    # its stores, E137); same expressions and level order (default off).
+    recur = (vi._advance_w_kernel_recur_sl if os.environ.get("GPUWRF_ACOUSTIC_W_RECUR_SL", "0") == "1"
+             else vi._advance_w_kernel_recur)
     def kernel(r,o):
         col = lambda name: _ColumnRef(r[name],ny,nx)
         keep = None
         if ring:
             ci = pl.program_id(0)*vi.TX + jnp.arange(vi.TX, dtype=jnp.int32)
             keep = _w_ring_active(ci//nx, ci%nx, ny, nx, cfg)
-        vi._advance_w_kernel_recur(
+        recur(
             *(col(name) for name in ("wupd","a","alpha","gamma","rhs","w_save","ph_1","phb","w","ph")),
             r["c1f"], r["c2f"], col("mut"), col("muts"), col("msfty"), r["s"],
             *(_ColumnRef(o[name],ny,nx) for name in ("w","ph")), nz=nz, damp3=damp3, keep=keep)
@@ -667,7 +671,8 @@ def _uv_boundaries(before,after,cfg):
             u,v=apply_normal_bdy_work(u,v,before.u_work_bdy,before.v_work_bdy,cfg.dt,
                          cfg.dt_full or cfg.dt,config=DEFAULT_BOUNDARY_CONFIG,
                          relax_strength=cfg.normal_bdy_relax_strength,
-                         relax_rows=not cfg.nested_frozen_wrf_boundary_bundle)
+                         relax_rows=not (cfg.nested_frozen_wrf_boundary_bundle
+                                         or cfg.specified_relax_tendency))
     if (before.u_spec_tan_target is not None and before.v_spec_tan_target is not None
             and os.environ.get("GPUWRF_SPEC_RING_SELECT", "0") == "1" and cfg.spec_zone > 0):
         # Same writes as the loop below as two masked selects (bit-identical).
@@ -755,10 +760,17 @@ def acoustic_substep_fp32(state: AcousticCoreState, *, coefficients: dict,
     before_w=state
     state=_w_phase(state,coefficients,cfg,interpret=interpret)
     if apply_boundary_forcing:state=_w_boundaries(before_w,state,cfg)
-    args={name:value for name,value in state.to_dict().items() if value is not None}
+    args={name:value for name,value in state.to_dict().items() if value is not None and (not _EOS_PRUNE or name in _EOS_INPUTS)}
     args["smdiv"]=jnp.asarray(smdiv,jnp.float32)
     eos=_call(lambda r,o:_pressure_kernel(r,o,nz=nz,ny=ny,nx=nx,block=128),args,
               {name:_shape(state.theta) for name in ("p","al","pm1","theta")},
               ((state.theta.size+127)//128,),name="b_core_pressure_fp32",interpret=interpret)
     state=state.replace(**eos,theta_ave=eos["theta"])
     return (state,guards) if return_guard_events else state
+
+
+# Keep the pressure reads plus the existing alias targets (p, al and theta).
+# Opaque unused operands otherwise keep earlier buffers live through this call.
+_EOS_PRUNE = os.environ.get("GPUWRF_ACOUSTIC_EOS_PRUNE", "0") == "1"
+_EOS_INPUTS = ("mut", "muts", "c1h", "c2h", "mu_work", "alt", "rdnw", "ph",
+               "theta_1", "c2a", "theta_coupled_work", "pm1", "p", "al", "theta")

@@ -72,7 +72,7 @@ def test_land_payload_reads_evolved_carry_and_preserves_initialized_water(tmp_pa
         if name in {"ALBEDO", "EMISS"}:
             old = inputs[name]
         if name == "TSLB":
-            old = old.copy(); old[0] = new[0]
+            old = np.full_like(old, np.float32(273.16))
         np.testing.assert_array_equal(prepared.fields[name], np.where(mask, new, old).astype(prepared.fields[name].dtype))
     np.testing.assert_array_equal(prepared.fields["ISLTYP"], inputs["ISLTYP"])
     np.testing.assert_array_equal(prepared.fields["SFROFF"], np.where(mask, evolved.sfcrunoff * 1000, 0))

@@ -138,11 +138,10 @@ def domain_mask(grid: Any, region: str = "canary") -> np.ndarray:
 def lead_time_slice(run: Gen2Run, lead_hours: int | float) -> int:
     """Return the history-file index closest to a requested lead hour."""
 
-    history_interval = run.namelist.get("time_control", {}).get("history_interval", 60)
-    if isinstance(history_interval, list):
-        minutes = float(history_interval[0])
-    else:
-        minutes = float(history_interval)
+    history_interval = Gen2Run._nml_list_value(
+        run.namelist.get("time_control", {}), "history_interval", 0, 60
+    )
+    minutes = float(history_interval)
     hours_per_output = minutes / 60.0
     if hours_per_output <= 0.0:
         raise ValueError("history_interval must be positive")

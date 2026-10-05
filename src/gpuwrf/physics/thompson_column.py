@@ -1347,8 +1347,11 @@ def _ice_sources_with_process_flags(
 
     # Cloud-ice deposition uses tpi_ide from module_mp_thompson.F.pre:4870-4913;
     # ice-to-snow autoconversion uses tps/tni_iaus at lines 2731-2742.
+    # Both sit in WRF's ``if (temp(k).lt.T_0)`` cold block (:2554-2779): cloud ice above 0 C is neither
+    # deposited/sublimated nor autoconverted, it only melts instantly at the end of the step (:3945).
+    cold_block = state.T < T_0
     pri_ide_raw = C_CUBE * t1_subl * diffu * ssati * rvs * OIG1 * 1.0 * ni * ilami
-    pri_ide_raw = jnp.where(active_ice, pri_ide_raw, 0.0)
+    pri_ide_raw = jnp.where(active_ice & cold_block, pri_ide_raw, 0.0)
     sublimation_floor = None
     if _native_real_enabled():
         # WRF bounds sublimation by DBLE(rate_max) as well (:2557 rate_max, :2656 pri_ide, :2690 prs_sde).
@@ -1369,13 +1372,12 @@ def _ice_sources_with_process_flags(
     iau_small = xdi < 0.1 * D0S
     prs_iau_mass = jnp.where(iau_large, ri * 0.99, jnp.where(iau_small, 0.0, jnp.minimum(ri * 0.99, iau_table_mass)))
     pni_iau_num = jnp.where(iau_large, ni * 0.95, jnp.where(iau_small, 0.0, jnp.minimum(ni * 0.95, iau_table_num)))
-    prs_iau_mass = jnp.where(active_ice, prs_iau_mass, 0.0)
-    pni_iau_num = jnp.where(active_ice, pni_iau_num, 0.0)
+    prs_iau_mass = jnp.where(active_ice & cold_block, prs_iau_mass, 0.0)
+    pni_iau_num = jnp.where(active_ice & cold_block, pni_iau_num, 0.0)
 
-    # WRF gates the whole cloud-ice collection family on the cold block
-    # (module_mp_thompson.F:2554, ``if (temp(k).lt.T_0)``).  Use the post-melt
+    # WRF gates the whole cloud-ice collection family on the same cold block
+    # (module_mp_thompson.F:2554, ``if (temp(k).lt.T_0)``), on the post-melt
     # ``state.T`` (the same field the rci/sci moments above were built from).
-    cold_block = state.T < T_0
     prs_sci, pni_sci, pri_rci, pni_rci, prr_rci, pnr_rci, prg_rci = _ice_collection_rates_from_moments(
         dt,
         rhof,

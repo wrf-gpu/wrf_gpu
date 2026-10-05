@@ -1,0 +1,297 @@
+{
+ "label": "extrapolated",
+ "caption": "B200 was measured on earlier wrf_gpu versions; H100/B200/B300 values are extrapolated to v0.3.1, not measured.",
+ "method": "Generate the inferred H100/B200/B300 scenarios in docs/release/SCALING_METHOD.md.\nCentral scales device work and preserves the fixed-cost proxy; the optimistic\nupper scenario scales the whole run at the historical central efficiency.\nRTX board energy is timestamp-measured; all host shares/combined energy are [I].\nB200 was measured on earlier wrf_gpu versions; H100/B200/B300 values are\nextrapolated to v0.3.1, not measured.",
+ "anchors": {
+  "n4_whole_s_per_case_h": 7.774,
+  "n4_steady_s_per_case_h": 4.6076,
+  "n4_power_w": 322.0,
+  "n3_whole_s_per_case_h": 8.201,
+  "n1_whole_s_per_case_h": 13.668,
+  "power_w": [
+   206.0,
+   305.0,
+   322.0
+  ],
+  "per_case_vram_mib": 5354.0,
+  "host_ram_gb_per_case": 6.1,
+  "cpu_s_per_case_h": 123.4,
+  "cpu_load_w": 200.0,
+  "rtx_5090": {
+   "hbm_gb": 32.0,
+   "bw_tbs": 1.792,
+   "tdp_w": 575.0,
+   "mem": "32 GB GDDR7"
+  },
+  "fixed_s_per_case_h": 3.1664
+ },
+ "old_version": {
+  "lo_small_grid": 2.69,
+  "r_inf": 3.53,
+  "hi": 3.61,
+  "bw_cap": 4.464285714285714
+ },
+ "efficiency": {
+  "lo": 0.60256,
+  "mid": 0.79072,
+  "hi": 1.0
+ },
+ "power_fraction": {
+  "lo": 0.56,
+  "mid": 0.625,
+  "hi": 0.69
+ },
+ "host_share": {
+  "w": 66.7,
+  "assumption": "4 of 12 CPU cores at the owner-reported 200 W/12-core load rate"
+ },
+ "vendor": {
+  "H100": {
+   "hbm_gb": 80.0,
+   "bw_tbs": 3.35,
+   "tdp_w": 700.0,
+   "mem": "80 GB HBM3"
+  },
+  "B200": {
+   "hbm_gb": 192.0,
+   "bw_tbs": 8.0,
+   "tdp_w": 1000.0,
+   "mem": "192 GB HBM3e"
+  },
+  "B300": {
+   "hbm_gb": 288.0,
+   "bw_tbs": 8.0,
+   "tdp_w": 1400.0,
+   "mem": "288 GB HBM3e"
+  }
+ },
+ "rtx_5090": {
+  "hbm_gb": 32.0,
+  "bw_tbs": 1.792,
+  "tdp_w": 575.0,
+  "mem": "32 GB GDDR7"
+ },
+ "capacity": {
+  "per_case_gib": 5.2285,
+  "extra_growth_margin_gib": 1.0,
+  "usable_fraction_band": [
+   0.9,
+   1.0
+  ],
+  "note": "per-case = measured per-PID peak; host RAM 6.1 GB per warm case"
+ },
+ "cpu": {
+  "s_per_case_h": 123.4,
+  "load_w": 200.0,
+  "case_h_per_wall_h": 29.173419773095624,
+  "kj_per_case_h": 24.68,
+  "timing_label": "M",
+  "energy_label": "I",
+  "label": "I",
+  "power_source": "owner-reported power for the 12-core CPU-WRF run",
+  "wh_per_case_h": 6.855555555555555
+ },
+ "rtx5090_measured": {
+  "case_h_per_wall_h_whole": 463.082068433239,
+  "s_per_case_h_whole": 7.774,
+  "power_w": {
+   "board": 322.0,
+   "host": 66.7,
+   "total": 388.7
+  },
+  "kj_per_case_h": {
+   "central": 3.075,
+   "board": 2.557,
+   "host": 0.518,
+   "band": [
+    3.075,
+    3.075
+   ]
+  },
+  "cases_fit": [
+   4,
+   5
+  ],
+  "cases_fit_note": "host RAM 24 GB",
+  "speedup_vs_cpu": 15.873424234628247,
+  "energy_vs_cpu": 8.025048469764487,
+  "label": "M",
+  "energy_board_label": "M",
+  "energy_host_label": "I",
+  "energy_total_label": "I",
+  "energy_board_source": "docs/release/evidence/v031/energy_samples.json (E158 timestamps)",
+  "wh_per_case_h": {
+   "central": 0.8541666666666667,
+   "board": 0.7102777777777778,
+   "host": 0.1438888888888889,
+   "band": [
+    0.8541666666666667,
+    0.8541666666666667
+   ]
+  }
+ },
+ "gpus": {
+  "H100": {
+   "label": "I",
+   "bw_ratio_rho": 1.869,
+   "cases_fit_band": [
+    10,
+    11
+   ],
+   "cases_fit": 10,
+   "physical_capacity_gb_scenario": 80.0,
+   "packing_budget_gb": 72.0,
+   "cases_fit_note": "host RAM 61 GB",
+   "throughput_case_h_per_wall_h": {
+    "central": 572.9,
+    "band": [
+     496.1,
+     684.5
+    ]
+   },
+   "s_per_case_h_whole": {
+    "central": 6.283,
+    "band": [
+     5.259,
+     7.257
+    ]
+   },
+   "speedup_vs_cpu": 19.6,
+   "kj_per_case_h": {
+    "central": 3.168,
+    "board": 2.749,
+    "host": 0.419,
+    "band": [
+     2.412,
+     3.989
+    ]
+   },
+   "power_w": {
+    "board_central": 437.5,
+    "board_band": [
+     392.0,
+     483.0
+    ],
+    "host": 66.7
+   },
+   "energy_vs_cpu": 7.8,
+   "wh_per_case_h": {
+    "central": 0.88,
+    "board": 0.7636111111111111,
+    "host": 0.11638888888888888,
+    "band": [
+     0.6699999999999999,
+     1.1080555555555556
+    ]
+   }
+  },
+  "B200": {
+   "label": "I",
+   "bw_ratio_rho": 4.464,
+   "cases_fit_band": [
+    25,
+    28
+   ],
+   "cases_fit": 25,
+   "physical_capacity_gb_scenario": 192.0,
+   "packing_budget_gb": 172.8,
+   "cases_fit_note": "host RAM 152 GB",
+   "throughput_case_h_per_wall_h": {
+    "central": 805.1,
+    "band": [
+     737.8,
+     1634.7
+    ]
+   },
+   "s_per_case_h_whole": {
+    "central": 4.472,
+    "band": [
+     2.202,
+     4.879
+    ]
+   },
+   "speedup_vs_cpu": 27.6,
+   "kj_per_case_h": {
+    "central": 3.093,
+    "board": 2.795,
+    "host": 0.298,
+    "band": [
+     1.38,
+     3.692
+    ]
+   },
+   "power_w": {
+    "board_central": 625.0,
+    "board_band": [
+     560.0,
+     690.0
+    ],
+    "host": 66.7
+   },
+   "energy_vs_cpu": 8.0,
+   "wh_per_case_h": {
+    "central": 0.8591666666666666,
+    "board": 0.7763888888888888,
+    "host": 0.08277777777777777,
+    "band": [
+     0.3833333333333333,
+     1.0255555555555556
+    ]
+   }
+  },
+  "B300": {
+   "label": "I",
+   "bw_ratio_rho": 4.464,
+   "cases_fit_band": [
+    38,
+    43
+   ],
+   "cases_fit": 38,
+   "physical_capacity_gb_scenario": 288.0,
+   "packing_budget_gb": 259.2,
+   "cases_fit_note": "host RAM 232 GB",
+   "throughput_case_h_per_wall_h": {
+    "central": 805.1,
+    "band": [
+     737.8,
+     1634.7
+    ]
+   },
+   "s_per_case_h_whole": {
+    "central": 4.472,
+    "band": [
+     2.202,
+     4.879
+    ]
+   },
+   "speedup_vs_cpu": 27.6,
+   "kj_per_case_h": {
+    "central": 4.211,
+    "board": 3.913,
+    "host": 0.298,
+    "band": [
+     1.873,
+     5.039
+    ]
+   },
+   "power_w": {
+    "board_central": 875.0,
+    "board_band": [
+     784.0,
+     966.0
+    ],
+    "host": 66.7
+   },
+   "energy_vs_cpu": 5.9,
+   "wh_per_case_h": {
+    "central": 1.1697222222222223,
+    "board": 1.0869444444444443,
+    "host": 0.08277777777777777,
+    "band": [
+     0.5202777777777777,
+     1.399722222222222
+    ]
+   }
+  }
+ }
+}

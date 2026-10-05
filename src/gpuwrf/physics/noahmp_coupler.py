@@ -246,7 +246,10 @@ def noahmp_surface_adapter(
     #         MOL=0, land QSFC, Li_etal_2010 z/L seed) on the Noah-MP path too;
     #         without it the blend ran the warm-call branch at step 1 while the
     #         standalone surface slot ran the fixed first-call branch. ----
-    diag = surface_layer_with_diagnostics(state, first_timestep=first_timestep)
+    # WRF surface_driver feeds the PRE-Noah snow depth to SFCLAY_mynn.
+    diag = surface_layer_with_diagnostics(
+        state, first_timestep=first_timestep, snowh=land_state.snowh,
+    )
     sf = diag.fluxes                          # SurfaceFluxes (kinematic)
     # WRF's surface driver supplies lowest-level RHO3D to sfclay.  That density
     # is therefore the authority for converting physical HFX/QFX to the

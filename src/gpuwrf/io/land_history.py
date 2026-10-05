@@ -25,10 +25,24 @@ STATIC_FIELDS = (
     # overlays the held auxinput4 value after these wrfinput fields when enabled.
     "ISLTYP", "IVGTYP", "VEGFRA", "SHDMAX", "SHDMIN", "SHDAVG", "SNOALB", "TMN",
     "VAR", "CON", "VAR_SSO", "OA1", "OA2", "OA3", "OA4", "OL1", "OL2", "OL3", "OL4", "SMCWTD", "CHSTAR",
+    "WA", "WT", "ZWT", "GRAIN",
 )
 CARBON_FIELDS = ("LFMASS", "RTMASS", "STMASS", "WOOD", "STBLCP", "FASTCP")
+# These diagnostics are undefined after the glacier branch, including when
+# standard SFLX emits values on the port's unimplemented glacier runtime tile.
+# This is WRF history definedness; it does not change the carried model state.
+# module_sf_noahmpdrv.F:1065-1128 assigns undefined_value (-1.E36, :629) and :1244-1325
+# copies them to these Registry history fields (PLAI->LAI, PSAI->XSAI, T2MV->T2V); the same
+# branch later resets CANICE/CANLIQ/QTLDRN to 0 (:1150-1152), ZWT stays commented out,
+# RS/RB/LAISUN/LAISHA are not history. == CPU-WRF V4.7.1 Swiss SN02 history, all frames > t0.
+GLACIER_UNDEFINED_FIELDS = (
+    "APAR", "PSN", "BGAP", "WGAP", "GDD", "GRAIN", "GPP", "NPP", "NEE", "WA", "WT", "WSLAKE",
+    "TV", "EAH", "TAH", "FWET", "LFMASS", "RTMASS", "STMASS", "WOOD", "STBLCP", "FASTCP",
+    "LAI", "XSAI", "T2V", "RSSUN", "RSSHA", "TGV", "CHV", "CHLEAF", "CHUC", "CHV2",
+)
 LAND_HISTORY_FIELDS = frozenset((*LAND_LEAVES, *STATIC_FIELDS, *LAND_FLUX_FIELDS,
                                  *RADIATION_SOURCES, *SURFACE_SOURCES, *SNOW_ACCUMULATORS, *CARBON_FIELDS,
+                                 *GLACIER_UNDEFINED_FIELDS,
                                  "ALBBCK", "CANWAT", "SFROFF", "UDROFF"))
 
 
@@ -68,6 +82,12 @@ def load_land_history_inputs(path: Path, *, table_dir: Path, parameters=None) ->
     result["LAI_INIT"], result["XSAI_INIT"] = lai, sai
     result["CHSTAR"] = np.full_like(lai, f32(.1))  # NOAHMP_INIT:2138; no step driver update.
     result.setdefault("SMCWTD", np.zeros_like(lai))  # Inactive groundwater state for OPT_RUN=3.
+    # NOAHMP_INIT:2144-2147,2175,2195. Supported OPT_RUN=3/DVEG=4 keeps
+    # these initialized diagnostics, including over open water. ZWT remains
+    # defined over glacier columns (the driver's undefined assignment is commented out).
+    for name, constant in (("WA", 4900), ("WT", 4900), ("ZWT", 2.5), ("GRAIN", 1e-10)):
+        result[name] = np.full_like(lai, f32(constant))
+    result["_GLACIER_MASK"] = (index == parameters.isice) & (result["LANDMASK"] > .5)
     return result
 
 
@@ -102,15 +122,19 @@ def wrf_initial_albedo(ds, table_dir: Path) -> np.ndarray:
     return _landuse_init(ds, table_dir, np.asarray(ds["IVGTYP"][0]), snowc)[1]
 
 
-def land_history_diagnostics(land, initial, inputs, *, own_step: int, history=None):
+def land_history_diagnostics(land, initial, inputs, *, own_step: int, history=None, water_sst=None):
     """WRF land outputs on land; retain initialized fields on the water tile.
 
     Noah-MP is vectorized over the grid in the port, but WRF's driver writes only
     land columns. Its dummy water computations are never history values. The
     initial sibling carry supplies those unchanged water values; TSLB is the
     exception because surface_driver updates its ocean top layer from aux4 SST.
+    ``water_sst`` is the held prescribed skin temperature already applied to
+    the water State, never the dummy Noah-MP ocean-soil result.
+    WRF's first Noah-MP call sets the lower ocean layers to 273.16 K
+    (module_sf_noahmpdrv.F:697-705); lead-zero history precedes that call.
     """
-    land, initial, history = jax.device_get((land, initial, history))
+    land, initial, history, water_sst = jax.device_get((land, initial, history, water_sst))
     mask = np.asarray(inputs["LANDMASK"]) > .5
     fields = {name: inputs[name] for name in STATIC_FIELDS if name in inputs}
     fields.update({name: inputs[name] for name in CARBON_FIELDS if name in inputs})
@@ -131,7 +155,15 @@ def land_history_diagnostics(land, initial, inputs, *, own_step: int, history=No
                 value = seed
         if name == "TSLB":
             seed = seed.copy()
-            seed[0] = value[0]
+            if own_step > 0:
+                # The first Noah call resets all ocean layers. SST_UPDATE
+                # overwrites the top layer on subsequent surface-driver calls;
+                # with SST_UPDATE off it keeps the first-call value.
+                seed[:] = np.asarray(273.16, dtype=seed.dtype)
+                if own_step > 1 and water_sst is not None:
+                    seed[0] = np.asarray(water_sst, dtype=seed.dtype)
+            else:
+                seed[0] = value[0]
         fields[name] = np.where(mask, value, seed)
     fields["CANWAT"] = fields["CANLIQ"] + fields["CANICE"]
     # The model accumulates runoff in metres; WRF history is millimetres.
@@ -144,4 +176,18 @@ def land_history_diagnostics(land, initial, inputs, *, own_step: int, history=No
         if own_step == 0:
             fields["T2V"] = fields["T2B"] = np.asarray(initial.tv)
             fields["SNOWC"] = inputs.get("SNOWC", np.zeros_like(mask, dtype=np.float32))
+    if own_step > 0 and "_GLACIER_MASK" in inputs:
+        # module_sf_noahmpdrv.F:1065-1120: only after the first solve;
+        # preserve every computed non-glacier diagnostic and all t0 values.
+        undefined = np.float32(-1e36)
+        for name in GLACIER_UNDEFINED_FIELDS:
+            value = fields.get(name)
+            if value is None:
+                if history is None and name in LAND_FLUX_FIELDS:
+                    continue  # no in-step packet: another writer source owns this whole field
+                value = np.zeros_like(mask, dtype=np.float32)
+            fields[name] = np.where(inputs["_GLACIER_MASK"], undefined, value)
+        if "Q2V" in fields:
+            # :1283 Q2MVXY = Q2MV/(1.0 - Q2MV) with Q2MV undefined -> -1 in REAL(4).
+            fields["Q2V"] = np.where(inputs["_GLACIER_MASK"], undefined / (np.float32(1) - undefined), fields["Q2V"])
     return fields, land

@@ -71,23 +71,52 @@ def pool_budget(programs: dict[str, list[dict]], live_peak_bytes: int) -> int:
     return math.ceil(peak * SAFETY_FACTOR) + HEADROOM_BYTES
 
 
-def record_executable(domain: str, executable: Any, identity: str) -> None:
+def record_executable(domain: str, executable: Any, identity: str, *,
+                      covered_domains: tuple[str, ...] | None = None) -> None:
     """One telemetry hook, active only inside a product CLI memory session."""
     if _SESSION is None:
         return
     try:
         record = memory_record(executable)
+        record["domains"] = list(covered_domains if covered_domains is not None else (domain,))
         _SESSION["programs"].setdefault(str(domain), {})[str(identity)] = record
-    except Exception:  # optional telemetry must never change execution behavior
+    except Exception as exc:  # optional telemetry must never change execution behavior
         _SESSION["incomplete"] = True
+        reason = f"{domain}: {type(exc).__name__}: {exc}"
+        _SESSION.setdefault("errors", []).append(reason)
+        print(f"gpuwrf: WARNING: C-auto memory statistics unavailable ({reason})", file=sys.stderr)
+
+
+def domain_programs(programs: dict[str, list[dict]], domains: int) -> dict[str, list[str]]:
+    """Cover every physical domain with its actual executing program.
+
+    A fused program retains the carries and temporaries of all its domains in
+    one memory record. Coverage validates completeness without duplicating that
+    program's footprint, code residency or speculative allowance.
+    """
+    coverage = {f"d{index:02d}": set() for index in range(1, domains + 1)}
+    for name, variants in programs.items():
+        if not variants:
+            raise ValueError(f"missing compiled memory statistics for {name}")
+        for record in variants:
+            covered = record.get("domains", [name])  # legacy unfused plans
+            if not covered or not isinstance(covered, list):
+                raise ValueError(f"invalid domain coverage for {name}")
+            for domain in covered:
+                if domain not in coverage:
+                    raise ValueError(f"unknown domain {domain} in program {name}")
+                coverage[domain].add(name)
+    missing = [name for name, executing in coverage.items() if not executing]
+    if missing:
+        raise ValueError("not all case domains supplied compiled memory statistics: " + ", ".join(missing))
+    return {domain: sorted(executing) for domain, executing in coverage.items()}
 
 
 def write_plan(path: Path, key: str, domains: int, programs: dict, live_peak_bytes: int) -> dict:
-    if len(programs) != domains:
-        raise ValueError("not all case domains supplied compiled memory statistics")
     variants = {domain: list(records.values()) for domain, records in programs.items()}
+    coverage = domain_programs(variants, domains)
     plan = {"schema": SCHEMA, "case_key": key, "domains": domains,
-            "programs": variants, "live_peak_bytes": int(live_peak_bytes),
+            "programs": variants, "domain_programs": coverage, "live_peak_bytes": int(live_peak_bytes),
             "speculative_bytes": speculative_allowance(variants),
             "budget_bytes": pool_budget(variants, live_peak_bytes)}
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -105,7 +134,8 @@ def read_plan(path: Path, key: str, domains: int) -> dict:
     if plan.get("schema") != SCHEMA or plan.get("case_key") != key or plan.get("domains") != domains:
         raise ValueError("stale case memory plan")
     budget = pool_budget(plan["programs"], plan["live_peak_bytes"])
-    if plan["budget_bytes"] != budget or len(plan["programs"]) != domains:
+    coverage = domain_programs(plan["programs"], domains)
+    if plan["budget_bytes"] != budget or plan.get("domain_programs", coverage) != coverage:
         raise ValueError("incomplete or inconsistent case memory plan")
     return plan
 
@@ -256,11 +286,14 @@ def finish_cli_pool() -> None:
             print(f"gpuwrf: warning: live peak {live / GIB:.2f} GiB exceeded the C-auto pool "
                   f"{applied / GIB:.2f} GiB; refreshing this case plan", file=sys.stderr)
             _SESSION["path"].unlink(missing_ok=True)
-        if not _SESSION["incomplete"]:
-            write_plan(_SESSION["path"], _SESSION["key"], _SESSION["domains"], _SESSION["programs"], live)
-    except Exception:  # optional plan persistence must never fail a forecast
+        if _SESSION["incomplete"]:
+            reason = "; ".join(_SESSION.get("errors", [])) or "incomplete compiled memory statistics"
+            print(f"gpuwrf: WARNING: C-auto case plan not saved ({reason})", file=sys.stderr)
+            return
+        write_plan(_SESSION["path"], _SESSION["key"], _SESSION["domains"], _SESSION["programs"], live)
+    except Exception as exc:  # optional plan persistence must never fail a forecast
         # An unavailable plan means a future demand fallback, never a guessed cap.
-        pass
+        print(f"gpuwrf: WARNING: C-auto case plan not saved ({type(exc).__name__}: {exc})", file=sys.stderr)
 
 
 def failed_cli_pool(error: Exception) -> None:

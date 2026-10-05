@@ -244,7 +244,8 @@ program noahmp_offline_driver
       IF ( albedo > -999 ) THEN
          albedo_grid = albedo
       ENDIF
-      write(IALB,'(A,2I7,6ES17.9)') 'ALB ', ic, istep, albedo, albedo_grid, soldn, cosz, tauss, albold
+      write(IALB,'(A,2I7,10ES17.9)') 'ALB ', ic, istep, albedo, albedo_grid, soldn, cosz, tauss, albold, &
+           qsnow, qrain, sneqv, snowh   ! NF12: PRECIP_HEAT ground rates (QSNOWXY/QRAINXY) + the snow film
     end if
     end do
 

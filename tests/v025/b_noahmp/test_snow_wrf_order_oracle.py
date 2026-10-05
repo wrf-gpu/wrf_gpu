@@ -114,7 +114,7 @@ def _worst(c, nsteps):
     import jax
     from gpuwrf.physics.noahmp import noahmp_driver as drv
     step = jax.jit(lambda ls: drv.noah_mp_step(ls, c["forcing"], c["static"], c["dt"], energy_params=c["ep"], rad_params=c["rp"])[0])
-    land, worst = c["land"], {k: 0.0 for k in list(TOL) + ["isnow", "nonfinite"]}
+    land, worst = c["land"], {k: 0.0 for k in list(TOL) + ["isnow", "nonfinite", "film"]}
     for it in range(1, nsteps + 1):
         land = step(land)
         if it not in c["records"]:
@@ -137,6 +137,8 @@ def _worst(c, nsteps):
             worst[key] = max(worst[key], float(np.abs(port - ref).max()))
         for key, port, ref in (("tg", g("tg"), w[:, TG]), ("swe", g("sneqv"), w[:, SNEQV]), ("snowh", g("snowh"), w[:, SNOWH])):
             worst[key] = max(worst[key], float(np.abs(port - ref).max()))
+        # NOAHMP_SFLX :1067-1070 (NF12): where WRF has no snow the port has EXACTLY none.
+        worst["film"] += int(((g("sneqv") != 0) | (g("snowh") != 0))[(w[:, SNEQV] == 0) & (w[:, SNOWH] == 0)].sum())
     return worst
 
 
@@ -148,7 +150,7 @@ def _fails(worst, tol):
 def test_noahmp_matches_wired_pristine_wrf(cases, name):
     worst = _worst(cases[name], NSTEPS[name])
     assert worst["nonfinite"] == 0, worst
-    assert worst["isnow"] == 0, worst
+    assert worst["isnow"] == 0 and worst["film"] == 0, worst
     for key, tol in TOL_SET[name].items():
         assert worst[key] <= tol, (name, key, worst)
 

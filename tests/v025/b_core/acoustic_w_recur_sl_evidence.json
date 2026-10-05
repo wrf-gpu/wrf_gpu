@@ -1,0 +1,381 @@
+{
+ "change": "A1-SL GPUWRF_ACOUSTIC_W_RECUR_SL=1 (default off): split-w recurrence kernel (_advance_w_kernel_recur_sl) in fori trips of 2 levels, all loads of a trip before its stores (E137); same expressions and level order as _advance_w_kernel_recur",
+ "candidate": "5b89efe30 = main 56c342977 + A1-SL (lane/b-core); every GPU arm ran on a detached snapshot of exactly this commit (dirty=0)",
+ "cpu": {
+  "cubin_gate_pip_ptxas_13_2": {
+   "ptxas": "<USER_HOME>/miniconda3/lib/python3.13/site-packages/nvidia/cu13/bin/ptxas",
+   "rows": [
+    {
+     "tag": "d01_w_recur_sl0_base",
+     "compile_s": 1.0,
+     "ptxas_rc": 0,
+     "info": [
+      "32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+      "ptxas info    : Used 40 registers, used 0 barriers, 32 bytes cumulative stack size"
+     ],
+     "ttir_lines": 4215,
+     "ptx_lines": 983,
+     "ld_global": 47,
+     "st_global": 7,
+     "note": "run with block default 2 (file cubin_recur_b4.json carries a stale _b4 tag); d02 sl1 1.4 s = Triton cache hit of the earlier 26.6 s compile"
+    },
+    {
+     "tag": "d01_w_recur_sl1_b2",
+     "compile_s": 40.0,
+     "ptxas_rc": 0,
+     "info": [
+      "32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+      "ptxas info    : Used 48 registers, used 0 barriers, 32 bytes cumulative stack size"
+     ],
+     "ttir_lines": 7657,
+     "ptx_lines": 1593,
+     "ld_global": 79,
+     "st_global": 13,
+     "note": "run with block default 2 (file cubin_recur_b4.json carries a stale _b4 tag); d02 sl1 1.4 s = Triton cache hit of the earlier 26.6 s compile"
+    },
+    {
+     "tag": "d02_w_recur_sl0_base",
+     "compile_s": 0.9,
+     "ptxas_rc": 0,
+     "info": [
+      "32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+      "ptxas info    : Used 40 registers, used 0 barriers, 32 bytes cumulative stack size"
+     ],
+     "ttir_lines": 4215,
+     "ptx_lines": 1001,
+     "ld_global": 47,
+     "st_global": 7,
+     "note": "run with block default 2 (file cubin_recur_b4.json carries a stale _b4 tag); d02 sl1 1.4 s = Triton cache hit of the earlier 26.6 s compile"
+    },
+    {
+     "tag": "d02_w_recur_sl1_b2",
+     "compile_s": 1.4,
+     "ptxas_rc": 0,
+     "info": [
+      "32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads",
+      "ptxas info    : Used 48 registers, used 0 barriers, 32 bytes cumulative stack size"
+     ],
+     "ttir_lines": 7657,
+     "ptx_lines": 1592,
+     "ld_global": 79,
+     "st_global": 13,
+     "note": "run with block default 2 (file cubin_recur_b4.json carries a stale _b4 tag); d02 sl1 1.4 s = Triton cache hit of the earlier 26.6 s compile"
+    }
+   ]
+  },
+  "note": "block 4: 143-239 s Triton compile + 64 regs/8 B spill (FAIL); full unroll: TTIR 14x, >10 min (E153); base kernel 1-5 s / 40 regs",
+  "bitwise": "kernel random damp3 x keep + captured real inputs (eager/jit); whole substep CPU jit d01+d02 67/67 leaves",
+  "tests": "tests/v025/b_core/test_acoustic_w2pass.py -k w_recur 3/3; mutants (dispatch never taken, ph reassociation) caught"
+ },
+ "gpu_component_bc58": {
+  "device": "cuda:0",
+  "note": "device-bound: 16 substeps per jitted fori_loop dispatch, ms per substep, median of 15 x 4 interleaved rounds",
+  "flags": "W2PASS=3 MASS_BLOCK=1 UV_MASKED=1; SL 0 (lw11) vs 1 (sl)",
+  "median_ms_per_substep": {
+   "d01": {
+    "lw11": 0.11136600005556829,
+    "sl": 0.09051121924130712
+   },
+   "d02": {
+    "lw11": 0.32025765540311113,
+    "sl": 0.3007481573149562
+   }
+  },
+  "nondiff_leaves": {
+   "d01": {
+    "single": 0,
+    "loop16": 0,
+    "n": 66
+   },
+   "d02": {
+    "single": 0,
+    "loop16": 0,
+    "n": 66
+   }
+  },
+  "nsys_us_per_substep": {
+   "d01:lw11": {
+    "b_core_uv_fp32": 12.13,
+    "b_core_mass_fp32": 16.98,
+    "other": 1.71,
+    "b_core_w_p1_fp32": 5.6,
+    "b_core_w_p2_fp32": 6.34,
+    "b_core_w_fp32": 30.41,
+    "b_core_pressure_fp32": 4.15
+   },
+   "d01:sl": {
+    "b_core_uv_fp32": 12.09,
+    "b_core_mass_fp32": 16.91,
+    "other": 1.7,
+    "b_core_w_p1_fp32": 5.56,
+    "b_core_w_p2_fp32": 6.34,
+    "b_core_w_fp32": 13.77,
+    "b_core_pressure_fp32": 4.01
+   },
+   "d02:lw11": {
+    "b_core_uv_fp32": 46.31,
+    "b_core_mass_fp32": 61.83,
+    "other": 2.64,
+    "b_core_w_p1_fp32": 19.11,
+    "b_core_w_p2_fp32": 27.94,
+    "b_core_w_fp32": 64.85,
+    "b_core_pressure_fp32": 15.41
+   },
+   "d02:sl": {
+    "b_core_uv_fp32": 46.37,
+    "b_core_mass_fp32": 61.96,
+    "other": 2.56,
+    "b_core_w_p1_fp32": 19.07,
+    "b_core_w_p2_fp32": 22.88,
+    "b_core_w_fp32": 34.53,
+    "b_core_pressure_fp32": 15.21
+   }
+  }
+ },
+ "gpu_whole_root_w1b": {
+  "method": "PROD real nested ordinary root (d01 + 3 d02 own steps) + radiation root, RC defaults from import (no flag file), ONE shared JAX cache (cold W1 23:23-23:59Z), cache-loaded fresh processes interleaved A S N x3 (10 timed roots each, fresh carry copy per root outside the timer: main donates the carry), nsys one root/arm; label b-core, cores 10,11,26,27",
+  "arms": {
+   "A": "RC defaults",
+   "S": "A + GPUWRF_ACOUSTIC_W_RECUR_SL=1",
+   "N": "A + GPUWRF_NOAHMP_LAYER_LISTS=1 + GPUWRF_NOAHMP_COLUMN_KERNELS=1 (#14)"
+  },
+  "ordinary_wall_ms": {
+   "A": [
+    44.6,
+    42.63,
+    45.77
+   ],
+   "S": [
+    48.75,
+    44.23,
+    47.1
+   ],
+   "N": [
+    44.74,
+    48.11,
+    46.01
+   ]
+  },
+  "radiation_wall_ms": {
+   "A": [
+    103.5,
+    96.2,
+    94.8
+   ],
+   "S": [
+    102.2,
+    101.1,
+    96.4
+   ],
+   "N": [
+    102.0,
+    98.8,
+    98.6
+   ]
+  },
+  "kernel_ms_per_ordinary_root": {
+   "A": 31.39,
+   "S": 30.79,
+   "N": 30.76
+  },
+  "b_core_w_fp32_median_x_n_ms": {
+   "A": 1.876,
+   "S": 1.048,
+   "N": 1.853
+  },
+  "preemption_note": "each arm's single profiled root holds ONE ~250-310 us launch outlier in a different kernel (A w_fp32 283 us, S w_p1 313 us) -> per-kernel sums are noisy; use median x launches",
+  "leaf_sha_vs_A": {
+   "S": {
+    "ordinary": {
+     "n_leaves": 343,
+     "n_diff": 0
+    },
+    "radiation": {
+     "n_leaves": 343,
+     "n_diff": 0
+    }
+   },
+   "N": {
+    "ordinary": {
+     "n_leaves": 343,
+     "n_diff": 112
+    },
+    "radiation": {
+     "n_leaves": 343,
+     "n_diff": 112
+    }
+   }
+  },
+  "hlo_transposes": {
+   "A": {
+    "d01": 890,
+    "d02": 248
+   },
+   "S": {
+    "d01": 890,
+    "d02": 248
+   },
+   "N": {
+    "d02": 248,
+    "d01": 1083
+   }
+  },
+  "kinput500": {
+   "A": {
+    "d01": 3,
+    "d02": 0
+   },
+   "S": {
+    "d01": 3,
+    "d02": 0
+   },
+   "N": {
+    "d02": 0,
+    "d01": 4
+   }
+  },
+  "cubin_gate": "compile/cold/wave_cubin_gate.py on the shared cache: 9 entries, HARD STACK PASS (max 32 B); conservative kInput>500 d01 3 (A,S) / 4 (N)"
+ },
+ "verdict": "[M] bitwise (343/343 leaves both root kinds, component 66/66); device -0.6..-0.83 ms per ordinary root (w recurrence d02 67 -> 37 us per launch); wall A 44.3 / S 46.7 ms mean = inside the +-5 % fresh-process noise (E191), A always first in each round (position not balanced) -> no wall claim; [I] about -0.05 s/fc-h",
+ "disclosures": [
+  "Triton compile of the SL kernel 27/40 s (d02/d01) vs 1-5 s base -> cold compile cost up to ~+60 s",
+  "wall medians unresolved (3/3 rounds S > A by 1.3-4.2 ms, A first in every round); device attribution is the evidence"
+ ],
+ "gpu_combined_w1c": {
+  "method": "manager GO 00:20Z: C = A1-SL + #14 (LAYER_LISTS+COLUMN_KERNELS) cold into the SAME cache/snapshot, warm rotated A C C A A C C A (fresh cache-loaded processes), nsys C; A/S/N device from W1b (same snapshot+cache, ~20 min earlier)",
+  "ordinary_wall_ms": {
+   "A": [
+    {
+     "ordinary": 45.38,
+     "radiation": 99.8
+    },
+    {
+     "ordinary": 45.63,
+     "radiation": 102.2
+    },
+    {
+     "ordinary": 47.02,
+     "radiation": 97.3
+    },
+    {
+     "ordinary": 45.61,
+     "radiation": 103.0
+    }
+   ],
+   "C": [
+    {
+     "ordinary": 44.58,
+     "radiation": 96.6
+    },
+    {
+     "ordinary": 47.63,
+     "radiation": 99.3
+    },
+    {
+     "ordinary": 43.67,
+     "radiation": 98.5
+    },
+    {
+     "ordinary": 44.71,
+     "radiation": 96.2
+    }
+   ]
+  },
+  "ordinary_pairs_A_C": [
+   [
+    45.38,
+    44.58
+   ],
+   [
+    45.63,
+    47.63
+   ],
+   [
+    47.02,
+    43.67
+   ],
+   [
+    45.61,
+    44.71
+   ]
+  ],
+  "ordinary_mean": {
+   "A": 45.91,
+   "C": 45.15
+  },
+  "radiation_mean": {
+   "A": 100.6,
+   "C": 97.7
+  },
+  "robust_device_ms": {
+   "A": {
+    "ordinary": {
+     "launches": 3399,
+     "device_ms": 30.923,
+     "w_fp32_ms": 2.066,
+     "noah_kernels_ms": 0
+    },
+    "radiation": {
+     "launches": 10080,
+     "device_ms": 78.286,
+     "w_fp32_ms": 1.674,
+     "noah_kernels_ms": 0
+    }
+   },
+   "S": {
+    "ordinary": {
+     "launches": 3399,
+     "device_ms": 30.195,
+     "w_fp32_ms": 0.896,
+     "noah_kernels_ms": 0
+    },
+    "radiation": {
+     "launches": 10080,
+     "device_ms": 77.409,
+     "w_fp32_ms": 0.906,
+     "noah_kernels_ms": 0
+    }
+   },
+   "N": {
+    "ordinary": {
+     "launches": 2834,
+     "device_ms": 30.248,
+     "w_fp32_ms": 1.645,
+     "noah_kernels_ms": 0.168
+    },
+    "radiation": {
+     "launches": 9515,
+     "device_ms": 77.754,
+     "w_fp32_ms": 1.642,
+     "noah_kernels_ms": 0.167
+    }
+   },
+   "C": {
+    "ordinary": {
+     "launches": 2834,
+     "device_ms": 29.713,
+     "w_fp32_ms": 0.884,
+     "noah_kernels_ms": 0.166
+    },
+    "radiation": {
+     "launches": 9515,
+     "device_ms": 76.313,
+     "w_fp32_ms": 0.885,
+     "noah_kernels_ms": 0.167
+    }
+   }
+  },
+  "leaf_sha_diff": {
+   "ordinary": {
+    "C_vs_A": 112,
+    "C_vs_N": 0
+   },
+   "radiation": {
+    "C_vs_A": 112,
+    "C_vs_N": 0
+   }
+  },
+  "cubin": "11 cache entries HARD PASS (STACK 32 B); C d01 kInput>500 4 (= N), d02 0; HLO transposes d01 1083 / d02 248 (= N)",
+  "verdict": "[M] A1-SL composes BITWISE with #14 (C == N 343/343 both roots); ordinary device 30.92 -> 29.71 ms (-3.9 %), radiation 78.29 -> 76.31 (-2.5 %), launches 3399 -> 2834; rotated wall A 45.91 / C 45.15 ms (C lower in 3/4 pairs, inside +-5 % noise)"
+ }
+}

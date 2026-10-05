@@ -1,0 +1,30 @@
+{
+  "branch": {
+    "assertion_failures": 2,
+    "errors": 0,
+    "tests": 2,
+    "time_s": 6.847,
+    "failed_tests": [
+      "test_real_swiss_snow_and_bare_match_pristine[False]",
+      "test_real_swiss_snow_and_bare_match_pristine[True]"
+    ]
+  },
+  "producer": {
+    "assertion_failures": 1,
+    "errors": 0,
+    "tests": 1,
+    "time_s": 0.378,
+    "failed_tests": [
+      "test_noah_adapter_reads_entry_snow_depth"
+    ]
+  },
+  "native": {
+    "assertion_failures": 1,
+    "errors": 0,
+    "tests": 2,
+    "time_s": 6.661,
+    "failed_tests": [
+      "test_real_swiss_snow_and_bare_match_pristine[True]"
+    ]
+  }
+}

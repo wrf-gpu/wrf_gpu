@@ -89,7 +89,9 @@ def wrf_history_global_attributes(
     for name, (section, kind, per_domain, default) in _HISTORY_CONTROLS.items():
         value = namelist.get(section, {}).get(name.lower(), default)
         if isinstance(value, (tuple, list)):
-            value = value[min(index, len(value)-1)] if per_domain else value[0]
+            value = value[min(index, len(value)-1) if per_domain else 0] if value else default
+        if value is None:
+            value = default
         attrs[name] = np.float32(value) if kind == "real" else np.int32(value)
     # WRF share/module_check_a_mundo.F:1730-1743 resets this QNSE-only control.
     if int(attrs.get("BL_PBL_PHYSICS", 0)) != 4:

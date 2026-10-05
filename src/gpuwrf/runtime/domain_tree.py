@@ -2328,6 +2328,10 @@ def _build_fused_cascade_program(
         call: Any,
         ckey: str | None,
     ) -> None:
+        from gpuwrf.runtime.gpu_allocator import record_executable
+
+        record_executable(aot_name, call, ckey or "compiled",
+                          covered_domains=(parent_name, *child_names))
         if sig not in cached_calls and len(cached_calls) >= max_cached_calls:
             cached_calls.pop(next(iter(cached_calls)), None)
         cached_calls[sig] = (call, ckey)

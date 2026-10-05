@@ -476,3 +476,181 @@ def test_sigterm_stops_compressor_workers_too(fake, monkeypatch):
             for pid in json.loads(record.read_text()).values():
                 with contextlib.suppress(ProcessLookupError):
                     os.kill(pid, signal.SIGKILL)
+
+
+def _proof(out: Path, domains: dict, prefetch: dict | None = None) -> Path:
+    """Minimal nested_pipeline_run.json in the shape the product writes (keys copied from the real FINAL-b cold sizing and
+    warm R3 proofs of WN3 20260227_18z_a1)."""
+    proof = out / "wrfout" / "proofs" / "nested_pipeline_run.json"
+    proof.parent.mkdir(parents=True, exist_ok=True)
+    proof.write_text(json.dumps({"verdict": "PIPELINE_GREEN",
+                                 "metadata": {"nested_aot": {"domains": domains}, "aot_prefetch": {"domains": prefetch or {}}}}))
+    return proof
+
+
+def _artifacts(root: Path) -> dict:
+    """Real-layout AOT artifacts (blob + .meta) for the WN3 root and the fused d02/d03 program."""
+    out = {}
+    for name, sub, key in (("d01", "d01", "k_1309"), ("fused/d02", "fused_d02", "k_3b3e")):
+        blob = root / "aot" / sub / f"{key}.xlaexec"
+        blob.parent.mkdir(parents=True, exist_ok=True)
+        blob.write_bytes(b"blob")
+        blob.with_suffix(".meta").write_bytes(b"meta")
+        out[name] = [str(blob), str(blob.with_suffix(".meta"))]
+    return out
+
+
+def _warm_proof(out: Path, art: dict) -> Path:
+    # Warm R3 shape: root served from the startup prefetch's in-memory copy, fused program loaded from its blob.
+    return _proof(out, {"d01": {"cached": True, "cheap_key": "1309", "error": None, "load_count": 1, "loaded": True,
+                                "real_load": False, "source": "aot_memory_cache"},
+                        "fused/d02": {"blob_path": art["fused/d02"][0], "meta_path": art["fused/d02"][1], "cheap_key": "3b3e",
+                                      "error": None, "loaded": True, "source": "aot_blob"}},
+                  prefetch={"d01": {"blob_path": art["d01"][0], "meta_path": art["d01"][1], "cheap_key": "1309", "error": None,
+                                    "loaded": True, "source": "aot_blob"}})
+
+
+COLD_ROOT = {"cached": True, "cheap_key": "1309", "error": None, "load_count": 0, "loaded": True, "real_load": False,
+             "source": "compiled_memory_cache"}
+COLD_FUSED = {"aot_written": True, "aot_path": "/c/fused_d02/k_3b3e.xlaexec", "cheap_key": "3b3e", "error": None,
+              "loaded": False, "source": "fallback:fused-jit-compiled+aot-captured"}
+
+
+def test_cache_state_requires_every_executable_from_a_persistent_blob(tmp_path):
+    art = _artifacts(tmp_path)
+    assert pc.cache_state(tmp_path / "none") == {"warm": None, "executables": {}, "cold_executables": []}
+    _warm_proof(tmp_path / "warm", art)
+    assert pc.cache_state(tmp_path / "warm") == {"warm": True, "executables": art, "cold_executables": []}
+    _proof(tmp_path / "cold", {"d01": COLD_ROOT, "fused/d02": COLD_FUSED})
+    assert pc.cache_state(tmp_path / "cold") == {"warm": False, "executables": {}, "cold_executables": ["d01", "fused/d02"]}
+    # review-writer blocker 3: a compiled root (load_count 0) next to a warm fused program is NOT a warm run.
+    warm = json.loads((tmp_path / "warm/wrfout/proofs/nested_pipeline_run.json").read_text())["metadata"]
+    _proof(tmp_path / "mixed", {"d01": COLD_ROOT, "fused/d02": warm["nested_aot"]["domains"]["fused/d02"]})
+    assert pc.cache_state(tmp_path / "mixed") == {"warm": False, "executables": {}, "cold_executables": ["d01"]}
+
+
+@pytest.mark.parametrize("domain,patch", [
+    ("d01", {"load_count": 0}),                    # memory-cache hit without a load = compiled here
+    ("d01", {"source": "unknown_source"}),         # fail closed on anything unknown
+    ("d01", {"loaded": False}),
+    ("fused/d02", {"meta_path": None}),            # blob without its .meta is not a reusable artifact
+    ("fused/d02", {"aot_written": True}),          # written by this run = compiled here
+    ("fused/d02", {"error": "load failed"}),
+])
+def test_cache_state_fails_closed_per_executable(tmp_path, domain, patch):
+    art = _artifacts(tmp_path)
+    proof = _warm_proof(tmp_path / "case", art)
+    doc = json.loads(proof.read_text())
+    doc["metadata"]["nested_aot"]["domains"][domain].update(patch)
+    proof.write_text(json.dumps(doc))
+    state = pc.cache_state(tmp_path / "case")
+    assert state["warm"] is False and state["cold_executables"] == [domain] and state["executables"] == {}
+
+
+def test_prefetch_alias_key_is_warm_but_a_failed_prefetch_is_not(tmp_path):
+    # Real FINAL-b R4 N=1 shape [M]: the prefetch loaded the root blob under an ALIAS cheap key (dee7, same HLO, E149) and the
+    # runtime served key 1309 from that in-memory executable (source aot_memory_cache, VmHWM 6.17 GB = a warm run).
+    art = _artifacts(tmp_path)
+    proof = _warm_proof(tmp_path / "case", art)
+    doc = json.loads(proof.read_text())
+    doc["metadata"]["aot_prefetch"]["domains"]["d01"]["cheap_key"] = "dee7"
+    proof.write_text(json.dumps(doc))
+    assert pc.cache_state(tmp_path / "case") == {"warm": True, "executables": art, "cold_executables": []}
+    for bad in ({"source": "fallback"}, {"loaded": False}, {"error": "x"}, {"meta_path": None}):
+        doc["metadata"]["aot_prefetch"]["domains"]["d01"] = {**doc["metadata"]["aot_prefetch"]["domains"]["d01"], **bad}
+        proof.write_text(json.dumps(doc))
+        assert pc.cache_state(tmp_path / "case")["cold_executables"] == ["d01"], bad
+        doc = json.loads(_warm_proof(tmp_path / "case", art).read_text())
+
+
+def test_prefetch_entry_missing_makes_the_root_cold(tmp_path):
+    art = _artifacts(tmp_path)
+    proof = _warm_proof(tmp_path / "case", art)
+    doc = json.loads(proof.read_text())
+    doc["metadata"]["aot_prefetch"]["domains"] = {}
+    proof.write_text(json.dumps(doc))
+    assert pc.cache_state(tmp_path / "case")["cold_executables"] == ["d01"]
+
+
+@pytest.mark.parametrize("victim", ["fused/d02:blob", "fused/d02:meta", "d01:blob", "d01:meta"])
+def test_deleting_any_required_artifact_disables_warm_admission(tmp_path, victim):
+    # review-writer blockers 1+2: every required executable AND its .meta, incl. the fused d02 blob and the root .meta.
+    art = _artifacts(tmp_path)
+    _warm_proof(tmp_path / "case", art)
+    sizing = {"plan_path": str(tmp_path / "key.json")}
+    pc.record_peaks(sizing, 14_760_000, 3928, {"warm": False, "executables": {}, "cold_executables": ["d01", "fused/d02"]})
+    pc.record_peaks(sizing, 6_200_000, 5004, pc.cache_state(tmp_path / "case"))
+    assert pc.cache_warm(sizing)
+    assert pc.host_need_kb(sizing, 16.0) == (int(6_200_000 * 1.1), "1.1 x measured warm VmHWM (AOT cache warm)")
+    name, kind = victim.split(":")
+    Path(art[name][0 if kind == "blob" else 1]).unlink()
+    assert not pc.cache_warm(sizing)
+    assert pc.host_need_kb(sizing, 16.0) == (int(14_760_000 * 1.1), "1.1 x measured cold VmHWM")
+
+
+def test_peak_records_split_cold_and_warm_and_keep_the_latest_warm_artifacts(tmp_path):
+    art = _artifacts(tmp_path)
+    sizing = {"plan_path": str(tmp_path / "key.json"), "source": "sizing-run", "need_bytes": None}
+    pc.record_peaks(sizing, 14_760_000, 3928, {"warm": False, "executables": {}, "cold_executables": ["d01"]})
+    assert pc.host_need_kb(sizing, 16.0) == (int(14_760_000 * 1.1), "1.1 x measured cold VmHWM")  # no warm run yet
+    pc.record_peaks(sizing, 6_200_000, 5004, {"warm": True, "executables": art, "cold_executables": []})
+    pc.record_peaks(sizing, 9_000_000, 4000, None)  # no proof -> counted as cold, warm artifacts untouched
+    side = json.loads((tmp_path / "key.measured.json").read_text())
+    assert (side["vmhwm_kb_cold_max"], side["vmhwm_kb_warm_max"], side["vmhwm_kb_max"]) == (14_760_000, 6_200_000, 14_760_000)
+    assert side["warm_executables"] == art and pc.cache_warm(sizing)
+    floor = pc.apply_vram_floor(sizing)  # VRAM: max over cold and warm (warm peaks higher), plan vs measured reported
+    assert floor["need_bytes"] == int(5004 * 1.1 * 2**20)
+    assert (floor["measured_vram_peak_mib_cold"], floor["measured_vram_peak_mib_warm"], floor["plan_need_bytes"]) == (4000, 5004, None)
+    newer = {"d01": art["d01"], "fused/d02": [str(tmp_path / "alias.xlaexec"), str(tmp_path / "alias.meta")]}
+    pc.record_peaks(sizing, 6_100_000, 4900, {"warm": True, "executables": newer, "cold_executables": []})
+    assert json.loads((tmp_path / "key.measured.json").read_text())["warm_executables"] == newer  # latest warm run wins
+    assert not pc.cache_warm(sizing)  # ...and its (missing) alias decides
+    gone = {"x/d03": [str(tmp_path / "gone.xlaexec"), str(tmp_path / "gone.meta")]}  # a program an OLDER warm run needed
+    pc.record_peaks(sizing, 6_000_000, 4800, {"warm": True, "executables": art | gone, "cold_executables": []})
+    pc.record_peaks(sizing, 6_000_000, 4800, {"warm": True, "executables": art, "cold_executables": []})
+    assert pc.cache_warm(sizing)  # replaced, not merged: the latest warm run's set alone decides
+
+
+def test_legacy_and_only_warm_records(tmp_path):
+    legacy = {"plan_path": str(tmp_path / "v030.json")}  # v0.3.0 sidecar: one max over all runs (cold-dominated)
+    Path(tmp_path / "v030.measured.json").write_text(json.dumps({"vmhwm_kb_max": 14_761_780, "vram_peak_mib_max": 4972}))
+    assert pc.host_need_kb(legacy, 16.0) == (int(14_761_780 * 1.1), "1.1 x measured VmHWM")
+    only_warm = {"plan_path": str(tmp_path / "other.json")}
+    art = _artifacts(tmp_path)
+    pc.record_peaks(only_warm, 6_200_000, 5004, {"warm": True, "executables": art, "cold_executables": []})
+    assert pc.host_need_kb(only_warm, 16.0)[1] == "1.1 x measured warm VmHWM (AOT cache warm)"
+    assert pc.host_cold_kb(only_warm, 16.0) == (16_000_000, "--host-gb-per-case")  # no cold record: never below the default
+    Path(art["d01"][0]).unlink()
+    assert pc.host_need_kb(only_warm, 16.0) == (16_000_000, "--host-gb-per-case")
+
+
+def test_one_compile_headroom_keeps_an_unexpected_compile_under_the_watchdog():
+    # alisios numbers [M]: warm need 6.9 GB, cold need 16.2 GB, capacity 35 GB (43 GB MemAvailable - 8 GB reserve).
+    def case(host, cold):
+        c = pc.Case(Path("/x"), "x", Path("/o"))
+        c.sizing, c.host_kb, c.host_cold_kb = {"need_bytes": GIB}, host, cold
+        return c
+    warm = [case(6_900_000, 16_200_000) for _ in range(5)]
+    cap = 35_000_000
+    assert pc.fits(warm[:2], warm[2], 32 * GIB, cap, 8)          # 3 x 6.9 + 9.3 = 30.0 <= 35
+    assert not pc.fits(warm[:3], warm[3], 32 * GIB, cap, 8)      # 4 x 6.9 + 9.3 = 36.9 > 35
+    assert pc.fits(warm[:3], warm[3], 32 * GIB, 37_000_000, 8)
+    cold = [case(16_200_000, 16_200_000) for _ in range(3)]       # cold-admitted cases: no extra headroom
+    assert pc.fits(cold[:1], cold[1], 32 * GIB, cap, 8) and not pc.fits(cold[:2], cold[2], 32 * GIB, cap, 8)
+
+
+def test_launcher_records_the_case_proof_cache_state(fake, monkeypatch):
+    tmp, cases, base = fake
+    plan = tmp / "plan.json"
+    sizer = lambda ds, a, e: [{"source": "c-auto-plan", "need_bytes": GIB, "plan_path": str(plan)} for _ in ds]  # noqa: E731
+    art = _artifacts(tmp)
+    real_state = pc.cache_state
+    monkeypatch.setattr(pc, "cache_state", lambda out: {"warm": True, "executables": art, "cold_executables": []}
+                        if out.name == "c1" else real_state(out))
+    assert pc.main([*base, cases[0], cases[1]], sizer=sizer, gpu=lambda: (32 * GIB, 30 * GIB)) == 0
+    side = json.loads(plan.with_suffix(".measured.json").read_text())
+    assert side["vmhwm_kb_warm_max"] > 0 and side["vmhwm_kb_cold_max"] > 0  # c1 warm, c2 has no proof -> cold
+    assert side["warm_executables"] == art
+    receipts = {n: json.loads((tmp / "out" / n / "receipt.json").read_text()) for n in ("c1", "c2")}
+    assert receipts["c1"]["aot_cache_warm"] is True and receipts["c2"]["aot_cache_warm"] is None
+    assert receipts["c1"]["aot_cold_executables"] == [] and receipts["c2"]["aot_cold_executables"] == []

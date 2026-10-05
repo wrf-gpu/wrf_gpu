@@ -1,5 +1,15 @@
 <h1>Version History</h1>
 
+<h2 id="v031">v0.3.1 — WRF-order fixes and performance (2026-10-05)</h2>
+<p>Open-top and per-record boundary-mass fixes, WRF edge-wind order, Andreas snow
+surface exchange, nested initial-state blending, thin-snow/ground-precipitation and
+warm-ice corrections, water/glacier history parity. A1-SL and Noah-MP column kernels
+are defaults; warm admission and three-nest C-auto are repaired.</p>
+<p>Measured Canary 24-hour rate: 3.604 s/forecast hour (RTX 5090, AMD Ryzen 9 9950X),
+versus v0.3.0 4.126. Original CPU-WRF twelve-core reference: 92.3 s/hour. Swiss January
+D6 and direct RC3 strict integrity pass all 25 frames in each domain. <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.1.md">Evidence, clocks and limits</a>.</p>
+
+
 <p class="lead">A release-by-release summary. <code>stability &gt; identity</code> is the top
 priority, but a proven correctness repair may intentionally change results and require a
 rebaseline, as v0.23.4 and v0.3.0 do. Full per-release notes live in the

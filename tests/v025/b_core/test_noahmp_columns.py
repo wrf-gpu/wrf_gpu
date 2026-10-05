@@ -274,3 +274,14 @@ def test_column_call_leaves_and_sentinel(monkeypatch):
         np.testing.assert_array_equal(np.asarray(got[k]), np.asarray(direct[k]), err_msg=k)
     with pytest.raises(TypeError, match="non-column leaf"):
         column_call(lambda lay: {"z": lay.sum(axis=0)}, (layered,), grid_shape=(ny, nx), name="t_bad")
+
+
+def test_column_call_interprets_on_cpu_backend(monkeypatch):
+    """Release defaults turn the column kernels ON: on a CPU backend column_call must use the Pallas interpreter
+    without GPUWRF_NOAHMP_COLUMN_INTERPRET (GPU runs lower to Triton)."""
+    from gpuwrf.kernels.phys_noahmp_columns import column_call
+    assert jax.default_backend() == "cpu"
+    monkeypatch.delenv("GPUWRF_NOAHMP_COLUMN_INTERPRET", raising=False)
+    a = jnp.arange(15, dtype=jnp.float32).reshape(3, 5)
+    got = jax.jit(lambda x: column_call(lambda v: {"y": v * 2.0 + 1.0}, (x,), grid_shape=(3, 5), name="t_cpu"))(a)
+    np.testing.assert_array_equal(np.asarray(got["y"]), np.asarray(a * 2.0 + 1.0))

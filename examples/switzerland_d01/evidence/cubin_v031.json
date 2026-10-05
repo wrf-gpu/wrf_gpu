@@ -1,0 +1,85 @@
+{
+  "cache": "artifact:release-docs/V031_SWISS/SF31/cache/jax",
+  "entries": [
+    {
+      "entry": "jit__advance_chunk_fori-df0dc4a74d2005c54215021d6fb0c865c5b0",
+      "format": "xla-gpu-thunks-riegeli-v1",
+      "elfs": [
+        {
+          "elf": 0,
+          "sha256": "9d5a39c0039f8e4d",
+          "kernels": 711,
+          "max_stack_B": 16,
+          "stack_over256": [],
+          "nonleaf_over1k": [
+            [
+              "input_concatenate_fusion_47",
+              1064,
+              2,
+              1
+            ],
+            [
+              "thompson_full_column",
+              18928,
+              98,
+              3
+            ],
+            [
+              "mynn_tridiag2_real",
+              2224,
+              87,
+              1
+            ],
+            [
+              "input_add_and_convert_divide_minimum_multiply_power_select_transpose_fusion",
+              2992,
+              2,
+              1
+            ],
+            [
+              "loop_multiply_select_subtract_fusion",
+              2992,
+              8,
+              1
+            ],
+            [
+              "loop_or_select_fusion",
+              2224,
+              6,
+              1
+            ]
+          ]
+        }
+      ],
+      "kinput_transpose_over500": [
+        [
+          "input_add_and_convert_divide_minimum_multiply_power_select_transpose_fusion",
+          922
+        ],
+        [
+          "loop_add_pad_select_subtract_fusion",
+          717
+        ],
+        [
+          "loop_add_pad_subtract_transpose_fusion",
+          700
+        ],
+        [
+          "input_broadcast_multiply_transpose_fusion",
+          579
+        ],
+        [
+          "input_power_transpose_fusion",
+          517
+        ],
+        [
+          "input_add_divide_transpose_fusion.1",
+          503
+        ]
+      ]
+    }
+  ],
+  "hard_stack_gate": "PASS",
+  "conservative_flags": true,
+  "n_entries": 1
+}

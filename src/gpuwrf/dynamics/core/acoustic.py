@@ -118,6 +118,12 @@ class AcousticCoreConfig:
     # spec_bdyupdate instead).  Default OFF -> existing paths unchanged.
     spec_w_zero_grad: bool = False
     spec_zone: int = 1
+    # The specified root already receives WRF's relax_bdy_dry ru/rv tendency
+    # (RK1-frozen, solve_em.F:943; added every stage by rk_addtend_dry,
+    # module_em.F:1041-1052); WRF has no per-substep relaxation of the relax
+    # rows on top of it, so the WIND-FIX convex blend is limited to the spec
+    # face when this is set.
+    specified_relax_tendency: bool = False
 
 
 @jax.tree_util.register_pytree_node_class
@@ -1083,7 +1089,8 @@ def acoustic_substep_core(
             emdiv=float(emdiv),
             dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
             normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
-            normal_bdy_relax_rows=not bool(cfg.nested_frozen_wrf_boundary_bundle),
+            normal_bdy_relax_rows=not (bool(cfg.nested_frozen_wrf_boundary_bundle)
+                                       or bool(cfg.specified_relax_tendency)),
             wrf_single_owner=bool(cfg.nested_frozen_wrf_boundary_bundle),
             spec_zone=int(cfg.spec_zone),
             observe_uv_primitive=True,
@@ -1098,7 +1105,8 @@ def acoustic_substep_core(
             emdiv=float(emdiv),
             dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
             normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
-            normal_bdy_relax_rows=not bool(cfg.nested_frozen_wrf_boundary_bundle),
+            normal_bdy_relax_rows=not (bool(cfg.nested_frozen_wrf_boundary_bundle)
+                                       or bool(cfg.specified_relax_tendency)),
             wrf_single_owner=bool(cfg.nested_frozen_wrf_boundary_bundle),
             spec_zone=int(cfg.spec_zone),
         )

@@ -1,0 +1,122 @@
+{
+  "sources": [
+    {
+      "artifact": "VAL31b/bench/val31b_s1/bench.json",
+      "sha256": "73cc993b24a4a631cebc35a6b654b8a5769dadd84d49dec4c74affeefabaa59e"
+    },
+    {
+      "artifact": "VAL31b/bench/val31b_s1/extra24h/run/receipt.json",
+      "sha256": "37b3e57a232f40be983ed4c573c382393860e42b11a1137d8544b370256332af"
+    },
+    {
+      "artifact": "VAL31c/w01_identity_swiss_0115.json",
+      "sha256": "f070a4532d6e9541858c47a6e648e70c481ff8c793a70918bfc9311264798c09"
+    },
+    {
+      "artifact": "V31/sweep/summary.json",
+      "owner_lane": "wn3",
+      "sha256": "4f6f7c7ba4f3a0befaf969dd38ee6d149c40d7c4df824f11d5c18812b4874e36"
+    },
+    {
+      "artifact": "VAL31b/cubin/wave_gate/wave_gate.json",
+      "owner_lane": "integrate",
+      "sha256": "c7d3377e5a83d10c94c3e114b38e0d944c3de2bd4e1c46345cf3900dbdee8388"
+    },
+    {
+      "artifact": "VAL31c/w01_identity_swiss_0115_full.json",
+      "owner_lane": "integrate",
+      "sha256": "31e3da6cddbd5b330f8eee0ffe9d4101510a120336b6e4ecf8dc6699bcc49ebd"
+    },
+    {
+      "artifact": "VAL31c/swiss_0115_integrity_allframes_rc3.json",
+      "owner_lane": "integrate",
+      "sha256": "8e00637c647f0c1fdcf293e96cd145884f94df97c0d456c5ef9d780aea61d977"
+    },
+    {
+      "artifact": "VAL31b/scoring/cases/swiss_2023-01-15_00z_d01_vs_cpu_24h.json",
+      "owner_lane": "integrate",
+      "sha256": "e1c28f33d8a79f8e1ff0276f151131dba07136f761b5e3ecb99c689e6787a186"
+    },
+    {
+      "artifact": "VAL31b/scoring/cases/swiss_2023-01-15_00z_d02_vs_cpu_24h.json",
+      "owner_lane": "integrate",
+      "sha256": "81339732fcab1382d062d546b1c0a509baa42529f640de37fb2d321ff62fce16"
+    },
+    {
+      "artifact": "SWISS_NEST_REF/SN04/2023-01-15_00z/receipt.json",
+      "owner_lane": "release-docs",
+      "sha256": "450d6a29b30283acbceb67434eb1bf011afec77adfc28f05c001c5aac611fd8f"
+    },
+    {
+      "artifact": "VAL31c/RC_EVIDENCE.json",
+      "owner_lane": "integrate",
+      "sha256": "3bf92bbbc35ea374f82e62849c4b497928eaa49af8c87d2b4a5b280778942d52"
+    },
+    {
+      "artifact": "V31/sweep/n1/gpu_dmon.log",
+      "owner_lane": "wn3",
+      "sha256": "bb3f640f8a1d1217eeec982a99c1bea91cfdb0466229f4714c775fc5444e6ae7"
+    },
+    {
+      "artifact": "V31/sweep/n3/gpu_dmon.log",
+      "owner_lane": "wn3",
+      "sha256": "f1d729001fb1676b891594bb8872fae3bb77b52bc68a62c67b8dd805d0b350af"
+    },
+    {
+      "artifact": "V31/sweep/n4/gpu_dmon.log",
+      "owner_lane": "wn3",
+      "sha256": "4da13bcbe30077fed6b92832c524e2f55e713f4bab41b2457046d1a420d73ac7"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/cold24h/receipt.json",
+      "owner_lane": "release-docs",
+      "sha256": "54ff9e9c260cefe3a8a47705cf68e814ed35977981850f1c157584342e783d3f"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/cached24h/receipt.json",
+      "owner_lane": "release-docs",
+      "sha256": "b32f66ad96d91abcd9903d8ba82c7d0d94bb453eb631c4ada5ca3a80c5d7d9a0"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/score_cached/d01.json",
+      "owner_lane": "release-docs",
+      "sha256": "4c04d49bbeb46df201acccc58c100508a438a24f19c69fc9d9ced17790102fe3"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/score_cached/integrity_allframes.json",
+      "owner_lane": "release-docs",
+      "sha256": "b1a307b5131fabe0d749091d6eb11016bcbc905884cc72b1fe3ef6ec86defbb1"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/cubin/wave_gate.json",
+      "owner_lane": "release-docs",
+      "sha256": "b852bdce32ada46f6036a256ede7669fe502c8832e3b70bb0bb6463b79a9ecf3"
+    },
+    {
+      "artifact": "V031_SWISS/SF31/field310.json",
+      "owner_lane": "release-docs",
+      "sha256": "540c311249dab7885ef08f5111a0edb2e0f67dd512ce2283d5a6f0ca5210f2e8"
+    },
+    {
+      "artifact": "BP84/S4_ENDPOINT_RC3.md",
+      "owner_lane": "b-phys",
+      "sha256": "eca902e92072ee46d7dba9bb61bceda08462792619e47f9318ed2c3a51b51ee0"
+    },
+    {
+      "artifact": "BP84/S4_ENDPOINT_RC3.json",
+      "owner_lane": "b-phys",
+      "sha256": "55953d606c10a549817b43b9ef5c38e04a52b192f3cbfe4c30cadf5a92a7c910"
+    },
+    {
+      "artifact": "VAL31b/scoring/val31b_d01_vs_d5_24h.json",
+      "owner_lane": "integrate",
+      "sha256": "41665f41de13c48d4cbfbca382f6680f6d68f35cfe018b17423705013e636b1e"
+    },
+    {
+      "artifact": "VAL31b/scoring/val31b_d02_vs_d5_24h.json",
+      "owner_lane": "integrate",
+      "sha256": "12092cb94c40e264c9a6f455060dd8242fea7b34b2ca4196c1e403d69d58d872"
+    }
+  ],
+  "raw_originals_retained_by_owner": true
+}

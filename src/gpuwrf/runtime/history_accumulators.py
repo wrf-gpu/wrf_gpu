@@ -24,7 +24,7 @@ LAND_FLUX_FIELDS = (
     "CHLEAF", "CHUC", "CHV2", "CHB2", "RSSUN", "RSSHA", "APAR", "PSN",
     "PAH", "PAHV", "PAHG", "PAHB", "FORCTLSM", "FORCQLSM", "FORCPLSM", "FORCZLSM", "FORCWLSM",
     "T2V", "T2B", "Q2V", "Q2B", "RUNSF", "RUNSB", "SNOWC",
-    "TGV", "TGB", "SNOM_INCREMENT",
+    "TGV", "TGB", "SNOM_INCREMENT", "QSNOWXY", "QRAINXY",
 )
 
 
@@ -73,10 +73,16 @@ class PackedFields(Mapping):
 
 
 def as_packed(fields, names):
-    """Restart upgrade: a legacy per-name dict becomes the packed family (canonical order)."""
-    if fields is None or isinstance(fields, PackedFields):
+    """Restart upgrade: a legacy per-name dict becomes the packed family (canonical order).
+
+    Instantaneous land history added after the checkpoint (QSNOWXY/QRAINXY) is seeded zero like
+    seed_history: every Noah step rewrites it before the next history frame. Accumulators are never invented.
+    """
+    if fields is None or (isinstance(fields, PackedFields) and fields.names == tuple(names)):
         return fields
-    return PackedFields.pack({name: fields[name] for name in names if name in fields})
+    like = jnp.asarray(fields[next(iter(fields))])
+    return PackedFields.pack({name: fields[name] if name in fields else jnp.zeros_like(like)
+                              for name in names if name in fields or name in LAND_FLUX_FIELDS})
 
 
 def full_history_enabled():

@@ -1,0 +1,132 @@
+{
+  "cpu_s_per_frame": 9.852478702863058,
+  "gpu_s_per_frame": 0.9987007876237234,
+  "speedup": 9.865295817284505,
+  "model_commit": "74a654d321d4501c2718520fc265bbbdbbe8c37a",
+  "version": "0.3.1",
+  "cpu_energy_label": "U",
+  "timing_method": "process start through last history file / 24 forecast hours",
+  "cpu_process_wall_s": 236.55940294265747,
+  "gpu_process_wall_s": 24.90440559387207,
+  "cold_process_wall_s": 287.3954219818115,
+  "gpu_board_j_per_frame": 142.0625,
+  "power": {
+    "method": "E158 trapezoid between actual timestamps; endpoint tails excluded",
+    "label": "M",
+    "source_sha256": "075de8e8f7ddb9d8d12041797c65dbdf034b615e2be603f1f4e8c84c52ab40f1",
+    "time_zone": "Atlantic/Canary (UTC+01:00 on the run date)",
+    "window_start_epoch_s": 1791195286.037394,
+    "window_end_epoch_s": 1791195310.941799,
+    "window_s": 24.904404878616333,
+    "covered_s": 23.0,
+    "max_gap_s": 1.0,
+    "unlogged_endpoint_s": 1.904404878616333,
+    "samples": [
+      {
+        "epoch_s": 1791195287.0,
+        "power_w": 26.0
+      },
+      {
+        "epoch_s": 1791195288.0,
+        "power_w": 24.0
+      },
+      {
+        "epoch_s": 1791195289.0,
+        "power_w": 63.0
+      },
+      {
+        "epoch_s": 1791195290.0,
+        "power_w": 63.0
+      },
+      {
+        "epoch_s": 1791195291.0,
+        "power_w": 63.0
+      },
+      {
+        "epoch_s": 1791195292.0,
+        "power_w": 70.0
+      },
+      {
+        "epoch_s": 1791195293.0,
+        "power_w": 70.0
+      },
+      {
+        "epoch_s": 1791195294.0,
+        "power_w": 69.0
+      },
+      {
+        "epoch_s": 1791195295.0,
+        "power_w": 70.0
+      },
+      {
+        "epoch_s": 1791195296.0,
+        "power_w": 71.0
+      },
+      {
+        "epoch_s": 1791195297.0,
+        "power_w": 65.0
+      },
+      {
+        "epoch_s": 1791195298.0,
+        "power_w": 136.0
+      },
+      {
+        "epoch_s": 1791195299.0,
+        "power_w": 222.0
+      },
+      {
+        "epoch_s": 1791195300.0,
+        "power_w": 224.0
+      },
+      {
+        "epoch_s": 1791195301.0,
+        "power_w": 227.0
+      },
+      {
+        "epoch_s": 1791195302.0,
+        "power_w": 230.0
+      },
+      {
+        "epoch_s": 1791195303.0,
+        "power_w": 232.0
+      },
+      {
+        "epoch_s": 1791195304.0,
+        "power_w": 236.0
+      },
+      {
+        "epoch_s": 1791195305.0,
+        "power_w": 235.0
+      },
+      {
+        "epoch_s": 1791195306.0,
+        "power_w": 234.0
+      },
+      {
+        "epoch_s": 1791195307.0,
+        "power_w": 229.0
+      },
+      {
+        "epoch_s": 1791195308.0,
+        "power_w": 227.0
+      },
+      {
+        "epoch_s": 1791195309.0,
+        "power_w": 229.0
+      },
+      {
+        "epoch_s": 1791195310.0,
+        "power_w": 215.0
+      }
+    ],
+    "forecast_case_hours": 24,
+    "board_energy_j": 3409.5,
+    "board_j_per_case_forecast_hour": 142.0625,
+    "source_artifact": "release-docs:V031_SWISS/SF31/cached24h/gpu_dmon.log"
+  },
+  "original_cpu_input_sha256": {
+    "namelist.input": "98eb3e0457b53a510931401ad1575e980a716da4588f8cbca4be95fd92846039",
+    "wrfinput_d01": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781",
+    "wrfbdy_d01": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230"
+  }
+}

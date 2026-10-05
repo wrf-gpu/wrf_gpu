@@ -45,7 +45,7 @@ from typing import Any
 import numpy as np
 
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
-from gpuwrf.integration.d02_replay import build_replay_case
+from gpuwrf.integration.d02_replay import build_replay_case, wrf_nest_opens_with_parent_start
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.data_inventory import wrfout_name
 from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
@@ -188,15 +188,11 @@ def _dt_by_domain(run, names: tuple[str, ...]) -> dict[str, float]:
     """
 
     nml = run.namelist
-    root_dt = nml.get("domains", {}).get("time_step")
+    root_dt = _domain_list_value(nml.get("domains", {}).get("time_step"), 0, None)
     if root_dt is None:
-        root_dt = nml.get("time_control", {}).get("time_step")
+        root_dt = _domain_list_value(nml.get("time_control", {}).get("time_step"), 0, None)
     if root_dt is None:
         raise ValueError("namelist has no domains/time_control time_step for the root domain")
-    # WRF namelists may pack several params per line, so the parser can return a
-    # 1-element list for a scalar key (e.g. "time_step = 18, ..."); coerce to scalar.
-    if isinstance(root_dt, (list, tuple)):
-        root_dt = root_dt[0]
     dt: dict[str, float] = {names[0]: float(root_dt)}
     for name in names[1:]:
         grid = run.grid(name)
@@ -216,8 +212,8 @@ def _domain_list_value(value: Any, index: int, default: Any) -> Any:
     if isinstance(value, (list, tuple)):
         if not value:
             return default
-        return value[index] if index < len(value) else value[-1]
-    return value
+        value = value[index] if index < len(value) else value[-1]
+    return default if value is None else value
 
 
 def _history_interval_minutes_by_domain(run, names: tuple[str, ...]) -> dict[str, float]:
@@ -334,6 +330,23 @@ def _cumulus_cadence_metadata(namelist):
         "cudt_minutes": float(namelist.cudt_minutes),
         "cumulus_cadence_steps": int(namelist.cumulus_cadence_steps),
     }
+
+
+def _resolved_namelist_options(namelist, grid):
+    """Every scalar control of the resolved OperationalNamelist this domain runs with (physics/dynamics/diffusion/damping
+    options, cadences), plus the mass-grid shape: run-proof attestation of the EXECUTED options (metadata only; host
+    values read from the frozen dataclass, no device access, nothing traced)."""
+    out = {}
+    for field in getattr(namelist, "__dataclass_fields__", {}):
+        value = getattr(namelist, field, None)
+        if value is None or isinstance(value, (bool, str)):
+            out[field] = value
+        elif isinstance(value, int):
+            out[field] = int(value)
+        elif isinstance(value, float):
+            out[field] = float(value)
+    out["mass_shape"] = [int(grid.nz), int(grid.ny), int(grid.nx)]
+    return out
 
 
 def _aot_prefetch_artifact_candidates(names, *, directory=None):
@@ -487,11 +500,12 @@ def _make_namelist(
     time_step_sound: int = 0,
     radt_minutes: float = 30.0,
     cudt_minutes: float = 0.0,
+    top_lid: bool = False,
 ) -> OperationalNamelist:
     """Per-domain operational namelist (mirrors the v0.11.0 nesting proof config).
 
     The dynamics knobs (flux advection, fp64 acoustic solve, 6th-order filter,
-    Rayleigh + w damping, rigid lid) are the F7-closed operational settings the
+    Rayleigh + w damping) are the F7-closed operational settings the
     real-case path uses (see ``daily_pipeline._build_real_case``).  Children get
     the WRF live-nest boundary cadence (``update_cadence_s == parent_dt``) so the
     parent-built two-time package interpolates exactly across the subcycle.
@@ -516,7 +530,9 @@ def _make_namelist(
         zdamp=5000.0,
         dampcoef=0.2,
         epssm=0.5,
-        top_lid=True,
+        # Registry.EM_COMMON: top_lid defaults to .false. (constant-pressure top).
+        # A rigid lid changes the column-mass response to lateral pressure forcing.
+        top_lid=bool(top_lid),
         # WRF Registry default hypsometric_opt=2 (LOG form); see daily_pipeline.
         hypsometric_opt=2,
         # WRF Registry.EM_COMMON defaults h_sca_adv_order to 5.  The standalone
@@ -644,22 +660,30 @@ def _root_bdy_flag(wrf_namelist: dict | None, key: str) -> bool:
 def _domain_float(run, group: str, key: str, domain: str, default: float = 0.0) -> float:
     """Read WRF's scalar or per-domain REAL namelist control."""
     raw = run.namelist.get(group, {}).get(key, default)
-    if isinstance(raw, (list, tuple)):
-        index = max(int(domain[1:]) - 1, 0)
-        raw = raw[min(index, len(raw) - 1)] if raw else default
-    return float(raw)
+    index = max(int(domain[1:]) - 1, 0) if isinstance(raw, (list, tuple)) else 0
+    return float(_domain_list_value(raw, index, default))
 
 
 def _domain_int(run, group: str, key: str, domain: str, default: int = 0) -> int:
     """Per-domain integer namelist value from ``group`` (max-dom list or scalar)."""
 
     raw = run.namelist.get(group, {}).get(key, default)
-    if isinstance(raw, (list, tuple)):
-        index = max(int(domain[1:]) - 1, 0)
-        if index < len(raw):
-            return int(raw[index])
-        return int(raw[-1]) if raw else int(default)
-    return int(raw)
+    index = max(int(domain[1:]) - 1, 0) if isinstance(raw, (list, tuple)) else 0
+    return int(_domain_list_value(raw, index, default))
+
+
+def _domain_top_lid(run, domain: str) -> bool:
+    """Resolve WRF's per-domain logical, retaining defaults for omitted slots."""
+
+    raw = run.namelist.get("dynamics", {}).get("top_lid", False)
+    values = raw if isinstance(raw, (list, tuple)) else (raw,)
+    index = int(domain[1:]) - 1
+    value = values[index] if index < len(values) else None
+    if value is None:
+        return False
+    if not isinstance(value, bool):
+        raise ValueError(f"{domain}: top_lid must be a Fortran logical, got {value!r}")
+    return value
 
 
 def _domain_physics_int(run, key: str, domain: str, default: int = 0) -> int:
@@ -795,6 +819,10 @@ def _load_domains(
                 domain=name,
                 load_lateral_boundaries=False,
                 live_nest_parent=loaded_cases[parent],
+                live_nest_child_opens_at_start=any(
+                    edge.child in names and wrf_nest_opens_with_parent_start(run, name, edge.child)
+                    for edge in hierarchy.children(name)
+                ),
             )
             parent_dt = dt_by_domain[parent]
         loaded_cases[name] = case
@@ -853,7 +881,7 @@ def _load_domains(
                 # resets. Never silently publish unbucketed or unreset sums.
                 for group, option, default in (("physics", "bucket_j", -1), ("physics", "bucket_mm", -1),
                                                 ("noah_mp", "noahmp_acc_dt", 0)):
-                    value = float(run.namelist.get(group, {}).get(option, default))
+                    value = _domain_float(run, group, option, name, default)
                     if value > 0:
                         raise ValueError(f"full land history requires inactive {option}; got {value}")
             noahmp_land, noahmp_static, noahmp_init_meta = build_noahmp_land_state(
@@ -881,6 +909,7 @@ def _load_domains(
             radiation_static=radiation_static,
             cu_physics=_domain_cu_physics(run, name),
             time_step_sound=_domain_int(run, "dynamics", "time_step_sound", name, 0),
+            top_lid=_domain_top_lid(run, name),
             radt_minutes=_domain_float(run, "physics", "radt", name, 30.0),
             cudt_minutes=_domain_float(run, "physics", "cudt", name, 0.0),
             gwd_opt=gwd_opt,
@@ -983,6 +1012,7 @@ def _load_domains(
             "grid": case.metadata.get("grid", {}),
             "namelist": {
                 "dt_s": float(namelist.dt_s),
+                "top_lid": bool(namelist.top_lid),
                 "radiation_cadence_steps": int(namelist.radiation_cadence_steps),
                 "boundary_update_cadence_s": float(namelist.boundary_config.update_cadence_s),
                 "nested_frozen_wrf_boundary_bundle": bool(
@@ -999,6 +1029,7 @@ def _load_domains(
                 "topo_shading": int(namelist.topo_shading),
                 "slope_rad": int(namelist.slope_rad),
             },
+            "namelist_resolved": _resolved_namelist_options(namelist, case.grid),
             "land_surface": {
                 "sf_surface_physics": int(sf_surface_physics),
                 "use_noahmp": bool(namelist.use_noahmp),
@@ -2682,6 +2713,14 @@ class _PerDomainWrfoutWriter:
                     fields[field] = value
                 else:
                     fields[field] = np.zeros(shape, dtype=np.float32)
+            # WRF history "T" is th_phy_m_t0 (Registry irhd): read from wrfinput and only re-derived
+            # from t_2/qv by the first phy_prep, so nest adjust_tempqv never reaches the lead-zero T
+            # (CPU-WRF WN3 nest T == wrfinput T bitwise; THM/QVAPOR carry the adjustment; fid-q2 R01).
+            if "T" in initial.variables:
+                value = np.asarray(np.ma.filled(initial.variables["T"][0], np.nan))
+                if value.shape != shape or not np.all(np.isfinite(value)):
+                    raise ValueError(f"{path}:T is not a finite initialized volume field")
+                fields["T"] = value
         return fields
 
     def _record_census_persist(self, path):
@@ -2864,6 +2903,7 @@ class _PerDomainWrfoutWriter:
                 land_fields, noahmp_land = land_history_diagnostics(
                     noahmp_land, initial_land, self._land_history_inputs[name],
                     own_step=int(own_step), history=getattr(carry, "land_history", None),
+                    water_sst=(state.t_skin if getattr(namelist, "lower_boundary", None) is not None else None),
                 )
                 diagnostics = dict(diagnostics or {})
                 diagnostics.update(land_fields)

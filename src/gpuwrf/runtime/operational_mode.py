@@ -3267,6 +3267,11 @@ def _acoustic_scan(
                 lead_seconds is not None and _specified_bdy_cadence_active(namelist)
             ),
             spec_zone=int(namelist.boundary_config.spec_zone),
+            # Same predicate as _specified_bdy_relax: WRF's relax tendency is
+            # already in ru/rv_tend, so no extra per-substep relax-row blend.
+            specified_relax_tendency=bool(
+                lead_seconds is not None and _specified_bdy_cadence_active(namelist)
+            ),
         )
         if native_fp32:
             from gpuwrf.kernels.dyn_acoustic_fp32 import (

@@ -24,6 +24,8 @@ import os
 # plus the b-core acoustic (A1c split w, A2 mass blocks, masked uv) and PD species-loop kernels (LW11).
 # plus the fused large-step u/v PGF + Coriolis + curvature kernel on nested domains and the rhs_ph REAL
 # stencil kernel (b-diff #15, LW12).
+# plus the v0.3.1 b-core levers: blocked acoustic w recurrence (A1-SL, bitwise) and the Noah-MP layer lists +
+# column kernels (#14, Noah-gate equivalent).
 FAST_PATH_DEFAULTS: dict[str, str] = {
     # dynamics
     "GPUWRF_DYN_FP32": "1",
@@ -39,6 +41,7 @@ FAST_PATH_DEFAULTS: dict[str, str] = {
     "GPUWRF_ACOUSTIC_MASS_BLOCK": "1",  # b-core A2 (b774ee8eb)
     "GPUWRF_ACOUSTIC_UV_MASKED": "1",  # b-core (1dc7f2dd6)
     "GPUWRF_DYN_PD_SPECIES_LOOP": "1",  # b-core #16 (6aac4bd5c)
+    "GPUWRF_ACOUSTIC_W_RECUR_SL": "1",  # b-core A1-SL (8ee208a92): blocked w recurrence, bitwise (W1b/W1c)
     "GPUWRF_BOUNDARY_FP32": "1",
     "GPUWRF_SPEC_RING_SELECT": "1",
     "GPUWRF_DYN_GLUE_FUSED": "rhsph_uvn_pin",  # b-diff #15: rhs_ph stencil (0fd24ac4b) + nested-only fused u/v (b9735a79b), pinned
@@ -46,6 +49,8 @@ FAST_PATH_DEFAULTS: dict[str, str] = {
     "GPUWRF_NOAHMP_NATIVE_REAL": "1",
     "GPUWRF_NOAHMP_ITERATION_BARRIER": "1",
     "GPUWRF_NOAHMP_LAYER_SELECT": "1",
+    "GPUWRF_NOAHMP_LAYER_LISTS": "1",  # b-core #14 (2cab1a234): snow-water column + SOILWATER on layer lists
+    "GPUWRF_NOAHMP_COLUMN_KERNELS": "1",  # b-core #14: canopy/bare Newton, SOILWATER, snow-water column kernels
     "GPUWRF_SFCLAY_NATIVE_REAL": "1",
     "GPUWRF_GWDO_NATIVE_REAL": "1",
     # PBL

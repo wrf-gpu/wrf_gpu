@@ -1,0 +1,291 @@
+{
+  "release_candidate": {
+    "RC3": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+    "RC2": "addb342c5a89c76b6841c19a7a2e89e5d10d93ec",
+    "RC3_vs_RC2": "writer-only (io/land_history.py, W01 glacier -1e36 sentinel); RC3 byte-identical to RC2 except W01 vars on IVGTYP==15 \u2192 all RC2 numerics/timing evidence applies to RC3"
+  },
+  "timing_PROD_RC2_M": {
+    "S1_proxy_s_per_fc_h": 3.088,
+    "aa": {
+      "a": 3.101,
+      "b": 3.075,
+      "aa_floor_pct": 0.84,
+      "historical_floor_pct": 6.77,
+      "within_historical_floor": true
+    },
+    "whole_run_24h_s": 86.51,
+    "whole_run_24h_s_per_fc_h": 3.604,
+    "median_seg2_24": 2.791,
+    "init_pre_step_s": 17.1,
+    "cpu_wrf_12rank_s_per_fc_h": 92.3,
+    "speedup_vs_cpu_24h_whole_run": 25.6,
+    "baseline_FINALb_v030": {
+      "S1": 3.369,
+      "24h": 4.126
+    },
+    "device_ms_per_ordinary_root_BP82": 30.393,
+    "device_ms_per_radiation_root_BP82": 78.093,
+    "receipts": [
+      "artifact:VAL31b/bench/val31b_s1/bench.json",
+      "artifact:VAL31b/bench/val31b_s1/extra24h/run/receipt.json",
+      "artifact:b-phys/BP82/"
+    ]
+  },
+  "PROD_fidelity_RC2_M": {
+    "D6_failures_6h": [
+      0,
+      0
+    ],
+    "D6_failures_24h": [
+      0,
+      0
+    ],
+    "worst_rmse_24h": {
+      "d01": {
+        "T2": 0.0658,
+        "U10": 0.073,
+        "V10": 0.1263,
+        "PSFC": 1.5505,
+        "RAINNC": 0.0613
+      },
+      "d02": {
+        "T2": 0.059,
+        "U10": 0.1414,
+        "V10": 0.1565,
+        "PSFC": 1.5469,
+        "RAINNC": 0.0064
+      }
+    },
+    "integrity_all_frames": "PASS under registered classes R2 (d01 QICE/QSNOW 15/24, CPU <= 8.7e-15) + R4 (d02 CANLIQ/CANWAT/FWET 2/24)",
+    "cpu_ref": "D5 CPU-WRF 12-rank",
+    "receipts": [
+      "artifact:VAL31b/scoring"
+    ],
+    "worst_rmse_6h": {
+      "d01": {
+        "T2": 0.0549,
+        "U10": 0.0559,
+        "V10": 0.1263,
+        "PSFC": 0.4864,
+        "RAINNC": 0.006
+      },
+      "d02": {
+        "T2": 0.0431,
+        "U10": 0.0563,
+        "V10": 0.0902,
+        "PSFC": 0.497,
+        "RAINNC": 0.0003
+      }
+    }
+  },
+  "restart_RC2_M": {
+    "verdict": "PASS",
+    "checked_variables": 2262,
+    "files": 6,
+    "receipt": "artifact:VAL31b/restart/comparison.json"
+  },
+  "WN3_0227_24h_3nest_RC2_M": {
+    "D6": "PASS d01/d02/d03, 0 failures",
+    "worst_rmse": {
+      "T2": [
+        0.085,
+        0.072,
+        0.142
+      ],
+      "U10": [
+        0.076,
+        0.139,
+        0.325
+      ],
+      "V10": [
+        0.106,
+        0.132,
+        0.377
+      ],
+      "PSFC": [
+        2.49,
+        2.37,
+        4.49
+      ],
+      "RAINNC": [
+        0.067,
+        0.012,
+        0.061
+      ]
+    },
+    "integrity_all_frames": "PASS under R2 (d01 QICE 3/25, QSNOW 5/25) + R5 (d03 CANICE 3/25, QSNOWXY 4/25)",
+    "wall_min_incl_cold": 15,
+    "receipts": [
+      "artifact:VAL31b/scoring/cases"
+    ]
+  },
+  "Swiss_2025_02_18_24h_RC2_M": {
+    "cpu_ref": "release-docs SN02 (verified_receipt complete_24h, inputs sha256-identical)",
+    "D6_failures": [
+      0,
+      0
+    ],
+    "worst_rmse": {
+      "d01": {
+        "T2": 0.139,
+        "U10": 0.144,
+        "V10": 0.116,
+        "PSFC": 1.817,
+        "RAINNC": 0.001
+      },
+      "d02": {
+        "T2": 0.199,
+        "U10": 0.166,
+        "V10": 0.171,
+        "PSFC": 1.749,
+        "RAINNC": 0.005
+      }
+    },
+    "andreas_snow_cells_RC1_to_RC2": {
+      "WS10_rmse": [
+        "0.141\u21920.062",
+        "0.192\u21920.084"
+      ],
+      "T2_rmse": [
+        "0.143\u21920.101",
+        "0.200\u21920.113"
+      ],
+      "HFX_rmse": [
+        "3.38\u21922.61",
+        "4.28\u21923.07"
+      ]
+    },
+    "interior_WS10_bias": [
+      -0.04,
+      -0.037
+    ],
+    "integrity": "FWET 1/25 @19Z degenerate in RC2 = glacier sentinel \u2192 fixed by W01 in RC3",
+    "receipts": [
+      "artifact:VAL31b/scoring/cases"
+    ]
+  },
+  "Swiss_2023_01_15": {
+    "cpu_ref": "release-docs SN04 (receipt complete_24h, inputs sha256-identical; SN03 killed by disk guard, restarted fresh)",
+    "D6_failures": [
+      0,
+      0
+    ],
+    "frames": 25,
+    "worst_rmse": {
+      "d01": {
+        "T2": 0.255,
+        "U10": 0.236,
+        "V10": 0.249,
+        "PSFC": 3.933,
+        "RAINNC": 0.31
+      },
+      "d02": {
+        "T2": 0.441,
+        "U10": 0.487,
+        "V10": 0.498,
+        "PSFC": 7.14,
+        "RAINNC": 0.416
+      }
+    },
+    "interior_WS10_bias": [
+      -0.017,
+      -0.028
+    ],
+    "max_abs_domain_mean_PSFC_drift_Pa": [
+      1.03,
+      1.34
+    ],
+    "scored_output": "RC2 raw (= RC3 on every D6 field, W01 identity)",
+    "receipts_D6": "artifact:integrate/VAL31b/scoring/cases/",
+    "RC3_integrity_all_frames_vs_SN04": "pass_all_frames TRUE (d01/d02 25/25, degenerate 0, missing 0)",
+    "RC3_W01_identity_full": {
+      "pass": true,
+      "files": 50,
+      "violations": 0,
+      "changed": [
+        "CHLEAF",
+        "CHUC",
+        "CHV",
+        "CHV2",
+        "EAH",
+        "FASTCP",
+        "FWET",
+        "LAI",
+        "LFMASS",
+        "Q2V",
+        "RSSHA",
+        "RSSUN",
+        "RTMASS",
+        "STBLCP",
+        "STMASS",
+        "T2V",
+        "TAH",
+        "TGV",
+        "TV",
+        "WOOD",
+        "XSAI"
+      ],
+      "cpu_frames_checked": 50,
+      "receipt": "artifact:integrate/VAL31c/w01_identity_swiss_0115_full.json"
+    },
+    "receipt_integrity": "artifact:integrate/VAL31c/swiss_0115_integrity_allframes_rc3.json"
+  },
+  "compile_gates": {
+    "cubin_PROD": "HARD STACK PASS max 32 B",
+    "cubin_Swiss": "HARD PASS 64 B (compile)",
+    "field310": "artifact:VAL31b/autotune_pin on PROD 2/2, restart+Swiss+WN3 6/6, Swiss 2/2"
+  },
+  "RC1_note": "RC1 f807f59e1 S1 was INVALID (host contention); RC2 PROD not byte-identical to RC1 (surface-layer HLO change) \u2014 RC1 numbers are NOT release numbers",
+  "source_artifact": {
+    "label": "VAL31c/RC_EVIDENCE.json",
+    "sha256": "3bf92bbbc35ea374f82e62849c4b497928eaa49af8c87d2b4a5b280778942d52"
+  },
+  "publication_gate": "PASS: complete Swiss2023 SN04 original CPU24h D6; direct RC3 strict integrity25/25 both domains; writer CPU50/50, accepted by manager 2026-10-05T09:37:08Z",
+  "historical_throughput_note": "Current six-hour parallel sweep measured separately; v0.3.0 24/72-hour production batch and energy remain historical, with no v0.3.1 extrapolation.",
+  "receipt_arithmetic": {
+    "source_bench_sha256": "73cc993b24a4a631cebc35a6b654b8a5769dadd84d49dec4c74affeefabaa59e",
+    "source_receipt_sha256": "37b3e57a232f40be983ed4c573c382393860e42b11a1137d8544b370256332af",
+    "process_wall_s": 86.507,
+    "forecast_h": 24,
+    "s_per_forecast_h": 3.6044583333333335,
+    "cpu_main_loop_s_per_forecast_h": 92.3,
+    "rate_ratio": 25.607176297871845,
+    "v030_complete_process_s_per_forecast_h": 4.126,
+    "wall_reduction_pct": 12.640370011310392,
+    "throughput_increase_pct": 14.46934930121262
+  },
+  "parallel_sweep_RC3_M": {
+    "source_artifact": "wn3:V31/sweep/summary.json",
+    "source_sha256": "4f6f7c7ba4f3a0befaf969dd38ee6d149c40d7c4df824f11d5c18812b4874e36",
+    "hours": 6,
+    "cpu_reference_s_per_case_hour": 123.4,
+    "whole_run_aggregate_s_per_case_forecast_hour": {
+      "n1": 13.668,
+      "n3": 8.201,
+      "n4": 7.774
+    },
+    "init_load_included": true,
+    "compression": false,
+    "no_24h_or_energy_extrapolation": true,
+    "per_case_vram_peak_mib": 5354,
+    "per_case_vram_gib": 5.228515625
+  },
+  "E41_runtime_acceptance_M": {
+    "source_artifact": "VAL31b/cubin/wave_gate/wave_gate.json",
+    "source_sha256": "c7d3377e5a83d10c94c3e114b38e0d944c3de2bd4e1c46345cf3900dbdee8388",
+    "compile_handoff_utc": "2026-10-05T08:32:11.723835+00:00",
+    "max_stack_bytes": 32,
+    "ordinary": {
+      "flagged_transpose_count": 8,
+      "sum_device_ms_per_root": 0.21301366666666666,
+      "max_device_ms_per_root": 0.04918399999999999
+    },
+    "radiation": {
+      "flagged_transpose_count": 8,
+      "sum_device_ms_per_root": 0.22539766666666666,
+      "max_device_ms_per_root": 0.048362666666666665
+    }
+  },
+  "release_gates": "ALL GREEN (manager 09:37:08Z)",
+  "evidence_updated_utc": "2026-10-05T09:46:53.258296+00:00"
+}

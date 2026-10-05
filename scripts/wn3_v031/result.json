@@ -1,0 +1,133 @@
+{
+ "no_sidecar": {
+  "rc": 0,
+  "would_start_now": 1,
+  "host_capacity_kb": 35000000,
+  "need_bytes": null,
+  "host_need_kb": 16000000,
+  "host_need_cold_kb": 16000000,
+  "host_need_source": "--host-gb-per-case",
+  "aot_cache_warm": false,
+  "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+ },
+ "states": {
+  "cold": {
+   "warm": false,
+   "executables": {},
+   "cold_executables": [
+    "d01",
+    "fused/d02"
+   ]
+  },
+  "warm": {
+   "warm": true,
+   "executables": {
+    "d01": [
+     "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/cache/jax/aot/0.3.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_1309a0ebfe80cfd44db7920337c0dcf667f559bfbde1f45f2e59ccf149985832.xlaexec",
+     "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/cache/jax/aot/0.3.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_1309a0ebfe80cfd44db7920337c0dcf667f559bfbde1f45f2e59ccf149985832.meta"
+    ],
+    "fused/d02": [
+     "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/cache/jax/aot/0.3.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_3b3e48b0b65f251bd372bf340abe294edd672e9c15e0ca484c8547e2b9377234.xlaexec",
+     "<USER_HOME>/wrf_gpu2_lanes/wn3/W9/cache/jax/aot/0.3.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_3b3e48b0b65f251bd372bf340abe294edd672e9c15e0ca484c8547e2b9377234.meta"
+    ]
+   },
+   "cold_executables": []
+  }
+ },
+ "after_cold_sizing": {
+  "alisios_43GB": {
+   "rc": 0,
+   "would_start_now": 2,
+   "host_capacity_kb": 35000000,
+   "need_bytes": 4530687180,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured cold VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  },
+  "idle_65.7GB": {
+   "rc": 0,
+   "would_start_now": 3,
+   "host_capacity_kb": 57677948,
+   "need_bytes": 4530687180,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured cold VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  }
+ },
+ "after_warm_run": {
+  "alisios_43GB": {
+   "rc": 0,
+   "would_start_now": 3,
+   "host_capacity_kb": 35000000,
+   "need_bytes": 5734871859,
+   "host_need_kb": 6873033,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+   "aot_cache_warm": true,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  },
+  "idle_65.7GB": {
+   "rc": 0,
+   "would_start_now": 5,
+   "host_capacity_kb": 57677948,
+   "need_bytes": 5734871859,
+   "host_need_kb": 6873033,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured warm VmHWM (AOT cache warm)",
+   "aot_cache_warm": true,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  }
+ },
+ "warm_artifact_deleted": {
+  "alisios_43GB": {
+   "rc": 0,
+   "would_start_now": 2,
+   "host_capacity_kb": 35000000,
+   "need_bytes": 5734871859,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured cold VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  },
+  "idle_65.7GB": {
+   "rc": 0,
+   "would_start_now": 3,
+   "host_capacity_kb": 57677948,
+   "need_bytes": 5734871859,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured cold VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  }
+ },
+ "v030_legacy_sidecar": {
+  "alisios_43GB": {
+   "rc": 0,
+   "would_start_now": 2,
+   "host_capacity_kb": 35000000,
+   "need_bytes": 5734871859,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  },
+  "idle_65.7GB": {
+   "rc": 0,
+   "would_start_now": 3,
+   "host_capacity_kb": 57677948,
+   "need_bytes": 5734871859,
+   "host_need_kb": 16237958,
+   "host_need_cold_kb": 16237958,
+   "host_need_source": "1.1 x measured VmHWM",
+   "aot_cache_warm": false,
+   "plan_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V31/A_admission/cache/jax/cli_memory_plans/d3d6969aaaf05b2e286e41b7531d578872675ec211629594d5ac30e850bdedd5.json"
+  }
+ }
+}

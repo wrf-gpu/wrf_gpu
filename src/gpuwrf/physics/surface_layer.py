@@ -468,21 +468,48 @@ def surface_layer(state, *, first_timestep=False) -> SurfaceFluxes:
     return surface_layer_with_diagnostics(state, first_timestep=first_timestep).fluxes
 
 
-def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLayerDiagnostics:
+def surface_layer_with_diagnostics(state, *, first_timestep=False, snowh=None) -> SurfaceLayerDiagnostics:
     from gpuwrf.physics.fp32.surface_layer_real import native_real_enabled, surface_layer_with_diagnostics_real
     if native_real_enabled():
-        return surface_layer_with_diagnostics_real(state, first_timestep=first_timestep)
-    return _surface_layer_impl(state, first_timestep, jnp.float64)
+        return surface_layer_with_diagnostics_real(state, first_timestep=first_timestep, snowh=snowh)
+    return _surface_layer_impl(state, first_timestep, jnp.float64, snowh=snowh)
 
 
-def _surface_layer_impl(state, first_timestep, F) -> SurfaceLayerDiagnostics:
+def _andreas_2002(visc, ustar):
+    """WRF snow heat/moisture roughness, module_sf_mynn.F:1559-1608.
+
+    WRF derives its snow roughness internally; its Z_0 argument is unused.
+    The momentum roughness handed to sfclay remains unchanged.
+    """
+    c = lambda value: _lit(visc, value)
+    delta = (ustar - c(0.18)) / c(0.1)
+    zntsno = c(0.135) * visc / ustar + (c(0.035) * (ustar * ustar) / c(9.8)) * (
+        c(5.0) * jnp.exp(-c(1.0) * (delta * delta)) + c(1.0)
+    )
+    ren = jnp.minimum(ustar * zntsno / visc, c(1000.0))
+    logren = jnp.log(ren)
+    smooth = ren <= c(0.135)
+    transition = ren < c(2.5)
+
+    def length(b0, b1, b2):
+        coefficients = [jnp.where(smooth, c(s), jnp.where(transition, c(t), c(r)))
+                        for s, t, r in (b0, b1, b2)]
+        return zntsno * jnp.exp(coefficients[0] + coefficients[1] * logren
+                               + coefficients[2] * logren ** 2)
+
+    return (length((1.25, 0.149, 0.317), (0.0, -0.55, -0.565), (0.0, 0.0, -0.183)),
+            length((1.61, 0.351, 0.396), (0.0, -0.628, -0.512), (0.0, 0.0, -0.180)))
+
+
+def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayerDiagnostics:
     """Run one vectorized ``sf_sfclayrev_run`` solve over surface columns.
 
     ``state`` is a column-oriented view (trailing-z) carrying ``u, v, theta, qv,
     p, dz`` at least, plus the prescribed surface fields ``t_skin, xland,
     lakemask, mavail, roughness_m, ustar`` and optionally ``soil_moisture, pblh,
-    dx_m``. ``isfflx`` (surface-flux switch) is assumed ON, ``isftcflx=0``,
-    ``iz0tlnd=0``, ``shalwater_z0=.false.`` — the default Canary configuration.
+    dx_m, snowh``. ``snowh`` may also be supplied from the Noah-MP entry carry.
+    ``isfflx`` is assumed ON, ``isftcflx=0``, ``iz0tlnd=0``,
+    ``shalwater_z0=.false.``.
 
     Notes on inputs that differ from WRF call site:
     * WRF passes lowest-level ``t1d`` (temperature); here we derive it from the
@@ -640,17 +667,23 @@ def _surface_layer_impl(state, first_timestep, F) -> SurfaceLayerDiagnostics:
 
     restar = jnp.maximum(ust_in * znt / visc, 0.1)   # module_sf_mynn.F:675/725 (NEW znt)
 
-    # LAND: zilitinkevich_1995 default (IZ0TLND<=1, CZIL=0.085), z_q == z_t, NO lower
-    # floor -- only MIN(z_t, 0.75*z0) (module_sf_mynn.F:1252-1265). Snow/ice
-    # (Andreas_2002) and spp_pbl perturbations are out of scope (no-snow Canary,
-    # spp_pbl=0); see spec "Out of scope".
+    # LAND: Zilitinkevich for bare/thin-snow columns (WRF:731-750), Andreas_2002
+    # for SNOWH >= 0.1 m. spp_pbl=0. Bare-land z_q == z_t with only a 0.75*z0 cap.
     CZIL = 0.085
     z_t_land = jnp.minimum(znt * jnp.exp(-KARMAN * CZIL * jnp.sqrt(restar)), 0.75 * znt)
     # WATER: fairall_etal_2003 (COARE_OPT=3.0 default), z_q == z_t
     # (module_sf_mynn.F:1442-1467): Zt = 5.5e-5*restar^-0.6, clipped [2e-9, 1e-4].
     z_t_water = _clip((5.5e-5) * (restar ** (-0.60)), 2.0e-9, 1.0e-4)
     z_t = jnp.where(is_land, z_t_land, z_t_water)
-    z_q = z_t  # zilitinkevich land + fairall water both set z_q = z_t
+    z_q = z_t  # bare land and fairall water set z_q = z_t
+    snow_depth = _as_surface(_field(state, "snowh", 0.0) if snowh is None else snowh, shape, F)
+    snow_land = is_land & (snow_depth >= _lit(snow_depth, 0.1))
+    # Inactive snow branches need no division by a possibly zero warm UST.
+    # Preserve WRF's unmodified UST on every active snow column.
+    snow_ust = jnp.where(snow_land, ust_in, _lit(ust_in, 1.0))
+    z_t_snow, z_q_snow = _andreas_2002(visc, snow_ust)
+    z_t = jnp.where(snow_land, z_t_snow, z_t)
+    z_q = jnp.where(snow_land, z_q_snow, z_q)
 
     # momentum + thermal logs (module_sf_mynn.F:755-760), on the UPDATED znt; the
     # numerator is (height + ZNTstoch) for both z0 and z_t.
@@ -768,7 +801,7 @@ def _surface_layer_impl(state, first_timestep, F) -> SurfaceLayerDiagnostics:
     # moisture roughness; PSIT/PSIQ subtract the thermal-baseline PSIH; PSIT2/PSIQ2
     # subtract the MOMENTUM-baseline PSIH2; PSIQ10 subtracts the momentum-baseline
     # PSIH10. The >=1 floor prevents a vanishing flux denominator (thin layers/high
-    # z0). z_q == z_t so the moisture numerators reuse the thermal logs.
+    # z0). Snow has distinct thermal and moisture roughness lengths.
     psit = jnp.maximum(gz1ozt - psih, 1.0)                       # 972
     psit2 = jnp.maximum(gz2ozt - psih2, 1.0)                     # 973
     psiq = jnp.maximum(jnp.log((za + znt) / z_q) - psih, 1.0)    # 975

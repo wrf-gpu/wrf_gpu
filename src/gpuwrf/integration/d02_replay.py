@@ -975,9 +975,9 @@ def _namelist_int_any(run: Gen2Run, key: str, default: int, *, domain: str | Non
         if raw is None:
             continue
         if isinstance(raw, (list, tuple)):
-            if index < len(raw):
-                return int(raw[index])
-            return int(raw[-1]) if raw else int(default)
+            raw = raw[min(index, len(raw) - 1)] if raw else default
+        if raw is None:
+            continue
         return int(raw)
     return int(default)
 
@@ -1102,6 +1102,23 @@ def _metrics_with_terrain(
     )
 
 
+def wrf_nest_opens_with_parent_start(run: Gen2Run, parent: str, child: str) -> bool:
+    """WRF ``nests_to_open``: ``child`` opens on ``parent``'s first step iff their namelist start times match."""
+
+    def start(domain: str) -> tuple[int, ...]:
+        index = int(domain[1:]) - 1
+        group = run.namelist.get("time_control", {})
+        values = []
+        for key in ("start_year", "start_month", "start_day", "start_hour", "start_minute", "start_second"):
+            raw = group.get(key, 0)
+            if isinstance(raw, (list, tuple)):
+                raw = raw[index] if index < len(raw) else (raw[-1] if raw else 0)
+            values.append(int(0 if raw is None else raw))
+        return tuple(values)
+
+    return start(parent) == start(child)
+
+
 def _wrf_start_domain_base_scalars32(run: Gen2Run, domain: str) -> dict[str, np.float32]:
     """fp32 base-profile scalars exactly as ``start_domain_em`` reads them."""
 
@@ -1117,6 +1134,24 @@ def _wrf_start_domain_base_scalars32(run: Gen2Run, domain: str) -> dict[str, np.
         "a_strat": f32_scalar("TLP_STRAT"),
         "p_strat": f32_scalar("P_STRAT"),
     }
+
+
+def _wrf_start_domain_t_init_alb32(pb: np.ndarray, s: dict[str, np.float32]) -> tuple[np.ndarray, np.ndarray]:
+    """``start_em.F`` reference-profile ``T_INIT``/``ALB`` from REAL(4) ``PB`` (WRF grouping, WRF libm)."""
+
+    m = _WRF_INIT_LIBM32
+    p00, t00, a = s["p00"], s["t00"], s["a"]
+    tiso, a_strat, p_strat = s["tiso"], s["a_strat"], s["p_strat"]
+    # temp = MAX(tiso, t00 + A*LOG(pb/p00)); stratosphere branch when p_strat > 0
+    temp = np.maximum(tiso, (t00 + a * m.log((pb / p00).astype(np.float32))).astype(np.float32))
+    if float(p_strat) > 0.0:
+        strat_temp = (tiso + a_strat * m.log((pb / p_strat).astype(np.float32))).astype(np.float32)
+        temp = np.where(pb < p_strat, strat_temp, temp).astype(np.float32)
+    t_init = (temp * m.pow((p00 / pb).astype(np.float32), _WRF32_RDOCP) - _WRF32_T0).astype(np.float32)
+    alb = (
+        _WRF32_R_D / _WRF32_P1000MB * (t_init + _WRF32_T0) * m.pow((pb / _WRF32_P1000MB).astype(np.float32), _WRF32_CVPM)
+    ).astype(np.float32)
+    return t_init, alb
 
 
 def _wrf_start_domain_base_from_hgt(
@@ -1144,7 +1179,6 @@ def _wrf_start_domain_base_from_hgt(
     m = _WRF_INIT_LIBM32
     s = _wrf_start_domain_base_scalars32(run, domain)
     p_top, p00, t00, a = s["p_top"], s["p00"], s["t00"], s["a"]
-    tiso, a_strat, p_strat = s["tiso"], s["a_strat"], s["p_strat"]
 
     ht32 = np.asarray(jax.device_get(hgt), dtype=np.float32)
     c3h = np.asarray(jax.device_get(metrics.c3h), dtype=np.float32)
@@ -1158,16 +1192,7 @@ def _wrf_start_domain_base_from_hgt(
     p_surf = (p00 * m.exp((-t00_over_a + m.sqrt_via_pow(root)).astype(np.float32))).astype(np.float32)
     mub = p_surf - p_top
     pb = (c3h[:, None, None] * mub[None, :, :] + c4h[:, None, None] + p_top).astype(np.float32)
-
-    # temp = MAX(tiso, t00 + A*LOG(pb/p00)); stratosphere branch when p_strat > 0
-    temp = np.maximum(tiso, (t00 + a * m.log((pb / p00).astype(np.float32))).astype(np.float32))
-    if float(p_strat) > 0.0:
-        strat_temp = (tiso + a_strat * m.log((pb / p_strat).astype(np.float32))).astype(np.float32)
-        temp = np.where(pb < p_strat, strat_temp, temp).astype(np.float32)
-    t_init = (temp * m.pow((p00 / pb).astype(np.float32), _WRF32_RDOCP) - _WRF32_T0).astype(np.float32)
-    alb = (
-        _WRF32_R_D / _WRF32_P1000MB * (t_init + _WRF32_T0) * m.pow((pb / _WRF32_P1000MB).astype(np.float32), _WRF32_CVPM)
-    ).astype(np.float32)
+    t_init, alb = _wrf_start_domain_t_init_alb32(pb, s)
 
     # hypsometric_opt=2 base geopotential integration from terrain elevation
     nz = int(pb.shape[0])
@@ -1621,6 +1646,7 @@ def _wrf_live_nest_start_domain_perturb_init(
     base_pb: Any | None = None,
     base_mub: Any | None = None,
     base_phb: Any | None = None,
+    child_opens_at_start: bool = False,
 ) -> tuple[jax.Array, jax.Array, jax.Array, dict[str, Any]]:
     """WRF live-nest ``start_domain_em`` perturbation-state initialization.
 
@@ -1644,8 +1670,19 @@ def _wrf_live_nest_start_domain_perturb_init(
     ``use_theta_m=1``) potential temperature -- WRF runs ``start_domain`` after
     ``med_nest_initial``'s temperature adjustment.  ``ht_fine`` is the nest's own
     pre-blend input terrain (WRF ``grid%ht_fine``); ``grid`` must already carry
-    the blended terrain.  Returns ``(p_perturbation, mu_perturbation, w)`` as
-    float64 arrays holding the WRF REAL(4) values exactly.
+    the blended terrain.  ``ALB`` is start_em's reference-profile value from
+    ``PB`` (not an inversion of ``PHB``): ``press_adj`` reads ``al = alt - alb``,
+    which amplifies any ``alb`` difference (fid-q2 R01).
+
+    ``child_opens_at_start``: when this nest's own child opens on its first step,
+    ``med_nest_initial(parent=this nest)`` runs ``start_domain(parent)`` again
+    ("kludge: 20040604", ``press_adj=.FALSE.``, ``itimestep=0`` so
+    ``first_trip_for_this_domain``), re-deriving ``AL/ALT/P`` from the
+    post-``press_adj`` ``MU`` (``mu_1 = mu_2``).  A nest without such a child keeps
+    the pre-``press_adj`` ``P`` (CPU-WRF WN3 d02 vs d03 at lead zero).
+
+    Returns ``(p_perturbation, mu_perturbation, w)`` as float64 arrays holding the
+    WRF REAL(4) values exactly.
     Initialization-only host transcription; no timestep-loop transfer.
     """
 
@@ -1661,11 +1698,14 @@ def _wrf_live_nest_start_domain_perturb_init(
         pb64 = jnp.asarray(base_pb)
         mub64 = jnp.asarray(base_mub)
         phb64 = jnp.asarray(base_phb)
-        alb64 = _wrf_base_alb_from_loaded_state(phb=phb64, mub=mub64, metrics=metrics)
+        alb64 = None
     pb = np.asarray(jax.device_get(pb64), dtype=np.float32)
     mub = np.asarray(jax.device_get(mub64), dtype=np.float32)
     phb = np.asarray(jax.device_get(phb64), dtype=np.float32)
-    alb = np.asarray(jax.device_get(alb64), dtype=np.float32)
+    if alb64 is None:
+        _t_init32, alb = _wrf_start_domain_t_init_alb32(pb, _wrf_start_domain_base_scalars32(run, domain))
+    else:
+        alb = np.asarray(jax.device_get(alb64), dtype=np.float32)
 
     c3h = np.asarray(jax.device_get(metrics.c3h), dtype=np.float32)
     c4h = np.asarray(jax.device_get(metrics.c4h), dtype=np.float32)
@@ -1680,22 +1720,29 @@ def _wrf_live_nest_start_domain_perturb_init(
     t1_32 = (np.asarray(jax.device_get(theta_full), dtype=np.float64) - float(P0_THETA_OFFSET_K)).astype(np.float32)
 
     # --- 1. AL (hypsometric_opt=2) and P from the calc_p_rho_phi equations ---
-    full_mu = (mub + mu32).astype(np.float32)
-    pfu = (c3f[1:, None, None] * full_mu[None] + c4f[1:, None, None] + p_top).astype(np.float32)
-    pfd = (c3f[:-1, None, None] * full_mu[None] + c4f[:-1, None, None] + p_top).astype(np.float32)
-    phm = (c3h[:, None, None] * full_mu[None] + c4h[:, None, None] + p_top).astype(np.float32)
     dph = (ph32[1:] - ph32[:-1] + phb[1:] - phb[:-1]).astype(np.float32)
-    # grid%al = (dph)/phm/LOG(pfd/pfu) - alb  (two sequential divisions, as in WRF)
-    al = (dph / phm / m.log((pfd / pfu).astype(np.float32)) - alb).astype(np.float32)
-    alt = (al + alb).astype(np.float32)
     theta_eos = (_WRF32_T0 + t1_32).astype(np.float32)  # qvf = 1 for use_theta_m=1
-    ratio = ((_WRF32_R_D * theta_eos) / (_WRF32_P1000MB * alt)).astype(np.float32)
-    p_new = (_WRF32_P1000MB * m.pow(ratio, _WRF32_CPOVCV) - pb).astype(np.float32)
+
+    def al_alt_p(mu_1):
+        full_mu = (mub + mu_1).astype(np.float32)
+        pfu = (c3f[1:, None, None] * full_mu[None] + c4f[1:, None, None] + p_top).astype(np.float32)
+        pfd = (c3f[:-1, None, None] * full_mu[None] + c4f[:-1, None, None] + p_top).astype(np.float32)
+        phm = (c3h[:, None, None] * full_mu[None] + c4h[:, None, None] + p_top).astype(np.float32)
+        # grid%al = (dph)/phm/LOG(pfd/pfu) - alb  (two sequential divisions, as in WRF)
+        al = (dph / phm / m.log((pfd / pfu).astype(np.float32)) - alb).astype(np.float32)
+        alt = (al + alb).astype(np.float32)
+        ratio = ((_WRF32_R_D * theta_eos) / (_WRF32_P1000MB * alt)).astype(np.float32)
+        return al, alt, (_WRF32_P1000MB * m.pow(ratio, _WRF32_CPOVCV) - pb).astype(np.float32)
+
+    al, alt, p_new = al_alt_p(mu32)
 
     # --- 2. press_adj column-mass correction (press_adj=T for the live nest) ---
     ht32 = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float32)
     ht_fine32 = np.asarray(jax.device_get(ht_fine), dtype=np.float32)
     mu_new = (mu32 + al[0] / (alt[0] * alb[0]) * _WRF32_G * (ht32 - ht_fine32)).astype(np.float32)
+    if child_opens_at_start:
+        # mediation_integrate.F med_nest_initial: parent%press_adj=.FALSE.; start_domain(parent).
+        _al, _alt, p_new = al_alt_p(mu_new)
 
     # --- 3. set_w_surface(fill_w_flag=.true.) under the WRF w_needs_to_be_set gate ---
     w_new, w_needs_to_be_set, w_surface_input_max = _wrf_set_w_surface(
@@ -1706,6 +1753,7 @@ def _wrf_live_nest_start_domain_perturb_init(
         "surfaces": [
             "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
             "press_adj MU correction",
+            *(["child-open start_domain(parent) AL/ALT/P from post-press_adj MU"] if child_opens_at_start else []),
             "set_w_surface(fill_w_flag=.true.)" if w_needs_to_be_set else "input W kept (surface W nonzero)",
         ],
         "hypsometric_opt": 2,
@@ -1924,9 +1972,38 @@ def load_wrfbdy_boundary_leaves(
     width = int(probe.get("bdy_width", 5))
     max_side = int(max(grid.nx + 1, grid.ny + 1))
 
-    mass_strips = _wrfbdy_total_mass_strips(
-        mu_total=mu_total, metrics=metrics, msfuy=metrics.msfuy, msfvx=metrics.msfvx, width=width
-    )
+    # WRF real.exe couples EVERY wrfbdy record with that record's own dry mass
+    # (main/real_em.F:866-878, 1052-1064: couple(grid%mu_2, grid%mub, ...) at the
+    # record time), so record k is decoupled with MUB + MU_B*(k) on the boundary
+    # frame -- not with the initial-condition mass (which scaled theta'/u/v/ph'
+    # by (c1*M(t)+c2)/(c1*M0+c2), up to 2-4 % over the Alps by 24 h).  Only the
+    # bdy_width frame reaches the side strips; the interior is a filler.
+    ic_total = np.asarray(mu_total, dtype=np.float64)
+    if mub is not None:
+        mub_frame = np.asarray(mub, dtype=np.float64)
+    else:
+        with Dataset(run.wrfinput_file(domain), "r") as ds:
+            mub_frame = np.asarray(ds.variables["MUB"][0], dtype=np.float64)
+
+    def _record_mass_strips(mu_sides: dict[str, np.ndarray]) -> dict[str, dict[str, np.ndarray]]:
+        total = np.array(ic_total)
+        ny_t, nx_t = total.shape
+        for side, strip in mu_sides.items():
+            strip = np.asarray(strip, dtype=np.float64)  # (bw, tan), b=0 outermost
+            for b in range(min(width, strip.shape[0])):
+                if side == "W":
+                    total[:, b] = mub_frame[:, b] + strip[b, :ny_t]
+                elif side == "E":
+                    total[:, nx_t - 1 - b] = mub_frame[:, nx_t - 1 - b] + strip[b, :ny_t]
+                elif side == "S":
+                    total[b, :] = mub_frame[b, :] + strip[b, :nx_t]
+                elif side == "N":
+                    total[ny_t - 1 - b, :] = mub_frame[ny_t - 1 - b, :] + strip[b, :nx_t]
+        return _wrfbdy_total_mass_strips(
+            mu_total=total, metrics=metrics, msfuy=metrics.msfuy, msfvx=metrics.msfvx, width=width
+        )
+
+    mass_strips: dict[str, dict[str, np.ndarray]] = {}
 
     def _decoupled_strip(coupled: np.ndarray, side: str, mass_name: str) -> np.ndarray:
         coupled = np.asarray(coupled, dtype=np.float64)  # (bw, z, tan)
@@ -1976,6 +2053,7 @@ def load_wrfbdy_boundary_leaves(
                 base = base + np.asarray(rec["tendency"], dtype=np.float64) * float(tend_adv_s)
             return base
 
+        mass_strips = _record_mass_strips({side: _coupled_strip("MU", side) for side in SIDES})
         per_u = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
         per_v = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
         per_th = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
@@ -2052,7 +2130,7 @@ def load_wrfbdy_boundary_leaves(
         "side_order": list(SIDES),
         "padded_side_length": max_side,
         "schema": "wrfbdy-decoupled-leaf-v1",
-        "coupling": "decoupled by IC hybrid dry-mass term (c1h*muT+c2h etc.)",
+        "coupling": "decoupled per record by that record's hybrid dry mass MUB+MU_B(k) (c1h*muT+c2h etc.; WRF real_em couple)",
         "variables": ["U", "V", "W", "T", "QVAPOR", "PH", "MU", *sorted(scalar_vars)],
         "scalar_boundary_variables": sorted(scalar_vars),
         "use_theta_m": int(use_theta_m),
@@ -2089,6 +2167,7 @@ def build_replay_case(
     standalone: bool | None = None,
     load_lateral_boundaries: bool = True,
     live_nest_parent: ReplayCase | None = None,
+    live_nest_child_opens_at_start: bool = False,
 ) -> ReplayCase:
     """Load a replay case, sharing the native input handle during init only."""
     from contextlib import nullcontext
@@ -2100,7 +2179,8 @@ def build_replay_case(
         return _build_replay_case(
             run_dir, domain=domain, boundary_domain=boundary_domain,
             standalone=standalone, load_lateral_boundaries=load_lateral_boundaries,
-            live_nest_parent=live_nest_parent, _run=run,
+            live_nest_parent=live_nest_parent,
+            live_nest_child_opens_at_start=live_nest_child_opens_at_start, _run=run,
         )
 
 
@@ -2112,6 +2192,7 @@ def _build_replay_case(
     standalone: bool | None = None,
     load_lateral_boundaries: bool = True,
     live_nest_parent: ReplayCase | None = None,
+    live_nest_child_opens_at_start: bool = False,
     _run: Gen2Run | None = None,
 ) -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved.
@@ -2291,6 +2372,7 @@ def _build_replay_case(
                 base_pb=pb,
                 base_mub=mub,
                 base_phb=phb,
+                child_opens_at_start=live_nest_child_opens_at_start,
             )
         )
         live_nest_base_meta = {

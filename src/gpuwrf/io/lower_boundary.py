@@ -31,8 +31,8 @@ class LowerBoundary(NamedTuple):
 def _domain_value(values, name, index, default=None):
     value = values.get(name, default)
     if isinstance(value, (tuple, list)):
-        return value[min(index, len(value) - 1)] if value else default
-    return value
+        value = value[min(index, len(value) - 1)] if value else default
+    return default if value is None else value
 
 
 def load_lower_boundary(run_dir, namelist, domain, *, run_start, dt_s, shape):
@@ -61,7 +61,7 @@ def load_lower_boundary(run_dir, namelist, domain, *, run_start, dt_s, shape):
         seconds = float(_domain_value(tc, "auxinput4_interval", index, 0)) * 60
     if seconds <= 0:
         raise ValueError(f"{domain}: sst_update=1 requires a positive auxinput4 interval")
-    template = str(tc.get("auxinput4_inname", "wrflowinp_d<domain>"))
+    template = str(_domain_value(tc, "auxinput4_inname", 0, "wrflowinp_d<domain>"))
     filename = template.replace("<domain>", f"{index + 1:02d}")
     if "<" in filename:
         raise ValueError(f"{domain}: unresolved auxinput4 filename {filename!r}")

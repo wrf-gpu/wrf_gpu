@@ -326,17 +326,15 @@ On a host with the shared dev GPU lock, wrap the whole batch once:
   Use a fresh `--out-root` per batch: history files are never overwritten.
 - Admission is first-in-first-out. A case starts while the summed per-case need fits the free
   VRAM at launch and the summed host need fits `MemAvailable` minus 8 GB.
-  - **Per-case VRAM:** C-auto memory plan for 2-domain nests; 3-nest currently runs
-    with demand allocation (known issue, fix in v0.3.1). The launcher still records
-    measured per-case memory for admission. For two-domain plans, allow the pool
-    plus at least 1 GiB outside it. A new geometry runs alone for sizing before
-    further cases are admitted.
+  - **Per-case VRAM** comes from the CLI's own C-auto memory plan: the pool plus at least 1 GiB outside it.
+    The plan is recorded by one successful run of that geometry and settings.
+    The first case of a new geometry therefore runs alone, and the rest then run in parallel.
   - **Host need** is 1.1× the measured peak RSS, or 16 GB before anything was measured.
   - Run `--dry-run` first to print the admission plan.
   - `--max-parallel K` caps concurrency. `--pool-gib P` pins a fixed pool instead; single-domain cases need it.
-- Compatible same-geometry cases share the warm cache. Measured host and GPU
-  memory determine admission; the release N-sweep records the achieved concurrency
-  and throughput. Three-nest v0.3.0 measurements include demand-allocation overhead.
+- Same-geometry cases share the warm cache, so no case recompiles. On an RTX 5090,
+  WN3 Tenerife 3-nest cases need about 6.2 GiB each. Aggregate throughput stops
+  growing at about 3 concurrent cases (host dispatch), so a larger batch mostly queues.
 - Receipts:
   - `<out-root>/<case>/receipt.json`: rc, wall time, peak RSS, sizing, per-frame write times, finite check.
   - `<out-root>/parallel_run.json`: batch wall time and wall seconds per case-hour.

@@ -558,6 +558,7 @@ IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
     ("gpuwrf.dynamics.core.small_step_finish", "_NATIVE_RK_FP32"),
     ("gpuwrf.dynamics.core.small_step_prep", "_NATIVE_RK_FP32"),
     ("gpuwrf.dynamics.explicit_diffusion", "_NATIVE_DIFFUSION_FP32"),
+    ("gpuwrf.kernels.dyn_acoustic_fp32", "_EOS_PRUNE"),
     ("gpuwrf.kernels.rad_mcica", "_LEGACY_FP64"),
     ("gpuwrf.physics.fp32.surface_layer_real", "_NATIVE_REAL"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_COLUMN_TILING"),

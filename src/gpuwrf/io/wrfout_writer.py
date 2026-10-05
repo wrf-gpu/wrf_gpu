@@ -1820,7 +1820,7 @@ def prepare_wrfout_payload(
         # Apply them after the compatibility builder so a hydrometeor proxy or
         # cold-start turbulence seed cannot replace the requested history leaf.
         if diagnostics is not None:
-            for name in ("CLDFRA", "QC_BL", "CLDFRA_BL", "QKE", "DTAUX3D", "DTAUY3D"):
+            for name in ("CLDFRA", "QC_BL", "CLDFRA_BL", "QKE", "DTAUX3D", "DTAUY3D", "T"):
                 if (requested_names is None or name in requested_names) and name in diagnostics:
                     fields[name] = _coerce_array(name, diagnostics[name], (nz, ny, nx))
             for name in ("DUSFCG", "DVSFCG"):
@@ -3047,10 +3047,6 @@ def _full_derived_value(
         return np.asarray(fields["T2"], dtype=np.float64)
     if name in {"Q2V", "Q2B"} and "Q2" in fields:
         return np.asarray(fields["Q2"], dtype=np.float64)
-    if name == "QSNOWXY" and "QSNOW" in fields:
-        return np.sum(np.asarray(fields["QSNOW"], dtype=np.float64), axis=0)
-    if name == "QRAINXY" and "QRAIN" in fields:
-        return np.sum(np.asarray(fields["QRAIN"], dtype=np.float64), axis=0)
     if name == "ITIMESTEP":
         dt_s = _lookup(namelist, "dt_s", _lookup(namelist, "time_step", None))
         if dt_s not in (None, 0):

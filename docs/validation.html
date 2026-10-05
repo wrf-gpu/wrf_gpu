@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.0</span>
+          <span class="brand-sub">User's Guide · v0.3.1</span>
         </span>
       </a>
       <div class="search-box">
@@ -54,7 +54,7 @@
 <a class="active" href="validation.html">Validation &amp; WRF Identity</a>
 <div class="subnav">
 <a href="validation.html#method">The cell-identity method</a>
-<a href="validation.html#result">The result: v0.3.0 release gate</a>
+<a href="validation.html#result">Earlier result: v0.3.0 release gate</a>
 <a href="validation.html#rainnc">The v0.18 red field — RAINNC — in plain terms</a>
 <a href="validation.html#skill-gate">The open credibility gate — 24–72 h forecast skill</a>
 <a href="validation.html#default-numerics">Default numerics across releases</a>
@@ -71,6 +71,21 @@
       <main>
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › Performance &amp; validation › Validation &amp; WRF Identity</div>
         <h1>Validation &amp; WRF Identity</h1>
+
+<div class="admon measured">
+  <div class="admon-title">v0.3.1 — WRF-order fixes and measured performance</div>
+  <p>On RTX 5090 (sm_120, CUDA 13) with an AMD Ryzen 9 9950X host, the cached
+  two-domain Canary 24-hour forecast takes <strong>3.604 s per forecast hour</strong>
+  through process completion, initialization and output included. The original
+  CPU-WRF twelve-core main-loop reference is 92.3 s/hour: <strong>25.6×</strong>
+  the stated rate ratio. GPU wall time is 12.6% lower than v0.3.0's 4.126 s/hour.
+  Completed 24-hour original CPU comparisons pass the frozen bounds on Canary,
+  Tenerife 0227 and Swiss January/February. <strong>Swiss January passes D6
+  and direct RC3 strict integrity on all 25 frames in each domain.</strong> A separate six-hour WN3 sweep measured N=4 at 7.77 s/case-hour
+  (15.9× CPU throughput), including init/load and without compression; no energy
+  or longer-run throughput is extrapolated. See <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.1.md">current evidence and exact clocks</a>.</p>
+</div>
+
 
 <p class="lead">wrf_gpu is validated by a reproducible, CPU-only identity-proof system that compares a
 GPU <code>wrfout</code> against a CPU-WRF <code>wrfout</code> from the same initialization, over
@@ -94,7 +109,7 @@ honestly — the limit is never widened to paint it green. Full method and repro
   for a rewrite than chasing one compiler's rounding.</p>
 </div>
 
-<h2 id="result">The result: v0.3.0 release gate<a class="headerlink" href="#result" aria-label="Permalink">¶</a></h2>
+<h2 id="result">Earlier result: v0.3.0 release gate<a class="headerlink" href="#result" aria-label="Permalink">¶</a></h2>
 <div class="admon measured">
   <div class="admon-title">v0.3.0 release gate — six Tenerife cases</div>
   <p>The release gate covers <strong>6 Tenerife cases × 3 domains × 24&nbsp;h</strong>: 375 output fields compared with original CPU-WRF, 62 of them with frozen per-variable limits (D6), <strong>0 bound failures</strong>, all compared values finite. Beyond 24&nbsp;h, a complete six-case comparison on an earlier internal build of v0.3.0 (identical

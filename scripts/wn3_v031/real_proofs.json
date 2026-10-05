@@ -1,0 +1,113 @@
+{
+ "finalb_cold/20260227_18z_a1": {
+  "warm": false,
+  "cold_executables": [
+   "d01",
+   "fused/d02"
+  ],
+  "vmhwm_kb": 14761780,
+  "artifacts_exist": null
+ },
+ "finalb_r07/stream": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": null,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260120_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6137040,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260220_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6145392,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260227_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6169200,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260502_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6169832,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260608_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6155508,
+  "artifacts_exist": true
+ },
+ "finalb_r3/20260614_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6248212,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n1/20260227_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6169604,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n2/20260227_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6183628,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n2/20260502_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6191536,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n3/20260227_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6273676,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n3/20260502_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6178236,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n3/20260614_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6201676,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n4/20260220_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6197520,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n4/20260227_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6164656,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n4/20260502_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6194420,
+  "artifacts_exist": true
+ },
+ "finalb_r4w_n4/20260614_18z_a1": {
+  "warm": true,
+  "cold_executables": [],
+  "vmhwm_kb": 6160448,
+  "artifacts_exist": true
+ }
+}

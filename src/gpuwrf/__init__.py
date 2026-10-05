@@ -4,7 +4,7 @@
 # version-keys its cache dir by ``gpuwrf.__version__`` (B1), so the attribute
 # must already exist when ``configure_compilation_cache()`` runs at import. (It
 # is re-exported via ``__all__`` at the foot of the module.)
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 # v0.3 release defaults: the validated fp32 fast paths are ON unless opted out
 # (explicit =0 per flag, or GPUWRF_FAST_DEFAULTS=0 for all). MUST run first:

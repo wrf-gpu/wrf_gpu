@@ -284,6 +284,11 @@ def noah_mp_step(
         land_state, runoff = water_result
     else:
         land_state = water_result
+    # End of NOAHMP_SFLX (module_sf_noahmplsm.F:1067-1070): a vanishing snow film is dropped
+    # (e.g. canopy-ice unloading onto snow-free ground). SNOWH2O's own reset is SNOWH <= 1e-8.
+    film = (land_state.snowh <= 1.0e-6) | (land_state.sneqv <= 1.0e-6)
+    land_state = land_state.replace(snowh=jnp.where(film, jnp.zeros_like(land_state.snowh), land_state.snowh),
+                                    sneqv=jnp.where(film, jnp.zeros_like(land_state.sneqv), land_state.sneqv))
 
     # ----- coupler-facing fluxes (module_sf_noahmpdrv.F flux mapping) -----
     # QFX = ECAN+ESOIL+ETRAN (mass, :1205); LH = FCEV+FGEV+FCTR (:1206).
@@ -317,6 +322,8 @@ def noah_mp_step(
                 * (land_state.tsno - 273.16) * .001, 0), axis=0),
             "RUNSF": runoff[0], "RUNSB": runoff[1],
             "SNOM_INCREMENT": qmelt * dt + _ponding + snow_ponding,
+            # PRECIP_HEAT ground snow/rain rates (:1547-1548), driver QSNOWXY/QRAINXY (:1258-1259).
+            "QSNOWXY": precip.qsnow, "QRAINXY": precip.qrain,
         }) if history else None),
     )
 

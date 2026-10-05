@@ -1,0 +1,36 @@
+{
+  "scorer": {
+    "path": "VAL31b/source/scripts/wn3_score.py",
+    "sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+    "mode": "output_integrity([cpu_i], [gpu_i]) per frame + output_integrity(all) for variables/attrs"
+  },
+  "cpu_dir": "artifact:release-docs/SWISS_NEST_REF/SN04/2023-01-15_00z/cpu",
+  "gpu_dir": "VAL31c/cases/swiss_2023-01-15_00z/2023-01-15_00z/wrfout",
+  "domains": {
+    "d01": {
+      "n_frames": 25,
+      "first": "wrfout_d01_2023-01-15_00:00:00",
+      "last": "wrfout_d01_2023-01-16_00:00:00",
+      "gpu_unpaired": [],
+      "degenerate_fields": {},
+      "missing_variables_vs_cpu": {},
+      "global_attrs_missing_required": [],
+      "global_attrs_by_frame": {},
+      "sampled_degenerate_standard": []
+    },
+    "d02": {
+      "n_frames": 25,
+      "first": "wrfout_d02_2023-01-15_00:00:00",
+      "last": "wrfout_d02_2023-01-16_00:00:00",
+      "gpu_unpaired": [],
+      "degenerate_fields": {},
+      "missing_variables_vs_cpu": {},
+      "global_attrs_missing_required": [],
+      "global_attrs_by_frame": {},
+      "sampled_degenerate_standard": []
+    }
+  },
+  "pass_all_frames": true,
+  "source_artifact": "integrate:VAL31c/swiss_0115_integrity_allframes_rc3.json",
+  "source_sha256": "8e00637c647f0c1fdcf293e96cd145884f94df97c0d456c5ef9d780aea61d977"
+}

@@ -1,0 +1,343 @@
+{
+  "schema": "BP84-S4-endpoint-v1",
+  "generated_utc": "2026-10-05T11:06:31.078389+00:00",
+  "decision": "No distinct ordinary-root design with justified >=0.5 ms gain survives source/retained-measurement screen; methods statement instead. LW accumulation rejected by manager.",
+  "scope": "RC3 baseline; v0.3.2 acoustic/layout/startup/EOS levers still pending; not final-composed runtime or absolute maximum-speed certificate.",
+  "raw_device_ms_M": 33.108601666666665,
+  "raw_operand_model_ms_I": 36.45162156759777,
+  "positive_residual_ms_I": 5.281219315270018,
+  "negative_residual_ms_I": -8.93439354953445,
+  "unmodeled_device_ms_M": 0.31015433333333337,
+  "clipped_model_ms_I": 27.517228018063314,
+  "clipped_ratio_I": 0.8311202114514948,
+  "selected_six_d02_residual_ms_I": 3.5177014648044693,
+  "selected_subset_ratio_I": 0.8937526416784298,
+  "family_rows": [
+    {
+      "family": "dycore: acoustic",
+      "ms": 9.834750666666668,
+      "floor": 17.37345010893855,
+      "launches": 626.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "MYNN",
+      "ms": 4.028402666666667,
+      "floor": 4.480967122905028,
+      "launches": 325.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "dycore: advection",
+      "ms": 3.303627,
+      "floor": 2.1605818240223464,
+      "launches": 242.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "runtime/carry glue",
+      "ms": 2.498788666666666,
+      "floor": 1.54526036424581,
+      "launches": 113.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "dycore: scalar PD transport",
+      "ms": 2.075802,
+      "floor": 1.2741153653631285,
+      "launches": 40.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "lateral boundary",
+      "ms": 1.709319,
+      "floor": 1.5078873122905028,
+      "launches": 273.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "memcpy DtoD",
+      "ms": 1.6384340000000002,
+      "floor": 1.5197135508379889,
+      "launches": 732.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "other operators / coupling / unknown source",
+      "ms": 1.6367246666666664,
+      "floor": 1.402147407821229,
+      "launches": 185.0,
+      "unmodeled": 0.001952
+    },
+    {
+      "family": "dycore: RK tendencies/update",
+      "ms": 1.2739743333333333,
+      "floor": 1.5290999441340785,
+      "launches": 157.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "Thompson",
+      "ms": 1.264024,
+      "floor": 0.8611088072625699,
+      "launches": 8.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "layout-only (all source families)",
+      "ms": 1.2378306666666665,
+      "floor": 1.2645285525139665,
+      "launches": 442.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "dycore: diffusion",
+      "ms": 1.1178903333333334,
+      "floor": 0.7813930636871509,
+      "launches": 68.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "Noah-MP",
+      "ms": 0.557512,
+      "floor": 0.4409926631284916,
+      "launches": 98.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "sfclay",
+      "ms": 0.37475366666666665,
+      "floor": 0.13790766089385476,
+      "launches": 89.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "outside advance",
+      "ms": 0.281781,
+      "floor": 0.0,
+      "launches": 99.0,
+      "unmodeled": 0.281781
+    },
+    {
+      "family": "shared-symbol ambiguous buckets",
+      "ms": 0.16208033333333333,
+      "floor": 0.062238060335195536,
+      "launches": 127.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "RRTMG",
+      "ms": 0.08648533333333333,
+      "floor": 0.1102297592178771,
+      "launches": 17.0,
+      "unmodeled": 0.0
+    },
+    {
+      "family": "small HtoD / DtoH transfers",
+      "ms": 0.023168000000000005,
+      "floor": 0.0,
+      "launches": 19.0,
+      "unmodeled": 0.023168000000000005
+    },
+    {
+      "family": "command-buffer control",
+      "ms": 0.0032533333333333333,
+      "floor": 0.0,
+      "launches": 2.0,
+      "unmodeled": 0.0032533333333333333
+    }
+  ],
+  "d02_three_family_zero_cost_bound_ms_M": 6.937056,
+  "both_domains_three_family_zero_cost_bound_ms_M": 7.878217666666666,
+  "d02_zero_cost_device_speedup_bound_I": 1.2650609974799985,
+  "both_domains_zero_cost_device_speedup_bound_I": 1.3122511994532728,
+  "both_domains_zero_cost_saved_s_per_fc_h_I": 0.5252145111111112,
+  "two_x_device_budget_ms_I": 16.554300833333333,
+  "peak_DRAM_bytes_in_two_x_budget_I": 29632198491.666664,
+  "whole_run_measurement": {
+    "receipt": "artifact:integrate/VAL31b/bench/val31b_s1/extra24h/run/receipt.json",
+    "receipt_sha256": "37b3e57a232f40be983ed4c573c382393860e42b11a1137d8544b370256332af",
+    "hours": 24,
+    "whole_process_s": 86.507,
+    "whole_s_per_fc_h": 3.6044583333333335,
+    "host_partition_s": {
+      "startup_s": 17.0655,
+      "advance_host_s": 63.130984,
+      "force_host_s": 0.781062,
+      "output_callback_s": 3.8905,
+      "post_last_segment_s": 0.6264000000000038,
+      "between_calls_residual_s": 1.0125540000000086
+    },
+    "host_partition_s_per_fc_h": {
+      "startup_s": 0.7110625,
+      "advance_host_s": 2.6304576666666666,
+      "force_host_s": 0.032544250000000004,
+      "output_callback_s": 0.16210416666666666,
+      "post_last_segment_s": 0.02610000000000016,
+      "between_calls_residual_s": 0.04218975000000036
+    },
+    "startup_markers_s": {
+      "jax_device_ready": 0.425,
+      "instrumentation_imports_ready": 5.21,
+      "first_segment": 17.0655
+    },
+    "startup_after_wrappers_s": 11.8555,
+    "compile_phase_totals_s": {
+      "startup": {
+        "jaxpr_trace_duration": 0.4346649646759033,
+        "jaxpr_to_mlir_module_duration": 3.0711638927459717,
+        "backend_compile_duration": 1.2303266525268555
+      },
+      "stepping_output": {
+        "jaxpr_trace_duration": 0.012682199478149414,
+        "jaxpr_to_mlir_module_duration": 0.0813746452331543,
+        "backend_compile_duration": 0.06929731369018555
+      },
+      "tail": {
+        "jaxpr_trace_duration": 0.011011600494384766,
+        "jaxpr_to_mlir_module_duration": 0.01847529411315918,
+        "backend_compile_duration": 0.05645298957824707
+      }
+    },
+    "top_compile_functions_s": [
+      [
+        "jit(_coupled_updates)",
+        0.3785738945007324
+      ],
+      [
+        "jit(add)",
+        0.35364699363708496
+      ],
+      [
+        "jit(convert_element_type)",
+        0.3402070999145508
+      ],
+      [
+        "jit(broadcast_in_dim)",
+        0.3110928535461426
+      ],
+      [
+        "jit(multiply)",
+        0.30883264541625977
+      ],
+      [
+        "jit(subtract)",
+        0.21269559860229492
+      ],
+      [
+        "jit(dynamic_slice)",
+        0.2048482894897461
+      ],
+      [
+        "jit(true_divide)",
+        0.19777441024780273
+      ],
+      [
+        "jit(copy)",
+        0.18075323104858398
+      ],
+      [
+        "jit(_where)",
+        0.17117667198181152
+      ],
+      [
+        "_coupled_updates",
+        0.16749119758605957
+      ],
+      [
+        "jit(scan)",
+        0.16245555877685547
+      ],
+      [
+        "jit(concatenate)",
+        0.11766552925109863
+      ],
+      [
+        "jit(_moveaxis)",
+        0.11730313301086426
+      ],
+      [
+        "jit(wrapped)",
+        0.1053462028503418
+      ]
+    ],
+    "jax_cache_events": {
+      "tasks_using_cache": 1,
+      "compile_requests_use_cache": 1185,
+      "cache_hits": 1185
+    },
+    "aot_domain_load_s": {
+      "d01": 0.2519893620046787,
+      "d02": 0.21583459299290553
+    },
+    "aot_remaining_wait_s": 1.2070988304913044e-05,
+    "output_detail_s": {
+      "M9-diag": 0.7258294878411107,
+      "finite_guard": 0.10273029789095744,
+      "join": 0.4859594950103201,
+      "prepare_payload": 3.054256913077552,
+      "queue_put": 0.0007288429187610745,
+      "writer_write": 14.32818625413347
+    },
+    "disclosures": [
+      "Compile durations can overlap the prefetch/forcedown thread and are not a wall partition.",
+      "Async writer_write overlaps stepping; only join is exposed at the end.",
+      "t_end includes finite-summary/proofs/observer tail; actual final-file timestamp absent.",
+      "Device stepping cannot be measured from host receipt alone; the ~2.2 s/fc-h premise needs separate matched profile.",
+      "jax_cache_events all hits includes eager initialization and output primitive compilations/load; backend_compile_duration is also emitted on hits."
+    ]
+  },
+  "root_transfers_M": [
+    {
+      "kind": "ordinary",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    },
+    {
+      "kind": "ordinary",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    },
+    {
+      "kind": "ordinary",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    },
+    {
+      "kind": "radiation",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    },
+    {
+      "kind": "radiation",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    },
+    {
+      "kind": "radiation",
+      "HtoD_count": 6,
+      "HtoD_bytes": 40,
+      "DtoH_count": 13,
+      "DtoH_bytes": 13
+    }
+  ],
+  "source_input_identity": "[I] RC2 BP82 timings applied to RC3 HLO bytes: same hot model sources, copy of same autotune pin; ranking only, no new identity gate.",
+  "input_work": "PROD t0, one d01 ownstep + three d02 ownsteps/root; ordinary ownsteps1/3, radiation+KF ownsteps0/0; 3 recorded roots each; release defaults; BP82 RTX5090 gpu asserted",
+  "cache_dirs": [],
+  "new_GPU_arms": 0,
+  "product_changes": 0,
+  "provenance": {
+    "artifact:b-phys/BP83/ROOFLINE_RC3.json": "ddd5a79106027313e95b0b752c5eaf2f42e874e9b327814edcb2114fd1c52590",
+    "artifact:compile/v032/whole_run_anatomy.json": "29f65d332e4ef93450735c245b289bac198900f39a999fe84f28c8e2a7b6cfb8"
+  }
+}

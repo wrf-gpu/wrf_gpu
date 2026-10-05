@@ -1,0 +1,23 @@
+{
+  "scorer": {
+    "path": "artifact:release-docs/V031_SWISS/SF31/source/scripts/wn3_score.py",
+    "sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+    "mode": "output_integrity([cpu_i], [gpu_i]) per frame + output_integrity(all) for variables/attrs"
+  },
+  "cpu_dir": "artifact:release-docs/RD11/cpu",
+  "gpu_dir": "artifact:release-docs/V031_SWISS/SF31/cached24h/wrfout",
+  "domains": {
+    "d01": {
+      "n_frames": 25,
+      "first": "wrfout_d01_2023-01-15_00:00:00",
+      "last": "wrfout_d01_2023-01-16_00:00:00",
+      "gpu_unpaired": [],
+      "degenerate_fields": {},
+      "missing_variables_vs_cpu": {},
+      "global_attrs_missing_required": [],
+      "global_attrs_by_frame": {},
+      "sampled_degenerate_standard": []
+    }
+  },
+  "pass_all_frames": true
+}

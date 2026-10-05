@@ -117,8 +117,10 @@ def column_call(fn, args, *, grid_shape, name, interpret=False, block=BLOCK, war
                 pt.store(ref.at[row, i], jnp.broadcast_to(jnp.asarray(outs[j], dtype), (block,)), mask=valid)
 
     out_shape = tuple(jax.ShapeDtypeStruct((len(members), ncol), dtype) for dtype, members in out_groups)
-    # CPU validation only (Pallas interpreter); a trace-time flag, never set in GPU runs.
-    interpret = interpret or os.environ.get("GPUWRF_NOAHMP_COLUMN_INTERPRET", "0") == "1"
+    # Pallas interpreter on a CPU backend (release defaults on CPU, like the other release kernels) or on request
+    # (CPU validation, trace-time flag); GPU runs always lower to Triton.
+    interpret = (interpret or os.environ.get("GPUWRF_NOAHMP_COLUMN_INTERPRET", "0") == "1"
+                 or jax.default_backend() == "cpu")
     values = pl.pallas_call(body, grid=((ncol + block - 1) // block,), name=name, interpret=interpret,
                             compiler_params=pt.CompilerParams(num_warps=warps), out_shape=out_shape)(*stacked)
     flat = [None] * len(out_leaves)

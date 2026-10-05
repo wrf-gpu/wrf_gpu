@@ -69,6 +69,18 @@ def option(argv: list[str], name: str) -> str | None:
     return None
 
 
+def resolved_options(proofs: dict) -> tuple[dict, str]:
+    """Executed per-domain options of a launcher (product CLI) run, from its run proof: every scalar control of the resolved
+    OperationalNamelist when the product records it (metadata.domains[d].namelist_resolved, v0.3.1+), else the 14-control
+    summary of v0.3.0 proofs (metadata.domains[d].namelist) — the source is attested next to the options."""
+    doms = proofs.get("metadata", {}).get("domains", {}) or {}
+    if doms and all(isinstance(v, dict) and v.get("namelist_resolved") for v in doms.values()):
+        return ({d: v["namelist_resolved"] for d, v in doms.items()},
+                "run proof metadata.domains[*].namelist_resolved (every scalar control of the resolved OperationalNamelist)")
+    return ({d: v.get("namelist") for d, v in doms.items()},
+            "run proof metadata.domains[*].namelist (v0.3.0 proof: 14-control summary per domain)")
+
+
 def attest_inputs(argv: list[str], case_dir: Path, namelist: str | None) -> dict:
     """The files the measured CLI read (its --input-dir, its namelist) must be byte-identical to the server case files."""
     input_dir = option(argv or [], "--input-dir")
@@ -131,9 +143,10 @@ def main():
     # Namelist diff: the GPU reads the CPU namelist.input itself; GPU-side choices are env flags + resolved options.
     nml_cpu = case_dir / "namelist.input"
     proof_nml = {d: v.get("namelist") for d, v in proofs.get("metadata", {}).get("domains", {}).items()}
+    executed, executed_src = resolved_options(proofs) if launcher else (receipt.get("runtime_namelist"), "harness runtime_namelist")
     diff = {"cpu_namelist": ref(nml_cpu), "gpu_reads_same_file": True,  # attested above (sha256, actual CLI path)
             "gpu_namelist_read": inputs["files"]["namelist.input"], "measured_input_dir": inputs["input_dir"],
-            "gpu_resolved_options": proof_nml if launcher else receipt.get("runtime_namelist"),
+            "gpu_resolved_options": executed, "gpu_resolved_options_source": executed_src,
             "gpu_env_flags": receipt.get("env") if launcher else (a.arm_out / "arm_env.txt").read_text().splitlines(),
             "cli_argv": receipt.get("command") if launcher else receipt.get("cli_argv")}
     diff_path = a.out_json.with_name(a.out_json.stem + "_namelist_diff.json")

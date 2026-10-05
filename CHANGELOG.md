@@ -7,7 +7,29 @@ WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.3.0] - UNRELEASED
+## [0.3.1] - 2026-10-05
+
+All registered release gates pass, including the Swiss January 24-hour
+original CPU-WRF comparison and direct RC3 strict integrity (25/25 frames per
+domain). See [full release notes](release_notes/RELEASE_NOTES_v0.3.1.md).
+
+- **WRF-order fixes:** honor the open-top namelist default; decouple each root
+  boundary record with its own dry mass; remove duplicate normal-wind relaxation;
+  initialize the nested lead-zero blend state in WRF order.
+- **Snow and microphysics:** Andreas heat/moisture roughness over snow; WRF thin-film
+  reset and actual ground rain/snow diagnostics (NF12); exclude Thompson's
+  cold-block ice processes above freezing (NF13).
+- **History:** prescribed-SST water layers and initialization statics; glacier
+  vegetation undefined sentinels (32 fields plus Q2V), without a glacier solver claim.
+- **Measured performance:** cached Canary 24 h whole-process rate 3.604 s/forecast
+  hour vs v0.3.0 4.126, 12.6% lower wall time; defaults A1-SL and Noah-MP column
+  kernels; warm launcher admission, resolved-control attestation, three-nest C-auto.
+- **Disclosed limits:** R2/R4/R5 integrity classes, nested-domain layout variability,
+  three path-keyed auxiliary recompiles, EOS pruning default off, glacier runtime
+  unported. The measured six-hour parallel sweep reaches 15.9× CPU throughput
+  at N=4, including start-up, without compression; no new 72 h/162 h result is claimed.
+
+## [0.3.0] - 2026-10-04
 
 - **GPU rewrite:** fused fp32 dynamics, acoustics and column-physics kernels are
   enabled by default, while WRF's DOUBLE precision islands remain in double
