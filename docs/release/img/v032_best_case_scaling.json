@@ -1,0 +1,158 @@
+{
+  "caption": "B200 measured on earlier versions; H100/B200/B300 extrapolated to v0.3.2, best case, not measured.",
+  "target_version": "0.3.2",
+  "freeze_revision": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+  "sources": [
+    {
+      "artifact": "FREEZE_REV",
+      "sha256": "3c791ea096ffb8b0c93273707bc1d9750f91256243908c8f2c81177038f4465b"
+    },
+    {
+      "artifact": "summary.json",
+      "sha256": "80c6b74e6d1f2612bc1b9fe0ebd72ebf7cac2e64167c43e32c77a8c0ca359314"
+    },
+    {
+      "artifact": "nested_pipeline_run.json",
+      "sha256": "84670bb621b63622fee924a144c73fbab1af8c3398eac01a85ba16ed7212224c"
+    },
+    {
+      "artifact": "receipt.json",
+      "sha256": "87cd8f018b72471d73798d3feb619d33159fca4fcfc5d03fbf0f66506db1de91"
+    },
+    {
+      "artifact": "cli_stdout.json",
+      "sha256": "3200830e15f0d1dd0c75b4b0bf3eca6280973e3120662c60764edc0114090b44"
+    }
+  ],
+  "controls": {
+    "members": 32,
+    "hours": 72,
+    "levels": 44,
+    "giant_dt_s": 6.0,
+    "giant_dx_m": 1000,
+    "usable_fraction": 0.9,
+    "memory_growth_factor": 1.1,
+    "global_reserve_bytes": 1073741824
+  },
+  "memory": {
+    "gross_bytes_per_cell": 2400.203441888563,
+    "label": "I",
+    "note": "allocated per-PID peak / sum of measured mass-grid cells; includes pools/context/scratch"
+  },
+  "cpu": {
+    "steady_throughput_case_fc_h_per_wall_h": 29.173419773095624,
+    "ensemble_minutes": 4738.56,
+    "rate_label": "M",
+    "duration_label": "I"
+  },
+  "devices": {
+    "RTX 5090": {
+      "rate_label": "M-anchored",
+      "scenario_label": "I",
+      "steady_throughput_case_fc_h_per_wall_h": 741.1982705373687,
+      "steady_throughput_band": [
+        741.1982705373687,
+        741.1982705373687
+      ],
+      "amortized_s_per_case_fc_h": 5.073666666666667,
+      "ensemble_minutes": 194.82880000000003,
+      "resident_case_capacity": 4,
+      "minimum_waves": 8,
+      "host_ram_gb_at_capacity": 23.134420992,
+      "host_reserve_excluded": true,
+      "packing_budget_gb": 28.8,
+      "giant": {
+        "side": 488,
+        "horizontal_cells": 238144,
+        "cells_3d": 10478336,
+        "levels": 44,
+        "gpu_s_per_fc_h": 55.09515555686125,
+        "cpu_12core_s_per_fc_h": 1937.2506125326831,
+        "label": "I"
+      }
+    },
+    "H100 SXM": {
+      "rate_label": "I",
+      "scenario_label": "I",
+      "steady_throughput_case_fc_h_per_wall_h": 1095.6300185299567,
+      "steady_throughput_band": [
+        834.9135268684372,
+        1385.6106061942999
+      ],
+      "amortized_s_per_case_fc_h": 3.502447394754274,
+      "ensemble_minutes": 134.49397995856413,
+      "resident_case_capacity": 11,
+      "minimum_waves": 3,
+      "host_ram_gb_at_capacity": 63.619657728,
+      "host_reserve_excluded": true,
+      "packing_budget_gb": 72.0,
+      "giant": {
+        "side": 781,
+        "horizontal_cells": 609961,
+        "cells_3d": 26838284,
+        "levels": 44,
+        "gpu_s_per_fc_h": 95.465469313852,
+        "cpu_12core_s_per_fc_h": 4961.902550016158,
+        "label": "I"
+      }
+    },
+    "B200": {
+      "rate_label": "I",
+      "scenario_label": "I",
+      "steady_throughput_case_fc_h_per_wall_h": 2616.4298949969116,
+      "steady_throughput_band": [
+        1993.8233477455217,
+        3308.920850613253
+      ],
+      "amortized_s_per_case_fc_h": 1.5925873465533522,
+      "ensemble_minutes": 61.15535410764872,
+      "resident_case_capacity": 27,
+      "minimum_waves": 2,
+      "host_ram_gb_at_capacity": 156.157341696,
+      "host_reserve_excluded": true,
+      "packing_budget_gb": 172.8,
+      "giant": {
+        "side": 1215,
+        "horizontal_cells": 1476225,
+        "cells_3d": 64953900,
+        "levels": 44,
+        "gpu_s_per_fc_h": 96.75014399829824,
+        "cpu_12core_s_per_fc_h": 12008.775301859632,
+        "label": "I"
+      }
+    },
+    "B300": {
+      "rate_label": "I",
+      "scenario_label": "I",
+      "steady_throughput_case_fc_h_per_wall_h": 2616.4298949969116,
+      "steady_throughput_band": [
+        1993.8233477455217,
+        3308.920850613253
+      ],
+      "amortized_s_per_case_fc_h": 1.5925873465533522,
+      "ensemble_minutes": 61.15535410764872,
+      "resident_case_capacity": 40,
+      "minimum_waves": 1,
+      "host_ram_gb_at_capacity": 231.34420992,
+      "host_reserve_excluded": true,
+      "packing_budget_gb": 259.2,
+      "giant": {
+        "side": 1490,
+        "horizontal_cells": 2220100,
+        "cells_3d": 97684400,
+        "levels": 44,
+        "gpu_s_per_fc_h": 145.50288383587997,
+        "cpu_12core_s_per_fc_h": 18060.039660389553,
+        "label": "I"
+      }
+    }
+  },
+  "assumptions": [
+    "72-hour duration is inferred even for CPU/RTX measured-rate anchors; no 72-hour VAL32 timing claim.",
+    "Best case: warm executables, steady saturated throughput, adequate host cores/RAM and output bandwidth.",
+    "Fixed-cost proxy is unscaled per case and amortized; cold compilation excluded; FIFO tail under-utilization unmodelled.",
+    "VRAM capacity is an allocated-peak linear scenario, not measured giant-domain feasibility or R1 scaling proof.",
+    "Giant 1-km timestep is explicit; linear cell-update scaling ignores geometry/cadence/compiler-layout changes.",
+    "Old B200 hardware efficiency transfers to new full-physics code by assumption; bands are not confidence intervals."
+  ]
+}

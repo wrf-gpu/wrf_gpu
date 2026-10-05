@@ -1,0 +1,418 @@
+{
+  "cpu_reference_s_per_case_hour": 123.4,
+  "hours": 24,
+  "gpu_idle_board_w_pre_run": 47.5,
+  "memavailable_floor_kb": 37691504,
+  "phases": {
+    "c0": {
+      "dry_would_start_now": 1,
+      "dry_host_capacity_kb": 68539524,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "sizing-run",
+          "need_bytes": null,
+          "host_need_kb": 16000000,
+          "host_need_source": "--host-gb-per-case",
+          "host_need_cold_kb": 16000000,
+          "aot_cache_warm": false
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        }
+      ],
+      "peak_concurrency": 1,
+      "stop_reason": null,
+      "launcher_wall_s_per_case_hour": 44.683,
+      "memavailable_floor_kb": 54832144,
+      "gpu_fb_peak_mib": 7308,
+      "sidecar_after": {
+        "vmhwm_kb_max": 7621340,
+        "vram_peak_mib_max": 3670,
+        "vmhwm_kb_cold_max": 7621340,
+        "vram_peak_mib_cold_max": 3670
+      },
+      "aggregate": {
+        "n_cases": 1,
+        "span_s": 1033.868,
+        "whole_run_s_per_case_fc_h": 43.078,
+        "whole_run_speedup_vs_cpu_3x4": 2.86,
+        "steady_window_s": 188.606,
+        "steady_case_hours_in_window": 23.0,
+        "steady_s_per_case_fc_h": 8.2,
+        "steady_speedup_vs_cpu_3x4": 15.05,
+        "gpu_energy_board_kj": 103.0,
+        "gpu_energy_span_s": 1033.0,
+        "dmon_samples": 1026,
+        "gpu_mean_board_w": 99.7,
+        "gpu_energy_board_wh_per_case_fc_h": 1.192,
+        "gpu_energy_above_idle_wh_per_case_fc_h": 0.624
+      },
+      "cases": {
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 1071.132,
+          "vmhwm_kb": 7621340,
+          "vram_peak_mib": 3670,
+          "aot_cache_warm": false,
+          "aot_cold_executables": [
+            "d01",
+            "fused/d02"
+          ],
+          "concurrent_at_start": 0,
+          "host_need_kb": 16000000,
+          "host_need_source": "--host-gb-per-case",
+          "host_need_cold_kb": 16000000,
+          "source_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+          "t_start_epoch": 1791213711.645,
+          "t_last_file_epoch": 1791214745.513,
+          "n_wrfout": 75,
+          "bytes": 7473486925,
+          "whole_run_s": 1033.868,
+          "whole_run_s_per_case_fc_h": 43.078,
+          "first_hour_s": 845.262,
+          "d01_hour_segments_s": [
+            652.143,
+            7.478,
+            7.786,
+            7.751,
+            7.513,
+            7.412,
+            6.872,
+            7.168,
+            7.786,
+            7.42,
+            8.178,
+            7.634,
+            7.528,
+            8.261,
+            7.697,
+            8.594,
+            9.444,
+            9.421,
+            9.77,
+            9.207,
+            8.659,
+            9.066,
+            9.223,
+            8.737
+          ],
+          "steady_h2_h24_s_per_fc_h": 8.2
+        }
+      }
+    },
+    "n4": {
+      "dry_would_start_now": 4,
+      "dry_host_capacity_kb": 53543148,
+      "dry_cases": [
+        {
+          "name": "20260227_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 5400829572,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "aot_cache_warm": false
+        },
+        {
+          "name": "20260502_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 5400829572,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "aot_cache_warm": false
+        },
+        {
+          "name": "20260614_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 5400829572,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "aot_cache_warm": false
+        },
+        {
+          "name": "20260220_18z_a1",
+          "source": "c-auto-plan",
+          "need_bytes": 5400829572,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "aot_cache_warm": false
+        }
+      ],
+      "launcher_events": [
+        {
+          "t_s": 0.0,
+          "start": "20260227_18z_a1",
+          "running": 1
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260502_18z_a1",
+          "running": 2
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260614_18z_a1",
+          "running": 3
+        },
+        {
+          "t_s": 0.0,
+          "start": "20260220_18z_a1",
+          "running": 4
+        }
+      ],
+      "peak_concurrency": 4,
+      "stop_reason": null,
+      "launcher_wall_s_per_case_hour": 5.565,
+      "memavailable_floor_kb": 37691504,
+      "gpu_fb_peak_mib": 23866,
+      "sidecar_after": {
+        "vmhwm_kb_max": 7621340,
+        "vram_peak_mib_max": 5032,
+        "vmhwm_kb_cold_max": 7621340,
+        "vram_peak_mib_cold_max": 3670,
+        "vmhwm_kb_warm_max": 5648052,
+        "vram_peak_mib_warm_max": 5032,
+        "warm_executables": {
+          "d01": [
+            "artifact:wn3/V32/sweep24/cache/jax/aot/0.3.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_0f628d6f8f081dca9a533094a2e47955c3724c555703f82597a31b6ddb5a1424.xlaexec",
+            "artifact:wn3/V32/sweep24/cache/jax/aot/0.3.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_0f628d6f8f081dca9a533094a2e47955c3724c555703f82597a31b6ddb5a1424.meta"
+          ],
+          "fused/d02": [
+            "artifact:wn3/V32/sweep24/cache/jax/aot/0.3.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_b78e4f4c1a281dc7f730788f1dccb1db70bf364a13bc14a5f7e0c1d6ad3445f9.xlaexec",
+            "artifact:wn3/V32/sweep24/cache/jax/aot/0.3.1-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_b78e4f4c1a281dc7f730788f1dccb1db70bf364a13bc14a5f7e0c1d6ad3445f9.meta"
+          ]
+        }
+      },
+      "aggregate": {
+        "n_cases": 4,
+        "span_s": 528.69,
+        "whole_run_s_per_case_fc_h": 5.507,
+        "whole_run_speedup_vs_cpu_3x4": 22.41,
+        "steady_window_s": 427.209,
+        "steady_case_hours_in_window": 87.959,
+        "steady_s_per_case_fc_h": 4.857,
+        "steady_speedup_vs_cpu_3x4": 25.41,
+        "gpu_energy_board_kj": 234.4,
+        "gpu_energy_span_s": 528.0,
+        "dmon_samples": 526,
+        "gpu_mean_board_w": 443.9,
+        "gpu_energy_board_wh_per_case_fc_h": 0.678,
+        "gpu_energy_above_idle_wh_per_case_fc_h": 0.606
+      },
+      "cases": {
+        "20260220_18z_a1": {
+          "rc": 0,
+          "wall_s": 527.44,
+          "vmhwm_kb": 5648052,
+          "vram_peak_mib": 5032,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 3,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "source_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+          "t_start_epoch": 1791214797.461,
+          "t_last_file_epoch": 1791215320.711,
+          "n_wrfout": 75,
+          "bytes": 7473486925,
+          "whole_run_s": 523.249,
+          "whole_run_s_per_case_fc_h": 21.802,
+          "first_hour_s": 81.807,
+          "d01_hour_segments_s": [
+            22.986,
+            18.504,
+            17.909,
+            18.704,
+            19.367,
+            18.878,
+            19.565,
+            20.384,
+            18.986,
+            19.721,
+            19.196,
+            18.643,
+            19.338,
+            19.964,
+            19.497,
+            19.687,
+            19.078,
+            19.333,
+            20.846,
+            19.994,
+            19.085,
+            20.004,
+            20.961,
+            13.796
+          ],
+          "steady_h2_h24_s_per_fc_h": 19.193
+        },
+        "20260227_18z_a1": {
+          "rc": 0,
+          "wall_s": 532.466,
+          "vmhwm_kb": 5532172,
+          "vram_peak_mib": 5032,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 0,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "source_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+          "t_start_epoch": 1791214797.458,
+          "t_last_file_epoch": 1791215326.148,
+          "n_wrfout": 75,
+          "bytes": 7473486925,
+          "whole_run_s": 528.689,
+          "whole_run_s_per_case_fc_h": 22.029,
+          "first_hour_s": 72.3,
+          "d01_hour_segments_s": [
+            19.035,
+            17.955,
+            17.571,
+            18.076,
+            18.241,
+            18.377,
+            17.847,
+            18.821,
+            18.896,
+            18.817,
+            18.295,
+            19.887,
+            20.338,
+            19.957,
+            20.366,
+            21.322,
+            23.899,
+            25.079,
+            23.35,
+            23.03,
+            22.993,
+            24.217,
+            20.548,
+            8.504
+          ],
+          "steady_h2_h24_s_per_fc_h": 19.843
+        },
+        "20260502_18z_a1": {
+          "rc": 0,
+          "wall_s": 514.259,
+          "vmhwm_kb": 5525912,
+          "vram_peak_mib": 5032,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 1,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "source_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+          "t_start_epoch": 1791214797.458,
+          "t_last_file_epoch": 1791215306.477,
+          "n_wrfout": 75,
+          "bytes": 7473486925,
+          "whole_run_s": 509.018,
+          "whole_run_s_per_case_fc_h": 21.209,
+          "first_hour_s": 78.852,
+          "d01_hour_segments_s": [
+            24.543,
+            18.088,
+            18.115,
+            18.281,
+            18.818,
+            18.619,
+            17.867,
+            19.151,
+            19.355,
+            18.987,
+            18.294,
+            19.137,
+            18.389,
+            19.539,
+            18.667,
+            18.098,
+            19.079,
+            18.74,
+            18.543,
+            19.687,
+            18.968,
+            19.09,
+            17.904,
+            18.748
+          ],
+          "steady_h2_h24_s_per_fc_h": 18.703
+        },
+        "20260614_18z_a1": {
+          "rc": 0,
+          "wall_s": 524.415,
+          "vmhwm_kb": 5515220,
+          "vram_peak_mib": 5032,
+          "aot_cache_warm": true,
+          "aot_cold_executables": [],
+          "concurrent_at_start": 2,
+          "host_need_kb": 8383474,
+          "host_need_source": "1.1 x measured cold VmHWM",
+          "host_need_cold_kb": 8383474,
+          "source_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+          "t_start_epoch": 1791214797.459,
+          "t_last_file_epoch": 1791215317.602,
+          "n_wrfout": 75,
+          "bytes": 7473486925,
+          "whole_run_s": 520.142,
+          "whole_run_s_per_case_fc_h": 21.673,
+          "first_hour_s": 80.078,
+          "d01_hour_segments_s": [
+            22.312,
+            18.852,
+            18.823,
+            18.7,
+            19.02,
+            18.138,
+            19.816,
+            18.188,
+            19.768,
+            21.457,
+            18.764,
+            18.263,
+            19.286,
+            19.287,
+            19.868,
+            19.676,
+            19.779,
+            19.775,
+            18.725,
+            19.406,
+            19.247,
+            20.393,
+            18.738,
+            16.093
+          ],
+          "steady_h2_h24_s_per_fc_h": 19.133
+        }
+      }
+    }
+  },
+  "identity": {
+    "label": "GPU-vs-GPU regression/determinism (not fidelity)",
+    "n4_0227_files": 75,
+    "c0_cold_same_sweep": {
+      "files": 75,
+      "common": 75,
+      "identical": 75,
+      "differing": []
+    },
+    "integrate_VAL32_0227_24h": {
+      "files": 75,
+      "common": 75,
+      "identical": 75,
+      "differing": []
+    }
+  }
+}

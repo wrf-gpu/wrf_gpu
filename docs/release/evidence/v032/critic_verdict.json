@@ -1,0 +1,135 @@
+{
+  "freeze": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+  "model_tree": "938e23a39e33563a9df7bb83860463b2b2a66942",
+  "frozen_manifest_unchanged_sha256": "9df4fab8514523286f07b127eb8bf57a7545459c4448fef721ac44c0ecc351dc",
+  "WN3": {
+    "d01": {
+      "paired_frames": 25,
+      "all_common_fields": 375,
+      "failing_frames": 0,
+      "worst_rmse": {
+        "PSFC": 2.4899659446244833,
+        "RAINNC": 0.0673113945695408,
+        "T2": 0.08491266359535736,
+        "U10": 0.07609485388533653,
+        "V10": 0.10592178903071527
+      }
+    },
+    "d02": {
+      "paired_frames": 25,
+      "all_common_fields": 375,
+      "failing_frames": 0,
+      "worst_rmse": {
+        "PSFC": 2.362054983896475,
+        "RAINNC": 0.01095003613337884,
+        "T2": 0.07144215368133315,
+        "U10": 0.13824778404709256,
+        "V10": 0.1333535545714439
+      }
+    },
+    "d03": {
+      "paired_frames": 25,
+      "all_common_fields": 375,
+      "failing_frames": 0,
+      "worst_rmse": {
+        "PSFC": 8.657011274981187,
+        "RAINNC": 0.06006495242690384,
+        "T2": 0.14389759733764143,
+        "U10": 0.336862611993072,
+        "V10": 0.3913247190818519
+      }
+    }
+  },
+  "WN3_numeric_frame_rows_finite_checked": 28050,
+  "WN3_tolerance_checks_recomputed": 9300,
+  "PROD": {
+    "d01_6h": {
+      "frames": 6,
+      "failures": 0
+    },
+    "d01_24h": {
+      "frames": 24,
+      "failures": 0
+    },
+    "d02_6h": {
+      "frames": 6,
+      "failures": 0
+    },
+    "d02_24h": {
+      "frames": 24,
+      "failures": 0
+    }
+  },
+  "PROD_48_original_SHA_equal": true,
+  "WN3_identity": {
+    "d01_25bitwise": true,
+    "total_sha_equal": 27,
+    "child_frames_data_diff": 48,
+    "classification": "Tier-P; no unconditionalbitwiseclaim"
+  },
+  "strict_RAW_false_preserved": true,
+  "strict_registered_residuals": {
+    "d01.QICE": {
+      "n_frames": 3,
+      "cpu_absmax": 2.3267852759540492e-14
+    },
+    "d01.QSNOW": {
+      "n_frames": 5,
+      "cpu_absmax": 8.23074941536106e-12
+    },
+    "d03.CANICE": {
+      "n_frames": 3,
+      "cpu_absmax": 3.46451997756958e-07
+    },
+    "d03.QSNOWXY": {
+      "n_frames": 4,
+      "cpu_absmax": 6.785788997376585e-08
+    }
+  },
+  "strict_same_sets_and_frames_as_RC2": true,
+  "whole_timing": {
+    "a24": {
+      "commit": "d19fdad4f952ccd09475f720b7e56c6bb4a6090b",
+      "whole_s_per_fc_h": 3.669166666666667,
+      "t_end": 88.06,
+      "first_segment_start_s": 17.7353,
+      "pre_step_s": 4.99,
+      "device": {
+        "platform": "gpu",
+        "kind": "NVIDIA GeForce RTX 5090",
+        "id": 0,
+        "backend": "gpu"
+      }
+    },
+    "b24": {
+      "commit": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+      "whole_s_per_fc_h": 3.3049583333333334,
+      "t_end": 79.319,
+      "first_segment_start_s": 15.008,
+      "pre_step_s": 2.903,
+      "device": {
+        "platform": "gpu",
+        "kind": "NVIDIA GeForce RTX 5090",
+        "id": 0,
+        "backend": "gpu"
+      }
+    }
+  },
+  "whole_B_over_A": 0.9007381330910742,
+  "improvement_percent": 9.92618669089258,
+  "timing_scope": "matchedone-lock24hA/B; UNET didnotpause, contendedhost; no quietabsolutevalue/extrapolatedclaim",
+  "actual_WN3_E41_stack_max": 32,
+  "native_CALL_classification": {
+    "functions": 40,
+    "max_leaf_bound": 475,
+    "nested_calls": 0,
+    "ambiguous": 0
+  },
+  "scope": "CPU read-only primary evidence audit, no new forecast/GPU/cachecopy; conservativekInput flags remain disclosed under HARDstoprule",
+  "utc": "2026-10-05T15:53:54.049912+00:00",
+  "verdict": "RELEASE-OK",
+  "registered_gate": "manager10:22:56 +15:35:21",
+  "release_model_commit": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+  "parallel_sweep_not_part_of_this_gate": true,
+  "source_edits_or_GPU_runs_by_critic": false
+}

@@ -581,6 +581,7 @@ IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
     ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILING"),
     ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILE_COLS"),
     ("gpuwrf.runtime.operational_mode", "_CARRY_DONATE"),
+    ("gpuwrf.kernels.layout_pin", "PARTS"),
 )
 
 def module_const_env_hash() -> str:

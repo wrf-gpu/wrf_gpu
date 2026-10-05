@@ -1,0 +1,261 @@
+{
+  "git_head": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+  "src_tree": "938e23a39e33563a9df7bb83860463b2b2a66942",
+  "device": {
+    "platform": "gpu",
+    "kind": "NVIDIA GeForce RTX 5090",
+    "id": 0,
+    "backend": "gpu"
+  },
+  "rc": 0,
+  "end_reason": "completed",
+  "t_end": 79.319,
+  "derived": {
+    "segments": [
+      {
+        "k": 1,
+        "root_steps": 67,
+        "t_start": 15.008,
+        "t_return": 18.2226,
+        "period_to_next_s": 3.2159,
+        "call_s": 3.2146,
+        "compile_s_in_call": 0.067
+      },
+      {
+        "k": 2,
+        "root_steps": 67,
+        "t_start": 18.2239,
+        "t_return": 20.9631,
+        "period_to_next_s": 2.7414,
+        "call_s": 2.7392,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 3,
+        "root_steps": 67,
+        "t_start": 20.9653,
+        "t_return": 23.5523,
+        "period_to_next_s": 2.5895,
+        "call_s": 2.587,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 4,
+        "root_steps": 67,
+        "t_start": 23.5548,
+        "t_return": 26.1825,
+        "period_to_next_s": 2.6298,
+        "call_s": 2.6277,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 5,
+        "root_steps": 67,
+        "t_start": 26.1846,
+        "t_return": 28.7885,
+        "period_to_next_s": 2.6058,
+        "call_s": 2.6039,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 6,
+        "root_steps": 67,
+        "t_start": 28.7904,
+        "t_return": 31.4736,
+        "period_to_next_s": 2.6854,
+        "call_s": 2.6832,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 7,
+        "root_steps": 67,
+        "t_start": 31.4758,
+        "t_return": 34.2176,
+        "period_to_next_s": 2.7457,
+        "call_s": 2.7418,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 8,
+        "root_steps": 67,
+        "t_start": 34.2215,
+        "t_return": 36.8799,
+        "period_to_next_s": 2.6604,
+        "call_s": 2.6584,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 9,
+        "root_steps": 67,
+        "t_start": 36.8819,
+        "t_return": 39.5482,
+        "period_to_next_s": 2.6679,
+        "call_s": 2.6663,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 10,
+        "root_steps": 67,
+        "t_start": 39.5498,
+        "t_return": 42.1751,
+        "period_to_next_s": 2.6279,
+        "call_s": 2.6253,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 11,
+        "root_steps": 67,
+        "t_start": 42.1777,
+        "t_return": 44.8193,
+        "period_to_next_s": 2.6452,
+        "call_s": 2.6416,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 12,
+        "root_steps": 67,
+        "t_start": 44.8229,
+        "t_return": 47.5357,
+        "period_to_next_s": 2.7149,
+        "call_s": 2.7128,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 13,
+        "root_steps": 67,
+        "t_start": 47.5378,
+        "t_return": 50.1551,
+        "period_to_next_s": 2.6193,
+        "call_s": 2.6173,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 14,
+        "root_steps": 67,
+        "t_start": 50.1571,
+        "t_return": 52.8196,
+        "period_to_next_s": 2.6642,
+        "call_s": 2.6625,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 15,
+        "root_steps": 67,
+        "t_start": 52.8213,
+        "t_return": 55.4495,
+        "period_to_next_s": 2.6305,
+        "call_s": 2.6282,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 16,
+        "root_steps": 67,
+        "t_start": 55.4518,
+        "t_return": 58.0337,
+        "period_to_next_s": 2.5842,
+        "call_s": 2.5819,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 17,
+        "root_steps": 67,
+        "t_start": 58.036,
+        "t_return": 60.6717,
+        "period_to_next_s": 2.638,
+        "call_s": 2.6357,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 18,
+        "root_steps": 67,
+        "t_start": 60.674,
+        "t_return": 63.2822,
+        "period_to_next_s": 2.6139,
+        "call_s": 2.6082,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 19,
+        "root_steps": 67,
+        "t_start": 63.2879,
+        "t_return": 65.9038,
+        "period_to_next_s": 2.6193,
+        "call_s": 2.6159,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 20,
+        "root_steps": 67,
+        "t_start": 65.9072,
+        "t_return": 68.6503,
+        "period_to_next_s": 2.7455,
+        "call_s": 2.7431,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 21,
+        "root_steps": 67,
+        "t_start": 68.6527,
+        "t_return": 71.2367,
+        "period_to_next_s": 2.586,
+        "call_s": 2.584,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 22,
+        "root_steps": 67,
+        "t_start": 71.2387,
+        "t_return": 73.9004,
+        "period_to_next_s": 2.665,
+        "call_s": 2.6617,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 23,
+        "root_steps": 67,
+        "t_start": 73.9037,
+        "t_return": 76.6064,
+        "period_to_next_s": 2.7049,
+        "call_s": 2.7027,
+        "compile_s_in_call": 0
+      },
+      {
+        "k": 24,
+        "root_steps": 59,
+        "t_start": 76.6086,
+        "t_return": 78.8357,
+        "period_to_next_s": null,
+        "call_s": 2.2271,
+        "compile_s_in_call": 0
+      }
+    ],
+    "segment_rate_s_per_fc_h": [
+      3.2,
+      2.728,
+      2.577,
+      2.617,
+      2.593,
+      2.672,
+      2.732,
+      2.647,
+      2.655,
+      2.615,
+      2.632,
+      2.701,
+      2.606,
+      2.651,
+      2.617,
+      2.571,
+      2.625,
+      2.601,
+      2.606,
+      2.732,
+      2.573,
+      2.652,
+      2.691,
+      2.516
+    ],
+    "vram_peak_mib": 8794
+  },
+  "host_vmhwm_kb": 4680872
+}

@@ -41,6 +41,7 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import GridSpec
+from gpuwrf.kernels.layout_pin import pin as _layout_pin
 from gpuwrf.contracts.state import State, Tendencies
 
 
@@ -60,11 +61,11 @@ def _native_pd_enabled(moist_adv_opt, vel) -> bool:
             and vel.ru_full is not None and vel.rv_full is not None)
 
 
-def _glue_fused_enabled(*arrays) -> bool:
+def _glue_fused_enabled(field, nested, *arrays) -> bool:
     """GPUWRF_DYN_GLUE_FUSED (default off): one REAL stencil per momentum field
-    (kernels/dyn_momflux_fp32.py) on the fp32 specified path."""
-    from gpuwrf.kernels.dyn_real_fp32 import glue_parts
-    return "mom" in glue_parts() and all(a is not None and a.dtype == jnp.float32 for a in arrays)
+    (kernels/dyn_momflux_fp32.py) on the fp32 specified path; parts: dyn_real_fp32.glue_mom."""
+    from gpuwrf.kernels.dyn_real_fp32 import glue_mom
+    return glue_mom(field, nested) and all(a is not None and a.dtype == jnp.float32 for a in arrays)
 
 
 def _glue_interpret() -> bool:
@@ -267,7 +268,7 @@ def stage_omega_specified(
     )  # (nz, ny, nx)
     dmdt = jnp.sum(divv, axis=0, keepdims=True)
     increments = -(dnw[:, None, None] * c1h[:, None, None] * dmdt) - divv
-    cum = jnp.cumsum(increments, axis=0)
+    cum = _layout_pin("cum", jnp.cumsum(_layout_pin("cum", increments), axis=0))
     rom = jnp.zeros((nz + 1, ny, nx), dtype=cum.dtype)
     rom = rom.at[1:nz, :, :].set(cum[: nz - 1, :, :])
     return rom
@@ -489,7 +490,7 @@ def couple_velocities_periodic(
     # ww(k) = ww(k-1) - dnw(k-1)*c1h(k-1)*dmdt - divv(k-1), with ww(0)=ww(nz)=0.
     increments = -(dnw[:, None, None] * c1h[:, None, None] * dmdt) - divv  # (nz, ny, nx) per k-1
     # ww at faces 1..nz-1 = cumulative sum of increments[0..k-1]; ww(0)=0, ww(nz)=0 (rigid).
-    cum = jnp.cumsum(increments, axis=0)  # (nz, ny, nx); cum[k-1] is ww at face k
+    cum = _layout_pin("cum", jnp.cumsum(_layout_pin("cum", increments), axis=0))  # (nz, ny, nx); cum[k-1] is ww at face k
     # Sprint U P0-1: ``rom`` must carry the result dtype of the increment chain
     # (which promotes to fp64 whenever the c1h/c2h/dnw metrics are fp64), not
     # ``u.dtype``.  Allocating at ``u.dtype`` silently down-cast the coupled
@@ -1293,7 +1294,7 @@ def advect_u_flux(
     rdy: float,
     rdzw: jax.Array,
     fzm: jax.Array,
-    fzp: jax.Array,
+    fzp: jax.Array, nested: bool = False,
 ) -> jax.Array:
     """WRF flux-form coupled u advection tendency (h=5, v=3), periodic path.
 
@@ -1306,7 +1307,7 @@ def advect_u_flux(
     if _native_advection_enabled():
         dtype = _advection_dtype(u, vel, rdzw, fzm, fzp)
         if dtype != jnp.float32:
-            result = advect_u_flux(u.astype(jnp.float32), _real_velocities(vel),
+            result = advect_u_flux(u.astype(jnp.float32), _real_velocities(vel), nested=nested,
                 rdx=rdx, rdy=rdy, rdzw=rdzw.astype(jnp.float32),
                 fzm=fzm.astype(jnp.float32), fzp=fzp.astype(jnp.float32))
             return result.astype(dtype)
@@ -1331,7 +1332,7 @@ def advect_u_flux(
                 # periodic-collapsed factor: faces 0..nx-1 exact; the edge-pad
                 # face nx is masked out of the update range anyway.
                 msfux_f = jnp.concatenate([msfux_f, msfux_f[:, -1:]], axis=-1)
-        if _glue_fused_enabled(u, vel.ru_full, vel.rv_full, vel.rom, msfux_f, rdzw, fzm, fzp):
+        if _glue_fused_enabled("u", nested, u, vel.ru_full, vel.rv_full, vel.rom, msfux_f, rdzw, fzm, fzp):
             from gpuwrf.kernels.dyn_momflux_fp32 import advect_u_fp32
             return advect_u_fp32(u, vel.ru_full, vel.rv_full, vel.rom, msfux_f, rdzw, fzm, fzp,
                                  float(rdx), float(rdy), interpret=_glue_interpret())
@@ -1380,14 +1381,14 @@ def advect_v_flux(
     rdy: float,
     rdzw: jax.Array,
     fzm: jax.Array,
-    fzp: jax.Array,
+    fzp: jax.Array, nested: bool = False,
 ) -> jax.Array:
     """WRF flux-form coupled v advection tendency (h=5, v=3).  v on y-faces."""
 
     if _native_advection_enabled():
         dtype = _advection_dtype(v, vel, rdzw, fzm, fzp)
         if dtype != jnp.float32:
-            result = advect_v_flux(v.astype(jnp.float32), _real_velocities(vel),
+            result = advect_v_flux(v.astype(jnp.float32), _real_velocities(vel), nested=nested,
                 rdx=rdx, rdy=rdy, rdzw=rdzw.astype(jnp.float32),
                 fzm=fzm.astype(jnp.float32), fzp=fzp.astype(jnp.float32))
             return result.astype(dtype)
@@ -1411,7 +1412,7 @@ def advect_v_flux(
 
         msfvy_f = _v_factor(vel.msfvy)
         msfvx_f = _v_factor(vel.msfvx)
-        if _glue_fused_enabled(v, vel.ru_full, vel.rv_full, vel.rom, msfvy_f, msfvx_f, rdzw, fzm, fzp):
+        if _glue_fused_enabled("v", nested, v, vel.ru_full, vel.rv_full, vel.rom, msfvy_f, msfvx_f, rdzw, fzm, fzp):
             from gpuwrf.kernels.dyn_momflux_fp32 import advect_v_fp32
             return advect_v_fp32(v, vel.ru_full, vel.rv_full, vel.rom, msfvy_f, msfvx_f, rdzw, fzm, fzp,
                                  float(rdx), float(rdy), interpret=_glue_interpret())
@@ -1503,7 +1504,7 @@ def advect_w_flux(
 
     msftx = _mass_factor_or_one(vel.msftx, w)
     if (bool(getattr(vel, "specified", False)) and wrf_top_extrapolation and not top_lid
-            and _native_advection_enabled() and _glue_fused_enabled(w, vel.ru, vel.rv, vel.rom, msftx, rdn, fzm, fzp)
+            and _native_advection_enabled() and _glue_fused_enabled("w", None, w, vel.ru, vel.rv, vel.rom, msftx, rdn, fzm, fzp)
             and vel.ru.shape[-1] == w.shape[-1] and vel.rv.shape[-2] == w.shape[-2]):
         from gpuwrf.kernels.dyn_momflux_fp32 import advect_w_fp32
         return advect_w_fp32(w, vel.ru, vel.rv, vel.rom, msftx, rdn, fzm, fzp,

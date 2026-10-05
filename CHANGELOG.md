@@ -7,6 +7,19 @@ WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.2] - 2026-10-05
+
+- Stable nested layout pin and momentum fusion enabled; lazy dormant-scheme
+  initialization and path-independent Pallas cache configurations.
+- Matched whole-process 24 h Canary B/A 0.901 (−9.9%); absolute 3.305 s/hour
+  conservative under host contention. The first unpaired noisy S1 is excluded.
+- WN3 four-case 24 h aggregate 5.507 s/case-hour (22.4× CPU), steady 4.857
+  (25.4×); board energy 0.678 Wh/case-hour, host share inferred separately.
+- PROD 48/48 files bitwise vs v0.3.1; three-nest d01 bitwise, child d02/d03
+  round-off differences within original-CPU D6; registered R2/R5 retained.
+- Best-case 72 h ensemble/giant-domain scenarios are [I], not measured hardware
+  runs. EOS pruning remains off. [Release notes](release_notes/RELEASE_NOTES_v0.3.2.md).
+
 ## [0.3.1] - 2026-10-05
 
 All registered release gates pass, including the Swiss January 24-hour

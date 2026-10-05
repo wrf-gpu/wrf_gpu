@@ -1,44 +1,30 @@
-# Known issues — v0.3.1
+# Known issues — v0.3.2
 
-The Swiss January 24-hour original CPU-WRF comparison passes D6 and direct RC3
-strict integrity on all 25 frames in both domains; [evidence](docs/release/V0.3.1.md)
-lists the completed scopes and exact errors.
+- **Three-nest identity:** d01 is bitwise vs v0.3.1; d02/d03 differ at round-off
+  level and pass original-CPU D6. No universal bitwise claim. Raw R2/R5 strict
+  fields/frames remain registered exceptions, not a blanket clean scan.
+- **Native-code gates:** actual v0.3.2 PROD/WN3 programs have maximum STACK
+  32 B; conservative CALL/kInput flags remain classified, not erased. The
+  [critic verdict](docs/release/evidence/v032/critic_verdict.json) records scope.
+- **Historical v0.3.1 E41 evidence:** eight conservative kInput flags were
+  runtime-bound (maximum 0.049 ms, sum 0.213 ms/ordinary root, STACK 32 B;
+  compile 08:32Z). Those timings are not a new v0.3.2 profile.
+- **Timing scope:** the accepted matched pair improves whole-run wall by 9.9%;
+  absolute 3.305 s/hour was measured under contention and is conservative.
+- **Scaling figures:** all 72 h durations and giant-domain capacities/times are
+  inferred; H100/B200/B300 are untested on v0.3.2. Linear bytes/cell from one
+  allocated peak includes pools/context/scratch and is not a memory-scaling proof.
+- **Glacier runtime:** dedicated Noah-MP glacier physics remains unported;
+  initialization/writer parity does not prove every glacier process.
+- **Evidence dates:** Swiss/demonstrator are v0.3.1; full 72 h/162 h studies are
+  v0.3.0, including the disclosed Tenerife long-lead exceedances. No new run is implied.
+- **Options/hardware:** supported physics combinations are a subset; MPI and
+  multi-GPU decomposition remain unimplemented. RTX 5090/CUDA 13 is the measured platform.
+- **Deferred optimization:** EOS pruning is off; component acoustic fusion was
+  rejected on runtime/compile costs. The new layout pin is on after its gate,
+  and install-path auxiliary cache misses were repaired in the relocation probe.
 
-- **Integrity classes R2/R4/R5:** raw strict failures are retained. R2 covers
-  negligible ice/snow traces, R4 canopy-water onset/decay timing, and R5 tiny
-  canopy-ice/ground-snow threshold differences on frost cells. Exact fields and
-  frame counts are disclosed; these are not a blanket output-integrity pass.
-- **Glacier physics:** missing-value writer conventions now match WRF, including
-  32 vegetation fields and Q2V. The dedicated Noah-MP glacier runtime remains
-  unported; whole-domain numerical tolerances do not prove every glacier process.
-- **Nested-domain layout:** XLA may select different d02 layouts across builds
-  or settings. The proposed manual pin failed value-preservation and end-to-end
-  performance gates and is not enabled. Performance remains tied to recorded
-  compiler options and autotune/cache provenance.
-- **E41 conservative flags:** eight kInput flags are runtime-bound on the measured PROD executables: maximum 0.049 ms, ordinary-root sum 0.213 ms, STACK 32 B (compile acceptance, 2026-10-05 08:32Z); this does not imply a flag-free scan or acceptance for every geometry.
-- **Path-keyed auxiliary compiles:** moving an installation can recompile three
-  small Pallas programs (coupled/force-down updates and two BouLac helpers), even
-  when the main forecast AOT programs hit their cache. A new version/geometry
-  should run alone first; this is not a zero-compile warm-start guarantee.
-- **EOS pruning:** disabled by default. Removing copies was bitwise, but yielded
-  no measured standalone wall/VRAM gain; parallel-memory evaluation is deferred.
-- **Long-lead evidence:** the v0.3.0 six-case 72-hour study had 1 km wind/rain
-  limit exceedances on 0227 and 0120. No full v0.3.1 72-hour or Canary 162-hour
-  rerun is claimed. [Historical exact failures](docs/release/VALIDATION.md) remain
-  visible; the lack of a perturbed CPU ensemble prevents a predictability claim.
-- **Hardware/options:** tested here on RTX 5090/CUDA 13. Other GPUs are untested;
-  MPI and multi-GPU domain decomposition are not implemented. Supported physics
-  and nesting configurations are a subset of WRF, not universal option parity.
-
-## Resolved from v0.3.0
-
-Three-nest C-auto planning and warm host admission are repaired. Actual ground
-rain/snow diagnostics replace atmospheric column proxies, the WRF thin-snow-film
-reset is present, warm-ice process selection is corrected, and water/glacier
-history conventions are corrected. The systematic dry-mass offset, boundary
-record mass decoupling, duplicate edge-wind blend, nested initial-state ring and
-snow heat/moisture roughness fixes are detailed in the
-[release notes](release_notes/RELEASE_NOTES_v0.3.1.md).
+[Current measurements and source receipts](docs/release/V0.3.2.md).
 
 ## Historical v0.23.4 record
 

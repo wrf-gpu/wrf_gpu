@@ -1,9 +1,11 @@
 """Independent literal contract for the LW12 fused-glue default (b-diff #15).
 
-GPUWRF_DYN_GLUE_FUSED = "rhsph_uvn_pin": the rhs_ph REAL stencil kernel (PROD branch: order >= 4,
+GPUWRF_DYN_GLUE_FUSED = "momuvn_rhsph_uvn_pin": the rhs_ph REAL stencil kernel (PROD branch: order >= 4,
 specified, non-hydrostatic, rigid lid) plus the fused large-step u/v PGF + Coriolis + curvature kernel
-on nested-child domains only (the root keeps XLA), with row-major pinned operands (BD72). The value is
-pinned literally, it must parse to exactly those dispatch parts, and both opt-outs must hold.
+on nested-child domains only (the root keeps XLA), with row-major pinned operands (BD72), plus (v0.3.2,
+BD82 on the P2 layout pin) the fused u and v momentum-advection stencils on nested children only (w and
+the root keep XLA). The value is pinned literally, it must parse to exactly those dispatch parts, and
+both opt-outs must hold.
 """
 import os
 
@@ -12,7 +14,7 @@ import pytest
 from gpuwrf import _fast_defaults as defaults
 
 KEY = "GPUWRF_DYN_GLUE_FUSED"
-EXPECTED = "rhsph_uvn_pin"
+EXPECTED = "momuvn_rhsph_uvn_pin"
 
 
 @pytest.fixture(autouse=True)
@@ -39,8 +41,12 @@ def test_lw12_glue_default_dispatches_rhsph_and_nested_only_pinned_uv(monkeypatc
 
     monkeypatch.setenv(KEY, defaults.FAST_PATH_DEFAULTS[KEY])
     monkeypatch.setenv("GPUWRF_DYN_REAL_ALL", defaults.FAST_PATH_DEFAULTS["GPUWRF_DYN_REAL_ALL"])
-    assert real.glue_parts() == frozenset({"rhsph", "uvn", "pin"})
+    assert real.glue_parts() == frozenset({"momuvn", "rhsph", "uvn", "pin"})
     assert rk.large_step_uv_nested_only()
+    # momentum advection: u and v fused on nested children only; the root and w keep the XLA path
+    assert real.glue_mom("u", True) and real.glue_mom("v", True)
+    assert not real.glue_mom("u", False) and not real.glue_mom("v", False)
+    assert not real.glue_mom("w", True) and not real.glue_mom("w", None)
     x = jnp.zeros((2, 3, 4), jnp.float32)
     # PROD rhs_ph call: h_sca_adv_order 5, specified/nested, non-hydrostatic, gw, rigid lid.
     assert rhs_ph._rhs_ph_fused(5, True, True, True, True, x, x)

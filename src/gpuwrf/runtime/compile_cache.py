@@ -129,6 +129,26 @@ _LOCK_DISABLE_VALUES = {"0", "false", "off", "no"}
 # once per process (idempotent, import-safe).
 _ATOMIC_WRITER_INSTALLED = False
 
+# Pallas serializes Triton IR, including source locations, into backend_config.
+# JAX's usual metadata stripping cannot reach that bytecode. Keep the package
+# path and line numbers while dropping the install/worktree prefix before IR
+# serialization, using JAX's supported source-location setting.
+_SOURCE_PATH_REGEX = r"^.*(?=/gpuwrf/)"
+
+
+def _configure_source_paths() -> dict[str, object]:
+    try:
+        from jax import config
+
+        name = "jax_hlo_source_file_canonicalization_regex"
+        current = getattr(config, name)
+        if current is not None or "JAX_HLO_SOURCE_FILE_CANONICALIZATION_REGEX" in os.environ:
+            return {"source": "operator", "regex": current}
+        config.update(name, _SOURCE_PATH_REGEX)
+        return {"source": "gpuwrf", "regex": _SOURCE_PATH_REGEX}
+    except Exception as exc:  # Older JAX builds keep their ordinary cache behavior.
+        return {"source": "unavailable", "error": str(exc)}
+
 # Module-level record of what was configured, for audit/proof scripts.
 CACHE_STATUS: dict[str, object] = {
     "enabled": False,
@@ -155,6 +175,7 @@ CACHE_STATUS: dict[str, object] = {
     "max_size": None,
     "lock_timeout": None,
     "atomic_writer": None,
+    "source_paths": None,
 }
 
 # A version tag looks like ``0.20.2-jax0.10.0-jaxlib0.10.0-cuda_sm120``: the
@@ -370,6 +391,7 @@ def _reset_status() -> None:
             "max_size": None,
             "lock_timeout": None,
             "atomic_writer": None,
+            "source_paths": None,
         }
     )
 
@@ -382,6 +404,7 @@ def configure_compilation_cache() -> dict[str, object]:
     :data:`CACHE_STATUS` from the CURRENT environment.
     """
     _reset_status()
+    CACHE_STATUS["source_paths"] = _configure_source_paths()
     cache_dir = resolve_cache_dir()
     CACHE_STATUS["version_tag"] = version_cache_tag()
     if cache_dir is None:

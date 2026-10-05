@@ -1,0 +1,48 @@
+{
+  "sources": [
+    {
+      "artifact": "integrate:VAL32/ab/ab_summary.json",
+      "sha256": "bef2c81c0d6ffe51f7e9fecd276737eaa43601f5de7568f6ec606cd50d012f1e"
+    },
+    {
+      "artifact": "integrate:VAL32/bench/ab_b24/extra24h/run/receipt.json",
+      "sha256": "87cd8f018b72471d73798d3feb619d33159fca4fcfc5d03fbf0f66506db1de91"
+    },
+    {
+      "artifact": "wn3:V32/sweep24/summary.json",
+      "sha256": "80c6b74e6d1f2612bc1b9fe0ebd72ebf7cac2e64167c43e32c77a8c0ca359314"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/identity_prod_24h_vs_rc3.json",
+      "sha256": "5c1d5145428cb54231fe0246eda1b95b9c62881fdd5c596a9e404397d52878d4"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/identity_wn3_vs_rc3.json",
+      "sha256": "bfb5a1f249b49cef3e160247ed13d185de08afda2a0949337a2a3854ce79d5c7"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/wn3_0227_d6_24h/summary.json",
+      "sha256": "d66596ed47a71bdc7526937f288c38dce3f3586c05874924e95907cce4d7838f"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/wn3_0227_integrity_allframes.json",
+      "sha256": "266bc1556d2a6ed9ab5ab1a2100998f9bbffd80e4c7ad8d1fd25ead40abff394"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/wn3_0227_d6_24h/d01.json",
+      "sha256": "4a27a7620958e54a21244e8be9c8b300fff8d06c26c3e9e4c7082984b2665f1c"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/wn3_0227_d6_24h/d02.json",
+      "sha256": "2905735f99a11b7db2a29328179d3e63488b216a3dd9385e53e3a928a5407274"
+    },
+    {
+      "artifact": "integrate:VAL32/scoring/cases/wn3_0227_d6_24h/d03.json",
+      "sha256": "50458f177fbdfaa8591013d52b5428eb55b80bb313e7a304ad537c8fb3030fc1"
+    },
+    {
+      "artifact": "review-s2small:VAL32_release_verdict.json",
+      "sha256": "22bd8a18354d0d3fb3c0524510c766c93c9170660cbb7a9ca5ff977bdd9f56fe"
+    }
+  ]
+}

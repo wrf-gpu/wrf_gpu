@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.1</span>
+          <span class="brand-sub">User's Guide · v0.3.2</span>
         </span>
       </a>
       <div class="search-box">
@@ -56,8 +56,9 @@
 <div class="group-title">Reference</div>
 <a class="active" href="version-history.html">Version History</a>
 <div class="subnav">
+<a href="version-history.html#current">v0.3.2 — layout and startup (2026-10-05)</a>
 <a href="version-history.html#v031">v0.3.1 — WRF-order fixes and performance (2026-10-05)</a>
-<a href="version-history.html#current">v0.3.0 — fused fp32 GPU kernels by default (current)</a>
+<a href="version-history.html#v030">v0.3.0 — fused fp32 GPU kernels by default (historical)</a>
 <a href="version-history.html#v0234">v0.23.4 — nine-nest correctness closure, d03 performance regression understood</a>
 <a href="version-history.html#v023">v0.23 line — batched-ensemble throughput &amp; usability</a>
 <a href="version-history.html#v022">v0.22 line — nested wall-clock &amp; features</a>
@@ -73,6 +74,15 @@
       <main>
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › Reference › Version History</div>
         <h1>Version History</h1>
+
+<h2 id="current">v0.3.2 — layout and startup (2026-10-05)<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
+<p>Stable nested layout pin, accepted momentum fusion, lazy dormant-scheme
+initialization and path-independent auxiliary caches. Matched 24-hour wall time
+falls 9.9% (3.669 to 3.305 s/hour under contention). N=4 × 24 h aggregate is
+5.507 s/case-hour, 22.4× the CPU-WRF 3×4-core rate, including init/load and
+without compression. PROD remains bitwise; WN3 children pass original-CPU
+limits with round-off differences (d03 PSFC 8.66 versus 4.49 Pa, limit 120 Pa).
+<a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.2.md">Measurements and independent release verdict</a>.</p>
 
 <h2 id="v031">v0.3.1 — WRF-order fixes and performance (2026-10-05)<a class="headerlink" href="#v031" aria-label="Permalink">¶</a></h2>
 <p>Open-top and per-record boundary-mass fixes, WRF edge-wind order, Andreas snow
@@ -97,7 +107,7 @@ rebaseline, as v0.23.4 and v0.3.0 do. Full per-release notes live in the
   <strong>opt-in</strong> and inert by default.</p>
 </div>
 
-<h2 id="current">v0.3.0 — fused fp32 GPU kernels by default (current)<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
+<h2 id="v030">v0.3.0 — fused fp32 GPU kernels by default (historical)<a class="headerlink" href="#v030" aria-label="Permalink">¶</a></h2>
 <div class="table-scroll">
 <table>
 <thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>

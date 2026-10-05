@@ -8,7 +8,7 @@ MYNN, and RRTMG kernels are column-batched in that convention.
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
-from typing import NamedTuple
+from typing import NamedTuple, TYPE_CHECKING
 
 import jax
 import jax.numpy as jnp
@@ -16,6 +16,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
+from gpuwrf.kernels.layout_pin import pin as _layout_pin
 from gpuwrf.physics.mynn_pbl import (
     MynnPBLColumnState,
     _MYNN_COLUMN_TILE_COLS,
@@ -66,16 +67,16 @@ from gpuwrf.physics.thompson_column import (
     step_thompson_column,
     step_thompson_column_with_precip,
 )
-from gpuwrf.physics.thompson_aero_column import (
-    NA_CCN0,
-    NA_CCN1,
-    NA_IN0,
-    NA_IN1,
-    ThompsonAeroColumnState,
-    apply_surface_aerosol_emission,
-    step_thompson_aero_column_with_precip,
-)
-
+if TYPE_CHECKING:
+    from gpuwrf.physics.thompson_aero_column import (
+        NA_CCN0,
+        NA_CCN1,
+        NA_IN0,
+        NA_IN1,
+        ThompsonAeroColumnState,
+        apply_surface_aerosol_emission,
+        step_thompson_aero_column_with_precip,
+    )
 
 P0_PA = 100000.0
 R_D_OVER_CP = 287.0 / (7.0 * 287.0 / 2.0)  # WRF rcp = r_d/cp, cp = 7*r_d/2 (module_model_constants.F:20,:31): 2/7
@@ -392,13 +393,13 @@ class RRTMGRadiationStatic(NamedTuple):
 def _to_columns(field):
     """Moves state vertical axis from leading `(z, y, x)` to trailing `(..., z)`."""
 
-    return jnp.moveaxis(field, 0, -1)
+    return _layout_pin("cols", jnp.moveaxis(_layout_pin("cols", field), 0, -1))
 
 
 def _from_columns(field):
     """Moves column-kernel vertical axis from trailing `(..., z)` to leading z."""
 
-    return jnp.moveaxis(field, -1, 0)
+    return _layout_pin("cols", jnp.moveaxis(_layout_pin("cols", field), -1, 0))
 
 
 def _u_mass(state: State, *, dtype=None):
@@ -1765,7 +1766,6 @@ def _mass_level_height_columns(state: State):
     z_mass = 0.5 * (z_face[:-1, :, :] + z_face[1:, :, :])
     return _to_columns(z_mass)
 
-
 def _thompson_aero_column_from_state(state: State, grid: GridSpec | None = None) -> ThompsonAeroColumnState:
     """Build the column-kernel input view for aerosol-aware Thompson (mp=28).
 
@@ -1773,6 +1773,7 @@ def _thompson_aero_column_from_state(state: State, grid: GridSpec | None = None)
     aerosol-aware prognostics: cloud droplet number ``Nc`` and the
     water-/ice-friendly aerosol numbers ``nwfa``/``nifa`` (per kg).
     """
+    _initialize_thompson_aero()
 
     T = _dry_temperature_from_state(state)   # P0: WRF phy_prep dry t_phy, not theta_m * pi (as mp=8)
     rho = density_from_pressure_temperature(state.p, T, state.qv)
@@ -1798,7 +1799,6 @@ def _thompson_aero_column_from_state(state: State, grid: GridSpec | None = None)
         w=_to_columns(state.w[:-1]),   # WRF w1d(k) = w(i,k,j): the BOTTOM w-face (MPT :1224; used :3416, :3657)
     )
 
-
 def _aerosol_surface_emission_columns(state: State, grid: GridSpec | None = None):
     """WRF ``thompson_init`` fake surface aerosol emission (nwfa2d, nifa2d).
 
@@ -1809,6 +1809,7 @@ def _aerosol_surface_emission_columns(state: State, grid: GridSpec | None = None
     ``nifa2d`` is zero in WRF for this path. Returns per-kg-per-second columns
     shaped ``(ny, nx)`` (the column batch shape).
     """
+    _initialize_thompson_aero()
 
     del grid
     hgt = _mass_level_height_columns(state)  # (ny, nx, nz), m MSL
@@ -1826,7 +1827,6 @@ def _aerosol_surface_emission_columns(state: State, grid: GridSpec | None = None
     nwfa2d = nwfa1 * 0.000196 * (50.0 / z1)
     return nwfa2d, jnp.zeros_like(nwfa2d)
 
-
 def _climatological_aerosol_profile_columns(state: State, grid: GridSpec | None = None):
     """Inline jnp ``climatological_aerosol_profiles`` 3-D nwfa/nifa (per kg).
 
@@ -1835,6 +1835,7 @@ def _climatological_aerosol_profile_columns(state: State, grid: GridSpec | None 
     heights derived from State geopotential. Returns ``(nwfa, nifa)`` columns
     shaped ``(ny, nx, nz)``.
     """
+    _initialize_thompson_aero()
 
     del grid
     hgt = _mass_level_height_columns(state)  # (ny, nx, nz), m MSL
@@ -1916,7 +1917,6 @@ def _state_from_thompson_aero_output(state: State, out: ThompsonAeroColumnState,
         updates["ice_acc"] = (jnp.asarray(state.ice_acc, dtype=jnp.float64) + precip["ice"]).astype(_output_dtype(state, "ice_acc"))
     return state.replace(**updates)
 
-
 def thompson_aero_adapter(state: State, dt: float, grid: GridSpec | None = None, *, return_tendencies: bool = False):
     """Slice state to mp=28 inputs, call the aero kernel, reassemble State.
 
@@ -1926,6 +1926,7 @@ def thompson_aero_adapter(state: State, dt: float, grid: GridSpec | None = None,
     fake surface aerosol emission (module_mp_thompson.F:1317-1326) computed
     inline in jnp -- no host transfer inside the timestep loop.
     """
+    _initialize_thompson_aero()
 
     state = state.ensure_conditional_leaves(mp_physics=28)
     column = _thompson_aero_column_from_state(state, grid)
@@ -3645,3 +3646,26 @@ __all__ = [
     "thompson_aero_adapter",
     "thompson_aero_coldstart_init",
 ]
+
+
+_AERO_BINDINGS = (
+    "NA_CCN0", "NA_CCN1", "NA_IN0", "NA_IN1", "ThompsonAeroColumnState",
+    "apply_surface_aerosol_emission", "step_thompson_aero_column_with_precip",
+)
+
+
+def _initialize_thompson_aero():
+    if all(name in globals() for name in _AERO_BINDINGS):
+        return
+    with jax.ensure_compile_time_eval():
+        from gpuwrf.physics import thompson_aero_column
+    for name in _AERO_BINDINGS:
+        # Existing oracle spies patch these public module bindings.
+        globals().setdefault(name, getattr(thompson_aero_column, name))
+
+
+def __getattr__(name):
+    if name in _AERO_BINDINGS:
+        _initialize_thompson_aero()
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

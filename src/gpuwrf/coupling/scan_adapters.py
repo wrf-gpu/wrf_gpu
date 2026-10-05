@@ -98,7 +98,7 @@ from gpuwrf.physics.microphysics_wsm3 import wsm3_physics_tendency
 from gpuwrf.physics.microphysics_wsm5 import wsm5_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
 from gpuwrf.physics.microphysics_wsm7 import wsm7_physics_tendency
-from gpuwrf.physics.cumulus_bmj import initial_bmj_cldefi, step_bmj_column
+# BMJ tables initialize on first CU2 use, rather than on every scheme's import.
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
 from gpuwrf.physics.cumulus_ntiedtke_jax import ntiedtke_column_jax
@@ -1179,7 +1179,6 @@ def gf_adapter(state: State, dt: float, grid=None, *, ishallow_g3: int = 1,
     )
     return next_state
 
-
 def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
     """cu=2 Betts-Miller-Janjic cumulus scan adapter.
 
@@ -1187,6 +1186,7 @@ def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
     ``RAINCV``.  Its persistent WRF state member is ``CLDEFI`` (cloud
     efficiency), carried as a cumulus sibling tree rather than a dycore leaf.
     """
+    _initialize_bmj()
 
     del grid
     nz, ny, nx = state.theta.shape
@@ -1246,9 +1246,9 @@ def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
     )
     return next_state, cldefi_next_c.reshape(ny, nx)
 
-
 def initial_bmj_carry(state: State):
     """Seed BMJ ``CLDEFI`` carry with BMJINIT's default value."""
+    _initialize_bmj()
 
     return initial_bmj_cldefi(state.theta.shape[1:])
 
@@ -1692,3 +1692,22 @@ __all__ = [
     "CU_STATELESS_SCAN_ADAPTERS",
     "PBL_SCAN_ADAPTERS",
 ]
+
+
+_BMJ_BINDINGS = ("initial_bmj_cldefi", "step_bmj_column")
+
+
+def _initialize_bmj():
+    if all(name in globals() for name in _BMJ_BINDINGS):
+        return
+    with jax.ensure_compile_time_eval():
+        from gpuwrf.physics import cumulus_bmj
+    for name in _BMJ_BINDINGS:
+        globals().setdefault(name, getattr(cumulus_bmj, name))
+
+
+def __getattr__(name):
+    if name in _BMJ_BINDINGS:
+        _initialize_bmj()
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

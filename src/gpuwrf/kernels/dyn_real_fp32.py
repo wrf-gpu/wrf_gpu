@@ -68,3 +68,20 @@ def pin_rows(arrays):
     from jax.experimental.layout import Layout, with_layout_constraint
     return tuple(with_layout_constraint(a, Layout(major_to_minor=tuple(range(a.ndim))))
                  if getattr(a, "ndim", 0) >= 2 else a for a in arrays)
+
+
+def glue_mom(field, nested):
+    """Momentum-advection parts of GPUWRF_DYN_GLUE_FUSED (kernels/dyn_momflux_fp32.py) for ``field``
+    in "uvw". ``mom`` = all three stencils on every domain; ``mom<fields>`` (e.g. ``momuv``) = only
+    those fields on every domain; a trailing ``n`` (``momuvn``) = only on NESTED children, the root
+    keeps the XLA path (``nested`` is the caller's static domain flag; None = unknown -> off). BD80:
+    on the root the fused kernels re-decide the step layout and the Noah snow fusion that results
+    crashes XLA's loop emitter; the w stencil relayouts the moisture path on every domain."""
+    for part in glue_parts():
+        if part == "mom":
+            return True
+        if part.startswith("mom"):
+            nested_only = part.endswith("n")
+            if field in (part[3:-1] if nested_only else part[3:]) and (nested is True or not nested_only):
+                return True
+    return False

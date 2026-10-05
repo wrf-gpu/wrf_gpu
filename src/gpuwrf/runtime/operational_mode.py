@@ -21,6 +21,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
+from gpuwrf.kernels.layout_pin import pin as _layout_pin
 from gpuwrf.contracts.state import BaseState, State, Tendencies
 from gpuwrf.contracts.precision import (
     DEFAULT_ACOUSTIC_PRECISION_MODE,
@@ -3277,7 +3278,7 @@ def _acoustic_scan(
             from gpuwrf.kernels.dyn_acoustic_fp32 import (
                 calc_coef_fp32,acoustic_substep_fp32,evolving_payload,state_from_payload,
             )
-            native_coefficients = calc_coef_fp32(acoustic,stage_cfg,apply_boundary_forcing=True)
+            native_coefficients = _layout_pin("ac", calc_coef_fp32(acoustic,stage_cfg,apply_boundary_forcing=True))
 
         # v0.10.0 Wave-A (Opus#1 unroll):
         # NOTE on the reverted carry-split (Opus#2): threading only the ~19
@@ -3289,17 +3290,17 @@ def _acoustic_scan(
         # changing it.
         # See proofs/v0100/inefficiency_ledger.md (Opus#2 = REVERTED).
         counted = carry.census is not None
-        native_template = acoustic
+        native_template = _layout_pin("ac", acoustic)  # scan constants (loop-invariant while operands)
         def encode_acoustic(value):
             return evolving_payload(value) if native_fp32 else value
         def decode_acoustic(value):
             return state_from_payload(native_template,value) if native_fp32 else value
-        seed_value = encode_acoustic(acoustic)
+        seed_value = _layout_pin("ac", encode_acoustic(acoustic))
         scan_seed = (seed_value, carry.census) if counted else seed_value
 
         def body(scan_value, _):
             encoded, census = scan_value if counted else (scan_value, None)
-            scan_acoustic = decode_acoustic(encoded)
+            scan_acoustic = decode_acoustic(_layout_pin("ac", encoded))
             if native_fp32:
                 native_result = acoustic_substep_fp32(
                     scan_acoustic,coefficients=native_coefficients,cfg=stage_cfg,
@@ -3316,7 +3317,7 @@ def _acoustic_scan(
                     scan_acoustic,a=a,alpha=alpha,gamma=gamma,
                     cfg=stage_cfg,cqw=cqw_field,
                 )
-            encoded_next = encode_acoustic(next_acoustic)
+            encoded_next = _layout_pin("ac", encode_acoustic(next_acoustic))
             value = (encoded_next,count_work(census,"acoustic_trips")) if counted else encoded_next
             return value, None
 
@@ -4222,11 +4223,11 @@ def _augment_large_step_tendencies(
         # WRF max|w| saturates ~22 m/s and the front reaches ~4.25 km by 300 s,
         # while the primitive JAX path detonates ~270-300 s with a stalled front.
         u_t = namelist.tendencies.u * mass_u + advect_u_flux(
-            haloed.u, vel, rdx=1.0 / dx, rdy=1.0 / dy,
+            haloed.u, vel, rdx=1.0 / dx, rdy=1.0 / dy, nested=_acoustic_lateral_bc_flags(namelist)[2],
             rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
         )
         v_t = namelist.tendencies.v * mass_v + advect_v_flux(
-            haloed.v, vel, rdx=1.0 / dx, rdy=1.0 / dy,
+            haloed.v, vel, rdx=1.0 / dx, rdy=1.0 / dy, nested=_acoustic_lateral_bc_flags(namelist)[2],
             rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
         )
         w_t = namelist.tendencies.w * mass_f + advect_w_flux(
@@ -8414,10 +8415,10 @@ def _advance_chunk_fori(
             run_radiation = jnp.equal(jnp.mod(step_index - 1, cadence), 0)
         else:
             run_radiation = False
-        return _physics_boundary_step(
-            scan_carry, namelist, step_index, run_radiation=run_radiation,
+        return _layout_pin("carry", _physics_boundary_step(
+            _layout_pin("carry", scan_carry), namelist, step_index, run_radiation=run_radiation,
             debug=False, clock_base=clock_base,
-        )
+        ))
 
     from gpuwrf.kernels.ring_select import nested_step
 

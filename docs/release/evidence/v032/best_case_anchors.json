@@ -1,0 +1,119 @@
+{
+  "schema": "wrf_gpu.v032.best_case_anchors/1",
+  "status": "measured_anchors",
+  "target_version": "0.3.2",
+  "freeze_revision": "3e194296c22518ae649506174a3a6e360fcd2c3d",
+  "generated_utc": "2026-10-05T15:54:12.109679+00:00",
+  "sources": [
+    {
+      "artifact": "FREEZE_REV",
+      "sha256": "3c791ea096ffb8b0c93273707bc1d9750f91256243908c8f2c81177038f4465b"
+    },
+    {
+      "artifact": "summary.json",
+      "sha256": "80c6b74e6d1f2612bc1b9fe0ebd72ebf7cac2e64167c43e32c77a8c0ca359314"
+    },
+    {
+      "artifact": "nested_pipeline_run.json",
+      "sha256": "84670bb621b63622fee924a144c73fbab1af8c3398eac01a85ba16ed7212224c"
+    },
+    {
+      "artifact": "receipt.json",
+      "sha256": "87cd8f018b72471d73798d3feb619d33159fca4fcfc5d03fbf0f66506db1de91"
+    },
+    {
+      "artifact": "cli_stdout.json",
+      "sha256": "3200830e15f0d1dd0c75b4b0bf3eca6280973e3120662c60764edc0114090b44"
+    }
+  ],
+  "sweep": {
+    "hours": 24,
+    "n": 4,
+    "whole_s_per_case_fc_h": 5.507,
+    "steady_s_per_case_fc_h": 4.857,
+    "steady_method": "producer all-four-running window / measured case-hours in that window",
+    "fixed_s_per_case": 15.599999999999987,
+    "warm_vram_mib_per_case": 5032,
+    "warm_host_high_water_kib_per_case": 5648052,
+    "geometry": {
+      "domains": [
+        {
+          "domain": "d01",
+          "mass_shape": [
+            44,
+            70,
+            120
+          ],
+          "cells_3d": 369600,
+          "dt_s": 54.0,
+          "cell_updates_per_forecast_hour": 24640000.0
+        },
+        {
+          "domain": "d02",
+          "mass_shape": [
+            44,
+            117,
+            267
+          ],
+          "cells_3d": 1374516,
+          "dt_s": 18.0,
+          "cell_updates_per_forecast_hour": 274903200.0
+        },
+        {
+          "domain": "d03",
+          "mass_shape": [
+            44,
+            93,
+            111
+          ],
+          "cells_3d": 454212,
+          "dt_s": 6.0,
+          "cell_updates_per_forecast_hour": 272527200.0
+        }
+      ],
+      "cells_3d": 2198328,
+      "cell_updates_per_forecast_hour": 572070400.0
+    },
+    "clock_label": "M"
+  },
+  "prod": {
+    "hours": 24,
+    "whole_s_per_fc_h": 3.3049583333333334,
+    "steady_s_per_fc_h": 2.625,
+    "geometry": {
+      "domains": [
+        {
+          "domain": "d01",
+          "mass_shape": [
+            44,
+            70,
+            120
+          ],
+          "cells_3d": 369600,
+          "dt_s": 54.0,
+          "cell_updates_per_forecast_hour": 24640000.0
+        },
+        {
+          "domain": "d02",
+          "mass_shape": [
+            44,
+            117,
+            267
+          ],
+          "cells_3d": 1374516,
+          "dt_s": 18.0,
+          "cell_updates_per_forecast_hour": 274903200.0
+        }
+      ],
+      "cells_3d": 1744116,
+      "cell_updates_per_forecast_hour": 299543200.0
+    },
+    "clock_label": "M"
+  },
+  "cpu": {
+    "ensemble_12core_s_per_case_fc_h": 123.4,
+    "prod_12core_s_per_fc_h": 92.3,
+    "clock_label": "M",
+    "source": "frozen original CPU-WRF WN3 3x4-core / PROD 12-core references"
+  }
+}

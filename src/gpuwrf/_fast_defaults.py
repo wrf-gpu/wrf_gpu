@@ -44,7 +44,8 @@ FAST_PATH_DEFAULTS: dict[str, str] = {
     "GPUWRF_ACOUSTIC_W_RECUR_SL": "1",  # b-core A1-SL (8ee208a92): blocked w recurrence, bitwise (W1b/W1c)
     "GPUWRF_BOUNDARY_FP32": "1",
     "GPUWRF_SPEC_RING_SELECT": "1",
-    "GPUWRF_DYN_GLUE_FUSED": "rhsph_uvn_pin",  # b-diff #15: rhs_ph stencil (0fd24ac4b) + nested-only fused u/v (b9735a79b), pinned
+    "GPUWRF_DYN_GLUE_FUSED": "momuvn_rhsph_uvn_pin",  # b-diff #15 rhs_ph stencil + nested-only fused u/v, pinned; BD82 + nested-only u/v momentum advection
+    "GPUWRF_LAYOUT_PIN": "1",  # b-core v0.3.2 P2: nested-only row-major layout pins, bitwise 0/343, d02 transposes 441 -> 223
     # land surface / surface layer / GWDO
     "GPUWRF_NOAHMP_NATIVE_REAL": "1",
     "GPUWRF_NOAHMP_ITERATION_BARRIER": "1",
