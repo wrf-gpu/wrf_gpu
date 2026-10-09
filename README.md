@@ -136,7 +136,7 @@ cutout initialized on 2023-01-15 00Z. Its input files ship with the repository.
 It selects Thompson/RRTMG/Noah-MP/MYNN, with cumulus off. The example page explains
 the expected files and original four-core CPU-WRF comparison. The pre-W2
 69d8a9a7d run passes D6 and strict integrity on all 25 hourly frames; its
-benchmark states the timestamp precision and clocks. W2 Swiss was cancelled. The current b6 Swiss 24-hour D6 and all-frame integrity annex pass; the older benchmark measurements retain their pre-W2 label. The overall candidate remains held.
+benchmark states the timestamp precision and clocks. W2 Swiss was cancelled. The final be0 Swiss 24-hour D6 and all-frame integrity pass; earlier benchmarks retain their original source labels.
 
 **The first run compiles.** It can spend minutes before the first integration
 output; a new geometry is a new compilation workload. Later runs reuse cached
@@ -198,6 +198,17 @@ retain the clocks, memory samples and decisions.
 
 ## v0.3.3 validation
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/release/evidence/v033/final_w3/stability_six_runs_dark.png">
+  <img src="docs/release/evidence/v033/final_w3/stability_six_runs.png" alt="v0.3.3 GPU versus original CPU-WRF: ten normalized RMSE panels, mean and spread across six Tenerife runs from three cases, all 73 paired hours">
+</picture>
+
+Six Tenerife runs come from **three independent cases**, including related IC members and a same-IC fresh-compile replica; they are not six independent samples. Every curve uses the fixed innermost **d03**, all native cells and all 73 paired hours. The thick line is the equal-run mean of stored RMSE divided by the unchanged frozen D6 limit. Light shading is the min–max envelope; dark shading is mean ± one sample SD (ddof=1, lower edge clipped at zero). These are descriptive run-to-run bands, not confidence intervals.
+
+Solid grey is the empirical spread of **two original CPU-WRF 0227 runs with slightly different initial conditions** (intrinsic predictability context). Dotted grey is the **older GPU 0115 IC-pair proxy**, not CPU spread; its T/U/V/QVAPOR curves are unavailable and remain absent. No 0408 pair is available. IC-member comparisons include their IC difference from the admitted original CPU R reference. Monica72 and Swiss24 are separate linked comparisons, excluded from this aggregate. Accumulated RAINNC is included; hourly rain has no separate frozen RMSE bound. [Figure data and source hashes](docs/release/evidence/v033/final_w3/STABILITY_MANIFEST.json) retain the method and exact captured inputs.
+
+Ratios above 1 remain raw failures. In 0227, accumulated-rain RMSE rises from 1.10 mm at h67 to **2.465 mm at h72** (about 2.47× the 1 mm limit); all eight raw breaches are FLOOR-LIMITED under the frozen A3 annex, with original CPU-pair C/X = 0.81–0.95. The CPU runs differ almost as much; the annex explains these breaches without changing the raw scores or limit. The 0115 strict rain, late wind and cirrus differences remain separately disclosed below.
+
 All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed.
 
 [All final identity plots](docs/release/evidence/v033/final_w3/index.html) show per-hour RMSE, bias and spatial bands against original CPU-WRF. Seven 72 h runs include six Tenerife primary/IC/replica arms and Storm Monica; the shipped Swiss case is 24 h.
@@ -205,7 +216,7 @@ All eight original-CPU scoring readers are closed. The manager accepts the discl
 | Comparison | Forecast | Strict 24 h (raw) | Full-window D6 (raw) | Interpretation |
 |---|---:|---|---|---|
 | Tenerife 0115 primary | 72 h | FAIL | FAIL | 61 floor-limited rows; one real V10 miss. Rain and cirrus lifetime differences disclosed (L4/L6/L7). |
-| Tenerife 0227 primary | 72 h | PASS | FAIL | All eight breaches pass the frozen CPU-pair spread annex (L5). |
+| Tenerife 0227 primary | 72 h | PASS | FAIL | Rain reaches 2.465 mm at h72; all eight breaches are explained by the frozen CPU-pair floor annex (C/X 0.81–0.95; L5). |
 | Tenerife 0408 primary | 72 h | PASS | PASS | D6 passes; trace graupel integrity miss disclosed (L1). |
 | 0227 IC member | 72 h | PASS | FAIL | All six breaches pass the frozen CPU-pair spread annex; integrity annex passes. |
 | 0115 IC member | 72 h | FAIL | FAIL | 54 floor-limited rows; strict rain FAIL retained. Integrity annex passes; IC difference included. |
@@ -217,59 +228,7 @@ All eight original-CPU scoring readers are closed. The manager accepts the discl
 
 Whole-run speed/energy figures above remain dated v0.3.2 measurements; no new throughput benchmark is inferred from this science wave.
 
-## Historical W2 candidate: source-dated 72-hour record
-
-Three Tenerife cases have new 72-hour histories on the reviewed W2
-configuration: **657 paired hourly domain-frames**, all 73 hours on each
-of three domains [M]. The candidate source tree is `fb50726fee1e`; source
-and resolved-control proofs retain the actual executed hashes. The 24-hour
-D6 gate stays strict. This is validation in progress, not release acceptance.
-
-| Historical W2 comparison [M] | Domains | Frames/domain | Recorded reading |
-|---|---|---:|---|
-| Tenerife 0227, W2bR | d01/d02/d03 | 73 | Seven raw d03 rows; all floor-limited under A3; strict 24 h passes |
-| Validation day 0408, W0408 | d01/d02/d03 | 73 | Raw D6 clean; all-frame trace exceptions disclosed |
-| Validation day 0115, W0115 | d01/d02/d03 | 73 | 89 raw d03 breaches; 57 floor-limited, **32 wind rows fail the annex** |
-| Storm Monica / bundled Swiss | d01/d02 / d01 | Source-dated | Monica W2 diagnostic has E41 HARD FAIL; W2 Swiss was cancelled; current b6 results are separate above |
-
-[All retained identity galleries](docs/release/evidence/v033/index.html), including the [W2 per-variable line/band plots](docs/release/evidence/v033/w2/index.html)
-show hourly RMSE, signed bias, spatial |GPU−CPU| p25–p75/p5–p95 and frozen
-limits, plus equal-case mean ± one sample SD. All native cells are used,
-with no masks. Where available, IC-pair RMSE provides empirical predictability
-context; one pair is not a confidence interval or a gate waiver.
-
-![W2 three-case T2 RMSE: all hourly leads, equal-case mean and one sample SD; frozen D6 limits above the plotted range](docs/release/evidence/v033/w2/summary/T2_cross_case.png)
-
-W0115's outstanding d03 wind rows are U10 h38–52 and V10 h37–58
-(17 of those V10 hours fail the annex). The raw wind maxima are 2.38/3.04 m/s.
-Its 54 accumulated-rain breaches are floor-limited; that does not excuse the
-wind rows. Independent station scoring confirms systematic 0115 wind
-speed damage in A/B/C (the late B′ scope is CLEAR), while 0227's fresh replicate does not reproduce the
-afternoon wind-speed candidate. The Y0 rerun is byte-identical through its
-copied autotune pin and supplies no independent realization. Distinct ZR/ZP
-checks classify PROPERTY, IC-R-specific; W0115's recorded FAIL is retained. [Exact rules and limits](docs/release/V0.3.3.md)
-keep the source scopes and raw failures visible.
-
-![W0115 U10: hourly RMSE, signed bias and spatial error bands on all three domains; raw d03 exceedances remain visible, with older-source GPU IC spread shown as context](docs/release/evidence/v033/w2/W0115/U10_bands.png)
-
-Two 0227 checks now establish **no regression vs FINAL** under frozen
-`GATES_FROZEN a791805a250f`: A7 uses FINAL V0227/V0227M as the problem-day
-base/pair after the RC twin inputs were deleted (260/260 PASS, 204 cells
-below FINAL). A8 uses FINAL's printed F1'' limits after N0/X_PLUME were
-deleted, conservatively counting the half-last-digit rounding band as
-NOT ok (8/8, 4/4, 8/8 PASS). FINAL itself passed against the original RC
-references. The [exact reference chain](docs/release/V0.3.3.md#w2-reference-chain-a7a8)
-preserves that scope; direct fidelity evidence remains original CPU-WRF.
-
-R32-65's 0227 pair is **8/8 CLEAR** under its frozen rule [M], with a
-qualification: B/T2 has gate-A DAMAGE on IC R (+0.0148 K versus S 0.0109),
-while same-IC P is −0.0038 K. It is NOT REPLICATED, so the pair-rule result
-is CLEAR, a disclosed one-realization class. There is one realization per
-IC; both are slightly better than FINAL on the same IC.
-
-The [pre-W2 69d8a9a7d record](docs/release/evidence/v033/final33v/index.html)
-retains its 803 paired hours and Swiss 25-frame comparison. Those historical
-passes were not transferred to W2; that historical candidate was held.
+Earlier W2 results remain available in the [source-dated historical gallery](docs/release/evidence/v033/w2/index.html); their raw failures are retained.
 
 ## Honest limitations and what is not claimed
 
@@ -402,21 +361,9 @@ record the model, reserves, timestep and source hashes. The v0.3.1 shorter-run
 [scenarios](docs/release/SCALING_METHOD.md) remain a conservative, differently
 scoped reference; no multi-GPU forecast or data-centre run is claimed.
 
-## v0.3.3 W2 fixes — under validation
+## WRF-order corrections in v0.3.3
 
-The next frozen release tree will include the reviewed W2 subset: urban soil
-parameter overrides, horizontal SWDOWN history on slopes, MYNN predictor
-stability floors, exposed-area canopy water capacity, and the land-only
-post-Noah Q2 cap. The [cause → WRF source → key inventory](docs/release/V033_W2_FIXES.md)
-records their scope; they are not declared validated defaults yet.
-
-The old RC's k0 warm PBL error masked an urban cold soil term. Removing the
-warm compensator exposes that older surface error; W2 repairs the soil
-parameters instead of restoring a compensating bias. The perturbed-IC
-repeat reproduces B/T2 and B/RH2*, but **A/WD10 is NOT REPLICATED** and is
-kept as a disclosed roadmap item. The original DAMAGE reading is retained.
-Current numbers/plots above are explicitly **pre-W2 69d8a9a7d evidence**;
-they will be regenerated from the new frozen validation source.
+The release includes reviewed surface, MYNN, radiation and Thompson snow corrections. The [fix inventory](docs/release/V033_W2_FIXES.md) retains the source-dated W2 investigations; final-source validation and all accepted deviations are reported above and in the release notes.
 
 ## What's new, and what comes next
 
@@ -436,7 +383,7 @@ original assumptions; v0.3.3 has not re-benchmarked those data-centre scenarios.
 
 | Version | Short history |
 |---|---|
-| v0.3.3 candidate | WRF-order MYNN and D1/D2/D3 plus W2 corrections; 72 h band evidence; current 0115 rain/station and 0408 rain/graupel failures; release held |
+| v0.3.3 | Released with WRF-order MYNN, D1/D2/D3, snow and layout corrections; seven 72 h comparisons plus Swiss24, with raw rain/wind/ice/trace failures and accepted disclosures retained |
 | v0.3.2 | Matched whole-run −9.9%; N=4 24 h throughput 22.4× CPU; stable layout, startup/cache and momentum work |
 | v0.3.1 | WRF-order/snow/writer corrections; historical performance and validation |
 | v0.3.0 | fp32 hot kernels became default; historical six-case gates and long-lead studies |
@@ -460,6 +407,3 @@ upstream terms: AER's RRTMG/RRTM code and data may not be sold; NCAR MMM physics
 translations carry NCAR's BSD 3-Clause notice; WRF-derived material carries the
 UCAR public-domain notice. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 wrf_gpu is not affiliated with UCAR/NCAR; WRF® is a registered trademark of UCAR.
-
-
-W2 qualification update (2026-10-07 10:18Z, source471): the distinct ZR realization leaves two REAL V10 rows at h42/h44; ZP has zero REAL rows. Frozen Z class is PROPERTY, IC-R-specific, and the original W0115 FAIL is retained. R32-67 v3 confirms SYSTEMATIC station WS10 damage in A/B/C (13 CLEAR, 3 SYSTEMATIC, 0 OPEN); B′ remains CLEAR. Earlier OPEN statements above are dated readings, superseded by this result. W3 must apply the affected original-CPU and station gates on its final source; no W2 waiver or inherited clearance.

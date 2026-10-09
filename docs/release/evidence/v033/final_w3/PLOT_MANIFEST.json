@@ -1727,6 +1727,11 @@
       "bytes": 8085
     },
     {
+      "path": "STABILITY_MANIFEST.json",
+      "sha256": "af2b595c7f0d94e0ae9f317314d8805beb1a4dd4a6e76bca88a366ad1bdcdf21",
+      "bytes": 127490
+    },
+    {
       "path": "SWISS24/ARM_BINDING.json",
       "sha256": "6653018b61801f8dcde2c485fcc7b37525f9f5494447910200200ee2e9db8f2a",
       "bytes": 4838
@@ -2803,8 +2808,18 @@
     },
     {
       "path": "index.html",
-      "sha256": "1167996626328863085538383834c0740f780861248e4e2ffd4ba0337b59a69f",
-      "bytes": 1739
+      "sha256": "ee4f79051cd0e0f8e74d05acb9cb54e4c9c63c535465f9828519371cd19439e5",
+      "bytes": 2131
+    },
+    {
+      "path": "stability_six_runs.png",
+      "sha256": "017e2fc7b498ead09666e47ab4372ae4786ff6f605fdb2c900db30349383c33c",
+      "bytes": 524551
+    },
+    {
+      "path": "stability_six_runs_dark.png",
+      "sha256": "7ad78b69cd45d9f669e7e8bb2c347006f0d22348b1a555732877ba4620848755",
+      "bytes": 522937
     },
     {
       "path": "summary/PSFC_cross_case.png",
@@ -3061,5 +3076,11 @@
   "fresh_cached_metric_binding": {
     "path": "FRESH_CLOSED_STATS_BINDING.json",
     "sha256": "dcf42573f58f0dfe947e895cfd57c21c49acd4bd984bea229d26256ca8cf0728"
+  },
+  "overview": {
+    "method_manifest": "STABILITY_MANIFEST.json",
+    "sha256": "af2b595c7f0d94e0ae9f317314d8805beb1a4dd4a6e76bca88a366ad1bdcdf21",
+    "scope": "6Tenerife runs,3cases,d03 fixed,mean/minmax/sampleSD; trueCPU0227 and GPU0115proxy references labelledseparately",
+    "approved": "Owner/manager revised specification and text corrections 2026-10-09"
   }
 }

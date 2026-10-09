@@ -2437,8 +2437,8 @@
   "extra_forecast_runs": 0,
   "final_v033_manifest": {
     "path": "final_w3/PLOT_MANIFEST.json",
-    "sha256": "547c65c3a60a407888c2f60e91529e39d0bfe24eec28e79af2d9631847862419",
-    "png": 228,
+    "sha256": "4829776f1888278ef50c0ab1eeabdc4927a37ee395ed21da4bb57f476a7ec4be",
+    "png": 230,
     "domain_hours": 1485
   }
 }
