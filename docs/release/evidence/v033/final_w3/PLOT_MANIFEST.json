@@ -1,0 +1,3065 @@
+{
+  "status": "LOCAL_FINAL_SOURCE_CANDIDATE",
+  "publication": false,
+  "release_tuple": {
+    "version": "0.3.3",
+    "executed_revision": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+    "numerical_source": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+    "src_tree": "46fbb0d924f006941ee3c01dad1f6cf151072c3f",
+    "package_tree": "33f3976306269d8eeeee9b7f534180ca0aebfb41",
+    "release_gate_verdict": "ACCEPTED_WITH_DISCLOSURES",
+    "gate_disposition": "All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed. ",
+    "station_disposition": "0227 rawDAMAGE/classCLEAR (not relabelledPASS);0115 rawDAMAGE/classSYSTEMATIC WS10 +1.8%RMSE, T2/RH2/WD10better; managercriterion4met, coastalwind disclosed.",
+    "benchmarks": [],
+    "owner_policy": "87e0ebccd",
+    "owner_near_threshold_decisions": {
+      "W3_0115": {
+        "status": "NONBLOCKING_WITH_DISCLOSURE",
+        "criteria": {
+          "near_threshold": true,
+          "trajectory_no_port_bug": true,
+          "finite_physical_F2_disclosed": true,
+          "station_not_materially_worse": true
+        },
+        "ledger": {
+          "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V033-RELEASE-LEDGER.md",
+          "sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+        }
+      }
+    },
+    "approved_source_bridge": {
+      "from_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "to_revision": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+      "path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/FINAL_BE0_WN_MON_ACTUAL_NATIVE_BYTE_PACKET.json",
+      "sha256": "628de15196b6a18aa2c73964ed5c0759a89729e616aee698effa0fd4d52b4c75",
+      "manager_authority": "EXPLICIT_FINAL_SOURCE_BYTE_REUSE",
+      "scope": "WN3 andMon; Swiss excluded; actual7a labels preserved"
+    },
+    "notes_template": "<USER_HOME>/wrf_gpu2_lanes/release-docs/FINAL_PIPELINE_20261008/RELEASE_NOTES_PUBLIC_v0.3.3.md",
+    "technical_appendix": "<USER_HOME>/wrf_gpu2_lanes/release-docs/FINAL_PIPELINE_20261008/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md",
+    "public_release_state": "v0.3.3 validation accepted with disclosed deviations; all eight readers closed."
+  },
+  "rows": [
+    {
+      "id": "W3_0115",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0115",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+      "verdicts": {
+        "strict24": {
+          "status": "FAIL",
+          "hours": 24,
+          "sha256": "d0a644fcf2d2a6a789e37630da08cd0ba339da9c589a2b9944c3b87de0b982df",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "FAIL",
+              "pass": false,
+              "paired_frames": 25,
+              "frame_failures": [
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 21,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.0436208341580304
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 22,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.041817560868642
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 23,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.0448152953801015
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 24,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.04331265644194
+                    }
+                  ]
+                }
+              ],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "FAIL",
+          "hours": 72,
+          "sha256": "e0b9aa65d339971b5cd6fa9a969544279226da22edb21eae06994e0682fbee27",
+          "report": "d6_72h_verdict.json",
+          "breaches": "d03: RAINNC \u03c421\u201372 (52 frames, max 1.12 > 1.0); U10 \u03c451\u201351 (1 frames, max 1.66 > 1.5); V10 \u03c441\u201354 (9 frames, max 2.01 > 1.5)"
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "cae2623ea4ea38fc08468e2239d3623f45ceb7ea22c9ac3da15bd130719cbd41",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "FAIL",
+          "annex_sha256": "79f3bc317b7955d9cca468cf19a221c9eddfa203e2d53e72e16bddd03809a93c",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "79f3bc317b7955d9cca468cf19a221c9eddfa203e2d53e72e16bddd03809a93c",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "  d03 SNOWC   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.79e-05 cap 1e-03 (iii True) -> EXPLAINED",
+            "  d03 SNOWH   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.94e-06 cap 1e-05 (iii True) -> EXPLAINED",
+            "  d03 TAUSS   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.91e-03 cap 5e-02 (iii True) -> EXPLAINED",
+            "ANNEX FAIL"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 190.1194298909977,
+      "receipt_sha256": "d45adbcb8e3df3e0c4db973dc197c6693f3d56fb64c7edf8bf08a0ea4b1adaa2",
+      "compression_receipt_sha256": "215e57dacac67b399afb2fb8127eb1571d1d9ca213f77b60c2618a2df0f3d73e",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "ac6c465f760a87cf316c4863264a016c9b9f2b54dfa7f8c6952a5c64ada3db14"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "3dc32b3bbf8205537e7cedc4f3fbb50630e93872970d2d41774b1f7138ea08fc"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "fca699f0dbaa52b74ebf758d2b0d336ed378cab67eae6363a2c32517936f49e6"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "1c6de2f7997d807183a069d902c38f27f887acd3534c7c10477db3b2a8157fd0"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "dda71490e712f46d664dc3af069192a9c41b945f80fa37c24fa0a0b983a829dd"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "f379fb6c395cc4d1d0c93e220c6a15b9031b604f31d09caee693319682c39187"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "f66943f47e932c0aa88c30398087bcc31b2859eb4f79fda1d8c342aa4f203daf"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "2872a986b6d09e0a226d2ebf2b4d65b8623f7dc34c997500fa20049c10800611"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "c3da3d51746e9c9afc8c796be8c8f931bef2eb848ad4cf24caf3a6768d3dde5a"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "646f9ded735e1a9cddad470c15956c1071a3365755cb5c2e2e0c94b0ea9fc66c"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "798170c1aea51c69ac707965d38efdba1b54d4bdcf6b06591c20740827a2dd39"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "3191027b8804cc70fc29de63146c380bf940fbe6ac0ffde9f5c24e74e9bb00c4"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "804b7de51a73ca1c85d7d9ca1f67085cd0b86742f8a7d18ac9d096086a05eb03"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "90b7e0408d304dee625a739e8ad2e9ad6a70f6826357bde274b21f699e333284"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "03d58c0b3e836a144f6c179d5e91c039d674f158a1da846deef7581984834731"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "6e4efc25cca688946ce4cdff66b3c890c47b15a3c198df41205e936c2a483c78"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "76d7c9796c75a099da264a02effc5752237866263c4c551e0959a8bd7df187ce"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "5a17c61fb6c022f458c11ab067bd4485b4898ab4089658438f3dd64cb161531b"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "ff68913890554552d10f420dd9c8c5242ea3b8574f23f4528f110939f50fbe46"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "8837a54db800cbeb4a7a9c660dd441e62db5e7be172bc6612ef9e6dc790e600f"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "3ab5ba079709854e48f9780a244848f3873b6ba6ae7a1a058cd37a887f0b32c9"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "5e86dc09c65dc2750f02fcd54f5087ea39d961a8a38000b02051b78f26f4ad79"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "3910f92a677d6812bec819af51cf2ed72e696c7d13caf1cf865e8a9debb90dbd"
+        },
+        {
+          "path": "index.html",
+          "sha256": "d46249ca6c144926547e6fa1a65d43445c34f812e44ac9016bfc6c6abebba71b"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "0e1d63538af2fcaed91d53827550fcc622aff92e0b869f122c0224e0ff3e369b"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "61 floor-limited rows; one real V10 miss. Rain and cirrus lifetime differences disclosed (L4/L6/L7).",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "W3R0227",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0227",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "43f5845b85160fee2cfb39f9b7a4f774a6e68c524d3dc0fb0c2f4c617308815a",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "FAIL",
+          "hours": 72,
+          "sha256": "fce4115e1ff5fd84bb2915cd9d9d352b81e41dca6a29a93e21f17063ba0542d8",
+          "report": "d6_72h_verdict.json",
+          "breaches": "d03: RAINNC \u03c467\u201372 (6 frames, max 2.46 > 1.0); V10 \u03c469\u201369 (1 frames, max 1.52 > 1.5); W \u03c469\u201369 (1 frames, max 0.33 > 0.3)"
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "2a105e3e91ec284df981fc00faf0272f21f2a6568e9f2d51ae89c59ffd2ce9a7",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "PASS",
+          "annex_sha256": "b95e84ec7453fe0b1ded2d22669e0a85a3772d4328c3a3b4b67bf0047cb810be",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "b95e84ec7453fe0b1ded2d22669e0a85a3772d4328c3a3b4b67bf0047cb810be",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "  d01 QNICE   @2026-03-01_16: flagged   20 (iv True) | GPU exact 0 True (ii) | CPU max 1.87e-32 cap 1e+01 (iii True) -> EXPLAINED",
+            "  d03 QGRAUP  @2026-03-02_19: flagged    1 (iv True) | GPU exact 0 True (ii) | CPU max 3.03e-12 cap 1e-10 (iii True) -> EXPLAINED",
+            "  d03 QGRAUP  @2026-03-03_00: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.58e-12 cap 1e-10 (iii True) -> EXPLAINED",
+            "ANNEX PASS (all NEW items explained)"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 238.35684735805262,
+      "receipt_sha256": "dc3421bb10db9e59f2dedcc0ff1f406655ddcbb13f92615567c867ca660f8f57",
+      "compression_receipt_sha256": "3ba9dacfe11debb8b4a6cd7022a21e5ed0a60d3da547bcd53f71a2e5c357db19",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "99e470aeb5471324388643b436e9d9b0ecde925407863490604c172c22b50dec"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "f1987d6d2265975b00802119d4e507a5f169474f6b8c65c3f3c3c271d372f9c1"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "8b6ece817e45733c0eec51443c069ff2ed50a937f207077c8813e030ee921786"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "a913ee14afde221c989fef60028316547c6ee0dfaf7376dd8ff4b0fe3280641c"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "121fcb8859d58ce93bf6004cc229d7a7ee164276331406f807d7bab267897b2f"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "94d8885f86437c854a631236e8d8315abf148863712baf89739cd688b2518760"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "fde64960bfb8e93ea6349f5cfadcd55e70507274a87f8875cdd99818dd257186"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "a4999bd3239f8be02dcab528f93273ec230c7e1434793592906dd778ec07d257"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "cd54af3eea9fcffc31eb87c37c76ad63294109319e761f363df5d74bd60b010e"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "5d676d807fb915aee339dce58a370154d7ae8c4110d1d434445e53b9f9e27336"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "14f6ff46538a52ffddb300ca85b12e90e47126a74276f80bd0d4346b8ed0caa4"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "7dd7ccd0d1f33979f948b4aa05d671a8634d13a9d72ec4799c521d12cab13114"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "737ad85278fdd8a673157b333395a97fab6634e516290439d8add74f5210d913"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "e6fd1f306227b97c9e5e49de2ed5464105a44c1b8dc0314aabefa6ac41b33160"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "664b8effba38c6b8df9aa4140cb287f2bb7318a1fc34b8ee0b80cc49c609ec52"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "c782badfe48cd1510f90adfed1337ce806970b966e4333863b80e9ef79c8e236"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "f2e16037a8671120e719b126c774981fe347be3055e7c8dde597de6657d7426c"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "65b0d03c052c947ba74de5a7b0cca45dd3bc4c19b5e0fdb17ac194738d20c7df"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "e751e9e44a3723d13c0b868d1925c5eadd96b59b0f62c13c69fb44b12f2736ce"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "dc1f02b22fac4a99cdd3508c2911cda61a768f3698096e47f8976d32523cba15"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "b06ae01f9a83e98703c14e4806fb1ede44a46845aa09e6df6aff7735fd3492e2"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "91a2f84f9dec5bdd7dac8aa69d971dc4086b60380099065136bcd4566408f791"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "738d77c4bb95a0a842b66cc9014a215395d659635129ee91c7765c9c51652dc7"
+        },
+        {
+          "path": "index.html",
+          "sha256": "87096aaec735bfdd72dedecc71d848b14e750ea6682c05c8ae7a3d9d76b5ece1"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "31d9dfc54267656ae6c6f8e81fc946b0f092161006690dd081ed243ad856d018"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "All eight breaches pass the frozen CPU-pair spread annex (L5).",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "W3_0408",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0408",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "e2d15139231d4f48c0e8b3b9df4669f96604cbaf71f12cae5b4e3dbfccc2c65c",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "PASS",
+          "hours": 72,
+          "sha256": "ac5789364b2c67ce894751b875ebd6240812a3150ed095c0be043e0f74e5554d",
+          "report": "d6_72h_verdict.json",
+          "breaches": ""
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "46a8153af7945d7ef3d1bfe8fcec6cd24129a0bf8fef1fa8c4c7afe271dccc47",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "FAIL",
+          "annex_sha256": "3f6c03e6f886b0e1f5581cac0ba80eedd441c432f91f4b502ff43a8cc153b0e4",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "3f6c03e6f886b0e1f5581cac0ba80eedd441c432f91f4b502ff43a8cc153b0e4",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "  d03 SNOWC   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 7.21e-04 cap 1e-03 (iii True) -> EXPLAINED",
+            "  d03 SNOWH   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 6.83e-06 cap 1e-05 (iii True) -> EXPLAINED",
+            "  d03 TAUSS   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 1.00e-03 cap 5e-02 (iii True) -> EXPLAINED",
+            "ANNEX FAIL"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 238.26800933596678,
+      "receipt_sha256": "b99a522561bb97ac45ea143d1ba9a0d17f5f3cfa676528374561c7598fb06ac5",
+      "compression_receipt_sha256": "3c129717353855253181440bfca64090bd15ebe6fd1dbafaf5f528dee16df444",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "25441c370d96d5610eeaf09cd6e8e916acfa5958c8ec6ba3d5342965cb3588f5"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "216c34bf19f321547c9d40d8c96b0cc1f734d2b04428fa589af198e9fd5d0b6c"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "02ab3fd35ac20bbba099d58013181e43470be975971ba1602e49dfc6d002ad8f"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "48347a5cc5f5f578806e9af71a4a3253e4280e51ba1d8e63e99ad87cafe229ce"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "25cf99cd146648f8afa46e8b86f321077cf8ae028b2516d7a82fb5851f97b797"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "3779a881f9eaf557eba861f2cdc0fdce276912887e34406a9ef30b47dd92011e"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "c3b6433c4fa7b9149dde05cf7285c8bf29809fdb4322afa2cfe51d5d43122af0"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "b11f271af26e8ad5685d036a49c77552eecb9fc471755249d5f49c02ff647d63"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "84d6f79b4792e539d9f6cad873ce3a98b192772c25980d32e9684fed67d220bc"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "c26874793ce05b223edc7c48abb9042796b68b2efb1576f28db081e8faed8c16"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "f4dc19d1de328f8a7e41d924c7c17cfaa99ceb702dd4ad9b4b117db3988e0670"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "fa6a2f51d3b09d07cfc083de496b94c11de38c27208ea858c73e5ddaa103d115"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "8e35917d8581ecd68d4a83f1e74a7ae747e27c55447ac8e2e181b79cf37ec297"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "376aa3fdc929735734c8fc9255abfc29d31441a085c76b5e4fd0df0e477b48b1"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "050f5a379e53a295db809f4d9e5697647a4dc4a5189e94b8423751eb3ef35b77"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "3d976b090cd65d8203338d3eafb5ec124eeca6f603b176bad5c9db31b975955f"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "1e8f125aab914aa90750e74cb504653622edd152b4c12e38863fffd42ebf71e3"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "d86a090fb4b82b2700755447d06d81cb563ca72cd8a73820b104468da8c0128c"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "cdc0bbfdb20192cecb093701d9a66124e2ec0af74dc0ce3ea36c61438a97f5e8"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "ee23fbcda7a55112b9bdea14b44bd6d25eb01acc214f1770078806c2a9ff2e4d"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "dd2871d86fd6c12898377ae373504b4d367391955757fe9d24e051ff31f8aed0"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "51e863aa9335dde5f0b0eb72932303a2a4f943fad21beaf9fbcbd277a2ba6c6a"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "c5d4bf0e7103210ee454902d30f9bd51c4c4071f70f1a2760b908bee15853923"
+        },
+        {
+          "path": "index.html",
+          "sha256": "1416970bf89428f10daaabbdc27922937afcc4e08da458c1eb80ada787a3b020"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "edde2820fa2c80832054d15d52ac26d1f6c9a9e98e665dc1de152af0d281089e"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "D6 passes; trace graupel integrity miss disclosed (L1).",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "W3P0227",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0227",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual7a 0227IC-P vs original CPU R0227, IC difference included. Explicitbe0 nativeBYTE bridge; no execution relabel or best-of-N primary replacement; rawFAIL andfrozenannex remain distinct.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "adbfad9a5e10f49d436d18439384c392b50c2e16a4d8241652927d6c50577c5a",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "FAIL",
+          "hours": 72,
+          "sha256": "a44c5627ab6085c0767c8eaa312c67782b255567e8372ef3ab7c6b22b3a179e3",
+          "report": "d6_72h_verdict.json",
+          "breaches": "d03: RAINNC \u03c468\u201372 (5 frames, max 2.43 > 1.0); W \u03c469\u201369 (1 frames, max 0.323 > 0.3)"
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "e7c89c130fb8d9c3e3a8189a16d6ccb28bc7dd5df55eb617d9fe6e8f5075f1e6",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "PASS",
+          "annex_sha256": "5ddf9b0e59f3eb544990707589c10aebf897e4d8eb5151d396d8d477130adbab",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "5ddf9b0e59f3eb544990707589c10aebf897e4d8eb5151d396d8d477130adbab",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "  d03 SNOWC   @2026-03-02_20: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 6.77e-05 cap 1e-03 (iii True) -> EXPLAINED",
+            "  d03 SNOWH   @2026-03-02_20: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 1.90e-06 cap 1e-05 (iii True) -> EXPLAINED",
+            "  d03 TAUSS   @2026-03-02_20: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 5.62e-04 cap 5e-02 (iii True) -> EXPLAINED",
+            "ANNEX PASS (all NEW items explained)"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 116.64353194006253,
+      "receipt_sha256": "9e137900d961ecedebe74a31465d1ba134e1c77907d03ba06db5724557d744e6",
+      "compression_receipt_sha256": "3d4749b44653c87da9109d39d89f07b76580806265518210ccb3bc03df58be03",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "247287ffb634206c8123f6a910d736b9ffe49e6e3795eb1c6c32550d80992e7e"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "1273190f87b69a52e96a57417494623bf693dd8ba8854572c53b67ace1dd865f"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "ee94a142950e945cf1fa3fb2c21be918bf46d01f65f6adad4f529a6575e621bb"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "cea24ecb2e96e90fa5c0263a990ad6e6010824827d633324647865391051e482"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "99c2bcdcb02b47846c3ce88780b6ecb87d3a816159ddfe5551b728af922e8d52"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "388cb50824c401115b6a0f69b97bf0e9993d0b899b3d6cf0dccf2ad399aeb869"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "46d1315f31620357d003616062303ab438aa2e83a767b1f465cdced7c49cdd74"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "c072fab0251a3422432794ef1bd31b985d43b4df52abc515e249e289ba7447af"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "1979a97b60fe3d6b6626bd25bc42c927705f9ce4d900c76d01adabc5d3d63a37"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "e6269291ab70316ee8b65eb1d8510e5c71b7a240e4694378422f73b59628941c"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "f2936d130b21c879ad7cf2deae15dbb424f802c783296c466e0a818e9c730941"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "0dd3a1262775b0d0ddc4f5eae83f3958ffa42e786ca8906395d91adf17c57e42"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "36e32d153a49e591c864fc2f4829a4f7ec10eb099ff79f76e645c89a8edacbfd"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "4a03809cc229aa3c47c8492d827b30094cbf6017ff0816f216d52f034b934220"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "620573820a96643eddb18004a8a5c41227d445702d061a6adf62f575af632885"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "77fa4375cb3d1df38287b6de084d8d26def9cef548db358da594b6a056fa9c54"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "4db067005ac4895cef58383803e286424314de7abe396907ff016420cf8060d7"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "8ad3af9c978868c7e7a6b80309be72e2c47af50e88003da900537d3d69bf2c6a"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "937b53e8200176bf91a96fb1eef11f9334d9bf05a864294ea18c9381ea2b6e67"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "6086b2af525c94b00e04a2a71873e8133ef4a3a61507ea0000f0c6c26b7b32af"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "dde98e101ece1a1af92ca959d991e7ea5a16d31c367c529727ed46e7d2f7457c"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "52b8746f1c5e4371307e2b6e2b0f5d638b274f1df429dd21b70a411b9c7c6ad0"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "b790cb0e1588bd981bf8500c946d9bb8540a3bb8f7c486df0e451213450bc0ba"
+        },
+        {
+          "path": "index.html",
+          "sha256": "6a9f8c80b732cb9d4ac086a9c2a6f17800f6043e893bcc4410c119c9131d1068"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "25541778ddc76542f0ccc25190ce824a5c0902f88772932e0999cb0b7d63c8c0"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "All six breaches pass the frozen CPU-pair spread annex; integrity annex passes.",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "W3P_0115",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0115",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual7a IC-P execution vs original CPU R0115; original CPU P0115 is absent and IC difference included. Releasebe0 uses explicit nativeBYTE bridge; rawFAILs/replica and Ownerledger decisions remain distinct.",
+      "verdicts": {
+        "strict24": {
+          "status": "FAIL",
+          "hours": 24,
+          "sha256": "d1bf21e579ab1321f42e708dd29e76e2251a78671464a7ed322d9aebdf5e5933",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "FAIL",
+              "pass": false,
+              "paired_frames": 25,
+              "frame_failures": [
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 19,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.0120554260032488
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 20,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.0860942639260613
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 21,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.1007671500605603
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 22,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.1172685959632989
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 23,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.13245755249869
+                    }
+                  ]
+                },
+                {
+                  "kind": "frame_tolerance",
+                  "field": "RAINNC",
+                  "lead_h": 24,
+                  "detail": [
+                    {
+                      "limit": 1.0,
+                      "metric": "rmse",
+                      "value": 1.1330471056030438
+                    }
+                  ]
+                }
+              ],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "FAIL",
+          "hours": 72,
+          "sha256": "3dff2b840a2bd4f58696891b5fcbc093bcd8cca4e16abd0d19a4de083a9888e4",
+          "report": "d6_72h_verdict.json",
+          "breaches": "d03: RAINNC \u03c419\u201372 (54 frames, max 1.22 > 1.0)"
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "a86f6160af11d3e4b93340bdb46826733c5ece85b016718467fadf8b4927a29e",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "PASS",
+          "annex_sha256": "86919e95ff59ad0633363c59f7e21cfc1e6284bac4ab57dcf207cd7f0a8e7348",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "86919e95ff59ad0633363c59f7e21cfc1e6284bac4ab57dcf207cd7f0a8e7348",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "  d03 SNOWC   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.79e-05 cap 1e-03 (iii True) -> EXPLAINED",
+            "  d03 SNOWH   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.94e-06 cap 1e-05 (iii True) -> EXPLAINED",
+            "  d03 TAUSS   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.91e-03 cap 5e-02 (iii True) -> EXPLAINED",
+            "ANNEX PASS (all NEW items explained)"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 176.81430024292786,
+      "receipt_sha256": "13eee936a014d9ba834ccad473f5cd5651df6c6430c0c2d6b4ec14eb4702186e",
+      "compression_receipt_sha256": "c1b912921c9e417c047b9fedcf92e47ee71e74c53fcbbd6f62644961f6313b29",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "7bbc55d04e811507e9e5e4465717bb9b44b365f96bf9881cb0455a411d4ad64c"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "04877069f46f5c8789ad13e4157a23fee4b042fca4debe09b821fe0176a9e83e"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "0bc73a2a237623d79bf082f50998a0da390231bbfbfd287ed746bb9bfc39c498"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "68cf4f726002d39e656732617aa40fe1a16a8df7e04bebe17170e9b5f5ef78de"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "738a9452e9320d6be42fed5db498a0f2ac3621968bafda1b6591130ade1d81b4"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "73afe92f9bbe97e0527b6ff7339b123d235a5f198854b64dff374837ddf54ca3"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "4d78f4844096c43684bf6315a248b55aede0a468529d2c8bb9d38db055af2d64"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "b6a9f9ddfc86e2f0550caa83d003f0fa021c11e2ef54a5d564b32965cb7b2e65"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "193055d45adc5e0d1076491cf65bbf61a50ef0010206ea974bc986362d42c51b"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "15b59cc85d8102f5f550e89558cce5018925da9f6baa88f89ac964655d0784e6"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "f0c3efbea99ee84be5bf2413f53a845d50643d44b012c3119385e65d4d170794"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "30c78224f8ab4aa4a3bc0127208b2c0bace16a9ed3c1a0a06566229e34215ab7"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "29e09caf30aa7d0fb7db4d6a30d1e66595425a953dfac0ccf5c65c9ebd7e5aa1"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "a510c607b812c5e913cd08ee9d1a29dd619ffc63bd01df57b43a77f2b483b137"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "793fb6c598e62f3ee9475231ca5f44c6ec1292d2883e85aecfbf24c3cae33440"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "21aca0c9937c68d557643e0b0f57dfd45d6cfb5b386ed07ea0a9205a1e9f6430"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "bb1e734c501ddf66179bce7496c03dca44470b547096ae3ec2961937ebc7c9c7"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "cb55ceb810d87f68711c21e3aba7564aa827d66245443559d54c8aac955629ec"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "80900e52349c7ab2a3d94c511fedb54550e37835e2e5ca75cb676975e6ff50f3"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "3ff9d9da598107f6236e5f89a5c9475275695b0cf05d451899399196946f3c5d"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "d931f5f5516d9521534bccef0742a7b8d370eba75d5b2e05c11ed8670dbe54f0"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "9a0be79c295b3221924d4c7e8318a95c2f272c1a16268d6b8c07245c90d7abbd"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "8e20676a266a4813b2d759a6c63b5f016bd0290d68461c9d364b062b85c81faa"
+        },
+        {
+          "path": "index.html",
+          "sha256": "508a2f59075665c84ccec2050497eb899f9ba384feb81d7412abead13b98e2bb"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "5428e2748134089432cfe51dc22afc3627ff6c3df002208d826fae9c8676b732"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "54 floor-limited rows; strict rain FAIL retained. Integrity annex passes; IC difference included.",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "W3Rf_0115",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF R0115",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "domain_hours": 219,
+      "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "b669e9178195bb5630329f4c6256c6d4d602cd2cd064284b0bab470eb5222ac2",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d03": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "FAIL",
+          "hours": 72,
+          "sha256": "66a9efcff40dd671588255ce61c8324fe0fbd269df248b787620f2409f49880f",
+          "report": "d6_72h_verdict.json",
+          "breaches": "d03: U10 \u03c451\u201351 (1 frames, max 1.67 > 1.5); V10 \u03c441\u201354 (9 frames, max 1.99 > 1.5)"
+        },
+        "integrity": {
+          "RAW_status": "FAIL-new-class",
+          "sha256": "668b1809954c6594f5150b3d2dfb31674174910256d4a7592adfac4096646946",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "FAIL",
+          "annex_sha256": "82bb53d3c1071f237f26217814d7e458c18d81ddbd18222e4bd5fab49a78e188",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "status": "PENDING",
+          "expected_report": "annex_postpass.txt"
+        }
+      },
+      "cached_figures_reused": true,
+      "elapsed_seconds": 0.03742930793669075,
+      "receipt_sha256": "abc161d2447b7f097a8c518c02be8e6937e0e14a050f0472bddb1b204313e243",
+      "compression_receipt_sha256": "28f3bc6a16bfab69701d6d47f34ef732294793840b4d0c772fc7d6193b821d33",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "fb678075f6553971d72f0ccbba3ec5d3622f88a7073ac908fd8bf00960eda777"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "c789a2dcac8aece9bca6ae4151d2d72737f3ca562b69ce26eef16be8ac80e808"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "bd6e85f8499b5344afa0f3115cdeeb4337415d75e4e3bc809b99eb25cb69feb7"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "4df81d09073f2cfe25ff0946906035285682cc9d616e8c6b68538075b6b7a48b"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "751de952fac0e402422249f170e2ddc0df10d58025bb102907157a49e54b54ab"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "9dded252e0f82f29c1bc1b2e245fc4a76285eb125042c9a921539c81dd888090"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "3edf5cecb80f8167cca106207b705450bbb0dfc59fa7a8d0bb8cb494404a7d45"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "98f4f380bc2d873a9d5b37abf1ca6d9added41091b72d90ceb8522b135e80c6a"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "d3757ad11b34ebc958b88c1d8cffccc4f8cd8a2cf396bb3144219af40573f5e7"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "8c65c3600f22b3e4415d05eb7821e4d40bead869ffd6447be2366c52784b0135"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "ad59037056ff4d2600cc2272603a4c83ab4ff905166b876304613aefca565f80"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "a67060548979ffbeb6929d658c917cfc94e0ebdfc05be9197e6c0a01aacf22fe"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "51256320c76f95f59f837a5a3e8e6e6d53e0ca4a3ec5c0c6ce7dd63a6ed9e6a7"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "68f802ea451051c684a0a6a1531420766d084297f9bd683ce489630f1995a01d"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "900805dc848bd1b67d2dae5475458a5aa3415da9d6bb3ceebdaedb4716e9d427"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "d8091af8a838796e960eae9cbb0efc193041028194d5050729756abf36a28d2b"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "5173d767436d7943c2f789b4c0727abf65f6b098525dfd05b039281dffc90b6e"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "bd741ad4b352217d3b40c166d412cc812a57f0487015e31e2ddfc5dca17d44a9"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "69438238c3bb7d616757fefc7834cd4c268a7253d093e769e243989ec447fb7d"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "68622a414547b4cfceb187b502a2c22f40b5e229324cb56e24d1d04334076053"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "27f824902c45a9898b49917e2b9c108c1cd20613e3c8ceb86a30eda095e3d974"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "6354fc6164c8bb9e7c0c90da7f85addaf91031844346facdb0028091b35d2870"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "bc2bd322753ba3a6807babfa0c6e32cd834da6d99ef91cef3eb43cad570f2e8e"
+        },
+        {
+          "path": "index.html",
+          "sha256": "4fdf998444d95b04829ced82c776ebfbf5cd049752a4688f9755fa71147c59d1"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "9e9db41ba6bd885fa577bc9198733ce7e73df29d4f380df4cc982112deb7dfd9"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "Eight floor-limited rows, two real V10 misses (h42/h44). Cirrus lifetime integrity FAIL disclosed; same-IC fresh-compile replica.",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "MONICA72",
+      "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+      "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+      "original_cpu_reference": "original CPU-WRF RF02 joined0-72",
+      "hours": 72,
+      "domains": [
+        "d01",
+        "d02"
+      ],
+      "domain_hours": 146,
+      "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "4f700488a81179ee5b71c850c51c6630b3698ed3ecc3931c268203892c8ae2f6",
+          "report": "d6_24h_strict_verdict.json",
+          "breaches": {
+            "d01": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            },
+            "d02": {
+              "status": "PASS",
+              "pass": true,
+              "paired_frames": 25,
+              "frame_failures": [],
+              "incomplete": []
+            }
+          }
+        },
+        "full_D6": {
+          "status": "PASS",
+          "hours": 72,
+          "sha256": "8ca52f45adf78151d9da53ec49d8d9874310d1aafef2e7945b5a0a6497dc74f8",
+          "report": "d6_72h_verdict.json",
+          "breaches": ""
+        },
+        "integrity": {
+          "RAW_status": "PASS",
+          "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "PASS",
+          "annex_sha256": "ec7ebc14f0d073660cb3171b39ccbbd9621a367bf8f3ba86f029ac15a659c8d4",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "ec7ebc14f0d073660cb3171b39ccbbd9621a367bf8f3ba86f029ac15a659c8d4",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "MON33W3: registry verdict PASS; NEW items 0",
+            "ANNEX PASS (all NEW items explained)"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 147.23843168793246,
+      "receipt_sha256": "bce000e7b1de92c04636f9cada6b14e2755def2647e0076d07ffbed4eb59e326",
+      "compression_receipt_sha256": "503543cd7118b6d81e2ba4d8e26b585f8da4d887dd95892cb1f129dcb59d55f9",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "b138b26c7e4566a1fe8077d3be242ee863b0ead2399df24566ea001b689d2114"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "488e5f40b52c4c1af6f7f81585eefed07d98e123cde6610289aa2546d2b46ebd"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "6027960ffcf906911444caaf95748901e32e0dc4e320b119cdc3f54049c4fe93"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "4957dd5fa07c711c2288a84cc0cbd9b683201390fe4da53c1dd6370a7d09d6cc"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "96dca5150e122e445cf404ae4458ca49ae269464cb5621d9393b0e2d3f96ed18"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "fe301c26afb7fd30e7cc5fcd7fc75b705f7b0ffc4164ae67e7dd86ab5d9fbd65"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "5e148329ad9c375f6fc5c92fe279dc77f33cdcb2f8d0c50cb8649bb9142023fa"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "a7b659a24a76818f4ae08668a3d17451c23c8cb1b2a4f161007becec16d2f0e1"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "cd5f4c7219cc157ac4a3b13b7280683cf8d55e4dda984614960a18f895dd3b4b"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "966382edfef9227ab72bfadadce7c609e859c1e9903712b1edd32a1e7d9a3de7"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "675a6a5a5d756c3cf3cffd492fce2e40fe7f4a1c5d2f5790215ecef3a807de94"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "04a589965244363b512aebd7bca1f377976b3c91c0817b1f3d194b2c322abd1a"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "6f8f9c2704606c58e169b9ef9ce1d0296c647a379dc0c1c6b677235f9469e574"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "763c0c7251a7a74eca10bdbb04c91456f700c78a64bb76a9f17e0ca118b3f294"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "7b2d90627317e63a611d405a228153e5cb0bc81a149dc7f8eea6ca3381cabfcf"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "8766e8ec3b81c0248f47525a99eae0de39b123f68c4e874d6245aa1ecff42386"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "2edcecdac147883af18ea23c218c428398d059e581419bf93815b6cd3a1706f4"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "e38e85cb0daea391d30fffeb572f990fb41447e665f80d8643538b45514c6d82"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "8198f59b0da86297e2db4d1edcdb1f39054c944e4c0a8b88d822b6b5176a3cee"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "f24d5faf591e4d9562d11594709a177989a97c2e71d7c4030bf441b12a41c41d"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "c6949707adb4710847503f4cecf7cdf77ced7364ccd3fb2ddff496820115585b"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "276efdf677822e2d4a7a3204ea777559ebba77cea5bdac2ff3c7d440b04b870c"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "dc19110519bb838d7db1b5e39240ec6857933b90d76bb63c6455564ab9af2b70"
+        },
+        {
+          "path": "index.html",
+          "sha256": "77be9991a81ce0c8fa9afa8e9140cdb6b78616cf47a83d06eb5e454ecf469443"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "516ce03a165ee3d9536f74839e8bd598477d205c9cb4c9a27da125655a850157"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "D6 and all-frame integrity pass.",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    },
+    {
+      "id": "SWISS24",
+      "executed_revision": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+      "package_tree": "33f3976306269d8eeeee9b7f534180ca0aebfb41",
+      "original_cpu_reference": "original CPU-WRF RD11 Swiss",
+      "hours": 24,
+      "domains": [
+        "d01"
+      ],
+      "domain_hours": 25,
+      "scope": "Actualbe0 shippedSwiss24 against original CPU-WRF RD11. One unchanged raw24h report supplies both full-window andstrict24 reading; no annex or synthetic sidecar. Field limits/source/IC remain unchanged.",
+      "verdicts": {
+        "strict24": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+          "report": "d6_24h_verdict.json",
+          "breaches": ""
+        },
+        "full_D6": {
+          "status": "PASS",
+          "hours": 24,
+          "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+          "report": "d6_24h_verdict.json",
+          "breaches": ""
+        },
+        "integrity": {
+          "RAW_status": "PASS",
+          "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+          "report": "scores/integrity.json",
+          "frozen_annex_status": "PASS",
+          "annex_sha256": "a767e827b6e3e3a4f51fc119ba612136fb62c89cbf89aa6ebf9c2f7ec2ba518f",
+          "annex_report": "scores/annex_postpass.txt"
+        },
+        "annex": {
+          "sha256": "a767e827b6e3e3a4f51fc119ba612136fb62c89cbf89aa6ebf9c2f7ec2ba518f",
+          "report": "annex_postpass.txt",
+          "raw_text_preserved": true,
+          "source_tail": [
+            "SWISS33W3: registry verdict PASS; NEW items 0",
+            "ANNEX PASS (all NEW items explained)"
+          ]
+        }
+      },
+      "cached_figures_reused": false,
+      "elapsed_seconds": 7.467312709079124,
+      "receipt_sha256": "1c03a2d92a26c83d6d685b07683e07785503ad3149362e37f4ef4cdae7f8d6c6",
+      "compression_receipt_sha256": "54d00cd0cb5c9ac172d6033de10466814fddcf0bfef1995feb021ca6f4a53e84",
+      "part_assets": [
+        {
+          "path": "PSFC_bands.png",
+          "sha256": "512961d9337ed429a6c6d84401226bab0fd3b6d4fe43574f13c7e75abe5b3f24"
+        },
+        {
+          "path": "PSFC_summary.png",
+          "sha256": "da9c0a3891fcb584ae39d4ec2a9c3cc601cf0b3f350d21e5902e65882a861bc7"
+        },
+        {
+          "path": "QVAPOR_bands.png",
+          "sha256": "2e8414433abd6f6b1a33508e171e67e841ff8d5fbbb6e6238569179c03ac0486"
+        },
+        {
+          "path": "QVAPOR_summary.png",
+          "sha256": "44b6235aa2bf2d6685a7f5c3e922ac8574f4df23514c3d20323d836188583e21"
+        },
+        {
+          "path": "RAINNC_bands.png",
+          "sha256": "232add2e85d70d08383a7c20708bf611f17a1c948c0c330bf3ded407b8b1cbb6"
+        },
+        {
+          "path": "RAINNC_hourly_bands.png",
+          "sha256": "d7176011ce0ee1bf4f7ba80c23a6a57264e5bc23eaf28bfd0244d9a963b1649f"
+        },
+        {
+          "path": "RAINNC_hourly_summary.png",
+          "sha256": "2763134442f39c0f5ee68a81e4042dc0f07e5566f7329cdfd16485824604440f"
+        },
+        {
+          "path": "RAINNC_summary.png",
+          "sha256": "d519e27da9e795f617ef47f4b893a25c91789d8e6ac09fb73faca9852a61db56"
+        },
+        {
+          "path": "T2_bands.png",
+          "sha256": "90fd6f25035cc685cba84aa37900f1fcff8c96ec7fffec40ed85655d8c0c623a"
+        },
+        {
+          "path": "T2_summary.png",
+          "sha256": "53674b93089c8021f4a645e054bc69f0255c599ef830c6a0f215a56b3b52194b"
+        },
+        {
+          "path": "T_bands.png",
+          "sha256": "9a1541026334dfe1f58c0511552b7737b2a3aa0ad3280a7e5153695a4926b4cf"
+        },
+        {
+          "path": "T_summary.png",
+          "sha256": "aad75853431eebfc0355be67ec0520892deb4e32ad8e1be82a1d21ae5ab0a6d6"
+        },
+        {
+          "path": "U10_bands.png",
+          "sha256": "78c1c5d569e45556786b47bbe4e64dc500c9ed6be7a7393906d3fb1148b9c715"
+        },
+        {
+          "path": "U10_summary.png",
+          "sha256": "1f8003d1f0db0a70ce441e9c535e07c03ad60c7d68c6ff5643c0bca7b7e3bfd8"
+        },
+        {
+          "path": "U_bands.png",
+          "sha256": "bdf238677d9503d506383777bccd583f3fd91e542a7247279f3416c49c5f2457"
+        },
+        {
+          "path": "U_summary.png",
+          "sha256": "cf033735b4cb01ed6524838fc91b8317cb5b68488f11cc921dd2d6f0e7c4d1aa"
+        },
+        {
+          "path": "V10_bands.png",
+          "sha256": "5ff8cc7890d0bbd2f10453ab00fcdeb91e14089d8f63f8270eaf8224fdfee2fd"
+        },
+        {
+          "path": "V10_summary.png",
+          "sha256": "4547b1df3d3653819c6d24acee6bb67a6e4f22cd13b6eb5ba9b95fd9af933678"
+        },
+        {
+          "path": "V_bands.png",
+          "sha256": "6caa807123453599fe12cccee5b10b8ccb3d6bed25d9b12121f22d26a0306bbb"
+        },
+        {
+          "path": "V_summary.png",
+          "sha256": "e6bb69c1b424cd7320cd8a6360b7b330bca490880f42a119a7b0ef7b40cabf83"
+        },
+        {
+          "path": "W_bands.png",
+          "sha256": "fad28477bcfdf42d2c8141b8e7bce2dc64447ef0c5a96e5702f9e7ad094a115a"
+        },
+        {
+          "path": "W_summary.png",
+          "sha256": "34003768ef0ccacfdf8f34c74d2b35b94e1004a6498db3f587beafb4b271a995"
+        },
+        {
+          "path": "heatmap.png",
+          "sha256": "7f6ca0f8ec7f8f7f87224bc4494f8fb8166ecb0dd36cdf2b69099db76169fb0f"
+        },
+        {
+          "path": "index.html",
+          "sha256": "62b1804310b1b3a1ae9709a59da4e4e3097a771df2076927f6e0a97a833d65fe"
+        },
+        {
+          "path": "metrics.json",
+          "sha256": "e6fb327fe8fb8c3da25131c059b663ee204048377898e703f1b25fa7b3227c05"
+        }
+      ],
+      "ready_part_reused": true,
+      "disposition": "D6 and all-frame integrity pass; 25 frames on one domain.",
+      "manager_ledger_sha256": "93d8f0c059dde0ab5577ac580812c900ce92ce230fb924f9b3df578244d54d48"
+    }
+  ],
+  "domain_hours": 1485,
+  "png_count": 228,
+  "summary_mode": "new primary-only render from cached/current metrics",
+  "inputs_sha256": "11c60b9cd79a35ca6db5268833b3cf8d5c0c466816ba2638614127eb21570ddc",
+  "tuple_sha256": "028fbafb194d5a766b573c0433eef5d5dc0dea516645a33a4eff08a76ec0c335",
+  "assets": [
+    {
+      "path": "FRESH_CLOSED_STATS_BINDING.json",
+      "sha256": "dcf42573f58f0dfe947e895cfd57c21c49acd4bd984bea229d26256ca8cf0728",
+      "bytes": 138
+    },
+    {
+      "path": "MONICA72/ARM_BINDING.json",
+      "sha256": "d798e8883ab48807259588627925666d55316ef6cb1393a1c26b362ae95f44e4",
+      "bytes": 5258
+    },
+    {
+      "path": "MONICA72/PSFC_bands.png",
+      "sha256": "9b3727612f6a9d92c020f5be8a1d189bda1e46584ad408bb99fb3362ca959c46",
+      "bytes": 250868
+    },
+    {
+      "path": "MONICA72/PSFC_summary.png",
+      "sha256": "488e5f40b52c4c1af6f7f81585eefed07d98e123cde6610289aa2546d2b46ebd",
+      "bytes": 52432
+    },
+    {
+      "path": "MONICA72/QVAPOR_bands.png",
+      "sha256": "8f4a8f67279bee4ac966b6e275a9d42e1e61bbc245f3e38237b88f699c3ffa4c",
+      "bytes": 225507
+    },
+    {
+      "path": "MONICA72/QVAPOR_summary.png",
+      "sha256": "4957dd5fa07c711c2288a84cc0cbd9b683201390fe4da53c1dd6370a7d09d6cc",
+      "bytes": 51317
+    },
+    {
+      "path": "MONICA72/RAINNC_bands.png",
+      "sha256": "36ca034f6afc5356ad25f8db9d9f0118be172f7540bf03b0b82cdc346ddc25e0",
+      "bytes": 195539
+    },
+    {
+      "path": "MONICA72/RAINNC_hourly_bands.png",
+      "sha256": "05ce9ee126ca1cdb89f8589821877a0c57f08a6f61a8dd427dfe63e2792237fd",
+      "bytes": 255634
+    },
+    {
+      "path": "MONICA72/RAINNC_hourly_summary.png",
+      "sha256": "5e148329ad9c375f6fc5c92fe279dc77f33cdcb2f8d0c50cb8649bb9142023fa",
+      "bytes": 60157
+    },
+    {
+      "path": "MONICA72/RAINNC_summary.png",
+      "sha256": "a7b659a24a76818f4ae08668a3d17451c23c8cb1b2a4f161007becec16d2f0e1",
+      "bytes": 54468
+    },
+    {
+      "path": "MONICA72/T2_bands.png",
+      "sha256": "41130aaaeb6488f98091b47702713857f5f253e837594f016e280b147838ffee",
+      "bytes": 226086
+    },
+    {
+      "path": "MONICA72/T2_summary.png",
+      "sha256": "966382edfef9227ab72bfadadce7c609e859c1e9903712b1edd32a1e7d9a3de7",
+      "bytes": 58678
+    },
+    {
+      "path": "MONICA72/T_bands.png",
+      "sha256": "90deee49ce698ea981a3b286be069909693013ecdbc4529fe47e573404eb3ddc",
+      "bytes": 248646
+    },
+    {
+      "path": "MONICA72/T_summary.png",
+      "sha256": "04a589965244363b512aebd7bca1f377976b3c91c0817b1f3d194b2c322abd1a",
+      "bytes": 51809
+    },
+    {
+      "path": "MONICA72/U10_bands.png",
+      "sha256": "b69c98c796808c4d097913ec1c137adf173cb3c16f8f3e9be8d3d071a01a1838",
+      "bytes": 244937
+    },
+    {
+      "path": "MONICA72/U10_summary.png",
+      "sha256": "763c0c7251a7a74eca10bdbb04c91456f700c78a64bb76a9f17e0ca118b3f294",
+      "bytes": 64213
+    },
+    {
+      "path": "MONICA72/U_bands.png",
+      "sha256": "81d56c4dd3a8e7473ce3970b50fe39a5b69e8dcd9e51dcbc25ea18b2a919db6e",
+      "bytes": 246069
+    },
+    {
+      "path": "MONICA72/U_summary.png",
+      "sha256": "8766e8ec3b81c0248f47525a99eae0de39b123f68c4e874d6245aa1ecff42386",
+      "bytes": 60492
+    },
+    {
+      "path": "MONICA72/V10_bands.png",
+      "sha256": "3ab1234a43a67a8472b54b0793526432b69dd9fd05d48c148d38281fbcd4a62f",
+      "bytes": 269372
+    },
+    {
+      "path": "MONICA72/V10_summary.png",
+      "sha256": "e38e85cb0daea391d30fffeb572f990fb41447e665f80d8643538b45514c6d82",
+      "bytes": 63365
+    },
+    {
+      "path": "MONICA72/V_bands.png",
+      "sha256": "ee7ec2712fa0c920031841378e91f4260b0265a40eebcc7b1e2fb112f6ed04a5",
+      "bytes": 243982
+    },
+    {
+      "path": "MONICA72/V_summary.png",
+      "sha256": "f24d5faf591e4d9562d11594709a177989a97c2e71d7c4030bf441b12a41c41d",
+      "bytes": 60853
+    },
+    {
+      "path": "MONICA72/W_bands.png",
+      "sha256": "84ac4b6a87ee6443f8c3caa6aa669121e38a4eceec8ba55f632da2d3fc9d067d",
+      "bytes": 254048
+    },
+    {
+      "path": "MONICA72/W_summary.png",
+      "sha256": "276efdf677822e2d4a7a3204ea777559ebba77cea5bdac2ff3c7d440b04b870c",
+      "bytes": 66709
+    },
+    {
+      "path": "MONICA72/heatmap.png",
+      "sha256": "dc19110519bb838d7db1b5e39240ec6857933b90d76bb63c6455564ab9af2b70",
+      "bytes": 93518
+    },
+    {
+      "path": "MONICA72/index.html",
+      "sha256": "dbe08c694315df2704ea25f6c641cd2a5e19a516769feba532803f880b20fd3e",
+      "bytes": 5062
+    },
+    {
+      "path": "MONICA72/metrics.json",
+      "sha256": "98e3087096a3692d4502a3fb6592e2322850dd371d096c77a94dec2cfdbba058",
+      "bytes": 917824
+    },
+    {
+      "path": "MONICA72/scores/annex_postpass.txt",
+      "sha256": "ec7ebc14f0d073660cb3171b39ccbbd9621a367bf8f3ba86f029ac15a659c8d4",
+      "bytes": 81
+    },
+    {
+      "path": "MONICA72/scores/full_D6.json",
+      "sha256": "8ca52f45adf78151d9da53ec49d8d9874310d1aafef2e7945b5a0a6497dc74f8",
+      "bytes": 748
+    },
+    {
+      "path": "MONICA72/scores/integrity.json",
+      "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+      "bytes": 82
+    },
+    {
+      "path": "MONICA72/scores/strict24.json",
+      "sha256": "4f700488a81179ee5b71c850c51c6630b3698ed3ecc3931c268203892c8ae2f6",
+      "bytes": 739
+    },
+    {
+      "path": "NATIVE_BYTE_BRIDGE.json",
+      "sha256": "628de15196b6a18aa2c73964ed5c0759a89729e616aee698effa0fd4d52b4c75",
+      "bytes": 8085
+    },
+    {
+      "path": "SWISS24/ARM_BINDING.json",
+      "sha256": "6653018b61801f8dcde2c485fcc7b37525f9f5494447910200200ee2e9db8f2a",
+      "bytes": 4838
+    },
+    {
+      "path": "SWISS24/PSFC_bands.png",
+      "sha256": "512961d9337ed429a6c6d84401226bab0fd3b6d4fe43574f13c7e75abe5b3f24",
+      "bytes": 154975
+    },
+    {
+      "path": "SWISS24/PSFC_summary.png",
+      "sha256": "da9c0a3891fcb584ae39d4ec2a9c3cc601cf0b3f350d21e5902e65882a861bc7",
+      "bytes": 40708
+    },
+    {
+      "path": "SWISS24/QVAPOR_bands.png",
+      "sha256": "2e8414433abd6f6b1a33508e171e67e841ff8d5fbbb6e6238569179c03ac0486",
+      "bytes": 171687
+    },
+    {
+      "path": "SWISS24/QVAPOR_summary.png",
+      "sha256": "44b6235aa2bf2d6685a7f5c3e922ac8574f4df23514c3d20323d836188583e21",
+      "bytes": 40880
+    },
+    {
+      "path": "SWISS24/RAINNC_bands.png",
+      "sha256": "232add2e85d70d08383a7c20708bf611f17a1c948c0c330bf3ded407b8b1cbb6",
+      "bytes": 143108
+    },
+    {
+      "path": "SWISS24/RAINNC_hourly_bands.png",
+      "sha256": "d7176011ce0ee1bf4f7ba80c23a6a57264e5bc23eaf28bfd0244d9a963b1649f",
+      "bytes": 148890
+    },
+    {
+      "path": "SWISS24/RAINNC_hourly_summary.png",
+      "sha256": "2763134442f39c0f5ee68a81e4042dc0f07e5566f7329cdfd16485824604440f",
+      "bytes": 45366
+    },
+    {
+      "path": "SWISS24/RAINNC_summary.png",
+      "sha256": "d519e27da9e795f617ef47f4b893a25c91789d8e6ac09fb73faca9852a61db56",
+      "bytes": 41258
+    },
+    {
+      "path": "SWISS24/T2_bands.png",
+      "sha256": "90fd6f25035cc685cba84aa37900f1fcff8c96ec7fffec40ed85655d8c0c623a",
+      "bytes": 177186
+    },
+    {
+      "path": "SWISS24/T2_summary.png",
+      "sha256": "53674b93089c8021f4a645e054bc69f0255c599ef830c6a0f215a56b3b52194b",
+      "bytes": 43672
+    },
+    {
+      "path": "SWISS24/T_bands.png",
+      "sha256": "9a1541026334dfe1f58c0511552b7737b2a3aa0ad3280a7e5153695a4926b4cf",
+      "bytes": 165272
+    },
+    {
+      "path": "SWISS24/T_summary.png",
+      "sha256": "aad75853431eebfc0355be67ec0520892deb4e32ad8e1be82a1d21ae5ab0a6d6",
+      "bytes": 39969
+    },
+    {
+      "path": "SWISS24/U10_bands.png",
+      "sha256": "78c1c5d569e45556786b47bbe4e64dc500c9ed6be7a7393906d3fb1148b9c715",
+      "bytes": 168657
+    },
+    {
+      "path": "SWISS24/U10_summary.png",
+      "sha256": "1f8003d1f0db0a70ce441e9c535e07c03ad60c7d68c6ff5643c0bca7b7e3bfd8",
+      "bytes": 43201
+    },
+    {
+      "path": "SWISS24/U_bands.png",
+      "sha256": "bdf238677d9503d506383777bccd583f3fd91e542a7247279f3416c49c5f2457",
+      "bytes": 162851
+    },
+    {
+      "path": "SWISS24/U_summary.png",
+      "sha256": "cf033735b4cb01ed6524838fc91b8317cb5b68488f11cc921dd2d6f0e7c4d1aa",
+      "bytes": 43358
+    },
+    {
+      "path": "SWISS24/V10_bands.png",
+      "sha256": "5ff8cc7890d0bbd2f10453ab00fcdeb91e14089d8f63f8270eaf8224fdfee2fd",
+      "bytes": 160811
+    },
+    {
+      "path": "SWISS24/V10_summary.png",
+      "sha256": "4547b1df3d3653819c6d24acee6bb67a6e4f22cd13b6eb5ba9b95fd9af933678",
+      "bytes": 43132
+    },
+    {
+      "path": "SWISS24/V_bands.png",
+      "sha256": "6caa807123453599fe12cccee5b10b8ccb3d6bed25d9b12121f22d26a0306bbb",
+      "bytes": 166540
+    },
+    {
+      "path": "SWISS24/V_summary.png",
+      "sha256": "e6bb69c1b424cd7320cd8a6360b7b330bca490880f42a119a7b0ef7b40cabf83",
+      "bytes": 42863
+    },
+    {
+      "path": "SWISS24/W_bands.png",
+      "sha256": "fad28477bcfdf42d2c8141b8e7bce2dc64447ef0c5a96e5702f9e7ad094a115a",
+      "bytes": 162642
+    },
+    {
+      "path": "SWISS24/W_summary.png",
+      "sha256": "34003768ef0ccacfdf8f34c74d2b35b94e1004a6498db3f587beafb4b271a995",
+      "bytes": 44005
+    },
+    {
+      "path": "SWISS24/heatmap.png",
+      "sha256": "7f6ca0f8ec7f8f7f87224bc4494f8fb8166ecb0dd36cdf2b69099db76169fb0f",
+      "bytes": 49008
+    },
+    {
+      "path": "SWISS24/index.html",
+      "sha256": "dd6f07ff142831e04b8820b06f1199533676a52db3860b3c63cf19dd6655e15a",
+      "bytes": 5740
+    },
+    {
+      "path": "SWISS24/metrics.json",
+      "sha256": "a1e82f5161f3055b950b5e6777c916d98d464d1b9035a6473b24732a80194173",
+      "bytes": 157675
+    },
+    {
+      "path": "SWISS24/scores/annex_postpass.txt",
+      "sha256": "a767e827b6e3e3a4f51fc119ba612136fb62c89cbf89aa6ebf9c2f7ec2ba518f",
+      "bytes": 83
+    },
+    {
+      "path": "SWISS24/scores/full_D6.json",
+      "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+      "bytes": 575
+    },
+    {
+      "path": "SWISS24/scores/integrity.json",
+      "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+      "bytes": 82
+    },
+    {
+      "path": "SWISS24/scores/strict24.json",
+      "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+      "bytes": 575
+    },
+    {
+      "path": "W3P0227/ARM_BINDING.json",
+      "sha256": "d24b0a5ee16d07aa4aedf296b2cc8208b211fc093866c4c003b2267030220e30",
+      "bytes": 5459
+    },
+    {
+      "path": "W3P0227/PSFC_bands.png",
+      "sha256": "247287ffb634206c8123f6a910d736b9ffe49e6e3795eb1c6c32550d80992e7e",
+      "bytes": 399865
+    },
+    {
+      "path": "W3P0227/PSFC_summary.png",
+      "sha256": "1273190f87b69a52e96a57417494623bf693dd8ba8854572c53b67ace1dd865f",
+      "bytes": 59822
+    },
+    {
+      "path": "W3P0227/QVAPOR_bands.png",
+      "sha256": "ee94a142950e945cf1fa3fb2c21be918bf46d01f65f6adad4f529a6575e621bb",
+      "bytes": 402236
+    },
+    {
+      "path": "W3P0227/QVAPOR_summary.png",
+      "sha256": "cea24ecb2e96e90fa5c0263a990ad6e6010824827d633324647865391051e482",
+      "bytes": 68869
+    },
+    {
+      "path": "W3P0227/RAINNC_bands.png",
+      "sha256": "99c2bcdcb02b47846c3ce88780b6ecb87d3a816159ddfe5551b728af922e8d52",
+      "bytes": 279875
+    },
+    {
+      "path": "W3P0227/RAINNC_hourly_bands.png",
+      "sha256": "388cb50824c401115b6a0f69b97bf0e9993d0b899b3d6cf0dccf2ad399aeb869",
+      "bytes": 348706
+    },
+    {
+      "path": "W3P0227/RAINNC_hourly_summary.png",
+      "sha256": "46d1315f31620357d003616062303ab438aa2e83a767b1f465cdced7c49cdd74",
+      "bytes": 68333
+    },
+    {
+      "path": "W3P0227/RAINNC_summary.png",
+      "sha256": "c072fab0251a3422432794ef1bd31b985d43b4df52abc515e249e289ba7447af",
+      "bytes": 59824
+    },
+    {
+      "path": "W3P0227/T2_bands.png",
+      "sha256": "1979a97b60fe3d6b6626bd25bc42c927705f9ce4d900c76d01adabc5d3d63a37",
+      "bytes": 418330
+    },
+    {
+      "path": "W3P0227/T2_summary.png",
+      "sha256": "e6269291ab70316ee8b65eb1d8510e5c71b7a240e4694378422f73b59628941c",
+      "bytes": 69725
+    },
+    {
+      "path": "W3P0227/T_bands.png",
+      "sha256": "f2936d130b21c879ad7cf2deae15dbb424f802c783296c466e0a818e9c730941",
+      "bytes": 374039
+    },
+    {
+      "path": "W3P0227/T_summary.png",
+      "sha256": "0dd3a1262775b0d0ddc4f5eae83f3958ffa42e786ca8906395d91adf17c57e42",
+      "bytes": 61772
+    },
+    {
+      "path": "W3P0227/U10_bands.png",
+      "sha256": "36e32d153a49e591c864fc2f4829a4f7ec10eb099ff79f76e645c89a8edacbfd",
+      "bytes": 405842
+    },
+    {
+      "path": "W3P0227/U10_summary.png",
+      "sha256": "4a03809cc229aa3c47c8492d827b30094cbf6017ff0816f216d52f034b934220",
+      "bytes": 83576
+    },
+    {
+      "path": "W3P0227/U_bands.png",
+      "sha256": "620573820a96643eddb18004a8a5c41227d445702d061a6adf62f575af632885",
+      "bytes": 371452
+    },
+    {
+      "path": "W3P0227/U_summary.png",
+      "sha256": "77fa4375cb3d1df38287b6de084d8d26def9cef548db358da594b6a056fa9c54",
+      "bytes": 70349
+    },
+    {
+      "path": "W3P0227/V10_bands.png",
+      "sha256": "4db067005ac4895cef58383803e286424314de7abe396907ff016420cf8060d7",
+      "bytes": 408408
+    },
+    {
+      "path": "W3P0227/V10_summary.png",
+      "sha256": "8ad3af9c978868c7e7a6b80309be72e2c47af50e88003da900537d3d69bf2c6a",
+      "bytes": 86422
+    },
+    {
+      "path": "W3P0227/V_bands.png",
+      "sha256": "937b53e8200176bf91a96fb1eef11f9334d9bf05a864294ea18c9381ea2b6e67",
+      "bytes": 375312
+    },
+    {
+      "path": "W3P0227/V_summary.png",
+      "sha256": "6086b2af525c94b00e04a2a71873e8133ef4a3a61507ea0000f0c6c26b7b32af",
+      "bytes": 72232
+    },
+    {
+      "path": "W3P0227/W_bands.png",
+      "sha256": "dde98e101ece1a1af92ca959d991e7ea5a16d31c367c529727ed46e7d2f7457c",
+      "bytes": 397106
+    },
+    {
+      "path": "W3P0227/W_summary.png",
+      "sha256": "52b8746f1c5e4371307e2b6e2b0f5d638b274f1df429dd21b70a411b9c7c6ad0",
+      "bytes": 77860
+    },
+    {
+      "path": "W3P0227/heatmap.png",
+      "sha256": "b790cb0e1588bd981bf8500c946d9bb8540a3bb8f7c486df0e451213450bc0ba",
+      "bytes": 135652
+    },
+    {
+      "path": "W3P0227/index.html",
+      "sha256": "9dedd241357ca65034b5f8eb9d45dee2e1457fc557e448017663c6f90ecd66c3",
+      "bytes": 5905
+    },
+    {
+      "path": "W3P0227/metrics.json",
+      "sha256": "4bcdca2ca7681d87004638c8f404fcf300f7f85152e81e4a6930b7ab4130b329",
+      "bytes": 1419022
+    },
+    {
+      "path": "W3P0227/scores/annex_postpass.txt",
+      "sha256": "5ddf9b0e59f3eb544990707589c10aebf897e4d8eb5151d396d8d477130adbab",
+      "bytes": 1127
+    },
+    {
+      "path": "W3P0227/scores/floor_annex.json",
+      "sha256": "4491e479ce5e201b5071c735b0842ed88564cc028adc0ece8ec44d574a255be2",
+      "bytes": 2258
+    },
+    {
+      "path": "W3P0227/scores/full_D6.json",
+      "sha256": "a44c5627ab6085c0767c8eaa312c67782b255567e8372ef3ab7c6b22b3a179e3",
+      "bytes": 3117
+    },
+    {
+      "path": "W3P0227/scores/integrity.json",
+      "sha256": "e7c89c130fb8d9c3e3a8189a16d6ccb28bc7dd5df55eb617d9fe6e8f5075f1e6",
+      "bytes": 1285
+    },
+    {
+      "path": "W3P0227/scores/strict24.json",
+      "sha256": "adbfad9a5e10f49d436d18439384c392b50c2e16a4d8241652927d6c50577c5a",
+      "bytes": 935
+    },
+    {
+      "path": "W3P_0115/ARM_BINDING.json",
+      "sha256": "9921b990353a738c77210fbd28b5b4f597b915a531b793f98aba5e4ada941cf5",
+      "bytes": 7377
+    },
+    {
+      "path": "W3P_0115/PSFC_bands.png",
+      "sha256": "7bbc55d04e811507e9e5e4465717bb9b44b365f96bf9881cb0455a411d4ad64c",
+      "bytes": 433873
+    },
+    {
+      "path": "W3P_0115/PSFC_summary.png",
+      "sha256": "04877069f46f5c8789ad13e4157a23fee4b042fca4debe09b821fe0176a9e83e",
+      "bytes": 66006
+    },
+    {
+      "path": "W3P_0115/QVAPOR_bands.png",
+      "sha256": "0bc73a2a237623d79bf082f50998a0da390231bbfbfd287ed746bb9bfc39c498",
+      "bytes": 329091
+    },
+    {
+      "path": "W3P_0115/QVAPOR_summary.png",
+      "sha256": "68cf4f726002d39e656732617aa40fe1a16a8df7e04bebe17170e9b5f5ef78de",
+      "bytes": 71299
+    },
+    {
+      "path": "W3P_0115/RAINNC_bands.png",
+      "sha256": "738a9452e9320d6be42fed5db498a0f2ac3621968bafda1b6591130ade1d81b4",
+      "bytes": 316529
+    },
+    {
+      "path": "W3P_0115/RAINNC_hourly_bands.png",
+      "sha256": "73afe92f9bbe97e0527b6ff7339b123d235a5f198854b64dff374837ddf54ca3",
+      "bytes": 383616
+    },
+    {
+      "path": "W3P_0115/RAINNC_hourly_summary.png",
+      "sha256": "4d78f4844096c43684bf6315a248b55aede0a468529d2c8bb9d38db055af2d64",
+      "bytes": 76300
+    },
+    {
+      "path": "W3P_0115/RAINNC_summary.png",
+      "sha256": "b6a9f9ddfc86e2f0550caa83d003f0fa021c11e2ef54a5d564b32965cb7b2e65",
+      "bytes": 64220
+    },
+    {
+      "path": "W3P_0115/T2_bands.png",
+      "sha256": "193055d45adc5e0d1076491cf65bbf61a50ef0010206ea974bc986362d42c51b",
+      "bytes": 437580
+    },
+    {
+      "path": "W3P_0115/T2_summary.png",
+      "sha256": "15b59cc85d8102f5f550e89558cce5018925da9f6baa88f89ac964655d0784e6",
+      "bytes": 72542
+    },
+    {
+      "path": "W3P_0115/T_bands.png",
+      "sha256": "f0c3efbea99ee84be5bf2413f53a845d50643d44b012c3119385e65d4d170794",
+      "bytes": 329732
+    },
+    {
+      "path": "W3P_0115/T_summary.png",
+      "sha256": "30c78224f8ab4aa4a3bc0127208b2c0bace16a9ed3c1a0a06566229e34215ab7",
+      "bytes": 65365
+    },
+    {
+      "path": "W3P_0115/U10_bands.png",
+      "sha256": "29e09caf30aa7d0fb7db4d6a30d1e66595425a953dfac0ccf5c65c9ebd7e5aa1",
+      "bytes": 412393
+    },
+    {
+      "path": "W3P_0115/U10_summary.png",
+      "sha256": "a510c607b812c5e913cd08ee9d1a29dd619ffc63bd01df57b43a77f2b483b137",
+      "bytes": 90688
+    },
+    {
+      "path": "W3P_0115/U_bands.png",
+      "sha256": "793fb6c598e62f3ee9475231ca5f44c6ec1292d2883e85aecfbf24c3cae33440",
+      "bytes": 344948
+    },
+    {
+      "path": "W3P_0115/U_summary.png",
+      "sha256": "21aca0c9937c68d557643e0b0f57dfd45d6cfb5b386ed07ea0a9205a1e9f6430",
+      "bytes": 75201
+    },
+    {
+      "path": "W3P_0115/V10_bands.png",
+      "sha256": "bb1e734c501ddf66179bce7496c03dca44470b547096ae3ec2961937ebc7c9c7",
+      "bytes": 417756
+    },
+    {
+      "path": "W3P_0115/V10_summary.png",
+      "sha256": "cb55ceb810d87f68711c21e3aba7564aa827d66245443559d54c8aac955629ec",
+      "bytes": 100999
+    },
+    {
+      "path": "W3P_0115/V_bands.png",
+      "sha256": "80900e52349c7ab2a3d94c511fedb54550e37835e2e5ca75cb676975e6ff50f3",
+      "bytes": 334826
+    },
+    {
+      "path": "W3P_0115/V_summary.png",
+      "sha256": "3ff9d9da598107f6236e5f89a5c9475275695b0cf05d451899399196946f3c5d",
+      "bytes": 81300
+    },
+    {
+      "path": "W3P_0115/W_bands.png",
+      "sha256": "d931f5f5516d9521534bccef0742a7b8d370eba75d5b2e05c11ed8670dbe54f0",
+      "bytes": 431952
+    },
+    {
+      "path": "W3P_0115/W_summary.png",
+      "sha256": "9a0be79c295b3221924d4c7e8318a95c2f272c1a16268d6b8c07245c90d7abbd",
+      "bytes": 87402
+    },
+    {
+      "path": "W3P_0115/heatmap.png",
+      "sha256": "8e20676a266a4813b2d759a6c63b5f016bd0290d68461c9d364b062b85c81faa",
+      "bytes": 140012
+    },
+    {
+      "path": "W3P_0115/index.html",
+      "sha256": "67f18ca1f100e8598d7a50edfe452346b6d166ddc81a6f4d9eb9d0f6f9595977",
+      "bytes": 5971
+    },
+    {
+      "path": "W3P_0115/metrics.json",
+      "sha256": "7d807ea71e1201d543852cb972093386cf32c5ac6a3d4a7373b3a32865a6e2b5",
+      "bytes": 1400505
+    },
+    {
+      "path": "W3P_0115/scores/annex_postpass.txt",
+      "sha256": "86919e95ff59ad0633363c59f7e21cfc1e6284bac4ab57dcf207cd7f0a8e7348",
+      "bytes": 872
+    },
+    {
+      "path": "W3P_0115/scores/floor_annex.json",
+      "sha256": "ae96016802a0f1875eb84da699a6f363864ef39ac45db4e3eea2d3b5e0d0a997",
+      "bytes": 13493
+    },
+    {
+      "path": "W3P_0115/scores/full_D6.json",
+      "sha256": "3dff2b840a2bd4f58696891b5fcbc093bcd8cca4e16abd0d19a4de083a9888e4",
+      "bytes": 19802
+    },
+    {
+      "path": "W3P_0115/scores/integrity.json",
+      "sha256": "a86f6160af11d3e4b93340bdb46826733c5ece85b016718467fadf8b4927a29e",
+      "bytes": 1433
+    },
+    {
+      "path": "W3P_0115/scores/strict24.json",
+      "sha256": "d1bf21e579ab1321f42e708dd29e76e2251a78671464a7ed322d9aebdf5e5933",
+      "bytes": 2197
+    },
+    {
+      "path": "W3R0227/ARM_BINDING.json",
+      "sha256": "0ba7088aacb4527bd8e2e5f3c2191e218cc6b234c38a523f4fc499ffd87196df",
+      "bytes": 5589
+    },
+    {
+      "path": "W3R0227/PSFC_bands.png",
+      "sha256": "8dfbb983c8958991716d1f299953d0181b7ffb46584490286cee3ec802dc1380",
+      "bytes": 392777
+    },
+    {
+      "path": "W3R0227/PSFC_summary.png",
+      "sha256": "f1987d6d2265975b00802119d4e507a5f169474f6b8c65c3f3c3c271d372f9c1",
+      "bytes": 62411
+    },
+    {
+      "path": "W3R0227/QVAPOR_bands.png",
+      "sha256": "1833c672a2eea7744dc1a66db56e1b6d44b988f88ca787585b87e008eb04933d",
+      "bytes": 386345
+    },
+    {
+      "path": "W3R0227/QVAPOR_summary.png",
+      "sha256": "a913ee14afde221c989fef60028316547c6ee0dfaf7376dd8ff4b0fe3280641c",
+      "bytes": 69567
+    },
+    {
+      "path": "W3R0227/RAINNC_bands.png",
+      "sha256": "e96c89cad5a5e2a018814c8a5b882d267289a277db1506285182915715ab407a",
+      "bytes": 281577
+    },
+    {
+      "path": "W3R0227/RAINNC_hourly_bands.png",
+      "sha256": "4362627e098153454ced885d4fe6cdbaa2619b97590604125180932ebfd05818",
+      "bytes": 337143
+    },
+    {
+      "path": "W3R0227/RAINNC_hourly_summary.png",
+      "sha256": "fde64960bfb8e93ea6349f5cfadcd55e70507274a87f8875cdd99818dd257186",
+      "bytes": 69088
+    },
+    {
+      "path": "W3R0227/RAINNC_summary.png",
+      "sha256": "a4999bd3239f8be02dcab528f93273ec230c7e1434793592906dd778ec07d257",
+      "bytes": 59744
+    },
+    {
+      "path": "W3R0227/T2_bands.png",
+      "sha256": "c524a6fd57cbe67d5966c9bb77b6c22001150d281d9825f088adac02a7a5fda9",
+      "bytes": 383727
+    },
+    {
+      "path": "W3R0227/T2_summary.png",
+      "sha256": "5d676d807fb915aee339dce58a370154d7ae8c4110d1d434445e53b9f9e27336",
+      "bytes": 70814
+    },
+    {
+      "path": "W3R0227/T_bands.png",
+      "sha256": "2598e2193a15594b0c9ce8b1685e985fb710e5896e1be9b7893cf5f1d64aafb3",
+      "bytes": 351308
+    },
+    {
+      "path": "W3R0227/T_summary.png",
+      "sha256": "7dd7ccd0d1f33979f948b4aa05d671a8634d13a9d72ec4799c521d12cab13114",
+      "bytes": 62328
+    },
+    {
+      "path": "W3R0227/U10_bands.png",
+      "sha256": "36536499a4c938dcc9f6ac26bb21624409f6d49d0be8d2ca9828a854a2a86f14",
+      "bytes": 376353
+    },
+    {
+      "path": "W3R0227/U10_summary.png",
+      "sha256": "e6fd1f306227b97c9e5e49de2ed5464105a44c1b8dc0314aabefa6ac41b33160",
+      "bytes": 88087
+    },
+    {
+      "path": "W3R0227/U_bands.png",
+      "sha256": "90764354ada068d13b374686bbef6512d256a319ab0676bd0d316b9830a4e684",
+      "bytes": 361162
+    },
+    {
+      "path": "W3R0227/U_summary.png",
+      "sha256": "c782badfe48cd1510f90adfed1337ce806970b966e4333863b80e9ef79c8e236",
+      "bytes": 72062
+    },
+    {
+      "path": "W3R0227/V10_bands.png",
+      "sha256": "54a40a4abd2409b9f37222a69f7c43e94ddd6c682f6855688203f03f3e6fa7c6",
+      "bytes": 395721
+    },
+    {
+      "path": "W3R0227/V10_summary.png",
+      "sha256": "65b0d03c052c947ba74de5a7b0cca45dd3bc4c19b5e0fdb17ac194738d20c7df",
+      "bytes": 95175
+    },
+    {
+      "path": "W3R0227/V_bands.png",
+      "sha256": "3fd6c0387721db778ea8470db682a7b75184de0e17147180aa64654691e8fc33",
+      "bytes": 374712
+    },
+    {
+      "path": "W3R0227/V_summary.png",
+      "sha256": "dc1f02b22fac4a99cdd3508c2911cda61a768f3698096e47f8976d32523cba15",
+      "bytes": 76433
+    },
+    {
+      "path": "W3R0227/W_bands.png",
+      "sha256": "8545cd401012de35d4bf5a0a7d91792aaa25c818a592dedb4869ecfb46683ac7",
+      "bytes": 382834
+    },
+    {
+      "path": "W3R0227/W_summary.png",
+      "sha256": "91a2f84f9dec5bdd7dac8aa69d971dc4086b60380099065136bcd4566408f791",
+      "bytes": 79135
+    },
+    {
+      "path": "W3R0227/heatmap.png",
+      "sha256": "738d77c4bb95a0a842b66cc9014a215395d659635129ee91c7765c9c51652dc7",
+      "bytes": 136756
+    },
+    {
+      "path": "W3R0227/index.html",
+      "sha256": "cf484218fb7bd0604f900408fa3d4def7f652a07226d7f74ad8f6192fd0b29ef",
+      "bytes": 5132
+    },
+    {
+      "path": "W3R0227/metrics.json",
+      "sha256": "e8eaba543a524e072685bdc4bd7d544571f08b08d1f60793d275791fa87de4f2",
+      "bytes": 1418276
+    },
+    {
+      "path": "W3R0227/scores/annex_postpass.txt",
+      "sha256": "b95e84ec7453fe0b1ded2d22669e0a85a3772d4328c3a3b4b67bf0047cb810be",
+      "bytes": 607
+    },
+    {
+      "path": "W3R0227/scores/floor_annex.json",
+      "sha256": "22ffd7ccf3fbfb6f6483078bdce045798b224c6f2c5095ff7533c054ee7a573d",
+      "bytes": 4218
+    },
+    {
+      "path": "W3R0227/scores/full_D6.json",
+      "sha256": "fce4115e1ff5fd84bb2915cd9d9d352b81e41dca6a29a93e21f17063ba0542d8",
+      "bytes": 3851
+    },
+    {
+      "path": "W3R0227/scores/integrity.json",
+      "sha256": "2a105e3e91ec284df981fc00faf0272f21f2a6568e9f2d51ae89c59ffd2ce9a7",
+      "bytes": 1059
+    },
+    {
+      "path": "W3R0227/scores/strict24.json",
+      "sha256": "43f5845b85160fee2cfb39f9b7a4f774a6e68c524d3dc0fb0c2f4c617308815a",
+      "bytes": 943
+    },
+    {
+      "path": "W3Rf_0115/ARM_BINDING.json",
+      "sha256": "39f4b8c64f82346e9c036f0f9c599742a373b65af5c103a3a285134f257cb9af",
+      "bytes": 5347
+    },
+    {
+      "path": "W3Rf_0115/PSFC_bands.png",
+      "sha256": "fb678075f6553971d72f0ccbba3ec5d3622f88a7073ac908fd8bf00960eda777",
+      "bytes": 435081
+    },
+    {
+      "path": "W3Rf_0115/PSFC_summary.png",
+      "sha256": "c789a2dcac8aece9bca6ae4151d2d72737f3ca562b69ce26eef16be8ac80e808",
+      "bytes": 67153
+    },
+    {
+      "path": "W3Rf_0115/QVAPOR_bands.png",
+      "sha256": "bd6e85f8499b5344afa0f3115cdeeb4337415d75e4e3bc809b99eb25cb69feb7",
+      "bytes": 336577
+    },
+    {
+      "path": "W3Rf_0115/QVAPOR_summary.png",
+      "sha256": "4df81d09073f2cfe25ff0946906035285682cc9d616e8c6b68538075b6b7a48b",
+      "bytes": 70638
+    },
+    {
+      "path": "W3Rf_0115/RAINNC_bands.png",
+      "sha256": "751de952fac0e402422249f170e2ddc0df10d58025bb102907157a49e54b54ab",
+      "bytes": 298896
+    },
+    {
+      "path": "W3Rf_0115/RAINNC_hourly_bands.png",
+      "sha256": "9dded252e0f82f29c1bc1b2e245fc4a76285eb125042c9a921539c81dd888090",
+      "bytes": 389751
+    },
+    {
+      "path": "W3Rf_0115/RAINNC_hourly_summary.png",
+      "sha256": "3edf5cecb80f8167cca106207b705450bbb0dfc59fa7a8d0bb8cb494404a7d45",
+      "bytes": 75270
+    },
+    {
+      "path": "W3Rf_0115/RAINNC_summary.png",
+      "sha256": "98f4f380bc2d873a9d5b37abf1ca6d9added41091b72d90ceb8522b135e80c6a",
+      "bytes": 64796
+    },
+    {
+      "path": "W3Rf_0115/T2_bands.png",
+      "sha256": "d3757ad11b34ebc958b88c1d8cffccc4f8cd8a2cf396bb3144219af40573f5e7",
+      "bytes": 435254
+    },
+    {
+      "path": "W3Rf_0115/T2_summary.png",
+      "sha256": "8c65c3600f22b3e4415d05eb7821e4d40bead869ffd6447be2366c52784b0135",
+      "bytes": 73487
+    },
+    {
+      "path": "W3Rf_0115/T_bands.png",
+      "sha256": "ad59037056ff4d2600cc2272603a4c83ab4ff905166b876304613aefca565f80",
+      "bytes": 344543
+    },
+    {
+      "path": "W3Rf_0115/T_summary.png",
+      "sha256": "a67060548979ffbeb6929d658c917cfc94e0ebdfc05be9197e6c0a01aacf22fe",
+      "bytes": 65176
+    },
+    {
+      "path": "W3Rf_0115/U10_bands.png",
+      "sha256": "51256320c76f95f59f837a5a3e8e6e6d53e0ca4a3ec5c0c6ce7dd63a6ed9e6a7",
+      "bytes": 404316
+    },
+    {
+      "path": "W3Rf_0115/U10_summary.png",
+      "sha256": "68f802ea451051c684a0a6a1531420766d084297f9bd683ce489630f1995a01d",
+      "bytes": 91380
+    },
+    {
+      "path": "W3Rf_0115/U_bands.png",
+      "sha256": "900805dc848bd1b67d2dae5475458a5aa3415da9d6bb3ceebdaedb4716e9d427",
+      "bytes": 334586
+    },
+    {
+      "path": "W3Rf_0115/U_summary.png",
+      "sha256": "d8091af8a838796e960eae9cbb0efc193041028194d5050729756abf36a28d2b",
+      "bytes": 75776
+    },
+    {
+      "path": "W3Rf_0115/V10_bands.png",
+      "sha256": "5173d767436d7943c2f789b4c0727abf65f6b098525dfd05b039281dffc90b6e",
+      "bytes": 414878
+    },
+    {
+      "path": "W3Rf_0115/V10_summary.png",
+      "sha256": "bd741ad4b352217d3b40c166d412cc812a57f0487015e31e2ddfc5dca17d44a9",
+      "bytes": 100171
+    },
+    {
+      "path": "W3Rf_0115/V_bands.png",
+      "sha256": "69438238c3bb7d616757fefc7834cd4c268a7253d093e769e243989ec447fb7d",
+      "bytes": 336510
+    },
+    {
+      "path": "W3Rf_0115/V_summary.png",
+      "sha256": "68622a414547b4cfceb187b502a2c22f40b5e229324cb56e24d1d04334076053",
+      "bytes": 84396
+    },
+    {
+      "path": "W3Rf_0115/W_bands.png",
+      "sha256": "27f824902c45a9898b49917e2b9c108c1cd20613e3c8ceb86a30eda095e3d974",
+      "bytes": 429983
+    },
+    {
+      "path": "W3Rf_0115/W_summary.png",
+      "sha256": "6354fc6164c8bb9e7c0c90da7f85addaf91031844346facdb0028091b35d2870",
+      "bytes": 85638
+    },
+    {
+      "path": "W3Rf_0115/heatmap.png",
+      "sha256": "bc2bd322753ba3a6807babfa0c6e32cd834da6d99ef91cef3eb43cad570f2e8e",
+      "bytes": 140294
+    },
+    {
+      "path": "W3Rf_0115/index.html",
+      "sha256": "89de5a741eee0402000a3492f5d89036c29b1b660e2f07b5a6adf7dd3771859b",
+      "bytes": 6091
+    },
+    {
+      "path": "W3Rf_0115/metrics.json",
+      "sha256": "34ce1daf796f8a9a4151f63490ad121c41b2a11b0a8d379d67d1b6672d926d7a",
+      "bytes": 1400245
+    },
+    {
+      "path": "W3Rf_0115/scores/annex_postpass.txt",
+      "sha256": "82bb53d3c1071f237f26217814d7e458c18d81ddbd18222e4bd5fab49a78e188",
+      "bytes": 2540
+    },
+    {
+      "path": "W3Rf_0115/scores/floor_annex.json",
+      "sha256": "3e244fccafd4d5b1586b6c0d59c5358d98a7b3bc12012ce42b939c7bfae45c7c",
+      "bytes": 3200
+    },
+    {
+      "path": "W3Rf_0115/scores/full_D6.json",
+      "sha256": "66a9efcff40dd671588255ce61c8324fe0fbd269df248b787620f2409f49880f",
+      "bytes": 4459
+    },
+    {
+      "path": "W3Rf_0115/scores/integrity.json",
+      "sha256": "668b1809954c6594f5150b3d2dfb31674174910256d4a7592adfac4096646946",
+      "bytes": 2779
+    },
+    {
+      "path": "W3Rf_0115/scores/strict24.json",
+      "sha256": "b669e9178195bb5630329f4c6256c6d4d602cd2cd064284b0bab470eb5222ac2",
+      "bytes": 944
+    },
+    {
+      "path": "W3_0115/ARM_BINDING.json",
+      "sha256": "05c65001ca7e0ff00160a45f6f9c829211727bdc687016be24d4e04e67d116f8",
+      "bytes": 6891
+    },
+    {
+      "path": "W3_0115/PSFC_bands.png",
+      "sha256": "4bf7d62c9f5ba0581dbd4f1facaabbae1f484fa63a20a0b39c1b9c50984ea705",
+      "bytes": 431885
+    },
+    {
+      "path": "W3_0115/PSFC_summary.png",
+      "sha256": "3dc32b3bbf8205537e7cedc4f3fbb50630e93872970d2d41774b1f7138ea08fc",
+      "bytes": 67325
+    },
+    {
+      "path": "W3_0115/QVAPOR_bands.png",
+      "sha256": "7089006cc9a0ba8cb6a152f2bd4d0db9069c5cbbe4e7b231534e087e8fb2df0b",
+      "bytes": 335654
+    },
+    {
+      "path": "W3_0115/QVAPOR_summary.png",
+      "sha256": "1c6de2f7997d807183a069d902c38f27f887acd3534c7c10477db3b2a8157fd0",
+      "bytes": 70193
+    },
+    {
+      "path": "W3_0115/RAINNC_bands.png",
+      "sha256": "18f46c1259d7f7db49e2342eb36b02f1f0459dfc929599f75a14b3a54a5305f3",
+      "bytes": 316694
+    },
+    {
+      "path": "W3_0115/RAINNC_hourly_bands.png",
+      "sha256": "5d3b77a5df3df0ec1677e777b1d13801ab237448d3abf2342598e1fc31e53830",
+      "bytes": 383254
+    },
+    {
+      "path": "W3_0115/RAINNC_hourly_summary.png",
+      "sha256": "f66943f47e932c0aa88c30398087bcc31b2859eb4f79fda1d8c342aa4f203daf",
+      "bytes": 75008
+    },
+    {
+      "path": "W3_0115/RAINNC_summary.png",
+      "sha256": "2872a986b6d09e0a226d2ebf2b4d65b8623f7dc34c997500fa20049c10800611",
+      "bytes": 64067
+    },
+    {
+      "path": "W3_0115/T2_bands.png",
+      "sha256": "b6bca6d1b3a8c21ffb971e11916993be770a237c52b2464c704b882cbe3e21f2",
+      "bytes": 425990
+    },
+    {
+      "path": "W3_0115/T2_summary.png",
+      "sha256": "646f9ded735e1a9cddad470c15956c1071a3365755cb5c2e2e0c94b0ea9fc66c",
+      "bytes": 73926
+    },
+    {
+      "path": "W3_0115/T_bands.png",
+      "sha256": "90a6bebe70b5947156bf5ebd890a98bbb460be3c7ec6d1180364e6defc21e3be",
+      "bytes": 337086
+    },
+    {
+      "path": "W3_0115/T_summary.png",
+      "sha256": "3191027b8804cc70fc29de63146c380bf940fbe6ac0ffde9f5c24e74e9bb00c4",
+      "bytes": 65452
+    },
+    {
+      "path": "W3_0115/U10_bands.png",
+      "sha256": "174487b2de43bdd9d8231b73a1a4eace1f3971c3af42e0046a0a1df9406fce6e",
+      "bytes": 401484
+    },
+    {
+      "path": "W3_0115/U10_summary.png",
+      "sha256": "90b7e0408d304dee625a739e8ad2e9ad6a70f6826357bde274b21f699e333284",
+      "bytes": 91279
+    },
+    {
+      "path": "W3_0115/U_bands.png",
+      "sha256": "a5b1d844b31780d61e1bc8502810313ce8c37b02864c76fc0cec0b6530aa7182",
+      "bytes": 323420
+    },
+    {
+      "path": "W3_0115/U_summary.png",
+      "sha256": "6e4efc25cca688946ce4cdff66b3c890c47b15a3c198df41205e936c2a483c78",
+      "bytes": 75609
+    },
+    {
+      "path": "W3_0115/V10_bands.png",
+      "sha256": "642cccbba1daa3fa629684159438c6512a132345f66fdf9fd0e824ab943bb1e0",
+      "bytes": 414592
+    },
+    {
+      "path": "W3_0115/V10_summary.png",
+      "sha256": "5a17c61fb6c022f458c11ab067bd4485b4898ab4089658438f3dd64cb161531b",
+      "bytes": 101153
+    },
+    {
+      "path": "W3_0115/V_bands.png",
+      "sha256": "1b661076b7cca941b586fb8123f758be1fe01ff696a54f8d151cb039b46dd21a",
+      "bytes": 328164
+    },
+    {
+      "path": "W3_0115/V_summary.png",
+      "sha256": "8837a54db800cbeb4a7a9c660dd441e62db5e7be172bc6612ef9e6dc790e600f",
+      "bytes": 84992
+    },
+    {
+      "path": "W3_0115/W_bands.png",
+      "sha256": "73750d8b5864df3638b1119ba342286ba06c048bca307b09d98131382ed558f7",
+      "bytes": 429604
+    },
+    {
+      "path": "W3_0115/W_summary.png",
+      "sha256": "5e86dc09c65dc2750f02fcd54f5087ea39d961a8a38000b02051b78f26f4ad79",
+      "bytes": 85754
+    },
+    {
+      "path": "W3_0115/heatmap.png",
+      "sha256": "3910f92a677d6812bec819af51cf2ed72e696c7d13caf1cf865e8a9debb90dbd",
+      "bytes": 141717
+    },
+    {
+      "path": "W3_0115/index.html",
+      "sha256": "b78a796efa1b6ed2905e3ea14bd9e6a61c39004630b1c7224c49700b53f2bde9",
+      "bytes": 5182
+    },
+    {
+      "path": "W3_0115/metrics.json",
+      "sha256": "1274b72ffcf7f2b75f3db08ee13f27d67c8c72ab12af8a199027378ff024fc71",
+      "bytes": 1400118
+    },
+    {
+      "path": "W3_0115/scores/annex_postpass.txt",
+      "sha256": "79f3bc317b7955d9cca468cf19a221c9eddfa203e2d53e72e16bddd03809a93c",
+      "bytes": 2538
+    },
+    {
+      "path": "W3_0115/scores/floor_annex.json",
+      "sha256": "14021073592bcedb3ec799840aa80df5396fbfdacb986803be94ce5b2a61cacf",
+      "bytes": 15458
+    },
+    {
+      "path": "W3_0115/scores/full_D6.json",
+      "sha256": "e0b9aa65d339971b5cd6fa9a969544279226da22edb21eae06994e0682fbee27",
+      "bytes": 22628
+    },
+    {
+      "path": "W3_0115/scores/integrity.json",
+      "sha256": "cae2623ea4ea38fc08468e2239d3623f45ceb7ea22c9ac3da15bd130719cbd41",
+      "bytes": 2858
+    },
+    {
+      "path": "W3_0115/scores/strict24.json",
+      "sha256": "d0a644fcf2d2a6a789e37630da08cd0ba339da9c589a2b9944c3b87de0b982df",
+      "bytes": 1781
+    },
+    {
+      "path": "W3_0408/ARM_BINDING.json",
+      "sha256": "40219c513e8c605c80c3163b765dd23ddf33b209ea7f9c585b70ff5246d820bc",
+      "bytes": 5438
+    },
+    {
+      "path": "W3_0408/PSFC_bands.png",
+      "sha256": "674b377779126dd3b0041938e9803e66e8b82a89b63abfc57833dffb3a498d1e",
+      "bytes": 350909
+    },
+    {
+      "path": "W3_0408/PSFC_summary.png",
+      "sha256": "216c34bf19f321547c9d40d8c96b0cc1f734d2b04428fa589af198e9fd5d0b6c",
+      "bytes": 64400
+    },
+    {
+      "path": "W3_0408/QVAPOR_bands.png",
+      "sha256": "3bf9640e8c8b163693953df4ffc8240b6652dcbdc10c77798354977a42bf492d",
+      "bytes": 311794
+    },
+    {
+      "path": "W3_0408/QVAPOR_summary.png",
+      "sha256": "48347a5cc5f5f578806e9af71a4a3253e4280e51ba1d8e63e99ad87cafe229ce",
+      "bytes": 69546
+    },
+    {
+      "path": "W3_0408/RAINNC_bands.png",
+      "sha256": "21ad3c63f75a632a1946d5c45bbe286cb0fe909a6e2fe764eb36bedabfaffe4a",
+      "bytes": 236659
+    },
+    {
+      "path": "W3_0408/RAINNC_hourly_bands.png",
+      "sha256": "4e2b1893fb31574fc0b5ac605c6958e369553249fb9e49f874c80b25e630bb77",
+      "bytes": 305150
+    },
+    {
+      "path": "W3_0408/RAINNC_hourly_summary.png",
+      "sha256": "c3b6433c4fa7b9149dde05cf7285c8bf29809fdb4322afa2cfe51d5d43122af0",
+      "bytes": 70548
+    },
+    {
+      "path": "W3_0408/RAINNC_summary.png",
+      "sha256": "b11f271af26e8ad5685d036a49c77552eecb9fc471755249d5f49c02ff647d63",
+      "bytes": 63821
+    },
+    {
+      "path": "W3_0408/T2_bands.png",
+      "sha256": "3e3fe4222b4d82d0c1c3f980f3a1c11730ce3c011950a204d10a080285a4adf9",
+      "bytes": 345723
+    },
+    {
+      "path": "W3_0408/T2_summary.png",
+      "sha256": "c26874793ce05b223edc7c48abb9042796b68b2efb1576f28db081e8faed8c16",
+      "bytes": 70653
+    },
+    {
+      "path": "W3_0408/T_bands.png",
+      "sha256": "68648f284068f0d46c9b962fdc0c4c23fb16a392d1dceca4f2e7443df3839b73",
+      "bytes": 332282
+    },
+    {
+      "path": "W3_0408/T_summary.png",
+      "sha256": "fa6a2f51d3b09d07cfc083de496b94c11de38c27208ea858c73e5ddaa103d115",
+      "bytes": 62574
+    },
+    {
+      "path": "W3_0408/U10_bands.png",
+      "sha256": "7689232f0db7affeec108e0894c3d0f0ad5f41e2aa7e8a23fb03b3c77560b492",
+      "bytes": 343598
+    },
+    {
+      "path": "W3_0408/U10_summary.png",
+      "sha256": "376aa3fdc929735734c8fc9255abfc29d31441a085c76b5e4fd0df0e477b48b1",
+      "bytes": 83521
+    },
+    {
+      "path": "W3_0408/U_bands.png",
+      "sha256": "bf2541a76ee5ef2cd8cd69c36bd2385e40e341613102cd36725aa3de14e320c4",
+      "bytes": 312479
+    },
+    {
+      "path": "W3_0408/U_summary.png",
+      "sha256": "3d976b090cd65d8203338d3eafb5ec124eeca6f603b176bad5c9db31b975955f",
+      "bytes": 70211
+    },
+    {
+      "path": "W3_0408/V10_bands.png",
+      "sha256": "74dc4e72c90d9b45fcef3d7e03118f35043c99d393f264a622e9676cd1c573f9",
+      "bytes": 360611
+    },
+    {
+      "path": "W3_0408/V10_summary.png",
+      "sha256": "d86a090fb4b82b2700755447d06d81cb563ca72cd8a73820b104468da8c0128c",
+      "bytes": 89716
+    },
+    {
+      "path": "W3_0408/V_bands.png",
+      "sha256": "1d25220dc35bbd0f74231553508ed1e124aa23a3808b8a99aa92e2db765f43d7",
+      "bytes": 318781
+    },
+    {
+      "path": "W3_0408/V_summary.png",
+      "sha256": "ee23fbcda7a55112b9bdea14b44bd6d25eb01acc214f1770078806c2a9ff2e4d",
+      "bytes": 74474
+    },
+    {
+      "path": "W3_0408/W_bands.png",
+      "sha256": "c9d81944f8dadbf39d0a2db11ad952595cb52cc4459cca14275f40cd92fbdfaa",
+      "bytes": 329008
+    },
+    {
+      "path": "W3_0408/W_summary.png",
+      "sha256": "51e863aa9335dde5f0b0eb72932303a2a4f943fad21beaf9fbcbd277a2ba6c6a",
+      "bytes": 82165
+    },
+    {
+      "path": "W3_0408/heatmap.png",
+      "sha256": "c5d4bf0e7103210ee454902d30f9bd51c4c4071f70f1a2760b908bee15853923",
+      "bytes": 137161
+    },
+    {
+      "path": "W3_0408/index.html",
+      "sha256": "0d6f1a3e359b14a6bcaabcd2bb6cd8fb7a79153c798ead2b430ba916cb9830a7",
+      "bytes": 5093
+    },
+    {
+      "path": "W3_0408/metrics.json",
+      "sha256": "216cf7e86487d5e6858a791c62d1801e273559bb376983495abe8fcfc132a724",
+      "bytes": 1367665
+    },
+    {
+      "path": "W3_0408/scores/annex_postpass.txt",
+      "sha256": "3f6c03e6f886b0e1f5581cac0ba80eedd441c432f91f4b502ff43a8cc153b0e4",
+      "bytes": 846
+    },
+    {
+      "path": "W3_0408/scores/full_D6.json",
+      "sha256": "ac5789364b2c67ce894751b875ebd6240812a3150ed095c0be043e0f74e5554d",
+      "bytes": 921
+    },
+    {
+      "path": "W3_0408/scores/integrity.json",
+      "sha256": "46a8153af7945d7ef3d1bfe8fcec6cd24129a0bf8fef1fa8c4c7afe271dccc47",
+      "bytes": 723
+    },
+    {
+      "path": "W3_0408/scores/strict24.json",
+      "sha256": "e2d15139231d4f48c0e8b3b9df4669f96604cbaf71f12cae5b4e3dbfccc2c65c",
+      "bytes": 947
+    },
+    {
+      "path": "index.html",
+      "sha256": "1167996626328863085538383834c0740f780861248e4e2ffd4ba0337b59a69f",
+      "bytes": 1739
+    },
+    {
+      "path": "summary/PSFC_cross_case.png",
+      "sha256": "4f42eabc169a284d789f9fb775e24e0ef777a3eded49587929a5be4b69cf9c51",
+      "bytes": 359775
+    },
+    {
+      "path": "summary/QVAPOR_cross_case.png",
+      "sha256": "05bb68654a9e3a77c7753f854f5f028af1d6591c2e34b49d2b224ba28ced5d71",
+      "bytes": 352388
+    },
+    {
+      "path": "summary/RAINNC_cross_case.png",
+      "sha256": "aca4d8a58c799a6932fa747ca1864c93e90840739ae93f315e792bb720ca536f",
+      "bytes": 203215
+    },
+    {
+      "path": "summary/RAINNC_hourly_cross_case.png",
+      "sha256": "804a8b5af9a24bf46027022635a7f33a14fc4eae140c274e7b882ce80e09297b",
+      "bytes": 269060
+    },
+    {
+      "path": "summary/T2_cross_case.png",
+      "sha256": "bc82e39a11da5951fcea7a4fda91cdffa52c8ee6109a62f51258fdd99f54078b",
+      "bytes": 329763
+    },
+    {
+      "path": "summary/T_cross_case.png",
+      "sha256": "f39b35a65ba8db3040c51f8601e743fbc6a3983393f24caefaab371d8961bb84",
+      "bytes": 327801
+    },
+    {
+      "path": "summary/U10_cross_case.png",
+      "sha256": "be777f01409933d76c1dae5109733f9ac8560c5795e4bb62c044ef75beca8e1c",
+      "bytes": 326300
+    },
+    {
+      "path": "summary/U_cross_case.png",
+      "sha256": "4a0d66aa3cc4098568ffca7a8b2161fbf92790a638359bc5162f3e741ad2a8bf",
+      "bytes": 324511
+    },
+    {
+      "path": "summary/V10_cross_case.png",
+      "sha256": "3eeecf754839a91418eb74ca63cb71bd51f3ee5d2f3567301e070f22879d57a6",
+      "bytes": 348251
+    },
+    {
+      "path": "summary/V_cross_case.png",
+      "sha256": "a5f07c187622a5726c1cc31bab6138caa5b9bab61da21c6d2257c66e1d60b08d",
+      "bytes": 338868
+    },
+    {
+      "path": "summary/W_cross_case.png",
+      "sha256": "89cdfad241504765eeae02401bf944415fc39d9ae542fc24357f699734e7ab9e",
+      "bytes": 324677
+    },
+    {
+      "path": "summary/d01_PSFC_all_cases.png",
+      "sha256": "bb5dca1dd4b4981bd13be320a9f4be784733867c3b884cd7e053a7dae667bc24",
+      "bytes": 209686
+    },
+    {
+      "path": "summary/d01_QVAPOR_all_cases.png",
+      "sha256": "fa07e05b7cf81aa3cc465ded77672fd9da194598099748593e2d468076703df9",
+      "bytes": 195534
+    },
+    {
+      "path": "summary/d01_RAINNC_all_cases.png",
+      "sha256": "d21126858882ec2412efe7f7f5da958971912921daef32526f8f04cbd49dbb68",
+      "bytes": 137940
+    },
+    {
+      "path": "summary/d01_RAINNC_hourly_all_cases.png",
+      "sha256": "73326614031ed11e2c8464496a3f289244274a268c569a1545fe86e55ec09637",
+      "bytes": 175427
+    },
+    {
+      "path": "summary/d01_T2_all_cases.png",
+      "sha256": "15c593e3a9f5b39ebe1c1dc6a6740097254a7ec2092e4187e861f0df59413aa8",
+      "bytes": 178677
+    },
+    {
+      "path": "summary/d01_T_all_cases.png",
+      "sha256": "6ee5968c6a4c6c90dcd96a72d1cc40a801ea95c8232a0f9c49ddc2cb7b679d47",
+      "bytes": 159745
+    },
+    {
+      "path": "summary/d01_U10_all_cases.png",
+      "sha256": "99eb3a48c44869cc76d73d1988ec6337145f58642720618c35a62422f18f8f89",
+      "bytes": 167159
+    },
+    {
+      "path": "summary/d01_U_all_cases.png",
+      "sha256": "bd3da94d025e88cfe6ea0b5f3a4e7005c09b835af0b2747cead343aa48b3c56c",
+      "bytes": 165174
+    },
+    {
+      "path": "summary/d01_V10_all_cases.png",
+      "sha256": "a8cf9476500fb15e03a0ffd49c5a065491add45aa9bfc1fb29b81b98aab42dfc",
+      "bytes": 175780
+    },
+    {
+      "path": "summary/d01_V_all_cases.png",
+      "sha256": "10e8d2119dda0b4408461ad03f80e15761737b8f7f07bab8b9810b3de8643504",
+      "bytes": 169462
+    },
+    {
+      "path": "summary/d01_W_all_cases.png",
+      "sha256": "086d8724841e5bf1f9f6c3b37b773fcc7b9d98e9337b29cb6c0f537bdc64617e",
+      "bytes": 176934
+    },
+    {
+      "path": "summary/d01_all_cases.html",
+      "sha256": "9da4368f3f269eba1c0e13582499ec692b187cc3fe589d4c3f28d4f4e8a31a9b",
+      "bytes": 1892
+    },
+    {
+      "path": "summary/d02_PSFC_all_cases.png",
+      "sha256": "2fe2867897ed1a3e2e5dcfebdb270ecc5c4b43f4dcf1f2a1951c02817cf2c069",
+      "bytes": 183119
+    },
+    {
+      "path": "summary/d02_QVAPOR_all_cases.png",
+      "sha256": "f896f3835682a787dc92524572b4ee0f71b35545cb2966ab70568e5a218ef7c9",
+      "bytes": 180251
+    },
+    {
+      "path": "summary/d02_RAINNC_all_cases.png",
+      "sha256": "5793525c9f359c759330e51c0472e00d3e0985cd300a5a4f78132c1174b2796b",
+      "bytes": 113310
+    },
+    {
+      "path": "summary/d02_RAINNC_hourly_all_cases.png",
+      "sha256": "83018aaa2e880ea8cfd778917a93105d26e921c35ba785c65f8d793171ba3211",
+      "bytes": 151682
+    },
+    {
+      "path": "summary/d02_T2_all_cases.png",
+      "sha256": "82a56b3c5580a204afcf99a7d781ff15e6f28bffb8fc5a74dcfd8ba24a7ccae9",
+      "bytes": 159885
+    },
+    {
+      "path": "summary/d02_T_all_cases.png",
+      "sha256": "c6ce9d59daa522899f2334f7a8bd47307c617678fe1babda7f94592af77d4917",
+      "bytes": 192963
+    },
+    {
+      "path": "summary/d02_U10_all_cases.png",
+      "sha256": "649eae34617da5c627b3bcbe81fbee5438c212690f097d04979d5afcb81d701d",
+      "bytes": 184718
+    },
+    {
+      "path": "summary/d02_U_all_cases.png",
+      "sha256": "b7e00977a4f368516cff757681479d66d2ef01d63ccb2baebe3b9ae5659f5965",
+      "bytes": 189538
+    },
+    {
+      "path": "summary/d02_V10_all_cases.png",
+      "sha256": "556a5c6fb94cc91091670ebe78d214920280ccd1cd6c319e8323a75c877111b2",
+      "bytes": 192228
+    },
+    {
+      "path": "summary/d02_V_all_cases.png",
+      "sha256": "036e12df5cd2d75607498d9afa6ca6ed8c171a32b00410117ba53af2c34f0ae7",
+      "bytes": 197280
+    },
+    {
+      "path": "summary/d02_W_all_cases.png",
+      "sha256": "ce6a9c218ec3da07308b70d8b849558dcc92e0532f42a72facc5529240b8c0e1",
+      "bytes": 175389
+    },
+    {
+      "path": "summary/d02_all_cases.html",
+      "sha256": "3739f4f78260d199bb78b1ccca1868acaf1fc9902955ccdcb13cbc2aa8a80f09",
+      "bytes": 1892
+    },
+    {
+      "path": "summary/d03_PSFC_all_cases.png",
+      "sha256": "a1d081aec441e4fe3b2d3e768b3adb6e93ed30da207b466d2bddc517048e20ae",
+      "bytes": 182751
+    },
+    {
+      "path": "summary/d03_QVAPOR_all_cases.png",
+      "sha256": "832f2f7d47142b7df0c169608f197d5bc66235ced192e02db5e96704a47774eb",
+      "bytes": 193218
+    },
+    {
+      "path": "summary/d03_RAINNC_all_cases.png",
+      "sha256": "24e61fdee4341f4640a9f29b41188110041ae55238a8aa0a9b7dc4f411bb93cf",
+      "bytes": 95194
+    },
+    {
+      "path": "summary/d03_RAINNC_hourly_all_cases.png",
+      "sha256": "8c678781878dce1c25aedaedb767513b6b4a14aff64b7591c4eaa7a8b0640e0a",
+      "bytes": 117406
+    },
+    {
+      "path": "summary/d03_T2_all_cases.png",
+      "sha256": "892386ecdf546ff64d4b9eca7b4d6c358ee262bac8be53c843840534bac535b7",
+      "bytes": 196297
+    },
+    {
+      "path": "summary/d03_T_all_cases.png",
+      "sha256": "aac87e2399ac86df68c952fb347c529cb08f6ae0fb8df094a815b0892eec00cb",
+      "bytes": 173918
+    },
+    {
+      "path": "summary/d03_U10_all_cases.png",
+      "sha256": "cc60a5c287dbd0438def90fd4e5af5526791f6aa713bb7d98e84672f7f15b856",
+      "bytes": 181494
+    },
+    {
+      "path": "summary/d03_U_all_cases.png",
+      "sha256": "602b95c5d5009761d1eb4d4896c5e517d97a99b7c7aded59897c887c3600b698",
+      "bytes": 167275
+    },
+    {
+      "path": "summary/d03_V10_all_cases.png",
+      "sha256": "3c9ecabcf1efb8abe81f23730535baf158ed205fe7172ac7072986fe156fa36d",
+      "bytes": 198353
+    },
+    {
+      "path": "summary/d03_V_all_cases.png",
+      "sha256": "29213df718cc3a1b121d3ad0a8c304c30998c8a9dbdcfee16b3efb84a51ba340",
+      "bytes": 180616
+    },
+    {
+      "path": "summary/d03_W_all_cases.png",
+      "sha256": "7b76e15e5a1fe9e9a3cb172686a05565bfa61c2366f924d33e329859436356a0",
+      "bytes": 174932
+    },
+    {
+      "path": "summary/d03_all_cases.html",
+      "sha256": "22a4cb80b3eb28c2f07f04563374821b7ad1be7f0c693aec58729f244380c810",
+      "bytes": 1892
+    },
+    {
+      "path": "summary/index.html",
+      "sha256": "a45c906ad069526adf54b08c18f49cebc2ac24025bdd8c86e07587f2ed036b84",
+      "bytes": 2403
+    },
+    {
+      "path": "summary/summary.json",
+      "sha256": "79f0480d406caa380235b0f52e4a9e662ddcd72a1a27a075bc21f3cd63d39b16",
+      "bytes": 396935
+    }
+  ],
+  "model_comparator_station_bootstrap_runs": 0,
+  "manager_ledger_commit": "a8c0fefbd",
+  "public_source_bridge": {
+    "path": "NATIVE_BYTE_BRIDGE.json",
+    "sha256": "628de15196b6a18aa2c73964ed5c0759a89729e616aee698effa0fd4d52b4c75"
+  },
+  "fresh_cached_metric_binding": {
+    "path": "FRESH_CLOSED_STATS_BINDING.json",
+    "sha256": "dcf42573f58f0dfe947e895cfd57c21c49acd4bd984bea229d26256ca8cf0728"
+  }
+}

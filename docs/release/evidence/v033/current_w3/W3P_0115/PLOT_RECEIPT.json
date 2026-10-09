@@ -1,0 +1,20 @@
+{
+  "arm": "W3P_0115",
+  "rc": 0,
+  "start_utc": "2026-10-08T01:59:06.905253+00:00",
+  "end_utc": "2026-10-08T02:01:12.720503+00:00",
+  "execution_revision": "cf873d2152906e429a34e48ab5d850716c2bcb3d",
+  "original_cpu_reference": "original CPU-WRF R0115",
+  "expected_domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "hours": 72,
+  "domain_hours": 219,
+  "png_count": 23,
+  "forecast_validation_reruns": 0,
+  "new_plot_data_read_only": true,
+  "pair_context": "frozen olderGPU Tb2-Tb4 C0115, context only",
+  "receipt_sha256": "a4f3da9d0e217e0007301c149f099a51ce6cfcb1ed667a26f970f4ea4fb6c4b8"
+}

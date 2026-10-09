@@ -15,6 +15,9 @@ def test_mynn_step_preserves_shapes_and_fp64_dtype():
     for name in MynnPBLColumnState.__slots__:
         before = getattr(state, name)
         after = getattr(out, name)
+        if before is None:
+            assert after is None
+            continue
         assert after.shape == before.shape
         assert after.dtype == jnp.float64
         assert np.all(np.isfinite(np.asarray(after)))

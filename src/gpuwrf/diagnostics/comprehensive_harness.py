@@ -36,6 +36,9 @@ from gpuwrf.coupling.physics_couplers import (
     thompson_adapter,
 )
 from gpuwrf.runtime.operational_mode import (
+    _W_SURFACE_RESET,
+    _acoustic_lateral_bc_flags,
+    _reset_surface_w,
     OperationalNamelist,
     _enforce_operational_precision,
     _finite_or_origin,
@@ -535,6 +538,11 @@ def instrumented_physics_boundary_step(
         if diagnostic_on:
             accumulator = _record_operator(accumulator, _OP_INDEX["boundary_guards"], pre, next_state, step_1b)
 
+    if _W_SURFACE_RESET:
+        # Mirrors operational_mode: WRF solve_em.F:4818-4834 end-of-step set_w_surface (GPUWRF_W_SURFACE_RESET).
+        next_state = next_state.replace(w=_reset_surface_w(
+            next_state, namelist.grid, namelist.metrics,
+            periodic_x=_acoustic_lateral_bc_flags(namelist)[0]))
     next_state = _enforce_operational_precision(next_state)
     next_carry = carry.replace(state=next_state)
 

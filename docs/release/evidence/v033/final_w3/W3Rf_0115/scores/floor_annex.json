@@ -1,0 +1,126 @@
+{
+  "UTC": "2026-10-09T08:20:44.162887+00:00",
+  "arm": "W3Rf_0115",
+  "source": "7a0c93ff4d19b1892067711d884739d246432344",
+  "raw72": "FAIL",
+  "binding72_A3": "FAIL",
+  "counts": {
+    "FLOOR-LIMITED": 8,
+    "REAL FAIL": 2
+  },
+  "rows": [
+    {
+      "domain": "d03",
+      "field": "U10",
+      "lead_h": 51,
+      "X": 1.6664902821998442,
+      "limit": 1.5,
+      "C": 1.3894092461796856,
+      "C_over_X": 0.8337337823210114,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 41,
+      "X": 1.5633084464470868,
+      "limit": 1.5,
+      "C": 1.24501238754808,
+      "C_over_X": 0.7963958682482689,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 42,
+      "X": 1.7250170631773973,
+      "limit": 1.5,
+      "C": 1.2734616908817302,
+      "C_over_X": 0.7382313590197629,
+      "status": "REAL FAIL"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 44,
+      "X": 1.6230805229529648,
+      "limit": 1.5,
+      "C": 1.2068496805614104,
+      "C_over_X": 0.7435550260721006,
+      "status": "REAL FAIL"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 48,
+      "X": 1.9894513537051557,
+      "limit": 1.5,
+      "C": 1.5733508569167536,
+      "C_over_X": 0.7908466090344676,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 49,
+      "X": 1.8145983579910427,
+      "limit": 1.5,
+      "C": 1.4874823614027817,
+      "C_over_X": 0.8197309089652137,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 50,
+      "X": 1.539604190149492,
+      "limit": 1.5,
+      "C": 1.264682396413997,
+      "C_over_X": 0.8214334596551075,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 51,
+      "X": 1.7264829887885638,
+      "limit": 1.5,
+      "C": 1.4016843624564337,
+      "C_over_X": 0.8118726750038618,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 53,
+      "X": 1.5143011719987751,
+      "limit": 1.5,
+      "C": 1.2086394079685627,
+      "C_over_X": 0.7981499521480528,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 54,
+      "X": 1.8891961622267368,
+      "limit": 1.5,
+      "C": 1.5093217108872978,
+      "C_over_X": 0.7989227064215011,
+      "status": "FLOOR-LIMITED"
+    }
+  ],
+  "C_reference": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/MO13/pd/wave/20260115_18z_a1/pair_rule_d03.json",
+    "sha256": "a631f6e1e518f0ba6a555386ff77d0421c9a947550b536e3e4adeaa3c63cca25"
+  },
+  "C_source_semantics": "originalGPUICpairS b4-b2SLIM proxyNOTCPUspread",
+  "candidate72_ref": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_G2_FRESHR0115_ACTUAL_20261009/results/W3Rf_0115/d6_72h_verdict.json",
+    "sha256": "66a9efcff40dd671588255ce61c8324fe0fbd269df248b787620f2409f49880f"
+  },
+  "rule": "originalA3 C>limit OR C/X>=.75; strict24noannex",
+  "recomputed_comparisons": 0,
+  "primary_not_rerolled": true,
+  "release_GO": false
+}

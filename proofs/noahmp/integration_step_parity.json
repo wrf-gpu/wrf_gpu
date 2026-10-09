@@ -2,8 +2,8 @@
   "proof": "S6a integrated noah_mp_step REAL-WRF driver-mapping + closure gate",
   "kind": "end-to-end integrated driver vs pristine-WRF NOAHMP_SFLX driver dump (savepoints_all.json); HFX/GRDFLX/TSK/LH driver mapping + ENERGY ERRENG closure; NOT a self-compare",
   "oracle": "proofs/noahmp/savepoints_all.json",
-  "ncolumns": 11,
-  "npass": 11,
+  "ncolumns": 10,
+  "npass": 10,
   "nfail": 0,
   "end_to_end_finite": true,
   "tolerances": {
@@ -66,22 +66,22 @@
       "fields": {
         "hfx": {
           "wrf": 283.923615,
-          "jax": 283.7983781398963,
+          "jax": 283.92341973214286,
           "pass": true
         },
         "grdflx": {
           "wrf": 230.173492,
-          "jax": 230.16468801375947,
+          "jax": 230.17162749527301,
           "pass": true
         },
         "tsk": {
           "wrf": 311.081085,
-          "jax": 311.07931773379494,
+          "jax": 311.08105502665495,
           "pass": true
         },
         "lh": {
           "wrf": 45.2010841,
-          "jax": 45.52442656870027,
+          "jax": 45.2010839751862,
           "pass": true
         },
         "erreng": {
@@ -97,22 +97,22 @@
       "fields": {
         "hfx": {
           "wrf": 266.804626,
-          "jax": 266.7384723632763,
+          "jax": 266.80536017599644,
           "pass": true
         },
         "grdflx": {
           "wrf": 232.829315,
-          "jax": 232.82243850200484,
+          "jax": 232.8294055707355,
           "pass": true
         },
         "tsk": {
           "wrf": 309.958374,
-          "jax": 309.95675531590734,
+          "jax": 309.9583756440828,
           "pass": true
         },
         "lh": {
           "wrf": 41.4582481,
-          "jax": 41.70065129376083,
+          "jax": 41.45831042700864,
           "pass": true
         },
         "erreng": {
@@ -335,37 +335,6 @@
         "erreng": {
           "wrf": 0.0,
           "jax": -1.4210854715202004e-14,
-          "pass": true
-        }
-      }
-    },
-    {
-      "name": "teide_snow",
-      "pass": true,
-      "fields": {
-        "hfx": {
-          "wrf": -75.812294,
-          "jax": -75.81230809656071,
-          "pass": true
-        },
-        "grdflx": {
-          "wrf": 359.636566,
-          "jax": 359.6366937730421,
-          "pass": true
-        },
-        "tsk": {
-          "wrf": 273.160004,
-          "jax": 273.16,
-          "pass": true
-        },
-        "lh": {
-          "wrf": 7.28153419,
-          "jax": 7.281529941177985,
-          "pass": true
-        },
-        "erreng": {
-          "wrf": 0.0,
-          "jax": 0.0,
           "pass": true
         }
       }

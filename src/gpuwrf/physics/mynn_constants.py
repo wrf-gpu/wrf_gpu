@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import numpy as np
 from gpuwrf._x64_config import configure_jax_x64
 
 from jax import config
@@ -46,6 +48,36 @@ R_D = 287.04
 TREF = 300.0
 P608 = 0.608
 GTR = GRAV / TREF
+
+# Original module_bl_mynnedmf.F:278-301 PARAMETER order, kind_phys=REAL4.
+# Keep module globals for the retained DOUBLE/legacy path.
+_MYNN_REAL_CONSTANTS = os.environ.get("GPUWRF_MYNN_REAL_CONSTANTS", "0").strip().lower() in {"1", "true", "yes", "on"}
+_f = np.float32
+_pr, _g1, _b1, _b2, _c2, _c3, _c5 = map(_f, (.74, .235, 24., 15., .729, .340, .2))
+_a1 = _b1 * (_f(1) - _f(3) * _g1) / _f(6)
+_c1 = _g1 - _f(1) / (_f(3) * _a1 * _f(2.88449914061481660))
+_a2 = _a1 * (_g1 - _c1) / (_g1 * _pr)
+_g2 = _b2 / _b1 * (_f(1) - _c3) + _f(2) * _a1 / _b1 * (_f(3) - _f(2) * _c2)
+_cc2, _cc3 = _f(1) - _c2, _f(1) - _c3
+_WRF_REAL_VALUES = {
+    "A1": _a1, "C1": _c1, "A2": _a2, "G2": _g2,
+    "E1C": _f(3) * _a2 * _b2 * _cc3,
+    "E2C": _f(9) * _a1 * _a2 * _cc2,
+    "E3C": _f(9) * _a2 * _a2 * _cc2 * (_f(1) - _c5),
+    "E4C": _f(12) * _a1 * _a2 * _cc2,
+    "E5C": _f(6) * _a1 * _a1,
+    "GTR": _f(9.81) / _f(300),
+    "P608": _f(461.6) / _f(287) - _f(1),
+    "RVOVRD": _f(461.6) / _f(287),
+    "CP": _f(7) * _f(287) / _f(2), "R_D": _f(287),
+}
+
+
+def mynn_constant(name, dtype, legacy=None):
+    """Choose original REAL4 values only for a REAL consumer under the gate."""
+    if _MYNN_REAL_CONSTANTS and np.dtype(dtype) == np.dtype(np.float32):
+        return _WRF_REAL_VALUES[name]
+    return globals()[name] if legacy is None else legacy
 
 # MYNN local mixing-length option 2 constants from module_bl_mynnedmf.F90
 # lines 2221-2350. M5-S2 uses this bounded local form with EDMF terms disabled.

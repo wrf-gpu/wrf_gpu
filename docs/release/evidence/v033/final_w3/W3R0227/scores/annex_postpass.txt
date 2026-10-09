@@ -1,0 +1,6 @@
+W3R: registry verdict FAIL-new-class; NEW items 4
+  d01 QNICE   @2026-03-01_13: flagged    4 (iv True) | GPU exact 0 True (ii) | CPU max 4.05e+00 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-03-01_16: flagged   20 (iv True) | GPU exact 0 True (ii) | CPU max 1.87e-32 cap 1e+01 (iii True) -> EXPLAINED
+  d03 QGRAUP  @2026-03-02_19: flagged    1 (iv True) | GPU exact 0 True (ii) | CPU max 3.03e-12 cap 1e-10 (iii True) -> EXPLAINED
+  d03 QGRAUP  @2026-03-03_00: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.58e-12 cap 1e-10 (iii True) -> EXPLAINED
+ANNEX PASS (all NEW items explained)

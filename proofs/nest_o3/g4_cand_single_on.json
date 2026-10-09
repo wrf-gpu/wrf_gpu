@@ -1,0 +1,16 @@
+{
+ "src": "<USER_HOME>/src/wrf_gpu2_wt/fid-q2",
+ "mode": "single_on",
+ "gpuwrf": "<USER_HOME>/src/wrf_gpu2_wt/fid-q2/src/gpuwrf/runtime/operational_mode.py",
+ "o3rad_present": {
+  "d01": false
+ },
+ "refresh_d01": {
+  "sha": "ed0545094e7524529916294283743cc4a26d9c2a691f3946f646a4d08f11ae16",
+  "eqns": 2
+ },
+ "d01_carry_leaves": {
+  "n": 167,
+  "sha": "8679be638a3a42f1904c9835cc1437a46569a1551335bf1199d465f0e3940092"
+ }
+}

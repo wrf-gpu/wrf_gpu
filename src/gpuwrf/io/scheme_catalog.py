@@ -984,6 +984,8 @@ _OUT_OF_SCOPE_FEATURE_BY_KEY: Mapping[str, OutOfScopeFeature] = {
 #   * radt honoured as the radiation cadence (radiation_cadence_steps;         #
 #     nested_pipeline.py:61); bldt unread -> PBL runs every step; KF cudt uses STEPCU,  #
 #     so only the every-step value 0 is faithful.                             #
+#   * Noah-MP soiltstep (&noah_mp, s): soil solved every land-surface call;    #
+#     only soiltstep=0 is wired, a positive soil timestep fails closed.        #
 # Slope/topo radiation (slope_rad=1 / topo_shading=1) ARE implemented (RRTMG   #
 # SW slope-radiation + topographic-shadow path, coupling.physics_couplers.     #
 # _rrtmg_topography_state) and are classified IMPLEMENTED here, NOT failed.    #
@@ -1231,6 +1233,18 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
         "Kain-Fritsch uses WRF STEPCU=max(1,NINT(cudt*60/dt)); "
         "calls on step 1 and STEPCU multiples, retaining tendencies between calls.",
         "Use a finite nonnegative cudt interval in minutes.",
+        integer=False,
+    ),
+    # --- Noah-MP soil cadence (&noah_mp, seconds) -------------------------- #
+    RecognizedControl(
+        "soiltstep", "noahmp-soil-cadence",
+        frozenset({0}),
+        "recognized; the port solves Noah-MP soil temperature and soil water at EVERY "
+        "land-surface call (WRF soiltstep=0: soil_update_steps=1, calculate_soil every "
+        "step, module_sf_noahmpdrv.F:648-675). A positive soil timestep in seconds "
+        "(soil_update_steps=max(1,NINT(soiltstep/dt)); soil solved every "
+        "soil_update_steps-th step from the ACC_* accumulated forcing) is not implemented.",
+        "Set soiltstep=0 (the WRF default; soil processes every Noah-MP step).",
         integer=False,
     ),
 )

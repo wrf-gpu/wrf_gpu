@@ -38,9 +38,11 @@ from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.precision import real_dtype as noahmp_real_dtype
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 from gpuwrf.coupling.physics_couplers import (
-    WRF_RV_OVER_RD,
+    _wrf_phy_rv_over_rd,
     _column_dz_from_state,
     _mynn_column_uses_wrf_phy_prep,
+    _mynn_env_bool,
+    _mynn_exner_from_pressure,
     _surface_dz_from_state,
     _temperature_from_theta,
     _to_columns,
@@ -98,6 +100,8 @@ class _NoahMPColumnView(NamedTuple):
     prcpsnow: Any = None
     prcpgrpl: Any = None
     prcphail: Any = None
+    # Transient physics input only; persistent State/restart layouts are unchanged.
+    exner: Any = None
 
     def replace(self, **updates) -> "_NoahMPColumnView":
         d = self._asdict()
@@ -125,7 +129,7 @@ def _build_column_view(state: Any, grid: Any = None) -> _NoahMPColumnView:
     from gpuwrf.kernels.dyn_carry_fp32 import real_dtype
     phy_dtype = real_dtype(noahmp_real_dtype())
     theta_dry = jnp.asarray(state.theta, phy_dtype) / (
-        1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, phy_dtype)
+        1.0 + _wrf_phy_rv_over_rd(phy_dtype) * jnp.asarray(state.qv, phy_dtype)
     )
     # t_air uses the nonhydrostatic state pressure (WRF t_phy is from p+pb), matching
     # the grid-backed view; the column ``p`` handed to the surface layer is hydrostatic.
@@ -173,6 +177,9 @@ def _build_column_view(state: Any, grid: Any = None) -> _NoahMPColumnView:
         qsfc=getattr(state, "qsfc", None),
         pblh=getattr(state, "pblh", None),
         dx_m=_grid_dx_m(grid),
+        exner=(_to_columns(_mynn_exner_from_pressure(jnp.asarray(state.p, phy_dtype)))
+               if _mynn_env_bool("GPUWRF_MYNN_PHY_EXNER", False)
+               and _mynn_column_uses_wrf_phy_prep(grid) else None),
     )
 
 
@@ -247,6 +254,8 @@ def noahmp_surface_step(
         "roughness_m": _to_state_surface(state, "roughness_m", view_wb.roughness_m),
     }
     # B39: carry the WRF grid%MOL/HFX/QFX/QSFC the next SFCLAY_mynn call reads.
+    if blended.wspd is not None:
+        updates["sfc_wspd"] = _to_state_surface(state, "sfc_wspd", blended.wspd)
     for name in ("mol", "hfx", "qfx", "qsfc"):
         if getattr(state, name, None) is not None and getattr(view_wb, name) is not None:
             updates[name] = _to_state_surface(state, name, getattr(view_wb, name))

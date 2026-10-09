@@ -4,22 +4,14 @@
 NetCDF, WRF variable names, dimensions, and staggering, one frame per output time. If you already
 post-process WRF <code>wrfout</code>, your tools read wrf_gpu output the same way.</p>
 
-<h2 id="wrfout">The wrfout history file</h2>
-<p>The operational writer emits a <strong>focused 104-variable</strong> <code>wrfout</code> covering
-the core meteorology (winds, temperature, pressure/geopotential, moisture species), spatial and
-vertical coordinates, soil state, radiation fluxes, and Noah-MP snow-layer fields. This is a
-<strong>documented scope boundary</strong> against WRF's full 375-variable stream — the subset a
-downstream user or learner typically needs — not a hidden gap.</p>
-
-<div class="admon honest">
-  <div class="admon-title">104 vs 375 — a documented boundary</div>
-  <p>The default <code>wrfout</code> is a focused 104-variable subset of WRF's 375-variable history
-  stream (tracked as KI-3). Every emitted field is a real WRF variable at its correct name,
-  dimensions, and staggering; a field whose source is absent from a given run is silently skipped —
-  never fabricated. Auxiliary history streams (<code>auxhist</code>) are not written. If you need the
-  full WRF variable coverage, opt in below.</p>
-</div>
-
+<h2 id="wrfout">Full WRF history is the default</h2>
+<p>The operational writer defaults to full WRF history. Names, dimensions and staggering
+follow the WRF stream; actual field counts and active producers depend on the selected
+case and physics. Inspect the file inventory and its source-specific integrity evidence.</p>
+<p>Set <code>GPUWRF_FULL_WRFOUT_VARIABLES=0</code> for the reduced stream.
+That canonical control takes precedence over its <code>GPUWRF_FULL_WRFOUT</code> alias.
+The optional training subset is described below. Neither 104 nor 375 is a universal
+count of active physical fields.</p>
 <p>Inspect a history file with the standard NetCDF tools, exactly as for WRF:</p>
 <pre><code>ncdump -h runs/&lt;case&gt;/wrfout_d01_*        # header: dims, variables, attrs
 ncdump -v T2 runs/&lt;case&gt;/wrfout_d01_*      # dump a single variable</code></pre>
@@ -60,13 +52,11 @@ lat/lon coordinates) so each frame is self-describing.</p>
   byte-identical.</p>
 </div>
 
-<h2 id="full-wrfout">Opt-in full WRF variable set</h2>
-<p>To emit the exact <strong>375-variable WRF history list</strong> (names and order matching a
-reference WRF <code>wrfout</code> stream), set <code>GPUWRF_FULL_WRFOUT_VARIABLES=1</code> (or the
-shorter alias <code>GPUWRF_FULL_WRFOUT=1</code>). This heavy compatibility stream is off by default;
-the default writer keeps the focused operational subset. The opt-in stream is a compatibility
-surface: it uses real state/diagnostics where present and inactive defaults for WRF stream slots the
-port does not currently carry.</p>
+<h2 id="full-wrfout">FULL_WRFOUT controls</h2>
+<p><code>GPUWRF_FULL_WRFOUT_VARIABLES</code> defaults ON; its shorter
+<code>GPUWRF_FULL_WRFOUT</code> alias is used only when the canonical value is unset.
+Use <code>=0</code> explicitly for reduced history. A matching schema is compatibility
+evidence; original-CPU numerical and all-frame integrity checks remain separate.</p>
 
 <h2 id="async">Asynchronous and pipelined output</h2>
 <p>Writing a frame is host work that would otherwise idle the GPU. wrf_gpu overlaps it:</p>

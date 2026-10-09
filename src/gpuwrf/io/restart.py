@@ -48,8 +48,8 @@ import jax
 from jax import config
 import numpy as np
 
-from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
-from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES
+from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State, mynn_sfc_wspd_enabled
+from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES, MP_RE_DIAGNOSTIC_LEAVES
 from gpuwrf.runtime.operational_state import OperationalCarry
 
 try:  # Noah-MP land/static live in the v0.2.0 land package; optional so a
@@ -152,17 +152,24 @@ def _state_fields(state: State) -> dict[str, np.ndarray]:
     return {name: _hostify(getattr(state, name)) for name in state.active_field_names()}
 
 
-def _validate_state_field_order(recorded: tuple[str, ...]) -> None:
+def _validate_state_field_order(recorded: tuple[str, ...], *, namelist=None) -> None:
     expected = tuple(State.__slots__)
     if any(field not in expected for field in recorded):
         raise ValueError("restart State field order contains unknown leaves")
     if recorded != tuple(field for field in expected if field in recorded):
         raise ValueError("restart State field order does not match current State schema")
     missing = tuple(field for field in expected if field not in recorded)
-    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES) for field in missing):
+    # E78: preserve BP90's guard before the later MP_RE schema extension.
+    # OFF checkpoints may omit each optional diagnostic; ON must restore it.
+    if mynn_sfc_wspd_enabled() and "sfc_wspd" in missing:
+        raise ValueError("restart State schema lacks held MYNN sfc_wspd (E78)")
+    from gpuwrf.physics.rrtmg_mp_re import mp_re_active
+    if mp_re_active(namelist) and any(field in MP_RE_DIAGNOSTIC_LEAVES for field in missing):
+        raise ValueError("MP_RE restart is missing held Thompson effective radii (E78)")
+    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES, *MP_RE_DIAGNOSTIC_LEAVES) for field in missing):
         raise ValueError(
             "restart State fields are missing non-conditional leaves: "
-            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES)]}"
+            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES, *MP_RE_DIAGNOSTIC_LEAVES)]}"
         )
 
 
@@ -310,7 +317,7 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
     # Fail-closed schema checks (exact field-order + field-set match), so a State /
     # scratch / land schema drift raises instead of mis-reconstructing the carry.
     recorded_state_order = tuple(carry.get("state_field_order", ()))
-    _validate_state_field_order(recorded_state_order)
+    _validate_state_field_order(recorded_state_order, namelist=payload["namelist"])
     if set(carry.get("state_fields", {})) != set(recorded_state_order):
         raise ValueError("restart State fields do not match current State schema")
     if tuple(carry.get("scratch_field_order", ())) != _CARRY_SCRATCH_FIELDS:

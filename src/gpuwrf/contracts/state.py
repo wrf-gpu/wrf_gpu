@@ -5,6 +5,7 @@ from __future__ import annotations
 from gpuwrf._x64_config import configure_jax_x64
 
 import argparse
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -20,6 +21,11 @@ from .precision import (
 
 
 configure_jax_x64()
+
+
+def mynn_sfc_wspd_enabled() -> bool:
+    """Opt-in WRF surface-layer WSPD handoff to MYNN's implicit boundary."""
+    return os.environ.get("GPUWRF_MYNN_SFC_WSPD", "0") == "1"
 
 
 def _gpu_device() -> jax.Device:
@@ -58,6 +64,7 @@ CONDITIONAL_STATE_LEAVES: tuple[str, ...] = (
     "nifa",
     "hail_acc",
     *SCALAR_BOUNDARY_OPTIONAL_LEAVES,
+    "sfc_wspd",
 )
 
 
@@ -179,6 +186,8 @@ def _state_field_shapes(
     if int(gwd_opt) == 1 or include_all_conditional:
         shapes.update({name: mass_3d for name in GWDO_VOLUME_DIAGNOSTIC_LEAVES})
         shapes.update({name: surface_2d for name in GWDO_SURFACE_DIAGNOSTIC_LEAVES})
+    if mynn_sfc_wspd_enabled():
+        shapes["sfc_wspd"] = surface_2d
     active = set(
         conditional_state_leaves_for_mp(
             mp_physics,
@@ -626,6 +635,13 @@ class State:
         "dtauy3d",
         "dusfcg",
         "dvsfcg",
+        # BP90: exact in-step SFCLAY_mynn WSPD, including WSTAR/VSGD.
+        "sfc_wspd",
+        # Held Thompson calc_effectRad diagnostics [m], never transported.
+        # Absent when GPUWRF_RRTMG_MP_RE is off; seeded before the scan.
+        "re_cloud",
+        "re_ice",
+        "re_snow",
     )
 
     def __init__(
@@ -728,6 +744,10 @@ class State:
         p: jax.Array | None = None,
         ph: jax.Array | None = None,
         mu: jax.Array | None = None,
+        sfc_wspd: jax.Array | None = None,
+        re_cloud: jax.Array | None = None,
+        re_ice: jax.Array | None = None,
+        re_snow: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -859,6 +879,11 @@ class State:
         for name, value in (("dtaux3d", dtaux3d), ("dtauy3d", dtauy3d),
                             ("dusfcg", dusfcg), ("dvsfcg", dvsfcg)):
             object.__setattr__(self, name, None if value is None else _as_dtype(value, DEFAULT_DTYPES.dtype_for(name)))
+        # Allocate before tracing so the ON carry has a stable pytree. WRF's
+        # Registry seed is zero; the surface call writes WSPD before MYNN.
+        if sfc_wspd is None and mynn_sfc_wspd_enabled():
+            sfc_wspd = jnp.zeros_like(xland, dtype=DEFAULT_DTYPES.dtype_for("sfc_wspd"))
+        self.sfc_wspd = None if sfc_wspd is None else _as_dtype(sfc_wspd, DEFAULT_DTYPES.dtype_for("sfc_wspd"))
 
         # WRF Registry starts these history diagnostics at zero. Required
         # restart leaves: old payloads fail the E78 missing-field schema gate.
@@ -867,6 +892,8 @@ class State:
             dtype = DEFAULT_DTYPES.dtype_for(name)
             object.__setattr__(self, name, jnp.zeros_like(template, dtype=dtype)
                                if value is None else _as_dtype(value, dtype))
+        for name, value in (("re_cloud", re_cloud), ("re_ice", re_ice), ("re_snow", re_snow)):
+            object.__setattr__(self, name, None if value is None else _as_dtype(value, DEFAULT_DTYPES.dtype_for(name)))
 
     # --- v0.20 S1 legacy total aliases (read-only properties; not pytree leaves) ---
     # ``p``/``ph``/``mu`` were bitwise-identical duplicates of the totals carried
@@ -913,6 +940,9 @@ class State:
         *,
         mp_physics: int | None = 8,
         include_all_conditional: bool = False,
+        use_mp_re: int = 1,
+        ra_lw_physics: int = 4,
+        ra_sw_physics: int = 4,
     ) -> "State":
         """Materialize static-scheme conditional leaves once before a timestep scan."""
 
@@ -920,6 +950,16 @@ class State:
             mp_physics, include_all_conditional=include_all_conditional
         )
         updates: dict[str, jax.Array] = {}
+        from gpuwrf.physics.rrtmg_mp_re import mp_re_active, RE_CLOUD_BG, RE_ICE_BG, RE_SNOW_BG
+        if mp_re_active(use_mp_re=int(use_mp_re), mp_physics=int(mp_physics or 0),
+                        ra_lw_physics=int(ra_lw_physics), ra_sw_physics=int(ra_sw_physics)):
+            for name, background in (("re_cloud", RE_CLOUD_BG), ("re_ice", RE_ICE_BG), ("re_snow", RE_SNOW_BG)):
+                if getattr(self, name) is None:
+                    updates[name] = jnp.full_like(self.qc, background, dtype=jnp.float32)
+        else:
+            for name in ("re_cloud", "re_ice", "re_snow"):
+                if getattr(self, name) is not None:
+                    updates[name] = None
         if "qh" in active and self.qh is None:
             updates["qh"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("qh"))
         if "Nh" in active and self.Nh is None:
@@ -1013,7 +1053,7 @@ class State:
         for source in (dict_state, slot_state):
             for name, value in (source or {}).items():
                 object.__setattr__(self, name, value)
-        for name in GWDO_DIAGNOSTIC_LEAVES:
+        for name in (*GWDO_DIAGNOSTIC_LEAVES, "sfc_wspd", "re_cloud", "re_ice", "re_snow"):
             if not hasattr(self, name):
                 object.__setattr__(self, name, None)
         for name in ("mol", "hfx", "qfx", "qsfc", "pblh"):

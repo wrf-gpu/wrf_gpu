@@ -1,0 +1,218 @@
+{
+  "id": "W3_0115",
+  "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+  "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+  "original_cpu_reference": "original CPU-WRF R0115",
+  "hours": 72,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "scope": "Actual7a execution; releasebe0 via nativeBYTE628de151, not a be0 execution. Original CPU-WRF truth. Raw strict24/full72/integrity failures and frozenannex/Ownerledger remain distinct; L4/L6 station-dependent decisions pending.",
+  "verdicts": {
+    "strict24": {
+      "status": "FAIL",
+      "hours": 24,
+      "sha256": "d0a644fcf2d2a6a789e37630da08cd0ba339da9c589a2b9944c3b87de0b982df",
+      "report": "d6_24h_strict_verdict.json",
+      "breaches": {
+        "d01": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d02": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d03": {
+          "status": "FAIL",
+          "pass": false,
+          "paired_frames": 25,
+          "frame_failures": [
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 21,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.0436208341580304
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 22,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.041817560868642
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 23,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.0448152953801015
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 24,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.04331265644194
+                }
+              ]
+            }
+          ],
+          "incomplete": []
+        }
+      }
+    },
+    "full_D6": {
+      "status": "FAIL",
+      "hours": 72,
+      "sha256": "e0b9aa65d339971b5cd6fa9a969544279226da22edb21eae06994e0682fbee27",
+      "report": "d6_72h_verdict.json",
+      "breaches": "d03: RAINNC \u03c421\u201372 (52 frames, max 1.12 > 1.0); U10 \u03c451\u201351 (1 frames, max 1.66 > 1.5); V10 \u03c441\u201354 (9 frames, max 2.01 > 1.5)"
+    },
+    "integrity": {
+      "supplied_disposition": "FAIL-new-class",
+      "sha256": "cae2623ea4ea38fc08468e2239d3623f45ceb7ea22c9ac3da15bd130719cbd41",
+      "report": "classes_all_72h.json"
+    },
+    "annex": {
+      "supplied_disposition": "SEE EXACT ANNEX; MANAGER LEDGER SEPARATE",
+      "sha256": "79f3bc317b7955d9cca468cf19a221c9eddfa203e2d53e72e16bddd03809a93c",
+      "report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": false,
+  "elapsed_seconds": 190.1194298909977,
+  "receipt_sha256": "d45adbcb8e3df3e0c4db973dc197c6693f3d56fb64c7edf8bf08a0ea4b1adaa2",
+  "compression_receipt_sha256": "215e57dacac67b399afb2fb8127eb1571d1d9ca213f77b60c2618a2df0f3d73e",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "ac6c465f760a87cf316c4863264a016c9b9f2b54dfa7f8c6952a5c64ada3db14"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "3dc32b3bbf8205537e7cedc4f3fbb50630e93872970d2d41774b1f7138ea08fc"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "fca699f0dbaa52b74ebf758d2b0d336ed378cab67eae6363a2c32517936f49e6"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "1c6de2f7997d807183a069d902c38f27f887acd3534c7c10477db3b2a8157fd0"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "dda71490e712f46d664dc3af069192a9c41b945f80fa37c24fa0a0b983a829dd"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "f379fb6c395cc4d1d0c93e220c6a15b9031b604f31d09caee693319682c39187"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "f66943f47e932c0aa88c30398087bcc31b2859eb4f79fda1d8c342aa4f203daf"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "2872a986b6d09e0a226d2ebf2b4d65b8623f7dc34c997500fa20049c10800611"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "c3da3d51746e9c9afc8c796be8c8f931bef2eb848ad4cf24caf3a6768d3dde5a"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "646f9ded735e1a9cddad470c15956c1071a3365755cb5c2e2e0c94b0ea9fc66c"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "798170c1aea51c69ac707965d38efdba1b54d4bdcf6b06591c20740827a2dd39"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "3191027b8804cc70fc29de63146c380bf940fbe6ac0ffde9f5c24e74e9bb00c4"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "804b7de51a73ca1c85d7d9ca1f67085cd0b86742f8a7d18ac9d096086a05eb03"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "90b7e0408d304dee625a739e8ad2e9ad6a70f6826357bde274b21f699e333284"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "03d58c0b3e836a144f6c179d5e91c039d674f158a1da846deef7581984834731"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "6e4efc25cca688946ce4cdff66b3c890c47b15a3c198df41205e936c2a483c78"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "76d7c9796c75a099da264a02effc5752237866263c4c551e0959a8bd7df187ce"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "5a17c61fb6c022f458c11ab067bd4485b4898ab4089658438f3dd64cb161531b"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "ff68913890554552d10f420dd9c8c5242ea3b8574f23f4528f110939f50fbe46"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "8837a54db800cbeb4a7a9c660dd441e62db5e7be172bc6612ef9e6dc790e600f"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "3ab5ba079709854e48f9780a244848f3873b6ba6ae7a1a058cd37a887f0b32c9"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "5e86dc09c65dc2750f02fcd54f5087ea39d961a8a38000b02051b78f26f4ad79"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "3910f92a677d6812bec819af51cf2ed72e696c7d13caf1cf865e8a9debb90dbd"
+    },
+    {
+      "path": "index.html",
+      "sha256": "d46249ca6c144926547e6fa1a65d43445c34f812e44ac9016bfc6c6abebba71b"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "0e1d63538af2fcaed91d53827550fcc622aff92e0b869f122c0224e0ff3e369b"
+    }
+  ],
+  "ready_part_reused": true
+}

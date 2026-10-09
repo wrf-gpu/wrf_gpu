@@ -132,6 +132,10 @@ class OperationalCarry:
     land_history: Any = field(default=None)
     energy_accumulators: Any = field(default=None)
     noahmp_precipitation: Any = field(default=None)  # previous-step WRF MP/KF rates, mm/s
+    # WRF radiation ozone o3rad (VMR, z,y,x), held between radiation calls: the root refreshes it from the CAM
+    # climatology at its radiation calls, nests receive the parent's field at every force-down (Registry
+    # rdf=(p2c)).  Seeded only for nested runs under GPUWRF_NEST_O3_FROM_PARENT=1 (nesting/nest_o3.py).
+    o3rad: Any = field(default=None)
 
 
     def replace(self, **updates) -> "OperationalCarry":

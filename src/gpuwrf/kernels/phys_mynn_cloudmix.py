@@ -79,10 +79,10 @@ def _scalar(x,state,dt,kdz,aw,awx,rhs_bottom):
         jnp.concatenate((upper0,c,zero),-1),jnp.concatenate((rhs0,rhs,x[...,-1:]),-1))
 
 
-def apply_mean_cloudmix(state,turb,dt,flux,wind,rhosfc,mf):
+def apply_mean_cloudmix(state,turb,dt,flux,wind,rhosfc,mf,diss_heat=None):
     from gpuwrf.physics import mynn_pbl as P
-    u,v,old_theta,_unused=P._apply_mean_tendencies_legacy(state,turb,dt,flux,wind,rhosfc,mf)
-    exner=P._exner_from_pressure(state.p)
+    u,v,old_theta,_unused=P._apply_mean_tendencies_legacy(state,turb,dt,flux,wind,rhosfc,mf,diss_heat=diss_heat)
+    exner=P._column_exner(state)
     sqv,sqc,sqi,_=P._specific_moisture_components(state)
     thl=old_theta-P.XLVCP_MYNN/exner*sqc-P.XLSCP_MYNN/exner*sqi
     kdz=P._rho_interfaces(state,turb['dfh'])
@@ -94,6 +94,11 @@ def apply_mean_cloudmix(state,turb,dt,flux,wind,rhosfc,mf):
     cq=interfaces if mf is None else mf['s_awqc']
     sqc2=_scalar(sqc,state,dt,kdz,aw,cq,zero)
     sqi2=_scalar(sqi,state,dt,kdz,interfaces,interfaces,zero)
+    ni2=None
+    if state.ni is not None:
+        from gpuwrf.kernels.phys_mynn_ni import mix_ice_number
+        # WRF applies the number floor before the final moisture_check.
+        ni2=mix_ice_number(state.ni,sqi,sqi2,state,turb,dt,mf)
     qflux=jnp.maximum(flux.qv_flux,jnp.minimum(.9*sqv[...,0]-1e-8,0)/(dt/state.dz[...,0]))
     bottom=dt/state.dz[...,0]*rhosfc*qflux/jnp.maximum(state.rho[...,0],1e-4)
     vq=interfaces if mf is None else mf['s_awqv']
@@ -105,4 +110,7 @@ def apply_mean_cloudmix(state,turb,dt,flux,wind,rhosfc,mf):
     qv=sqv2/(1-sqv2)
     # Verbatim MYNN driver post-run conversion, including its specific-qv factor.
     qc=sqc2*(1+sqv2);qi=sqi2*(1+sqv2)
-    return u,v,theta,qv,qc,qi
+    result=(u,v,theta,qv,qc,qi)
+    if ni2 is not None:
+        result=result+(ni2,)
+    return result

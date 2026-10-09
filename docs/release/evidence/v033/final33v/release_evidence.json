@@ -1,0 +1,176 @@
+{
+  "model_revision": "69d8a9a7d3d7c93d41779dca0e7ecd3b8dd0e1c4",
+  "status": "MODEL_GATES_RELEASE_OK_STATION_DAMAGE_HOLD",
+  "cases": {
+    "V0227": {
+      "domains": {
+        "d01": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "131b49f2e777a07604f6d39feb239309e669f1cb855b415e1b64e67f6bee25af"
+        },
+        "d02": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "6701f6dd116eb5098bbeff6ea85c9bd7f38909663ef8b7de2437fdd96dbb368f"
+        },
+        "d03": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [
+            {
+              "field": "RAINNC",
+              "lead_h": 69,
+              "rmse": 1.4760288315623598
+            },
+            {
+              "field": "RAINNC",
+              "lead_h": 70,
+              "rmse": 1.919727387506404
+            },
+            {
+              "field": "RAINNC",
+              "lead_h": 71,
+              "rmse": 2.0714941245268528
+            },
+            {
+              "field": "RAINNC",
+              "lead_h": 72,
+              "rmse": 2.0798302781028384
+            },
+            {
+              "field": "W",
+              "lead_h": 69,
+              "rmse": 0.31923286355389197
+            }
+          ],
+          "d6_source_sha256": "81524e6b12be0f921421f0e38a401cadb31f85f3aead657e0606ef63d4dbfb0b"
+        }
+      },
+      "metric_parity_checks": 4380,
+      "numeric_rows": 2406,
+      "analysis_peak_rss_kb": 457964,
+      "metrics_sha256": "22f38b52c4b001cd5a96815af57caadeb7143ff60108f14d3d419d834fb107c4"
+    },
+    "V0408": {
+      "domains": {
+        "d01": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "267a5269eafcbe038ca3f08eded94ceac1c1b4d4a92f6756dec87d5b33e83636"
+        },
+        "d02": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "28fa149e6d91cb5af02b097bdc3f2de99e028640eed718bd80072832ebc78b4e"
+        },
+        "d03": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "b6c0b81169c2794e10fc851590d93458bd990bedabe322353c2e558f3c7d9f1a"
+        }
+      },
+      "metric_parity_checks": 4380,
+      "numeric_rows": 2406,
+      "analysis_peak_rss_kb": 357296,
+      "metrics_sha256": "b5b1e91db7c614b4d23913370ec31b962a078ebb04703f56e16edc0c828934aa"
+    },
+    "V0115": {
+      "domains": {
+        "d01": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "b41b2b3ebc20c09ff81ab5724d5f15f38daf9e450ebe282c7796dd3f2e8bcf71"
+        },
+        "d02": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "516a8b3595b7b309043bc76bdd753961263444aee446dadb489b37c674d22bec"
+        },
+        "d03": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "0629cfd5b1b02da2f058dee7074ae7566ba515c56404f5ffdfa10a6d2a3668a6"
+        }
+      },
+      "metric_parity_checks": 4380,
+      "numeric_rows": 2406,
+      "analysis_peak_rss_kb": 349084,
+      "metrics_sha256": "de912da6dcfcb0f4c3ea5331d2b6be8ad1516ea0cb5fc86524f7c7c4ef3117c8"
+    },
+    "MON33": {
+      "domains": {
+        "d01": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "4c449dc462dd2447d0d72a7f188dcd876a264894bb7b812de53ade5324149522"
+        },
+        "d02": {
+          "frames": 73,
+          "raw_verdict": "PASS",
+          "raw_breaches": [],
+          "d6_source_sha256": "845f402effde15c402a8ba568bf5e21fd3e7d882dfcc8ab3f8d4d345fa0d62ea"
+        }
+      },
+      "metric_parity_checks": 2920,
+      "numeric_rows": 1604,
+      "analysis_peak_rss_kb": 358196,
+      "metrics_sha256": "ce937c0f96998f954fc5faf89996156de900e6a0892f5e6228ae275f1e48c0f8"
+    }
+  },
+  "scope": "original CPU-WRF, native cells, no mask; raw verdicts and approved annex separate",
+  "floor_rows": [
+    {
+      "field": "RAINNC",
+      "lead_h": 69,
+      "X": 1.4760288315623598,
+      "C": 1.5094115483094688,
+      "limit": 1.0,
+      "reading": "FLOOR-LIMITED CPU-self-breach, raw failure retained"
+    },
+    {
+      "field": "RAINNC",
+      "lead_h": 70,
+      "X": 1.919727387506404,
+      "C": 1.9865712642639377,
+      "limit": 1.0,
+      "reading": "FLOOR-LIMITED CPU-self-breach, raw failure retained"
+    },
+    {
+      "field": "RAINNC",
+      "lead_h": 71,
+      "X": 2.0714941245268528,
+      "C": 2.098835538985548,
+      "limit": 1.0,
+      "reading": "FLOOR-LIMITED CPU-self-breach, raw failure retained"
+    },
+    {
+      "field": "RAINNC",
+      "lead_h": 72,
+      "X": 2.0798302781028384,
+      "C": 2.1118578851610086,
+      "limit": 1.0,
+      "reading": "FLOOR-LIMITED CPU-self-breach, raw failure retained"
+    },
+    {
+      "field": "W",
+      "lead_h": 69,
+      "X": 0.31923286355389197,
+      "C": 0.32996136664189546,
+      "limit": 0.3,
+      "reading": "FLOOR-LIMITED CPU-self-breach, raw failure retained"
+    }
+  ],
+  "domain_hours": 803,
+  "numeric_rows": 8822,
+  "d6_metric_parity_checks": 16060
+}

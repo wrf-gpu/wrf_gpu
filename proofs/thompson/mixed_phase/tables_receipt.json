@@ -1,0 +1,26 @@
+{
+ "dat": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260227_18z_a1/run/run/qr_acr_qg_V4.dat",
+ "dat_sha256": "441bd8361b4df2ac6c6007fc7aceb333372496722a50adc94897422905dbfff8",
+ "asset": "data/fixtures/thompson-mixed-phase-v1.npz",
+ "asset_sha256": "d283aa9f0df70e360a5a566d2652830cf3616595de498d97bc8974ab714a39a2",
+ "idx_bg1_offset_elements": 5476,
+ "v1_equals_wrf_idx_bg1_read": [
+  "tmr_racg",
+  "tcr_gacr",
+  "tnr_racg",
+  "tnr_gacr"
+ ],
+ "freeze_dat": "<DATA_ROOT>/server/work/src/alisios/wrf_gen/wg_20260227_18z_a1/run/run/freezeH2O.dat",
+ "freeze_dat_sha256": "05497b0ed3f8dee78c9db25374f3e7f3da891580b15974453b608631433cce46",
+ "qcfz_idx_n_1based": {
+  "wrf_integer_nic1": 66,
+  "real_nic1": 59
+ },
+ "table_sha256": {
+  "tcg_racg": "42e4096d40cc23643068bcc895a4161509c3be5df23661dd8242d7769b7b9304",
+  "tmr_racg": "cfbbc2962a2e22f304b802d3ebd0bac19d66d2cd0e73fb161d81f49d53079920",
+  "tcr_gacr": "9b0239461987226c344c15f2958241eb690b7c5f18cca5133472b8b15cb7afb3",
+  "tnr_racg": "cdf2ce1194cb55615263a36306495eb39f837cea8a1a995119a26adcf81c7b87",
+  "tnr_gacr": "28d7296fe8b401dacd9e15e40980af8722e1adccba213524b02caddf3cd4a59a"
+ }
+}

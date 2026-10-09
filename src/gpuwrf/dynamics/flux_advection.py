@@ -1084,6 +1084,7 @@ def advect_moisture_scalars(
     dt: float,
     species_batch_width: int = 1,
     msfty: jax.Array | None = None,
+    f2_pd_out: dict | None = None,
 ) -> tuple[jax.Array, ...]:
     """WRF moisture-species flux-form advection loop (h=5/v=3), per species.
 
@@ -1189,11 +1190,21 @@ def advect_moisture_scalars(
             # WRF advect_scalar_pd uses msftx and msfty separately; callers without
             # msfty keep the retained conformal convention (msfty == msftx).
             msfty_pd = msftx if msfty is None else _mass_factor_or_one(msfty, real(fields[0]))
-            tend = advect_scalar_pd_fp32(
-                jnp.stack([real(f) for f in fields]), jnp.stack([real(f) for f in fields_old]),
-                real(vel.ru_full), real(vel.rv_full), real(vel.rom), real(mut), real(mu_old),
-                real(c1), real(c2), real(msftx), real(msfty_pd), real(rdzw), real(fzm), real(fzp),
-                rdx=rdx, rdy=rdy, dt=dt, interpret=jax.default_backend() == "cpu")
+            if f2_pd_out is None:
+                tend = advect_scalar_pd_fp32(
+                    jnp.stack([real(f) for f in fields]), jnp.stack([real(f) for f in fields_old]),
+                    real(vel.ru_full), real(vel.rv_full), real(vel.rom), real(mut), real(mu_old),
+                    real(c1), real(c2), real(msftx), real(msfty_pd), real(rdzw), real(fzm), real(fzp),
+                    rdx=rdx, rdy=rdy, dt=dt, interpret=jax.default_backend() == "cpu")
+            else:
+                f2_pd_args = (
+                    jnp.stack([real(f) for f in fields]), jnp.stack([real(f) for f in fields_old]),
+                    real(vel.ru_full), real(vel.rv_full), real(vel.rom), real(mut), real(mu_old),
+                    real(c1), real(c2), real(msftx), real(msfty_pd), real(rdzw), real(fzm), real(fzp))
+                tend = advect_scalar_pd_fp32(*f2_pd_args, rdx=rdx, rdy=rdy, dt=dt,
+                                            interpret=jax.default_backend() == "cpu")
+                f2_pd_out.update(native_args=f2_pd_args, native_tendency=tend,
+                                 native_params=dict(rdx=rdx, rdy=rdy, dt=dt))
             return tuple(
                 tend[index].astype(jax.eval_shape(limited_one, field, field_old).dtype)
                 for index, (field, field_old) in enumerate(zip(fields, fields_old, strict=True))

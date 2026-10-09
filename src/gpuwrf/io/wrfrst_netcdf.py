@@ -1,16 +1,18 @@
-"""WRF-compatible NetCDF restart (wrfrst) writer/reader for gpuwrf.
+"""GPUWRF NetCDF checkpoint with WRF-convention inspection fields.
 
 The file carries two layers:
 
 * WRF-named restart variables with WRF dimensions, staggering and attributes.
 * Exact ``GPUWRF_*`` extension variables for every ``State`` leaf and promoted
   operational scratch field.  The extensions make gpuwrf resume fail-closed and
-  bitwise, while WRF tools can still inspect the standard restart surface.
+  bitwise, while WRF tools can inspect the WRF-convention fields. This is not a
+  complete native CPU-WRF restart: previous time levels and unsupported Registry
+  fields are absent. GPUWRF readers use only the exact extension payload.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields as dataclass_fields
+from dataclasses import dataclass, fields as dataclass_fields, replace as dataclass_replace
 from datetime import date, datetime
 import json
 import jax
@@ -23,10 +25,11 @@ import jax.numpy as jnp
 import numpy as np
 from gpuwrf.io.netcdf_lock import Dataset
 
-from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
-from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES
+from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State, mynn_sfc_wspd_enabled
+from gpuwrf.contracts.precision import GWDO_DIAGNOSTIC_LEAVES, MP_RE_DIAGNOSTIC_LEAVES
 from gpuwrf.io.wrfout_writer import (
     DATE_STR_LEN,
+    RVOVRD,
     MAPFAC_U_XY,
     MAPFAC_V_XY,
     SEED,
@@ -63,6 +66,7 @@ from gpuwrf.io.wrfout_writer import (
     _write_times,
     _wrf_time_string,
 )
+from gpuwrf.io.wrfout_theta_convention import parse_use_theta_m, thm_source
 from gpuwrf.runtime.operational_state import OperationalCarry
 
 try:
@@ -98,22 +102,28 @@ SOIL_TRAILING = ("Time", "south_north", "west_east", "soil_layers_stag")
 STATE_FIELD_ORDER: tuple[str, ...] = tuple(State.__slots__)
 
 
-def _validate_state_field_order(field_order: tuple[str, ...]) -> None:
+def _validate_state_field_order(field_order: tuple[str, ...], *, namelist=None) -> None:
     if any(field not in STATE_FIELD_ORDER for field in field_order):
         raise ValueError("wrfrst State field order contains unknown leaves")
     if field_order != tuple(field for field in STATE_FIELD_ORDER if field in field_order):
         raise ValueError("wrfrst State field order does not match current State.__slots__")
     missing = tuple(field for field in STATE_FIELD_ORDER if field not in field_order)
-    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES) for field in missing):
+    if mynn_sfc_wspd_enabled() and "sfc_wspd" in missing:
+        raise ValueError("wrfrst State schema lacks held MYNN sfc_wspd (E78)")
+    from gpuwrf.physics.rrtmg_mp_re import mp_re_active
+    if mp_re_active(namelist) and any(field in MP_RE_DIAGNOSTIC_LEAVES for field in missing):
+        raise ValueError("MP_RE wrfrst is missing held Thompson effective radii (E78)")
+    if any(field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES, *MP_RE_DIAGNOSTIC_LEAVES) for field in missing):
         raise ValueError(
             "wrfrst State field order is missing non-conditional leaves: "
-            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES)]}"
+            f"{[field for field in missing if field not in (*CONDITIONAL_STATE_LEAVES, *GWDO_DIAGNOSTIC_LEAVES, *MP_RE_DIAGNOSTIC_LEAVES)]}"
         )
 
 
 def _state_field_order_from_dataset(dataset: Dataset) -> tuple[str, ...]:
     field_order = tuple(json.loads(str(getattr(dataset, "GPUWRF_STATE_FIELD_ORDER", "[]"))))
-    _validate_state_field_order(field_order)
+    config = json.loads(str(getattr(dataset, "GPUWRF_MP_RE_CONFIG", "{}")))
+    _validate_state_field_order(field_order, namelist=config)
     return field_order
 
 WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
@@ -264,6 +274,7 @@ OPTIONAL_CARRY_FIELDS: tuple[str, ...] = (
     "radiation_diagnostics", "cumulus_tendencies", "census", "h_diabatic", "history_diagnostics",
     "land_history", "energy_accumulators",
     "noahmp_precipitation",
+    "o3rad",
 )
 PYTREE_CARRY_FIELDS = OPTIONAL_CARRY_FIELDS[5:]
 # Pytree groups appended after the current schema: files written before them
@@ -388,11 +399,23 @@ def _base_pair(total: Any, perturbation: Any) -> Any:
     return jnp.asarray(total) - jnp.asarray(perturbation)
 
 
+def _dry_theta(state: State) -> np.ndarray:
+    # Registry.EM_COMMON:209-211 distinguishes dry T from prognostic THM_2.
+    # State.theta carries full moist theta_m under both use_theta_m options.
+    return np.asarray(state.theta) / (1.0 + RVOVRD * np.asarray(state.qv))
+
+
+# Only the current time level is available; never fabricate WRF's *_1 fields.
+WRF_CURRENT_SLOT_ALIASES = {"U": "U_2", "V": "V_2", "W": "W_2",
+                            "PH": "PH_2", "MU": "MU_2"}
+THM_CURRENT_SLOT_SPEC = dataclass_replace(_from_wrfout("THM"), name="THM_2")
+
+
 STANDARD_RESTART_FIELDS: tuple[StandardRestartField, ...] = (
     StandardRestartField(STANDARD_FIELD_SPECS["U"], lambda state: state.u),
     StandardRestartField(STANDARD_FIELD_SPECS["V"], lambda state: state.v),
     StandardRestartField(STANDARD_FIELD_SPECS["W"], lambda state: state.w),
-    StandardRestartField(STANDARD_FIELD_SPECS["T"], lambda state: jnp.asarray(state.theta) - THETA_BASE_OFFSET_K),
+    StandardRestartField(STANDARD_FIELD_SPECS["T"], lambda state: _dry_theta(state) - THETA_BASE_OFFSET_K),
     StandardRestartField(STANDARD_FIELD_SPECS["P"], lambda state: state.p_perturbation),
     StandardRestartField(STANDARD_FIELD_SPECS["PB"], lambda state: _base_pair(state.p_total, state.p_perturbation)),
     StandardRestartField(STANDARD_FIELD_SPECS["PH"], lambda state: state.ph_perturbation),
@@ -524,6 +547,10 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "maxmf": XY,
     "maxwidth": XY,
     "ztop_plume": XY,
+    "sfc_wspd": XY,
+    "re_cloud": XYZ,
+    "re_ice": XYZ,
+    "re_snow": XYZ,
     "dtaux3d": XYZ,
     "dtauy3d": XYZ,
     "dusfcg": XY,
@@ -822,6 +849,10 @@ def _write_wrfrst(
         _create_restart_dimensions(dataset, dimensions)
         _write_global_attrs(dataset, grid, namelist, dimensions, run_start_dt, valid_dt)
         _write_restart_global_attrs(dataset, state, carry, step_index, seed_arrays)
+        from gpuwrf.physics.rrtmg_mp_re import mp_re_config
+        dataset.GPUWRF_MP_RE_CONFIG = json.dumps(mp_re_config(namelist), sort_keys=True)
+        use_theta_m = parse_use_theta_m(_lookup(namelist, "use_theta_m", 1))
+        dataset.USE_THETA_M = np.int32(use_theta_m)
         _write_times(dataset, valid_dt)
         _write_xtime_restart(dataset, run_start_dt, lead_hours)
         _write_itimestep(dataset, step_index)
@@ -837,6 +868,13 @@ def _write_wrfrst(
             if value is None:
                 continue
             _write_restart_variable(dataset, field.spec, value, dimensions)
+            if field.spec.name in WRF_CURRENT_SLOT_ALIASES:
+                alias = dataclass_replace(field.spec, name=WRF_CURRENT_SLOT_ALIASES[field.spec.name])
+                _write_restart_variable(dataset, alias, value, dimensions)
+
+        theta_current = thm_source(np.asarray(state.theta), _dry_theta(state), use_theta_m)
+        _write_restart_variable(dataset, THM_CURRENT_SLOT_SPEC,
+                                theta_current - THETA_BASE_OFFSET_K, dimensions)
 
         if carry is not None and carry.noahmp_land is not None:
             _write_noahmp_wrf_restart_variables(dataset, carry.noahmp_land, dimensions)
@@ -955,7 +993,10 @@ def _write_restart_global_attrs(
         for field in STANDARD_RESTART_FIELDS
         if field.value(state) is not None
     )
-    dataset.TITLE = "OUTPUT FROM GPUWRF WRF-COMPATIBLE NETCDF RESTART"
+    active_standard_variables.extend(WRF_CURRENT_SLOT_ALIASES.values())
+    active_standard_variables.append("THM_2")
+    dataset.TITLE = "OUTPUT FROM GPUWRF NETCDF CHECKPOINT WITH WRF-CONVENTION FIELDS"
+    dataset.GPUWRF_RESTART_SCOPE = "GPUWRF_ONLY: incomplete native CPU-WRF restart inventory"
     dataset.RESTART_STATUS = "RESTART"
     dataset.GPUWRF_WRFRST_SCHEMA_VERSION = SCHEMA_VERSION
     from gpuwrf.io.restart import RADIATION_DIAGNOSTICS_SCHEMA_VERSION, GWDO_DIAGNOSTICS_SCHEMA_VERSION

@@ -1,0 +1,20 @@
+{
+  "arm": "W3_0408",
+  "rc": 0,
+  "start_utc": "2026-10-08T01:57:12.456889+00:00",
+  "end_utc": "2026-10-08T01:59:06.904493+00:00",
+  "execution_revision": "cf873d2152906e429a34e48ab5d850716c2bcb3d",
+  "original_cpu_reference": "original CPU-WRF R0408",
+  "expected_domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "hours": 72,
+  "domain_hours": 219,
+  "png_count": 23,
+  "forecast_validation_reruns": 0,
+  "new_plot_data_read_only": true,
+  "pair_context": null,
+  "receipt_sha256": "18fe5a138e928c22a1566cb308171369d74ecde86e1e50eae2c772b3d2af6ec5"
+}

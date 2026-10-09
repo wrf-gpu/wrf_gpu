@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.2</span>
+          <span class="brand-sub">User's Guide · v0.3.3</span>
         </span>
       </a>
       <div class="search-box">
@@ -35,10 +35,10 @@
 <div class="group-title">Introduction</div>
 <a class="active" href="index.html">Overview</a>
 <div class="subnav">
-<a href="index.html#start-here">Start here</a>
-<a href="index.html#what-it-is">What it is good for</a>
-<a href="index.html#what-it-is-not">What it is NOT</a>
-<a href="index.html#scope-at-a-glance">Scope at a glance</a>
+<a href="index.html#start-here">Get your first forecast running</a>
+<a href="index.html#what-it-is">Already have a WRF case?</a>
+<a href="index.html#what-it-is-not">Choose your configuration</a>
+<a href="index.html#scope-at-a-glance">See the evidence and plan your workload</a>
 </div>
 <a class="" href="concepts.html">How wrf_gpu Works</a>
 <div class="group-title">Getting started</div>
@@ -69,161 +69,44 @@
       <main>
         <div class="breadcrumb">wrf_gpu User's Guide</div>
         <div class="hero">
-  <img src="_assets/logo.svg" alt="wrf_gpu logo — a smiling storm cloud whose lightning is a GPU circuit, built by a Claude-clay and a GPT-green robot">
-  <div>
-    <h1 style="margin-bottom:.2rem;">wrf_gpu User's Guide</h1>
-    <p class="hero-tag">A WRF-compatible regional weather model, rewritten for GPU hardware · v0.3.2</p>
-  </div>
+  <img src="_assets/logo.svg" alt="wrf_gpu storm-cloud logo">
+  <div><h1>Regional forecasts on one NVIDIA GPU</h1>
+  <p class="hero-tag">Your guide to installing wrf_gpu and running a WRF-compatible forecast.</p></div>
 </div>
-
-<div class="admon measured">
-  <div class="admon-title">v0.3.2 — matched timing and original-WRF validation</div>
-  <p>RTX 5090 (sm_120, CUDA 13), Ryzen 9 9950X: cached Canary 24-hour
-  whole-run rate <strong>3.305 s/forecast hour</strong> under host contention.
-  The matched v0.3.1 reference was 3.669: <strong>9.9% less wall time</strong>;
-  this is not a quiet-host absolute benchmark. Four concurrent three-nest
-  Tenerife cases × 24 h measured <strong>5.507 s/case-hour</strong> aggregate
-  (<strong>22.4×</strong> CPU-WRF 3×4 cores), including init/load and without
-  compression; the all-four-running steady window was 4.857 (25.4×).</p>
-  <p>PROD is bitwise versus v0.3.1; WN3 d01 is bitwise and children differ
-  at round-off level, passing all three original-CPU D6 gates. d03 worst PSFC
-  RMSE is <strong>8.66 Pa versus 4.49 Pa</strong> in v0.3.1 (limit 120 Pa).
-  Registered raw-integrity exceptions remain disclosed. Swiss measurements
-  remain v0.3.1; longer-lead studies remain v0.3.0. Ensemble and giant-domain
-  scaling figures are inferred best-case scenarios.
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.2.md">Evidence, clocks and limitations</a>.</p>
-</div>
-
-<p class="lead">wrf_gpu rewrites WRF v4’s ARW dynamics and physics in JAX/XLA/Pallas so WRF-class regional
-forecasts can run efficiently on GPU hardware. It reads standard WRF inputs, writes WRF history, and is
-validated against the original Fortran CPU-WRF. This is an independent implementation, not WRF itself, and
-is not affiliated with UCAR/NCAR.</p>
-
-<div class="wrf-credit">
-  <strong>Built on the shoulders of WRF.</strong> This project is an independent,
-  <strong>AI-written re-implementation</strong> of the WRF model in JAX, GPU-optimized and
-  <strong>validated against the original Fortran CPU-WRF</strong>. It is <strong>not affiliated with or
-  endorsed by UCAR/NCAR</strong>; files derived from third-party code keep their upstream terms. The Weather Research and Forecasting (WRF) model is developed and
-  maintained by <a href="https://www.mmm.ucar.edu/models/wrf">NCAR/UCAR and the WRF community</a>;
-  please cite and credit them. See <a href="credits.html">Credits, License &amp; Citation</a>.
-</div>
-
-<div class="admon honest">
-  <div class="admon-title">Read this first — what this software is</div>
-  <p>wrf_gpu is a <strong>transparent research artifact</strong>: a JAX rewrite validated against the
-  original Fortran CPU-WRF on a <strong>supported subset</strong> of WRF options. The v0.3.0 release gate
-  covers six three-domain Tenerife cases over 24&nbsp;h with 0 failures against frozen per-variable limits;
-  agreement is bounded, not bitwise, and beyond 24&nbsp;h some 1&nbsp;km fields exceed those limits (see
-  <a href="validation.html">Validation</a> and <a href="limitations.html">Boundaries</a>). Broader
-  forecast-<em>skill</em> equivalence is an <strong>open gate, not claimed closed</strong>. Priority order, in
-  every design decision: <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>.</p>
-</div>
-
-<div class="admon note">
-  <div class="admon-title">✨ New — run it by just asking an AI</div>
-  <p>Clone the repo, open an AI coding agent (Claude Code / Codex / OpenCode), and say
-  <em>"here is my input, get it running."</em> The repo ships an operator skill the agent
-  auto-loads — it sets up the environment, checks your GPU, smoke-tests, and runs your case,
-  narrating each step and its ETA. See <a href="ai-quickstart.html">Quickstart with an AI Agent</a>.</p>
-</div>
-
-<h2 id="start-here">Start here<a class="headerlink" href="#start-here" aria-label="Permalink">¶</a></h2>
+<p class="lead">wrf_gpu rewrites WRF v4's ARW dynamics and physics for JAX/XLA/Pallas.
+Start with prepared WRF inputs and a supported namelist, run time integration on
+your GPU, and use familiar NetCDF tools to read the history files.</p>
+<h2 id="start-here">Get your first forecast running<a class="headerlink" href="#start-here" aria-label="Permalink">¶</a></h2>
 <div class="card-grid">
-  <a class="card" href="ai-quickstart.html">
-    <div class="card-title">✨ Quickstart with an AI Agent →</div>
-    <div class="card-desc">Clone → open an agent → "get my case running." It does the rest.</div>
-  </a>
-  <a class="card" href="installation.html">
-    <div class="card-title">Installation &amp; Requirements →</div>
-    <div class="card-desc">GPU, CUDA 13, JAX, Python, and the runtime-table prerequisites.</div>
-  </a>
-  <a class="card" href="quickstart.html">
-    <div class="card-title">Quickstart →</div>
-    <div class="card-desc">Run the bundled Switzerland 3 km case and read your first <code>wrfout</code>.</div>
-  </a>
-  <a class="card" href="running.html">
-    <div class="card-title">Running the Model →</div>
-    <div class="card-desc">The <code>gpuwrf run</code> command: single-domain and nested forecasts.</div>
-  </a>
-  <a class="card" href="physics.html">
-    <div class="card-title">Physics Options →</div>
-    <div class="card-desc">The GPU-operational scheme menu with WRF namelist numbers.</div>
-  </a>
-  <a class="card" href="performance.html">
-    <div class="card-title">Performance &amp; GPU Modes →</div>
-    <div class="card-desc">Cold compile, warm cache, batched ensembles, fp32, VRAM.</div>
-  </a>
-  <a class="card" href="validation.html">
-    <div class="card-title">Validation &amp; WRF Identity →</div>
-    <div class="card-desc">How the port is proven against WRF as an oracle.</div>
-  </a>
+<a class="card" href="installation.html"><div class="card-title">1. Install</div><div class="card-desc">Check Python, CUDA JAX, your NVIDIA GPU and WRF runtime tables.</div></a>
+<a class="card" href="quickstart.html"><div class="card-title">2. Run your first forecast</div><div class="card-desc">Try the bundled 3 km Alpine case, then inspect its output.</div></a>
+<a class="card" href="running.html"><div class="card-title">3. Configure your case</div><div class="card-desc">Select the duration, fixed nests, physics and output directory.</div></a>
+<a class="card" href="output.html"><div class="card-title">4. Read your results</div><div class="card-desc">WRF history, full output, cadence and checkpoint files.</div></a>
 </div>
-
-<h2 id="what-it-is">What it is good for<a class="headerlink" href="#what-it-is" aria-label="Permalink">¶</a></h2>
-<ul>
-  <li><strong>Running real regional ARW forecasts on a GPU</strong> from a standard WRF
-  namelist — single-domain or live-nested (validated through d01→…→d09), with native
-  init and a WRF-compatible <code>wrfout</code>.</li>
-  <li><strong>Capability the CPU stack cannot reach on one box.</strong> A 1&nbsp;km single
-  domain fits one RTX&nbsp;5090 bit-identically, and the all-7-island 1&nbsp;km nested case runs
-  end-to-end on one card.</li>
-  <li><strong>Throughput at scale and on many cases.</strong> The GPU advantage grows with grid
-  size; the opt-in <a href="performance.html#batched-ensemble">batched ensemble</a> fills an
-  otherwise-idle small-grid GPU by running many same-geometry cases at once.</li>
-  <li><strong>A forkable, auditable artifact.</strong> Every claim has a proof object on disk;
-  every architecture decision has a cross-model-reviewed ADR.</li>
-</ul>
-
-<h2 id="what-it-is-not">What it is NOT<a class="headerlink" href="#what-it-is-not" aria-label="Permalink">¶</a></h2>
-<ul>
-  <li><strong>Not a universal WRF v4.</strong> It covers the common operational ARW subset (the
-  <a href="physics.html">wired physics menu</a>). Every unsupported namelist option
-  <strong>fails closed before any compute</strong> with a named reason — it never silently
-  substitutes a scheme. See <a href="namelist.html">Namelist Compatibility</a>.</li>
-  <li><strong>Not proven for full 24 h/72 h forecast-skill equivalence.</strong> v0.3.0's release gate covers six three-domain
-  Tenerife cases over 24&nbsp;h against CPU-WRF (0 D6 bound failures); beyond 24&nbsp;h some 1&nbsp;km wind/rain
-  fields exceed those limits, and broader T2/U10/V10 skill equivalence is the open gate (<a href="validation.html#skill-gate">details</a>).</li>
-  <li><strong>Restart is nested-only.</strong> Verified checkpoint/resume (<code>--checkpoint-dir</code>,
-  <code>--resume-checkpoint</code>) requires the live nested driver; single-domain runs refuse it with a
-  named reason.</li>
-  <li><strong>Not a blanket single-card speedup.</strong> On tiny geometries the GPU can be
-  launch/occupancy-bound and slower than multi-rank CPU-WRF; the advantage grows with scale.</li>
-  <li><strong>Not</strong> WPS/<code>real.exe</code>, DFI, FDDA/nudging, WRF-Chem, WRF-Fire,
-  urban (BEP/BEM) or lake. See <a href="limitations.html">Boundaries &amp; Known Issues</a>.</li>
-</ul>
-
-<h2 id="scope-at-a-glance">Scope at a glance<a class="headerlink" href="#scope-at-a-glance" aria-label="Permalink">¶</a></h2>
-<p>What runs, what is recognized-but-refused (loudly, before any compute), and what is a
-deliberate boundary. Full detail on the <a href="namelist.html">Namelist Compatibility</a> and
-<a href="physics.html">Physics Options</a> pages.</p>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Area</th><th>Implemented (runs)</th><th>Fail-closed (refused with a named reason)</th><th>Out of scope</th></tr></thead>
-<tbody>
-<tr><td><strong>Init</strong></td><td>Standalone init from <code>wrfinput</code>/<code>wrfbdy</code> real-data artifacts; verified checkpoint/resume for nested runs (<code>--checkpoint-dir</code>, <code>--resume-checkpoint</code>)</td><td>Single-domain restart/resume; raw <code>met_em</code>-only CLI input</td><td>WPS (geogrid/ungrib/metgrid)</td></tr>
-<tr><td><strong>Dynamics</strong></td><td>Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K + 2-D Smagorinsky diffusion</td><td>3-D TKE / full Smagorinsky (<code>km_opt=2/3/5</code>)</td><td>Global nests</td></tr>
-<tr><td><strong>Microphysics</strong></td><td>Kessler, Purdue-Lin, WSM3/5/6/7, Thompson (+aerosol-aware), Morrison, SBU-YLin, WDM5/6/7, Goddard GCE</td><td>Morrison-aerosol (mp=40), NSSL, MP tail</td><td>WRF-Chem coupling</td></tr>
-<tr><td><strong>PBL / sfc</strong></td><td>YSU, MYJ, MYNN-EDMF, ACM2, BouLac, GFS, GBM-TKE, MRF, Shin-Hong; MYNN-SL, revised-MM5, Pleim-Xiu, Janjic, GFS sfclay</td><td>CAM-UW (bl=9); reference-only PBL tail</td><td>—</td></tr>
-<tr><td><strong>Cumulus</strong></td><td>Kain-Fritsch, BMJ, Tiedtke, New-Tiedtke, Grell-Freitas</td><td>Reference-only / documented-boundary CU tail</td><td>—</td></tr>
-<tr><td><strong>Radiation</strong></td><td>RRTMG SW+LW, Dudhia SW + RRTM LW; nested domains follow the namelist <code>radt</code>, <code>topo_shading</code> and <code>slope_rad</code> per domain</td><td>Reference-only RA tail</td><td>—</td></tr>
-<tr><td><strong>Land</strong></td><td>Noah, Noah-MP, Pleim-Xiu LSM, thermal-diffusion slab</td><td>RUC LSM (reference-only); CLM4/CTSM (boundary)</td><td>—</td></tr>
-<tr><td><strong>Nesting</strong></td><td>One-way live nesting with sub-cycling (three-domain Tenerife release gate; d01→…→d09 accepted on the v0.23.4 one-hour fixture); GWD default-on nested</td><td>—</td><td>Global nests</td></tr>
-<tr><td><strong>Output</strong></td><td>Full WRF history <code>wrfout</code> by default (375 variables compared on the release gate)</td><td>—</td><td>CLI-exposed auxhist streams</td></tr>
-<tr><td><strong>Other</strong></td><td>Lateral-BC relaxation; opt-in two-way &amp; moving nests</td><td>Urban (BEP/BEM), lake (reference-only)</td><td>DFI, FDDA/nudging, WRF-Chem/Fire/Hydro</td></tr>
-</tbody>
-</table>
-</div>
-
-<div class="admon note">
-  <div class="admon-title">New to the workflow?</div>
-  <p>If you already run WRF, the biggest change is that wrf_gpu replaces
-  <code>wrf.exe</code> with a single command, <code>python -m gpuwrf.cli run</code>, and
-  initializes from the same <code>wrfinput_*</code>/<code>wrfbdy_d01</code> artifacts a
-  WRF real-data case already uses. Keep your <code>namelist.input</code> and current
-  preprocessing chain for producing those artifacts. Start with the
-  <a href="quickstart.html">Quickstart</a>, then read
-  <a href="input-data.html">Input Data &amp; Initialization</a>.</p>
-</div>
+<p>Prefer help from an AI coding assistant? Follow the <a href="ai-quickstart.html">AI quickstart</a>.
+The repository's operator runbook uses the same public commands.</p>
+<h2 id="what-it-is">Already have a WRF case?<a class="headerlink" href="#what-it-is" aria-label="Permalink">¶</a></h2>
+<p>Bring <code>namelist.input</code>, <code>wrfinput_d0*</code> and <code>wrfbdy_d01</code>.
+Keep your preprocessing and downstream analysis. For fixed nests, use
+<code>--domains-from-namelist</code>. The <a href="input-data.html">input guide</a>
+explains preparation and <a href="running.html">running the model</a> shows the commands.</p>
+<h2 id="what-it-is-not">Choose your configuration<a class="headerlink" href="#what-it-is-not" aria-label="Permalink">¶</a></h2>
+<p>Check the <a href="physics.html">physics menu</a>, <a href="namelist.html">namelist compatibility</a>
+and <a href="nesting.html">nesting guide</a> for your case. Options have explicit support
+status and unsupported selections stop with a named reason. Technical boundaries and
+current source-specific findings are on the <a href="limitations.html">limitations page</a>.</p>
+<h2 id="scope-at-a-glance">See the evidence and plan your workload<a class="headerlink" href="#scope-at-a-glance" aria-label="Permalink">¶</a></h2>
+<p>Original Fortran CPU-WRF comparisons cover selected regional forecasts through 24 and
+72 hours. <a href="validation.html">Validation</a> links every retained hourly error plot,
+its source and frozen limits; it distinguishes accepted scope from source-dated candidate findings.
+Universal observational-skill equivalence is not claimed.</p>
+<p>Measured regional workloads show substantial speed gains on one RTX 5090. See
+<a href="performance.html">performance and energy</a> for the exact hardware, cases,
+clock definitions and dated receipts. Independent forecasts can share the card.</p>
+<p>Read <a href="concepts.html">how the rewrite works</a> or the
+<a href="version-history.html">release history</a> when you want more detail.
+This independent implementation is not affiliated with UCAR/NCAR; see
+<a href="credits.html">credits and licensing</a>.</p>
 
         <nav class="page-nav">
 <span></span>

@@ -1,0 +1,110 @@
+{
+ "hours": 24,
+ "annex": "NONE (strict)",
+ "source": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_G2_W3P0115_ACTUAL_20261009/results/W3P_0115/d6_72h",
+ "scorer_sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+ "domains": {
+  "d01": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d02": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d03": {
+   "status": "FAIL",
+   "pass": false,
+   "paired_frames": 25,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 19,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0120554260032488
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 20,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0860942639260613
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1007671500605603
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1172685959632989
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.13245755249869
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1330471056030438
+      }
+     ]
+    }
+   ],
+   "incomplete": []
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "source_report_sha256": {
+  "d01": "4ca54caf594869f5db94d6a3b690e2de6b69daf832d2e8fddf42b6711cff957a",
+  "d02": "2daa9efe5b70a9ad1a84b4215f3abf6bff0f1aa98d4fed05018be34283d47e01",
+  "d03": "8ee4da08f3120460da54d273d49ea26598dc98ad82c3aaac4040d634a4c75fdf"
+ }
+}

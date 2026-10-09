@@ -28,3 +28,12 @@ def test_thompson_fp64_guard_accepts_real_mynn_and_rejects_real_prognostic():
     assert set(_preflight_low(wide, mynn=())) == {'el_pbl', 'maxmf', 'maxwidth', 'ztop_plume'}
     poisoned = wide.replace(_cast=False, theta=jnp.asarray(wide.theta, jnp.float32))
     assert _preflight_low(poisoned) == ['theta']
+
+
+def test_thompson_fp64_guard_accepts_real_surface_wspd(monkeypatch):
+    monkeypatch.setenv("GPUWRF_MYNN_SFC_WSPD","1")
+    _,_,state=fixture()
+    assert state.sfc_wspd.dtype==jnp.float32
+    wide=_enforce_operational_precision(state,force_fp64=True)
+    assert wide.sfc_wspd.dtype==jnp.float32
+    assert _preflight_low(wide)==[]

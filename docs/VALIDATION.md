@@ -1,3 +1,5 @@
+**Historical precision/performance record. Current v0.3.3 uses native fp32 dynamics, with double precision only in WRF DOUBLE islands; earlier fp64 figures below describe their named older source.**
+
 # Validation — community-standard evidence an outside reviewer can reproduce
 
 This project validates its JAX/XLA WRF-compatible reimplementation against the
@@ -128,10 +130,17 @@ It writes a full synthetic carry — the complete prognostic **state** (56 `GPUW
 variables), the operational **carry** (14 `GPUWRF_CARRY_*` variables), the optional
 Noah-MP / cumulus groups, and the stochastic-physics seed arrays
 (`ISEEDARR_SPPT`, `ISEEDARR_SKEBS`, `ISEEDARRAY_SPP_{CONV,PBL,LSM}`) — to a
-WRF-compatible NetCDF `wrfrst` file, reads it back, and asserts **byte-for-byte
+GPUWRF NetCDF `wrfrst` checkpoint, reads it back, and asserts **byte-for-byte
 identity** of every field. The on-disk schema also carries the standard WRF
 restart variables (`U,V,W,T,P,PB,PH,PHB,MU,MUB,QVAPOR,…`, plus map factors,
 `XLAT/XLONG`, `TSLB/SMOIS/SH2O/…`).
+
+These are WRF-convention inspection fields, not a complete CPU-WRF restart.
+`T` is dry potential-temperature perturbation; `THM_2` follows `use_theta_m`.
+Current `U_2/V_2/W_2/PH_2/MU_2` fields are also exported, but previous time levels
+and the full native Registry inventory are absent. GPUWRF resumes from its exact
+`GPUWRF_*` leaves; its CLI crash recovery uses `RestartStore` checkpoints.
+Do not use this NetCDF export to restart CPU-WRF.
 
 Latest current-tree CPU result (2026-07-31): **REGRESSED** — across
 `test_p0_5_restart_full_carry.py`, `test_v0110_wrfrst_netcdf.py`, and

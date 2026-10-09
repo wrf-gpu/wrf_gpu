@@ -1,0 +1,85 @@
+{
+  "UTC": "2026-10-09T08:10:11.925158+00:00",
+  "arm": "W3P",
+  "source": "7a0c93ff4d19b1892067711d884739d246432344",
+  "raw72": "FAIL",
+  "binding72_A3": "PASS",
+  "counts": {
+    "FLOOR-LIMITED": 6,
+    "REAL FAIL": 0
+  },
+  "rows": [
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 68,
+      "X": 1.1035289176840415,
+      "limit": 1.0,
+      "C": 1.0742462797105208,
+      "C_over_X": 0.9734645485911002,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 69,
+      "X": 1.8372334143404616,
+      "limit": 1.0,
+      "C": 1.5094115483094688,
+      "C_over_X": 0.8215676552188793,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 70,
+      "X": 2.2805626166829236,
+      "limit": 1.0,
+      "C": 1.9865712642639377,
+      "C_over_X": 0.8710882348643441,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 71,
+      "X": 2.4160874839559185,
+      "limit": 1.0,
+      "C": 2.098835538985548,
+      "C_over_X": 0.8686918635698877,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 72,
+      "X": 2.433991037559918,
+      "limit": 1.0,
+      "C": 2.1118578851610086,
+      "C_over_X": 0.8676522848983664,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "W",
+      "lead_h": 69,
+      "X": 0.32257534770473256,
+      "limit": 0.3,
+      "C": 0.32996136664189546,
+      "C_over_X": 1.0228970347229498,
+      "status": "FLOOR-LIMITED"
+    }
+  ],
+  "C_reference": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/MO13/medano/d6floor/cpupair_P_vs_R.json",
+    "sha256": "fcd8b975ca1178248bdc34fd9a33904a99843874b5bcc21337e8f721cdfe2380",
+    "scope": "originalCPU_P0227-R wholefield, reusedfixedC asfrozenfor0227case"
+  },
+  "candidate72_ref": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_G2_W3P0227_ACTUAL_20261009/results/W3P/d6_72h_verdict.json",
+    "sha256": "a44c5627ab6085c0767c8eaa312c67782b255567e8372ef3ab7c6b22b3a179e3"
+  },
+  "rule": "originalA3 C>limit OR C/X>=.75; no strict24annex",
+  "recomputed_comparisons": 0,
+  "release_GO": false
+}

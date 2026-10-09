@@ -1,0 +1,197 @@
+{
+ "domains": {
+  "d01": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d02": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d03": {
+   "pass": false,
+   "status": "FAIL",
+   "paired_frames": 73,
+   "policy_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0995531008835915
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2914179049827224
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.8031846859198797
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 2.26966432563423
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 2.4306623420684974
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 2.464927193654234
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 69,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.518559865836334
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "W",
+     "lead_h": 69,
+     "detail": [
+      {
+       "limit": 0.3,
+       "metric": "rmse",
+       "value": 0.33041334555967417
+      }
+     ]
+    }
+   ],
+   "summary_tolerance_failures": 0,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "value": 1.0995531008835915,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "value": 1.2914179049827224,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "value": 1.8031846859198797,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "value": 2.26966432563423,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "value": 2.4306623420684974,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "value": 2.464927193654234,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 69,
+     "value": 1.518559865836334,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "W",
+     "lead_h": 69,
+     "value": 0.33041334555967417,
+     "limit": 0.3
+    }
+   ]
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "hours": 72,
+ "summary_top_pass": false,
+ "domains_scored": [
+  "d01",
+  "d02",
+  "d03"
+ ],
+ "breaches_compact": "d03: RAINNC \u03c467\u201372 (6 frames, max 2.46 > 1.0); V10 \u03c469\u201369 (1 frames, max 1.52 > 1.5); W \u03c469\u201369 (1 frames, max 0.33 > 0.3)",
+ "tooling": {
+  "scorer": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/tools_src/scripts/wn3_score.py (single loop-line substitution)",
+  "verdict": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/d6_verdict.py (single domain-tuple substitution)"
+ }
+}

@@ -1,0 +1,8 @@
+W3_0408: registry verdict FAIL-new-class; NEW items 6
+  d01 QNICE   @2026-04-11_05: flagged    1 (iv True) | GPU exact 0 True (ii) | CPU max 4.24e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d02 QGRAUP  @2026-04-10_00: flagged    5 (iv True) | GPU exact 0 True (ii) | CPU max 2.46e-10 cap 1e-10 (iii False) -> REAL FAIL
+  d03 SNOW    @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 8.19e-04 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWC   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 7.21e-04 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWH   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 6.83e-06 cap 1e-05 (iii True) -> EXPLAINED
+  d03 TAUSS   @2026-04-09_22: flagged    2 (iv True) | GPU exact 0 True (ii) | CPU max 1.00e-03 cap 5e-02 (iii True) -> EXPLAINED
+ANNEX FAIL

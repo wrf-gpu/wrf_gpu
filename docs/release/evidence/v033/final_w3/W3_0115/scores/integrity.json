@@ -1,0 +1,72 @@
+{
+ "verdict": "FAIL-new-class",
+ "domains": {
+  "d02": {
+   "R5": {
+    "QSNOWXY": [
+     "2026-01-16_08"
+    ],
+    "ACSNOM": [
+     "2026-01-17_16",
+     "2026-01-17_17",
+     "2026-01-17_18",
+     "2026-01-17_19",
+     "2026-01-17_20",
+     "2026-01-17_21",
+     "2026-01-17_22",
+     "2026-01-17_23",
+     "2026-01-18_00",
+     "2026-01-18_01",
+     "2026-01-18_02",
+     "2026-01-18_03"
+    ]
+   },
+   "R2": {
+    "QSNOW": [
+     "2026-01-16_17",
+     "2026-01-16_21",
+     "2026-01-16_23",
+     "2026-01-18_13"
+    ]
+   }
+  },
+  "d03": {
+   "R4": {
+    "ECAN": [
+     "2026-01-16_12"
+    ],
+    "EVC": [
+     "2026-01-16_12"
+    ],
+    "QRAINXY(companion)": [
+     "2026-01-16_12"
+    ]
+   }
+  }
+ },
+ "watch": [],
+ "new": [
+  "d01 QNICE@2026-01-16_16 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_05 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_06 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_08 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_09 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_15 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_16 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_17 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_18 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_20 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-17_21 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-18_13 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d02 QICE@2026-01-18_12 (GPU 0.0, CPU |max| 2.28e-07; R2 needs GPU 0 and CPU |max| <= 1e-9)",
+  "d02 QGRAUP@2026-01-17_11 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d02 QNICE@2026-01-18_12 (R2 companion invalid: CPU |max| 2.4e+04 > watch 10000; GPU 0.0)",
+  "d03 SNOW@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWC@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWH@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 TAUSS@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)"
+ ],
+ "r4_cells": [
+  "d03 ECAN/EVC@2026-01-16_12: <= 2 cells, CPU CANLIQ 0 CANWAT 0 mm, rain 1 h CPU 8.28e-06 GPU 9.34e-06 mm, GPU canopy 0/0 -> R4"
+ ]
+}

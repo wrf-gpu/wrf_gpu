@@ -370,6 +370,23 @@ def _weak_float64(value):
     )
 
 
+def wrf_julian_yearlen_at_lead(clock: CLWRFGasClock, lead_seconds):
+    """Traceable WRF ``(grid%julian, YEARLEN)`` at valid time ``init + lead_seconds``.
+
+    ``grid%julian`` = REAL(dayOfYear_r8) - 1.0 (frame/module_domain.F:2165, advanced after every solve by
+    domain_clockadvance :2421); ``YEARLEN`` follows the CURRENT year (first_rk_step_part1.F:231 YR from the
+    current time -> module_sf_noahmpdrv.F:678-684), so both wrap at Jan 1 00Z. Same julian arithmetic as
+    :func:`clwrf_gases_at_lead`; returned as fp64 0-D arrays holding the REAL value exactly.
+    """
+
+    f32, f64 = jnp.float32, jnp.float64
+    starts = jnp.asarray(clock.year_start_seconds, dtype=f64)
+    seconds = jnp.asarray(clock.base_seconds, dtype=f64) + jnp.asarray(lead_seconds, dtype=f64)
+    slot = jnp.sum(seconds >= starts[1:-1]).astype(jnp.int32)
+    julian = (1.0 + (seconds - starts[slot]) / 86400.0).astype(f32) - jnp.float32(1.0)
+    return julian.astype(f64), (starts[slot + 1] - starts[slot]) / 86400.0
+
+
 def clwrf_gases_at_lead(clock: CLWRFGasClock, lead_seconds) -> CLWRFGreenhouseGases:
     """Traceable CLWRF gases at valid time ``init + lead_seconds``.
 

@@ -157,6 +157,16 @@ EXC_FAC_LAND = 0.58
 EXC_FAC_WATER = 0.58 * 4.0
 
 
+def _dmp_gtr(like):
+    """Original DMP REAL grav/tref; preserve old REAL_CONSTANTS and DOUBLE."""
+    dtype = jnp.result_type(like)
+    if (dtype == jnp.float32
+            and os.environ.get("GPUWRF_MYNN_SOURCE_PARITY2", "0").strip().lower() in {"1", "true", "yes", "on"}):
+        from gpuwrf.physics.mynn_constants import _WRF_REAL_VALUES
+        return jnp.asarray(_WRF_REAL_VALUES["GTR"], dtype=dtype)
+    return GTR
+
+
 def _qsat_blend(t, p):
     """WRF `qsat_blend` (module_bl_mynnedmf.F:7619-7668), liquid/ice blend."""
     J = (0.611583699e3, 0.444606896e2, 0.143177157e1, 0.264224321e-1,
@@ -186,12 +196,17 @@ def _qsat_blend(t, p):
     return out
 
 
-def _condensation_edmf(qt, thl, p, zagl, niter=None):
+def _condensation_wrf_kwargs(qc_previous):
+    """Previous-level QC is an operand only under the original EXIT contract."""
+    return {"qc_initial": qc_previous} if os.environ.get("GPUWRF_MYNN_CONDENSATION_WRF", "0") == "1" else {}
+
+
+def _condensation_edmf(qt, thl, p, zagl, niter=None, *, qc_initial=None):
     """WRF `condensation_edmf` (line 6794): zero/one moist adjustment for a plume.
 
-    Returns (thv, qc). fp64. Fixed iteration count (JAX-friendly; WRF caps at 50
-    and converges in <8). The `if (abs(QC-QCold)<diff) exit` early-out is dropped
-    (extra iterations are idempotent once converged).
+    Returns (thv, qc). The legacy fixed-iteration branch starts from zero.
+    GPUWRF_MYNN_CONDENSATION_WRF retains the original QC INOUT first guess and
+    1e-6 EXIT; further iterations would change the value WRF actually consumes.
 
     v0.15 S1 knobs (see `_cond_niter`/`_cond_unroll` docstrings): the default
     (niter=50, fori) is the exact v0.14 numerics AND lowering; the S1 candidate
@@ -201,14 +216,33 @@ def _condensation_edmf(qt, thl, p, zagl, niter=None):
     if niter is None:
         niter = _cond_niter()
     exn = (p / P1000MB) ** RCP
-    qc = jnp.zeros_like(qt)
+    wrf_exit = os.environ.get("GPUWRF_MYNN_CONDENSATION_WRF", "0") == "1"
+    qc = (jnp.zeros_like(qt) if qc_initial is None else qc_initial) if wrf_exit else jnp.zeros_like(qt)
 
     def body(_, qc):
         t = exn * thl + XLVCP * qc
         qs = _qsat_blend(t, p)
         return 0.5 * qc + 0.5 * jnp.maximum(qt - qs, 0.0)
 
-    if _cond_unroll():
+    if wrf_exit:
+        # Original condensation_edmf:6825-6832: QC is INOUT from the previous
+        # plume level. Each lane keeps the first iterate satisfying the EXIT,
+        # including that iterate; the tile stops when all active lanes finish.
+        def pending(carry):
+            iteration, _qc, active = carry
+            # Pallas lowers a REAL reduce_max, whereas Boolean reduce_or is
+            # unsupported. The per-lane mask still freezes each lane at EXIT.
+            return (iteration < 50) & (jnp.max(active.astype(jnp.float32)) > 0)
+
+        def advance(carry):
+            iteration, qc, active = carry
+            proposed = body(iteration, qc)
+            still = active & (jnp.abs(proposed - qc) >= 1.0e-6)
+            return iteration + 1, jnp.where(active, proposed, qc), still
+
+        _, qc, _ = lax.while_loop(pending, advance,
+                                  (jnp.int32(0), qc, jnp.ones_like(qt, dtype=bool)))
+    elif _cond_unroll():
         for _ in range(int(niter)):
             qc = body(None, qc)
     else:
@@ -217,13 +251,17 @@ def _condensation_edmf(qt, thl, p, zagl, niter=None):
     qs = _qsat_blend(t, p)
     qc = jnp.maximum(qt - qs, 0.0)
     qc = jnp.where(zagl < 100.0, 0.0, qc)
-    thv = (thl + XLVCP * qc) * (1.0 + qt * (RVOVRD - 1.0) - RVOVRD * qc)
+    from gpuwrf.physics.mynn_constants import mynn_constant
+    rvovrd = mynn_constant("RVOVRD", qt.dtype, RVOVRD)
+    thv = (thl + XLVCP * qc) * (1.0 + qt * (rvovrd - 1.0) - rvovrd * qc)
     return thv, qc
 
 
 def _wrf_superadiabatic_gate(thv0, ts, qv0, dz0, is_water, fltv2):
     """WRF ``DMP_mf`` surface activation predicate (F90:5892-5918)."""
-    tvs = ts * (1.0 + P608 * qv0)
+    from gpuwrf.physics.mynn_constants import mynn_constant
+    p608 = mynn_constant("P608", thv0.dtype, P608)
+    tvs = ts * (1.0 + p608 * qv0)
     dthvdz0 = (thv0 - tvs) / (0.5 * dz0)
     hux0 = jnp.where(is_water, -0.001, -0.003)
     source_gate = dthvdz0 < hux0
@@ -237,7 +275,7 @@ def _wrf_first_level_plume_survival(first_level_w):
 
 
 def _dmp_setup(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
-               flt, fltv, flq, psig_shcu, *, dx):
+               flt, fltv, flq, psig_shcu, *, dx, cloud_base=None):
     """DMP_mf per-column activation/widths block (F90:5855-6123).
 
     v0.25 M2 family-#2 (pblbatch): verbatim extraction of the former
@@ -285,7 +323,8 @@ def _dmp_setup(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
     # ---- plume widths (lines 5933-5975) ----
     maxwidth_dx = jnp.minimum(dx * DCUT, LMAX)
     maxwidth_pbl = jnp.minimum(1.1 * pblh, LMAX)
-    cloud_base = 9000.0  # no SGS cloud deck height carried -> default
+    if cloud_base is None:
+        cloud_base = 9000.0  # Legacy caller without pre-DMP cloud diagnostics.
     cloud_factor = jnp.where(is_water, 0.9, 0.5)
     maxwidth_cld = jnp.minimum(LMAX, jnp.maximum(cloud_factor * cloud_base, 400.0))
     wspd_pbl = jnp.sqrt(jnp.maximum(u[0] ** 2 + v[0] ** 2, 0.01))
@@ -320,7 +359,7 @@ def _dmp_setup(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
     upa0 = N_arr * l_arr * l_arr / (dx * dx) * dl * acfac  # length NUP
 
     # ---- surface updraft excess scales (lines 6033-6069) ----
-    wstar = jnp.maximum(1e-2, (GTR * fltv2 * pblh) ** ONETHIRD)
+    wstar = jnp.maximum(1e-2, (_dmp_gtr(fltv2) * fltv2 * pblh) ** ONETHIRD)
     qstar = jnp.maximum(flq, 1e-5) / wstar
     thstar = flt / wstar
     exc_fac = jnp.where(is_water, EXC_FAC_WATER, EXC_FAC_LAND) * ac_wsp
@@ -412,7 +451,8 @@ def _dmp_scan(s, thl, thv, p, dz, zw, u, v, pblh):
             thln = thl_p * (1.0 - entexp) + thl[k] * entexp
 
             pk = p[k] * ak + p[k + 1] * bk
-            thvn, qcn = _condensation_edmf(qtn, thln, pk, zw[k + 1])
+            thvn, qcn = _condensation_edmf(qtn, thln, pk, zw[k + 1],
+                                          **_condensation_wrf_kwargs(qc_p))
 
             thvk = thv[k] * ak + thv[k + 1] * bk
             B = GRAV * (thvn / thvk - 1.0)
@@ -498,6 +538,11 @@ def _dmp_scan(s, thl, thv, p, dz, zw, u, v, pblh):
     return UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV, active
 
 
+def _wrf_plume_velocity_needed():
+    return (os.environ.get("GPUWRF_MYNN_SHSM_FLOORS", "0") == "1"
+            or os.environ.get("GPUWRF_MYNN_TKEPROD_UP", "0") == "1")
+
+
 def _dmp_assemble(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
                   UPU, UPV):
     """DMP_mf s_aw*/diagnostics assembly (F90:6363-6491).
@@ -581,7 +626,7 @@ def _dmp_assemble(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
 
     # WRF :6742 gives dry-plume MAXMF a negative sign.
     maxmf = jnp.where(active & (jnp.max(edmf_qc_inner) < 1e-8), -maxmf, maxmf)
-    return {
+    result = {
         "s_aw": s_aw,
         "s_awqv": s_awqv,
         "s_awqt": s_awqt,
@@ -599,6 +644,10 @@ def _dmp_assemble(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
         "active": active.astype(jnp.float64),
         "psig_w": psig_w,
     }
+    if _wrf_plume_velocity_needed():
+        result["edmf_w"] = jnp.where(active & has_a, jnp.sum(upa_w, axis=0) / safe, 0.0)
+    return result
+
 
 def _plume_top_height(setup, live_levels):
     """WRF :6321/:6356-6361: tallest live plume -> its W-interface height.
@@ -613,7 +662,7 @@ def _plume_top_height(setup, live_levels):
 
 def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                           p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-                          pblh, ts, xland, psig_shcu, *, dx, dt):
+                          pblh, ts, xland, psig_shcu, *, dx, dt, cloud_base=None, qni=None):
     """Port of DMP_mf for ONE column. All inputs are 1-D arrays length nz
     (interfaces zw length nz+1). Returns dict of solver arrays.
 
@@ -632,17 +681,49 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     del sqc  # qc1 unused: surface updraft UPQC(1,ip)=0, plume qc from condensation_edmf
     s = _dmp_setup(
         sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
-        flt, fltv, flq, psig_shcu, dx=dx,
+        flt, fltv, flq, psig_shcu, dx=dx, cloud_base=cloud_base,
     )
     UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV, active = _dmp_scan(
         s, thl, thv, p, dz, zw, u, v, pblh)
-    return _dmp_assemble(s, rho, thv, dz, fltv, active,
+    out = _dmp_assemble(s, rho, thv, dz, fltv, active,
                          UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV)
+    if qni is not None:
+        out['s_awqni'] = _passive_ni_flux(qni,s,rho,thv,dz,zw,fltv,pblh,active,UPA,UPW)
+    return out
+
+
+def _passive_ni_flux(qni,s,rho,thv,dz,zw,fltv,pblh,active,UPA,UPW):
+    """WRF passive UPQNI recurrence and limited flux, retained reference path."""
+    nz=qni.shape[-1];l=s['l_per_plume']
+    initial=(qni[0]*dz[1]+qni[1]*dz[0])/(dz[0]+dz[1])
+    initial=jnp.broadcast_to(initial,l.shape)
+    def step(previous,k):
+        wp=UPW[:,k-1]
+        wmin=.3+l*.0005
+        ent=.33/(jnp.minimum(jnp.maximum(wp,wmin),.9)*l)
+        ent=jnp.maximum(ent,.0003)
+        cap=jnp.minimum(pblh+1500.,4000.)
+        ent=jnp.where(zw[k]>=cap,ent+(zw[k]-cap)*5e-6,ent)
+        ent=jnp.minimum(ent,.9/(zw[k+1]-zw[k]));ex=ent*(zw[k+1]-zw[k])
+        value=previous*(1.-ex)+qni[k]*ex
+        live=UPW[:,k]>0
+        return jnp.where(live,value,previous),jnp.where(live,value,0.)
+    _,tail=jax.lax.scan(step,initial,jnp.arange(1,nz-1))
+    upni=jnp.concatenate([initial[:,None],tail.T,jnp.zeros_like(initial[:,None])],axis=-1)
+    rhoz=jnp.concatenate([s['rhoz_mid'],rho[-1:]])
+    wgt=rhoz[None,:]*(UPA*UPW)*(jnp.arange(nz)<=nz-2)[None,:]
+    aw=jnp.concatenate([jnp.zeros((1,),rho.dtype),jnp.sum(wgt,axis=0)*s['psig_w']])
+    flux=jnp.concatenate([jnp.zeros((1,),rho.dtype),jnp.sum(wgt*upni,axis=0)*s['psig_w']])
+    dzi=.5*(dz[0]+dz[1])
+    flx=jnp.where(aw[1]!=0,jnp.maximum(aw[1]*(thv[0]-thv[1])/dzi,1e-6),0.)
+    portion=FLUXPORTION*jnp.maximum(fltv,0.)/dz[0]
+    adjustment=jnp.where((flx>portion)&(flx>0),jnp.maximum(.01,portion/jnp.maximum(flx,1e-30)),1.)
+    return jnp.where(active,flux*adjustment,0.)
 
 
 def dmp_mf_columns(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                    p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-                   pblh, ts, dx, xland, dt, psig_shcu=None):
+                   pblh, ts, dx, xland, dt, psig_shcu=None, cloud_base=None, qni=None):
     """Batched DMP_mf over a leading column dimension.
 
     All profile args shape (B, nz); surface args (flt, fltv, flq, flqv, ust,
@@ -657,7 +738,22 @@ def dmp_mf_columns(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         return dmp_mf_columns_fused(
             sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
             p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-            pblh, ts, dx, xland, dt, psig_shcu=psig_shcu)
+            pblh, ts, dx, xland, dt, psig_shcu=psig_shcu, cloud_base=cloud_base,
+            **({} if qni is None else {'qni':qni}))
+
+    if qni is not None:
+        base=jnp.full_like(pblh,9000.) if cloud_base is None else cloud_base
+        return jax.vmap(lambda *a:_single_column_dmp_mf(*a[:-3],dx=dx,dt=dt,
+            cloud_base=a[-3],psig_shcu=a[-2],qni=a[-1]))(
+            sqw,sqv,sqc,u,v,w,th,thl,thv,tk,qke,p,exner,rho,dz,zw,ust,flt,fltv,flq,flqv,pblh,ts,xland,
+            base,psig_shcu,qni)
+
+    if cloud_base is not None:
+        return jax.vmap(
+            lambda *a: _single_column_dmp_mf(*a[:-2], dx=dx, dt=dt,
+                psig_shcu=a[-2], cloud_base=a[-1])
+        )(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke, p, exner, rho, dz, zw,
+          ust, flt, fltv, flq, flqv, pblh, ts, xland, psig_shcu, cloud_base)
 
     return jax.vmap(
         lambda *a: _single_column_dmp_mf(*a[:-1], dx=dx, dt=dt, psig_shcu=a[-1])

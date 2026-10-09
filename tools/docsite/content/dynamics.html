@@ -13,46 +13,13 @@ masking, clamping, or <code>nan_to_num</code> on the result path.</p>
 step</strong> advances the slow (meteorologically significant) modes, while the fast acoustic and
 gravity-wave modes are integrated with smaller <strong>acoustic sub-steps</strong> inside each RK3
 stage. Only <code>rk_order=3</code> is supported.</p>
-<div class="admon warn">
-  <div class="admon-title">Acoustic-substep fidelity gap</div>
-  <p>When <code>time_step_sound</code> is omitted, pristine WRF derives 4 acoustic substeps on the
-  tracked fixture while the current runtime selects 10. Testing 4 improved the initial interior
-  U/V comparison but did not pass the terminal gate; residual dry-mass behavior remains open.
-  The shipped default is unchanged, and operators must not silently tune this control to claim
-  parity.</p>
-</div>
+<p>Native single-root and live-nested runs honor <code>time_step_sound</code>. Zero or omission derives WRF automatic sound steps from dt/grid spacing (4 on the tracked grid). The legacy CPU-history replay driver has a separate historical default of 10; it is not the native default.</p>
 
-<h2 id="advection">Flux-form advection</h2>
-<p>Prognostic variables are advanced with <strong>flux-form advection</strong>. The advection orders
-are frozen to the WRF real-data default (5th-order horizontal, 3rd-order vertical). Optional moisture
-flux-advection into RK3 is available and gated:</p>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Key</th><th>Accepted values</th><th>Note</th></tr></thead>
-<tbody>
-<tr><td><code>moist_adv_opt</code></td><td>0 (standard), 1 (positive-definite), 2 (monotonic)</td><td>Opt-in; default-off = byte-identical. WENO variants (3/4) not wired.</td></tr>
-<tr><td><code>scalar_adv_opt</code></td><td>0 / 1 / 2</td><td>As above.</td></tr>
-</tbody>
-</table>
-</div>
-<p>Active flux-form moisture advection makes WRF's <code>RQVFTEN</code> available, which the Tiedtke
-and New-Tiedtke cumulus schemes require (see <a href="physics.html">Physics Options</a>).</p>
-
-<div class="admon warn">
-  <div class="admon-title">Single-domain daily path does not yet bind these options</div>
-  <p>The accepted nested pipeline honors <code>moist_adv_opt</code> and
-  <code>scalar_adv_opt</code>. The separate single-domain daily pipeline currently drops requested
-  values and runs <code>0/0</code>. Do not claim that a daily-pipeline result used the requested
-  limiter without explicit effective-value evidence.</p>
-</div>
-
-<div class="admon note">
-  <div class="admon-title">Default-off means byte-identical</div>
-  <p>The moisture/scalar flux-advection levers are opt-in and default-off; with them off the forecast
-  is byte-for-byte identical to the baseline. They move toward the open 24&nbsp;h forecast-skill gap
-  but do not close it (see <a href="validation.html">Validation</a>).</p>
-</div>
-
+<h2 id="advection">Per-domain advection controls</h2>
+<p>Both native and compatibility replay builders bind requested
+<code>moist_adv_opt</code> and <code>scalar_adv_opt</code>. Native single-root uses
+the same operational builder as fixed live nests. Inspect the effective values and
+the supported scheme combination; a control binding is not universal fidelity.</p>
 <h2 id="precision">Precision: WRF's single precision by default</h2>
 <p>Since v0.3.0 the dynamical core runs WRF's own single precision (fp32) by default, with double
 precision only where WRF itself uses it — as in WRF's standard single-precision build. The fp32 path

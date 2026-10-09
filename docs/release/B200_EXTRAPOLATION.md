@@ -1,3 +1,5 @@
+**Historical precision/performance record. Current v0.3.3 uses native fp32 dynamics, with double precision only in WRF DOUBLE islands; earlier fp64 figures below describe their named older source.**
+
 # B200 numbers — extrapolated from B200 runs on an old version
 
 Every B200 number in the v0.3 README/plots is **[I] extrapolated from B200 runs on an old version**. This version of

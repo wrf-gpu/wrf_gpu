@@ -1,0 +1,1071 @@
+{
+ "domains": {
+  "d03": {
+   "pass": false,
+   "status": "FAIL",
+   "paired_frames": 73,
+   "policy_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 19,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0120554260032488
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 20,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0860942639260613
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1007671500605603
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1172685959632989
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.13245755249869
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1330471056030438
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 25,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1416112627791706
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 26,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1387603239618656
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 27,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1379575425056594
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 28,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1415912797705108
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 29,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1423336604056007
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 30,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1409984174147323
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 31,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1416517697312718
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 32,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.144761939007247
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 33,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1461429944003911
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 34,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1461677758593523
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 35,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1462300565648649
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 36,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.146177427332445
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 37,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.146125108119723
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 38,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.146111392132145
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 39,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1429505616674451
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 40,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.152563841762213
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 41,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1537890725785271
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 42,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1538123239088036
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 43,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1524884275789196
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 44,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1520059013667094
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 45,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1527990424733927
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 46,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1529965461418714
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 47,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1530714855813775
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 48,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.153076228836694
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 49,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1530449330256765
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 50,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1533098610119983
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.153510969085838
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 52,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.153701039203429
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 53,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.154788119537936
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 54,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1550055170108562
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 55,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1525271643248545
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 56,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1534441658482493
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 57,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1533925139488994
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 58,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.154812143121121
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 59,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1558839458882824
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 60,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1564511859181363
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 61,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.165214095102567
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 62,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1664488495618242
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 63,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.169221647694653
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 64,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1734477884973666
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 65,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1884896307100405
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 66,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2064377475481913
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2201299756697017
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2217351569039696
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2217288680396814
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2217634597565892
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.2217831612986287
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.221823013019725
+      }
+     ]
+    }
+   ],
+   "summary_tolerance_failures": 1,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 19,
+     "value": 1.0120554260032488,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 20,
+     "value": 1.0860942639260613,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "value": 1.1007671500605603,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "value": 1.1172685959632989,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "value": 1.13245755249869,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "value": 1.1330471056030438,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 25,
+     "value": 1.1416112627791706,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 26,
+     "value": 1.1387603239618656,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 27,
+     "value": 1.1379575425056594,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 28,
+     "value": 1.1415912797705108,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 29,
+     "value": 1.1423336604056007,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 30,
+     "value": 1.1409984174147323,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 31,
+     "value": 1.1416517697312718,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 32,
+     "value": 1.144761939007247,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 33,
+     "value": 1.1461429944003911,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 34,
+     "value": 1.1461677758593523,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 35,
+     "value": 1.1462300565648649,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 36,
+     "value": 1.146177427332445,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 37,
+     "value": 1.146125108119723,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 38,
+     "value": 1.146111392132145,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 39,
+     "value": 1.1429505616674451,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 40,
+     "value": 1.152563841762213,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 41,
+     "value": 1.1537890725785271,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 42,
+     "value": 1.1538123239088036,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 43,
+     "value": 1.1524884275789196,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 44,
+     "value": 1.1520059013667094,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 45,
+     "value": 1.1527990424733927,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 46,
+     "value": 1.1529965461418714,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 47,
+     "value": 1.1530714855813775,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 48,
+     "value": 1.153076228836694,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 49,
+     "value": 1.1530449330256765,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 50,
+     "value": 1.1533098610119983,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 51,
+     "value": 1.153510969085838,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 52,
+     "value": 1.153701039203429,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 53,
+     "value": 1.154788119537936,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 54,
+     "value": 1.1550055170108562,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 55,
+     "value": 1.1525271643248545,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 56,
+     "value": 1.1534441658482493,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 57,
+     "value": 1.1533925139488994,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 58,
+     "value": 1.154812143121121,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 59,
+     "value": 1.1558839458882824,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 60,
+     "value": 1.1564511859181363,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 61,
+     "value": 1.165214095102567,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 62,
+     "value": 1.1664488495618242,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 63,
+     "value": 1.169221647694653,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 64,
+     "value": 1.1734477884973666,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 65,
+     "value": 1.1884896307100405,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 66,
+     "value": 1.2064377475481913,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "value": 1.2201299756697017,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "value": 1.2217351569039696,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "value": 1.2217288680396814,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "value": 1.2217634597565892,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "value": 1.2217831612986287,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "value": 1.221823013019725,
+     "limit": 1.0
+    }
+   ]
+  },
+  "d01": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d02": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "hours": 72,
+ "summary_top_pass": false,
+ "domains_scored": [
+  "d03",
+  "d01",
+  "d02"
+ ],
+ "breaches_compact": "d03: RAINNC \u03c419\u201372 (54 frames, max 1.22 > 1.0)",
+ "tooling": {
+  "scorer": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/tools_src/scripts/wn3_score.py (single loop-line substitution)",
+  "verdict": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/d6_verdict.py (single domain-tuple substitution)"
+ }
+}

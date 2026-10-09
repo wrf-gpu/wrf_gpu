@@ -1,0 +1,26 @@
+{
+  "source_sha256": "d2aebab3a7012b770f9aea5bef52858b394bfedc89b9d2e4ef08c863537696fe",
+  "raw_pass": false,
+  "domain": "d03",
+  "degenerate_fields": {
+    "QGRAUP": [
+      {
+        "file": "wrfout_d03_2026-03-03_00:00:00",
+        "gpu_value": 0.0,
+        "cpu_range": [
+          0.0,
+          6.57752064620043e-12
+        ]
+      }
+    ]
+  },
+  "degeneracy_frames_checked": [
+    "wrfout_d03_2026-02-28_00:00:00",
+    "wrfout_d03_2026-03-01_12:00:00",
+    "wrfout_d03_2026-03-03_00:00:00"
+  ],
+  "headers_and_missing_variables_frames": 73,
+  "classification": "Manager21:08:31: already-documented0227QGRAUPtail class34e1d8ec6; no new finding; raw frozen flag retained",
+  "manager_decision": "2026-10-06T21:08:31Z",
+  "final_degeneracy_scan": "ALL73frames/domain on new explicitly hashed tool copy, wn3 owner; frozen tool unchanged"
+}

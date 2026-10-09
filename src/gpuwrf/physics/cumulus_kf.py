@@ -774,6 +774,7 @@ def step_kf_column(
     warm_rain=False,
     f_qi=True,
     f_qs=True,
+    pi_phy=None,
 ):
     """Run one v0.6.0 KF column and return the frozen physics interface object.
 
@@ -800,6 +801,12 @@ def step_kf_column(
         return _empty_col(kx, nca_in, real)
 
     out = jax.lax.cond(nca_in < 0.5 * float(dt), run, skip, operand=None)
+    if pi_phy is not None:
+        # KF_eta_CPS:487 divides DTDT by PI_PHY, independently of PCPS=P_HYD.
+        out["RTHCUTEN"] = out["DTDT"] / jnp.asarray(pi_phy, real)
+        # A failed trigger leaves the original CPS NCA untouched, including a
+        # negative countdown carried from an expired shallow cloud.
+        out["NCA"] = jnp.where(out["ISHALL"] == 2, nca_in, out["NCA"])
     # module_cu_kfeta.F:2573: shallow convection lives for CUDT minutes.
     out["NCA"] = jnp.where(out["ISHALL"] == 1, float(cudt) * 60.0, out["NCA"])
     zeros = jnp.zeros_like(out["RTHCUTEN"])

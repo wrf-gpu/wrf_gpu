@@ -1,0 +1,20 @@
+{
+  "arm": "W3R",
+  "rc": 0,
+  "start_utc": "2026-10-08T01:54:56.916831+00:00",
+  "end_utc": "2026-10-08T01:57:13.134213+00:00",
+  "execution_revision": "cf873d2152906e429a34e48ab5d850716c2bcb3d",
+  "original_cpu_reference": "original CPU-WRF R0227",
+  "expected_domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "hours": 72,
+  "domain_hours": 219,
+  "png_count": 23,
+  "forecast_validation_reruns": 0,
+  "new_plot_data_read_only": true,
+  "pair_context": "original CPU R-P0227, context only",
+  "receipt_sha256": "0236c3adfa8aa224733e7ffbf05c6954f5979f620d0a38ce32d1147a18c58077"
+}

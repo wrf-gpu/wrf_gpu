@@ -1,0 +1,212 @@
+{
+ "A": {
+  "LWDNB": {
+   "n": 159,
+   "bias": -1.8335271871314858,
+   "rms": 9.710206788997699,
+   "median_abs": 3.211090087890625
+  },
+  "LWUPT": {
+   "n": 159,
+   "bias": 6.115405868434306,
+   "rms": 13.481532373080574,
+   "median_abs": 4.4037933349609375
+  },
+  "SW_transmissivity": {
+   "n": 79,
+   "bias": -0.014103451195915256,
+   "rms": 0.07034182822814831,
+   "median_abs": 0.04077119835203488
+  },
+  "SW_toa_albedo": {
+   "n": 79,
+   "bias": 0.009731286541628852,
+   "rms": 0.057762896609690154,
+   "median_abs": 0.029901592570661828
+  },
+  "liq_thin_ocean_LWDNB_rms": 14.68461936286531,
+  "liq_thin_ocean_SWtrans_rms_day": 0.0976743508771995,
+  "liq_thin_ocean_SWtrans_bias_day": 0.0026074991468503428,
+  "liq_thin_ocean_n_day": 14,
+  "liq_land_LWDNB_rms": 10.305085502552306,
+  "liq_land_SWtrans_rms_day": 0.07508981234825236,
+  "liq_land_SWtrans_bias_day": 0.027435242994508287,
+  "liq_land_n_day": 17,
+  "ice_LWDNB_rms": 6.197638576614827,
+  "ice_SWtrans_rms_day": 0.0677209345475942,
+  "ice_SWtrans_bias_day": -0.06657348548248122,
+  "ice_n_day": 6,
+  "snow_LWDNB_rms": 13.464705898888948,
+  "snow_SWtrans_rms_day": 0.09373875077607816,
+  "snow_SWtrans_bias_day": -0.0793570174823881,
+  "snow_n_day": 6
+ },
+ "B": {
+  "LWDNB": {
+   "n": 159,
+   "bias": -1.3369708750982705,
+   "rms": 9.756848826065465,
+   "median_abs": 3.570343017578125
+  },
+  "LWUPT": {
+   "n": 159,
+   "bias": 0.33458244275746857,
+   "rms": 15.434543134642542,
+   "median_abs": 6.9182586669921875
+  },
+  "SW_transmissivity": {
+   "n": 79,
+   "bias": -0.019071635702129375,
+   "rms": 0.09321817417300922,
+   "median_abs": 0.05352992274891727
+  },
+  "SW_toa_albedo": {
+   "n": 79,
+   "bias": 0.01261787912896707,
+   "rms": 0.07741453261100704,
+   "median_abs": 0.042681680048733406
+  },
+  "liq_thin_ocean_LWDNB_rms": 14.768146660363518,
+  "liq_thin_ocean_SWtrans_rms_day": 0.12418419517885178,
+  "liq_thin_ocean_SWtrans_bias_day": 0.06069055016420285,
+  "liq_thin_ocean_n_day": 14,
+  "liq_land_LWDNB_rms": 10.298810838303158,
+  "liq_land_SWtrans_rms_day": 0.08310228714410559,
+  "liq_land_SWtrans_bias_day": 0.008183176110537578,
+  "liq_land_n_day": 17,
+  "ice_LWDNB_rms": 6.493627253966143,
+  "ice_SWtrans_rms_day": 0.11983033843685802,
+  "ice_SWtrans_bias_day": -0.11515570655340662,
+  "ice_n_day": 6,
+  "snow_LWDNB_rms": 13.428057082113115,
+  "snow_SWtrans_rms_day": 0.13955517323427927,
+  "snow_SWtrans_bias_day": -0.12273657262828756,
+  "snow_n_day": 6
+ },
+ "C": {
+  "LWDNB": {
+   "n": 159,
+   "bias": -1.0366654306087855,
+   "rms": 9.592953514723899,
+   "median_abs": 3.31353759765625
+  },
+  "LWUPT": {
+   "n": 159,
+   "bias": 0.7243453691590507,
+   "rms": 14.542461775927501,
+   "median_abs": 6.8169708251953125
+  },
+  "SW_transmissivity": {
+   "n": 79,
+   "bias": -0.016692617454624595,
+   "rms": 0.08676806909263146,
+   "median_abs": 0.041621070770109125
+  },
+  "SW_toa_albedo": {
+   "n": 79,
+   "bias": 0.012575597744257552,
+   "rms": 0.07182828517388344,
+   "median_abs": 0.03790278051606988
+  },
+  "liq_thin_ocean_LWDNB_rms": 14.719393913716772,
+  "liq_thin_ocean_SWtrans_rms_day": 0.1078831378137508,
+  "liq_thin_ocean_SWtrans_bias_day": 0.035298213659402874,
+  "liq_thin_ocean_n_day": 14,
+  "liq_land_LWDNB_rms": 10.3769192772938,
+  "liq_land_SWtrans_rms_day": 0.09229514501247267,
+  "liq_land_SWtrans_bias_day": 0.03678273878179224,
+  "liq_land_n_day": 17,
+  "ice_LWDNB_rms": 4.304821653523558,
+  "ice_SWtrans_rms_day": 0.11355423063487326,
+  "ice_SWtrans_bias_day": -0.1115726826079161,
+  "ice_n_day": 6,
+  "snow_LWDNB_rms": 13.184171010624821,
+  "snow_SWtrans_rms_day": 0.1314798361135331,
+  "snow_SWtrans_bias_day": -0.11848852227634994,
+  "snow_n_day": 6
+ },
+ "D": {
+  "LWDNB": {
+   "n": 159,
+   "bias": 2.3293775642443,
+   "rms": 10.70600190237728,
+   "median_abs": 3.452178955078125
+  },
+  "LWUPT": {
+   "n": 159,
+   "bias": 0.10812713814981328,
+   "rms": 14.5146093555087,
+   "median_abs": 6.8875885009765625
+  },
+  "SW_transmissivity": {
+   "n": 79,
+   "bias": -0.03543067307991843,
+   "rms": 0.09315578400741463,
+   "median_abs": 0.038857532541541756
+  },
+  "SW_toa_albedo": {
+   "n": 79,
+   "bias": 0.027358874154300033,
+   "rms": 0.07445585141444692,
+   "median_abs": 0.03740631952885587
+  },
+  "liq_thin_ocean_LWDNB_rms": 15.762651709866855,
+  "liq_thin_ocean_SWtrans_rms_day": 0.09076551794649021,
+  "liq_thin_ocean_SWtrans_bias_day": 0.013212340515389335,
+  "liq_thin_ocean_n_day": 14,
+  "liq_land_LWDNB_rms": 10.25338340152274,
+  "liq_land_SWtrans_rms_day": 0.0963105534465377,
+  "liq_land_SWtrans_bias_day": -0.00012170668408102959,
+  "liq_land_n_day": 17,
+  "ice_LWDNB_rms": 4.681205090027233,
+  "ice_SWtrans_rms_day": 0.1135982866299986,
+  "ice_SWtrans_bias_day": -0.11170029615238021,
+  "ice_n_day": 6,
+  "snow_LWDNB_rms": 13.709195653145098,
+  "snow_SWtrans_rms_day": 0.13567877399962525,
+  "snow_SWtrans_bias_day": -0.1263756497751356,
+  "snow_n_day": 6
+ },
+ "E": {
+  "LWDNB": {
+   "n": 159,
+   "bias": 1.690310688138758,
+   "rms": 10.920857482964538,
+   "median_abs": 3.44805908203125
+  },
+  "LWUPT": {
+   "n": 159,
+   "bias": 5.48469102007788,
+   "rms": 13.339895735062312,
+   "median_abs": 4.306640625
+  },
+  "SW_transmissivity": {
+   "n": 79,
+   "bias": -0.03594485037891696,
+   "rms": 0.08456420203200299,
+   "median_abs": 0.04718808789704826
+  },
+  "SW_toa_albedo": {
+   "n": 79,
+   "bias": 0.02710020253935736,
+   "rms": 0.06627476771823589,
+   "median_abs": 0.036011652132670546
+  },
+  "liq_thin_ocean_LWDNB_rms": 15.971774225415096,
+  "liq_thin_ocean_SWtrans_rms_day": 0.08479163885878364,
+  "liq_thin_ocean_SWtrans_bias_day": -0.020837140638098824,
+  "liq_thin_ocean_n_day": 14,
+  "liq_land_LWDNB_rms": 10.670299268740829,
+  "liq_land_SWtrans_rms_day": 0.09421689016874704,
+  "liq_land_SWtrans_bias_day": -0.018247819257368098,
+  "liq_land_n_day": 17,
+  "ice_LWDNB_rms": 6.375748599268443,
+  "ice_SWtrans_rms_day": 0.06778708344065769,
+  "ice_SWtrans_bias_day": -0.06674831087266118,
+  "ice_n_day": 6,
+  "snow_LWDNB_rms": 13.858663997049128,
+  "snow_SWtrans_rms_day": 0.09838860606975924,
+  "snow_SWtrans_bias_day": -0.0884574794819634,
+  "snow_n_day": 6
+ }
+}

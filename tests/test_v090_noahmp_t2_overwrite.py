@@ -67,6 +67,7 @@ def _build_operational():
         soil_moisture=s2(np.array([0.2, 0.2, 0.2, 1.0, 1.0])),
         mavail=s2(np.array([0.7, 0.6, 0.6, 1.0, 1.0])),
         ustar=s2(np.full(nx, 0.1)), lakemask=s2(np.zeros(nx)),
+        sfc_wspd=s2(np.zeros(nx)),  # REAL surface producer overwrites before PBL
     )
 
     shape = (ny, nx)

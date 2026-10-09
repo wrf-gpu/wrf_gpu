@@ -36,7 +36,7 @@ def main():
             ny,nx,_nz=column.theta.shape
             column=C._flatten_columns_to_batch(column,ny,nx)
             flux=C._flatten_columns_to_batch(C._surface_fluxes_from_state(snapshot.state),ny,nx)
-            arrays={f'state_{name}':np.asarray(getattr(column,name)) for name in column.__slots__}
+            arrays={f'state_{name}':np.asarray(getattr(column,name)) for name in column.__slots__ if getattr(column,name) is not None}
             arrays.update({f'flux_{name}':np.asarray(getattr(flux,name)) for name in flux._fields})
             assert {a.dtype for a in arrays.values()}=={np.dtype('float32')}
             assert all(np.isfinite(a).all() for a in arrays.values())

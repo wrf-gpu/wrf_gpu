@@ -1,0 +1,647 @@
+{
+  "UTC": "2026-10-09T07:09:06.449955+00:00",
+  "arm": "W3_0115",
+  "source": "7a0c93ff4d19b1892067711d884739d246432344",
+  "raw72": "FAIL",
+  "binding72_A3": "FAIL",
+  "strict24": "RAW_FAIL_UNANNEXED_PENDING_MANAGER_LEDGER_L4",
+  "counts": {
+    "FLOOR-LIMITED": 61,
+    "REAL FAIL": 1,
+    "INCOMPLETE_C_REFERENCE": 0
+  },
+  "rows": [
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 21,
+      "X": 1.0436208341580304,
+      "limit": 1.0,
+      "C": 1.132615559250263,
+      "C_over_X": 1.085274960195703,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 22,
+      "X": 1.041817560868642,
+      "limit": 1.0,
+      "C": 1.1496009286242832,
+      "C_over_X": 1.1034570464196958,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 23,
+      "X": 1.0448152953801015,
+      "limit": 1.0,
+      "C": 1.1512555014360102,
+      "C_over_X": 1.101874662944311,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 24,
+      "X": 1.04331265644194,
+      "limit": 1.0,
+      "C": 1.151663130370403,
+      "C_over_X": 1.1038523526571373,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 25,
+      "X": 1.0453615142717991,
+      "limit": 1.0,
+      "C": 1.1492410761214802,
+      "C_over_X": 1.0993719019032797,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 26,
+      "X": 1.0404442787896306,
+      "limit": 1.0,
+      "C": 1.1490626992330712,
+      "C_over_X": 1.1043961917593497,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 27,
+      "X": 1.0380667601851612,
+      "limit": 1.0,
+      "C": 1.1472654179781248,
+      "C_over_X": 1.1051942533768113,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 28,
+      "X": 1.0364120543133564,
+      "limit": 1.0,
+      "C": 1.147694141862021,
+      "C_over_X": 1.107372436556994,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 29,
+      "X": 1.0429199987552324,
+      "limit": 1.0,
+      "C": 1.1482320690198742,
+      "C_over_X": 1.100978090735949,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 30,
+      "X": 1.0455489882245612,
+      "limit": 1.0,
+      "C": 1.1497907646737553,
+      "C_over_X": 1.0997005186970783,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 31,
+      "X": 1.045910078497063,
+      "limit": 1.0,
+      "C": 1.1499388143351381,
+      "C_over_X": 1.099462408840692,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 32,
+      "X": 1.0490158051775575,
+      "limit": 1.0,
+      "C": 1.1493483479349178,
+      "C_over_X": 1.0956444528882745,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 33,
+      "X": 1.0487554481190868,
+      "limit": 1.0,
+      "C": 1.1507424633924863,
+      "C_over_X": 1.0972457549148473,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 34,
+      "X": 1.0486681821777863,
+      "limit": 1.0,
+      "C": 1.150870624152608,
+      "C_over_X": 1.097459276167392,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 35,
+      "X": 1.0486362754102507,
+      "limit": 1.0,
+      "C": 1.1507950579701798,
+      "C_over_X": 1.0974206070831969,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 36,
+      "X": 1.048582951344607,
+      "limit": 1.0,
+      "C": 1.1507010123292711,
+      "C_over_X": 1.0973867263946235,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 37,
+      "X": 1.0485308884375648,
+      "limit": 1.0,
+      "C": 1.1507877748518291,
+      "C_over_X": 1.0975239618993382,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 38,
+      "X": 1.0486425863258753,
+      "limit": 1.0,
+      "C": 1.1508097378488804,
+      "C_over_X": 1.0974280015471884,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 39,
+      "X": 1.0447546537802612,
+      "limit": 1.0,
+      "C": 1.1478598332230088,
+      "C_over_X": 1.098688413657388,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 40,
+      "X": 1.0625254347239708,
+      "limit": 1.0,
+      "C": 1.1529697416732154,
+      "C_over_X": 1.085122015900486,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 41,
+      "X": 1.0650102864538882,
+      "limit": 1.0,
+      "C": 1.147984950034832,
+      "C_over_X": 1.0779097297334286,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 42,
+      "X": 1.0657181172710564,
+      "limit": 1.0,
+      "C": 1.149825057875629,
+      "C_over_X": 1.0789204380046968,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 43,
+      "X": 1.065582998092626,
+      "limit": 1.0,
+      "C": 1.152989042565245,
+      "C_over_X": 1.0820265006377487,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 44,
+      "X": 1.0666437947690803,
+      "limit": 1.0,
+      "C": 1.1527446891745254,
+      "C_over_X": 1.0807213193642449,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 45,
+      "X": 1.0677108750988396,
+      "limit": 1.0,
+      "C": 1.1533658083812575,
+      "C_over_X": 1.0802229660482654,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 46,
+      "X": 1.067077238640164,
+      "limit": 1.0,
+      "C": 1.153896801512001,
+      "C_over_X": 1.0813620230363794,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 47,
+      "X": 1.06702307983728,
+      "limit": 1.0,
+      "C": 1.1540500223942265,
+      "C_over_X": 1.081560506235927,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 48,
+      "X": 1.0670136327577642,
+      "limit": 1.0,
+      "C": 1.1540607882578482,
+      "C_over_X": 1.0815801718250826,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 49,
+      "X": 1.066978039595088,
+      "limit": 1.0,
+      "C": 1.1540491760601341,
+      "C_over_X": 1.0816053688397271,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 50,
+      "X": 1.0671418519629632,
+      "limit": 1.0,
+      "C": 1.1542654505309407,
+      "C_over_X": 1.0816420032704341,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 51,
+      "X": 1.0680139635264358,
+      "limit": 1.0,
+      "C": 1.1528229094408908,
+      "C_over_X": 1.0794080871699725,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 52,
+      "X": 1.0676761256734266,
+      "limit": 1.0,
+      "C": 1.1522766106748752,
+      "C_over_X": 1.079237966427401,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 53,
+      "X": 1.0712956627804433,
+      "limit": 1.0,
+      "C": 1.1530007566037683,
+      "C_over_X": 1.0762675484107416,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 54,
+      "X": 1.0708956456317864,
+      "limit": 1.0,
+      "C": 1.1535850202999467,
+      "C_over_X": 1.0772151563090695,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 55,
+      "X": 1.0690383168865885,
+      "limit": 1.0,
+      "C": 1.1553105457318429,
+      "C_over_X": 1.0807007826403352,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 56,
+      "X": 1.0683189954534407,
+      "limit": 1.0,
+      "C": 1.1544234366415067,
+      "C_over_X": 1.0805980625211289,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 57,
+      "X": 1.068565238525019,
+      "limit": 1.0,
+      "C": 1.155722080150614,
+      "C_over_X": 1.0815643617098203,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 58,
+      "X": 1.0692133044103243,
+      "limit": 1.0,
+      "C": 1.1547093079768576,
+      "C_over_X": 1.079961597198498,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 59,
+      "X": 1.0702155851985946,
+      "limit": 1.0,
+      "C": 1.1549598535943806,
+      "C_over_X": 1.0791842966667884,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 60,
+      "X": 1.0741152027592455,
+      "limit": 1.0,
+      "C": 1.1518933687689885,
+      "C_over_X": 1.0724113817679353,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 61,
+      "X": 1.0878147238127724,
+      "limit": 1.0,
+      "C": 1.1600973499011507,
+      "C_over_X": 1.0664475526080661,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 62,
+      "X": 1.0859735596377074,
+      "limit": 1.0,
+      "C": 1.1705328287414007,
+      "C_over_X": 1.0778649428001759,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 63,
+      "X": 1.0885001435629136,
+      "limit": 1.0,
+      "C": 1.174878887140413,
+      "C_over_X": 1.079355748447365,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 64,
+      "X": 1.0863750542301582,
+      "limit": 1.0,
+      "C": 1.174450573957215,
+      "C_over_X": 1.081072848077748,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 65,
+      "X": 1.089756314977407,
+      "limit": 1.0,
+      "C": 1.1775857704815726,
+      "C_over_X": 1.0805955003857781,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 66,
+      "X": 1.1119363341747457,
+      "limit": 1.0,
+      "C": 1.18788682315161,
+      "C_over_X": 1.068304710119247,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 67,
+      "X": 1.1172525166983212,
+      "limit": 1.0,
+      "C": 1.1978014194248394,
+      "C_over_X": 1.072095521399723,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 68,
+      "X": 1.119462404450878,
+      "limit": 1.0,
+      "C": 1.1987578820997384,
+      "C_over_X": 1.0708335334296077,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 69,
+      "X": 1.1199817745631138,
+      "limit": 1.0,
+      "C": 1.1987395781712082,
+      "C_over_X": 1.070320611814256,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 70,
+      "X": 1.11984242175717,
+      "limit": 1.0,
+      "C": 1.1990792487724724,
+      "C_over_X": 1.0707571221413188,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 71,
+      "X": 1.1199223421438997,
+      "limit": 1.0,
+      "C": 1.1991392237314185,
+      "C_over_X": 1.0707342630881633,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 72,
+      "X": 1.1202380371312712,
+      "limit": 1.0,
+      "C": 1.1991801615678803,
+      "C_over_X": 1.0704690626634725,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "U10",
+      "lead_h": 51,
+      "X": 1.6622894221377476,
+      "limit": 1.5,
+      "C": 1.3894092461796856,
+      "C_over_X": 0.8358407553318057,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 41,
+      "X": 1.5600227910959457,
+      "limit": 1.5,
+      "C": 1.24501238754808,
+      "C_over_X": 0.798073204221225,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 42,
+      "X": 1.6873930788798306,
+      "limit": 1.5,
+      "C": 1.2734616908817302,
+      "C_over_X": 0.7546917827392731,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 44,
+      "X": 1.6919175182118025,
+      "limit": 1.5,
+      "C": 1.2068496805614104,
+      "C_over_X": 0.7133029048821109,
+      "status": "REAL FAIL"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 48,
+      "X": 2.011494190015469,
+      "limit": 1.5,
+      "C": 1.5733508569167536,
+      "C_over_X": 0.7821801647384594,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 49,
+      "X": 1.8549563333970276,
+      "limit": 1.5,
+      "C": 1.4874823614027817,
+      "C_over_X": 0.8018961603687556,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 50,
+      "X": 1.557801249835737,
+      "limit": 1.5,
+      "C": 1.264682396413997,
+      "C_over_X": 0.8118380933044905,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 51,
+      "X": 1.7597609079631653,
+      "limit": 1.5,
+      "C": 1.4016843624564337,
+      "C_over_X": 0.7965197749953502,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 53,
+      "X": 1.5328254568884405,
+      "limit": 1.5,
+      "C": 1.2086394079685627,
+      "C_over_X": 0.7885042635069753,
+      "status": "FLOOR-LIMITED"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 54,
+      "X": 1.9622674587675475,
+      "limit": 1.5,
+      "C": 1.5093217108872978,
+      "C_over_X": 0.7691722675945848,
+      "status": "FLOOR-LIMITED"
+    }
+  ],
+  "rule": "FROZEN A3: C>limit OR C/X>=.75; strict24neverannexable",
+  "C_reference": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/MO13/pd/wave/20260115_18z_a1/pair_rule_d03.json",
+    "sha256": "a631f6e1e518f0ba6a555386ff77d0421c9a947550b536e3e4adeaa3c63cca25",
+    "basis": "retained exact full-field original GPU IC pair S; frozen A3 explicitly disclosed proxy; same original pair/RC and domains/leads as previous floor72_from_existing_metrics",
+    "recomputed_comparisons": 0
+  },
+  "candidate72_ref": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_0115_ATTEMPT03_ACTUAL_20261009/results/W3_0115/d6_72h_verdict.json",
+    "sha256": "e0b9aa65d339971b5cd6fa9a969544279226da22edb21eae06994e0682fbee27"
+  },
+  "release_PASS": false
+}

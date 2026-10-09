@@ -1,0 +1,40 @@
+{
+  "reference": "pristine KF_ETA_CPS; original P0227 d01 warm tau12/36/48; 8 imposed-state ownsteps",
+  "original_reference_source_SHA256": {
+    "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_kfeta.F": "e6376c2d85c45470f49d545b25d513b5ec111bf36b87beebc740bf42825c6e5f",
+    "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cumulus_driver.F": "d73eb4b670599e0bbf98a3661b5dbf17413aed01139d18fa1a84161578dc31e3",
+    "<USER_HOME>/src/wrf_pristine/WRF/phys/module_physics_addtendc.F": "824929ccaf29d99670545cf5cea3e20f4344f06604d1d778cbdbdc2dd445fe44",
+    "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON": "6f3ee02175b76487c5c6c046ff2fb4c5d41980b86c0f06eb2e09e34dacc9623a"
+  },
+  "wrapper_sha256": "ed29a312bea53848a44baa297140e86f9f8231dc6fb35d81fc455fc85759b393",
+  "cases": {
+    "12": {
+      "input_sha256": "6884895f9a03abd08b4622ea9b6511b13a4b7c50f4427d1cab79f7b00b7ce409",
+      "reference_sha256": "726490418da4cf9e9c8cfdfc1b8e5678bfe93660ba84a3644afa3b5243486d91",
+      "active_reference": 239,
+      "maximum_failed_active": 15
+    },
+    "36": {
+      "input_sha256": "fca3821d687306b08b83a741640b8bab1d5219a24426645318dcb0e0b28e2095",
+      "reference_sha256": "6a628c7d2b633670319ea2168967d045d95670160fb9ed09a081cf8bf3876946",
+      "active_reference": 399,
+      "maximum_failed_active": 18
+    },
+    "48": {
+      "input_sha256": "fdcc6a7523fc2f48c089677c525d8e3eb355808c884802a44255abe09484cb48",
+      "reference_sha256": "ba9ac249e41027f34c4a5d047517844be9faf27d46cb6affa3225857faec4fd3",
+      "active_reference": 622,
+      "maximum_failed_active": 70
+    }
+  },
+  "bounds": {
+    "tendency_abs": 1e-09,
+    "tendency_rel": 0.002,
+    "NCA_abs": 1e-06,
+    "RAINCV_abs": 0.0001,
+    "RAINCV_rel": 0.003
+  },
+  "fixture_environment": "GPUWRF_KF_ORIGINAL_FIXTURE",
+  "fixture_default": null,
+  "source_mapping": "MANIFEST.json records original paths/clocks/DT54/DX9000/STEPCU6/CUDT5/REAL44lev; all KF carry verbatim"
+}

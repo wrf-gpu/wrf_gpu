@@ -1,0 +1,14 @@
+{
+  "status": "EXTRACTION_DONE",
+  "arm": "MON33",
+  "domain_hours": 146,
+  "numeric_rows": 1604,
+  "revision": "471efc475aaa409a98fa54b88b739b01fdb54889",
+  "raw_operands_full_finite": true,
+  "mask": "none",
+  "cpu_extraction_peak_rss_kb": 358888,
+  "receipt_sha256": "2e5f1a1fbe5a65df9350b30303640c7d70ad0a7553827796c4cab303594379ad",
+  "forecast_gate_claim": false,
+  "cache": "NONE",
+  "rendered": false
+}

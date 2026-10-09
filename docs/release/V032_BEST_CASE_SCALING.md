@@ -119,7 +119,7 @@ JAX_PLATFORMS=cpu python scripts/release_plots/v032_best_case_scaling.py draft \
   --out-dir /path/to/layout_preview
 ```
 
-The draft produces “WAITING FOR FROZEN VAL32 RECEIPTS” layouts with no invented
+The preparation record produces “WAITING FOR FROZEN VAL32 RECEIPTS” layouts with no invented
 benchmark values. Formula/provenance controls use explicitly fabricated unit
-inputs; those checks are not physics or GPU-performance evidence. The final figures use source freeze 3e194296c and actual receipts; draft mode
+inputs; those checks are not physics or GPU-performance evidence. The final figures use source freeze 3e194296c and actual receipts; `draft` command mode
 continues to show no values and cannot publish a pending template.

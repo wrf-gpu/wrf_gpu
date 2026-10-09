@@ -13,7 +13,7 @@ def _oracle_module():
     return module
 
 
-def test_resident_tables_against_frozen_wrf_oracle(monkeypatch, tmp_path):
+def test_resident_tables_against_frozen_wrf_oracle(monkeypatch, tmp_path, cpu_pallas_interpret):
     monkeypatch.setenv('GPUWRF_KF_RESIDENT_TABLES', '1')
     monkeypatch.setenv('GPUWRF_WRITE_PROOFS', '1')
     oracle = _oracle_module()

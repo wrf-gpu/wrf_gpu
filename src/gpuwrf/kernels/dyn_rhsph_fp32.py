@@ -16,8 +16,8 @@ from jax.experimental.pallas import triton as pt
 F = jnp.float32
 
 
-def _kernel(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy, out,
-            *, nz, ny, nx, rdx, rdy, g, block):
+def _kernel(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy, cfn, cfn1, out,
+            *, nz, ny, nx, rdx, rdy, g, block, top_lid):
     flat = pl.program_id(0) * block + jnp.arange(block, dtype=jnp.int32)
     k, j, i = flat // (ny * nx), flat // nx % ny, flat % nx
     valid = flat < (nz + 1) * ny * nx
@@ -78,17 +78,74 @@ def _kernel(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty
     mt = m2(msfty, j, i)
     adv = F(0.25 * rdy) / mt * adv_y + F(0.25 * rdx) / mt * adv_x
     result = result + -adv
-    pt.store(out.at[k, j, i], jnp.where(interior, result, zero), mask=valid)
+    value = jnp.where(interior, result, zero)
+    if not top_lid:
+        def add_open_top(current):
+            top = valid & (k == nz)
+            surface = lambda ref: pt.load(ref.at[j, i], mask=top, other=zero)
+            mt_top = pt.load(msfty.at[j, i], mask=valid, other=F(1))
+            top_mass = c1f[nz] * surface(mut) + c2f[nz]
+            top_w = pt.load(w.at[nz, j, i], mask=top, other=zero)
+            top_value = top_mass * F(g) * top_w * (F(1) / mt_top)
+            if nz >= 3:
+                # WRF literal separate ph/phb differences (E133), extrapolated
+                # winds, zero-padded 6/4/2 stencils and half-weight x/y adds.
+                def sample(ref, jj, ii):
+                    ok = top & (jj >= 0) & (jj < ny) & (ii >= 0) & (ii < nx)
+                    return pt.load(ref.at[nz, jj, ii], mask=ok, other=zero)
+
+                def top_diffs(axis):
+                    a = lambda o: sample(ph, j + o, i) if axis == 1 else sample(ph, j, i + o)
+                    b = lambda o: sample(phb, j + o, i) if axis == 1 else sample(phb, j, i + o)
+                    d1, d2, d3 = a(1) - a(-1), a(2) - a(-2), a(3) - a(-3)
+                    b1, b2, b3 = b(1) - b(-1), b(2) - b(-2), b(3) - b(-3)
+                    sten6 = (F(45) * d1 - F(9) * d2 + d3 + F(45) * b1 - F(9) * b2 + b3) / F(60)
+                    sten4 = (F(8) * d1 - d2 + F(8) * b1 - b2) / F(12)
+                    dn = (b(1) - b(0)) + a(1) - a(0)
+                    ds = (b(0) - b(-1)) + a(0) - a(-1)
+                    return sten6, sten4, dn, ds
+
+                cf, cf1 = cfn[()], cfn1[()]
+
+                def fy(jj):
+                    vt = (cf * pt.load(v.at[nz - 1, jj, i], mask=top, other=zero)
+                          + cf1 * pt.load(v.at[nz - 2, jj, i], mask=top, other=zero))
+                    return ((c1f[nz] * pt.load(muv.at[jj, i], mask=top, other=zero) + c2f[nz])
+                            * vt * pt.load(msfvy.at[jj, i], mask=top, other=zero))
+
+                def fx(ii):
+                    ut = (cf * pt.load(u.at[nz - 1, j, ii], mask=top, other=zero)
+                          + cf1 * pt.load(u.at[nz - 2, j, ii], mask=top, other=zero))
+                    return ((c1f[nz] * pt.load(muu.at[j, ii], mask=top, other=zero) + c2f[nz])
+                            * ut * pt.load(msfux.at[j, ii], mask=top, other=zero))
+
+                s6y, s4y, dn, ds = top_diffs(1)
+                fn, fs = fy(j + 1), fy(j)
+                ay = jnp.where((j >= 3) & (j <= ny - 4), (fn + fs) * s6y, zero)
+                ay = ay + jnp.where((j == 2) | (j == ny - 3), (fn + fs) * s4y, zero)
+                ay = ay + jnp.where((j == 1) | (j == ny - 2), fn * dn + fs * ds, zero)
+                s6x, _, de, dw = top_diffs(2)
+                fe, fw = fx(i + 1), fx(i)
+                ax = jnp.where((i >= 3) & (i <= nx - 4), (fe + fw) * s6x, zero)
+                ax = ax + jnp.where((i == 1) | (i == nx - 2), fe * de + fw * dw, zero)
+                top_value = top_value + (-(F(.5 * rdy) / mt_top) * ay - (F(.5 * rdx) / mt_top) * ax)
+            return jnp.where(top, top_value, current)
+        # Uniform block predicate: the top-row work never runs on lower-level blocks.
+        value = jax.lax.cond((pl.program_id(0) + 1) * block > nz * ny * nx,
+                             add_open_top, lambda current: current, value)
+    pt.store(out.at[k, j, i], value, mask=valid)
 
 
 def rhs_ph_fp32(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy,
-                rdx, rdy, g, *, interpret=False, block=256, warps=4):
+                rdx, rdy, g, *, interpret=False, block=256, warps=4, top_lid=True, cfn=0.0, cfn1=0.0):
     nzp1, ny, nx = ph.shape
     arrays = (u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy)
     if any(a.dtype != jnp.float32 for a in arrays):
         raise TypeError("rhs_ph_fp32 requires WRF REAL fp32 inputs")
     from gpuwrf.kernels.dyn_real_fp32 import pin_rows
-    kernel = partial(_kernel, nz=nzp1 - 1, ny=ny, nx=nx, rdx=rdx, rdy=rdy, g=g, block=block)
+    kernel = partial(_kernel, nz=nzp1 - 1, ny=ny, nx=nx, rdx=rdx, rdy=rdy, g=g, block=block,
+                     top_lid=bool(top_lid))
+    weights = (jnp.asarray(cfn, dtype=jnp.float32), jnp.asarray(cfn1, dtype=jnp.float32))
     return pl.pallas_call(kernel, out_shape=jax.ShapeDtypeStruct(ph.shape, jnp.float32),
                           grid=((nzp1 * ny * nx + block - 1) // block,), name="b_diff_rhs_ph_fp32",
-                          interpret=interpret, compiler_params=pt.CompilerParams(num_warps=warps))(*pin_rows(arrays))
+                          interpret=interpret, compiler_params=pt.CompilerParams(num_warps=warps))(*pin_rows(arrays), *weights)

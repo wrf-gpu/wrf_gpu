@@ -132,6 +132,10 @@ class DryPhysicsTendencies:
     w_save: jax.Array | None = None
     ph_save: jax.Array | None = None
     t_save: jax.Array | None = None
+    # GPUWRF_PHYS_TEND_RK_WRF: WRF moist_tend/scalar_tend physics part, per species
+    # the COUPLED rate (c1h*mut+c2h)*R?TEN (calculate_phy_tend + update_phy_ten),
+    # consumed by the scalar update of every RK stage (not by rk_addtend_dry).
+    moist_tendf: dict | None = None
 
 
 def _absolute_diagnostics(

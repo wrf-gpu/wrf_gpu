@@ -55,6 +55,11 @@ configure_jax_x64()
 
 _SHARDED_HALO_CONTEXT: tuple[Any, int] | None = None
 
+# GPUWRF_SPEC_W_WORK_COPY (b-core B44 residual, default off): the specified-domain w ring copies the small-step
+# WORK w as WRF zero_grad_bdy(grid%w_2, 'w') does (solve_em.F:1599, module_bc.F:2219-2332), instead of the work
+# value whose finish reconstruction equals the interior PHYSICAL W.
+_SPEC_W_WORK_COPY = os.environ.get("GPUWRF_SPEC_W_WORK_COPY", "0") == "1"
+
 
 FULL_STATE_FIELDS = (
     "mu",
@@ -463,7 +468,13 @@ def _specified_w_zero_grad_work(
     interior row.  WRF's specified-domain ``zero_grad_bdy`` is a boundary copy,
     not a limiter; this helper computes the work value whose finish
     reconstruction equals the nearest interior physical W.
+
+    With ``GPUWRF_SPEC_W_WORK_COPY=1`` it is WRF's literal copy instead: WRF calls
+    ``zero_grad_bdy`` on the work ``w_2`` every substep (solve_em.F:1599), so the
+    finished ring W follows from the ring's own ``w_save`` and dry mass.
     """
+    if _SPEC_W_WORK_COPY:
+        w_save = None
 
     def _source_index_array(indices, low: int, high: int):
         return jnp.asarray(

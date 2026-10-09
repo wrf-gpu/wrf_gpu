@@ -1,0 +1,10 @@
+{
+  "case": "20260222_18z_a1",
+  "status": "EXTRACTION_DONE",
+  "domain_hours": 219,
+  "raw_full_array_finite": true,
+  "rendered": false,
+  "source": "2ead6af93",
+  "metrics": "<USER_HOME>/wrf_gpu2_lanes/release-docs/V033_plots/rc33g_b1/20260222_18z_a1/metrics.json",
+  "scorer_parity": "to be checked when all3 frozenD6 reports complete"
+}

@@ -7,10 +7,10 @@
 
   /* ---------- tokenization ---------- */
   function tokenize(s) {
-    return (s || "")
+    return ((s || "")
       .toLowerCase()
       .replace(/[`*_>#|]/g, " ")
-      .split(/[^a-z0-9]+/)
+      .match(/[a-z0-9]+(?:\.[a-z0-9]+)*/g) || [])
       .filter(function (t) { return t.length > 1; });
   }
 
@@ -172,8 +172,8 @@
   function wireNav() {
     var toggle = document.querySelector(".menu-toggle");
     var scrim = document.querySelector(".scrim");
-    if (toggle) toggle.addEventListener("click", function () { document.body.classList.toggle("nav-open"); });
-    if (scrim) scrim.addEventListener("click", function () { document.body.classList.remove("nav-open"); });
+    if (toggle) toggle.addEventListener("click", function () { var open = document.body.classList.toggle("nav-open"); toggle.setAttribute("aria-expanded", String(open)); });
+    if (scrim) scrim.addEventListener("click", function () { document.body.classList.remove("nav-open"); if (toggle) toggle.setAttribute("aria-expanded", "false"); });
     var active = document.querySelector("nav.toc a.active");
     if (active) active.scrollIntoView({ block: "center" });
   }

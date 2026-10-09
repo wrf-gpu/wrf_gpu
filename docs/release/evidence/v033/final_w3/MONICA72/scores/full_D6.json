@@ -1,0 +1,34 @@
+{
+ "domains": {
+  "d01": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d02": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  }
+ },
+ "complete": true,
+ "status": "PASS",
+ "pass": true,
+ "hours": 72,
+ "summary_top_pass": true,
+ "domains_scored": [
+  "d01",
+  "d02"
+ ],
+ "breaches_compact": "",
+ "tooling": {
+  "scorer": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/tools_src/scripts/wn3_score.py (single loop-line substitution)",
+  "verdict": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/d6_verdict.py (single domain-tuple substitution)"
+ }
+}

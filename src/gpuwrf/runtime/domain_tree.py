@@ -53,6 +53,7 @@ from gpuwrf.runtime.operational_mode import (
     build_clock_base,
     unalias_donated_carry,
 )
+from gpuwrf.nesting.nest_o3 import force_child_carry_o3rad
 from gpuwrf.runtime.operational_state import OperationalCarry
 
 
@@ -1974,7 +1975,9 @@ def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: Operat
             bdy_width=bdy_width,
             _compiled_producers=True,
         )
-    return child.replace(state=forced_state)
+    return force_child_carry_o3rad(
+        child.replace(state=forced_state), parent, edge.weights, parent_grid_ratio=int(edge.parent_grid_ratio)
+    )
 
 
 @dataclass(frozen=True)
@@ -2020,6 +2023,7 @@ def _fused_source_fingerprint() -> str:
         files = [
             Path(__file__).resolve(),
             Path(build_child_boundary_package.__code__.co_filename).resolve(),
+            Path(force_child_carry_o3rad.__code__.co_filename).resolve(),
         ]
         payload = []
         for path in files:
@@ -2284,7 +2288,10 @@ def _build_fused_cascade_program(
                     child_weights[idx],
                     bdy_width=int(child_bdy_widths[idx]),
                 )
-            child_forced = child_carry.replace(state=forced_state)
+            child_forced = force_child_carry_o3rad(
+                child_carry.replace(state=forced_state), parent_new, child_weights[idx],
+                parent_grid_ratio=int(child_ratios[idx]),
+            )
             child_new = _advance_chunk(
                 child_forced,
                 child_namelists[idx],

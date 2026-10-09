@@ -1,4 +1,4 @@
-# WRF-fidelity fixes found during v0.25 → v0.3 (draft; status to verify on the final tree)
+# WRF-fidelity fixes found during v0.25 → v0.3 (preparation record; status to verify on the final tree)
 
 Method that found them: unmodified WRF v4 Fortran (pristine build) run as an **oracle** on the same column/operator
 inputs, plus full GPU-vs-CPU-WRF forecasts scored against frozen tolerances. A fix counts only with a gate test that

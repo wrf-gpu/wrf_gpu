@@ -1,0 +1,37 @@
+{
+ "hours": 24,
+ "annex": "NONE (strict)",
+ "source": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_G2_W3P0227_ACTUAL_20261009/results/W3P/d6_72h",
+ "scorer_sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+ "domains": {
+  "d01": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d02": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d03": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  }
+ },
+ "complete": true,
+ "status": "PASS",
+ "pass": true,
+ "source_report_sha256": {
+  "d01": "8d539dfa409f2cd23cbfd613ab94cd92fcbb6e392e0165a343546e44e6debbad",
+  "d02": "4762edea5fe1ee4aae064e04f9784deeaab06d3b6f1aa70583ebf6c03d2a1008",
+  "d03": "128b6d94eec5b93ea9b026fd72f9d8338669d15f3d1f3b2129d723e8315a9306"
+ }
+}

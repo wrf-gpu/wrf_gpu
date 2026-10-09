@@ -1,0 +1,21 @@
+W3Rf_0115: registry verdict FAIL-new-class; NEW items 19
+  d01 QNICE   @2026-01-16_16: flagged   39 (iv True) | GPU exact 0 True (ii) | CPU max 2.63e+00 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_05: flagged   53 (iv True) | GPU exact 0 True (ii) | CPU max 2.25e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_06: flagged   57 (iv True) | GPU exact 0 True (ii) | CPU max 2.19e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_08: flagged   62 (iv True) | GPU exact 0 True (ii) | CPU max 2.62e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_09: flagged   71 (iv True) | GPU exact 0 True (ii) | CPU max 2.93e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_15: flagged   80 (iv True) | GPU exact 0 True (ii) | CPU max 4.03e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_16: flagged   75 (iv True) | GPU exact 0 True (ii) | CPU max 3.57e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_17: flagged   75 (iv True) | GPU exact 0 True (ii) | CPU max 3.12e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_18: flagged   72 (iv True) | GPU exact 0 True (ii) | CPU max 3.56e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_20: flagged   75 (iv True) | GPU exact 0 True (ii) | CPU max 4.73e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-17_21: flagged   68 (iv True) | GPU exact 0 True (ii) | CPU max 1.74e-02 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-18_13: flagged    1 (iv True) | GPU exact 0 True (ii) | CPU max 7.83e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d02 QGRAUP  @2026-01-17_11: flagged    5 (iv True) | GPU exact 0 True (ii) | CPU max 5.92e-14 cap 1e-10 (iii True) -> EXPLAINED
+  d03 QICE    @2026-01-18_15: flagged  112 (iv True) | GPU exact 0 True (ii) | CPU max 2.14e-08 cap 1e-10 (iii False) -> REAL FAIL
+  d03 SNOW    @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 2.32e-04 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWC   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.79e-05 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWH   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.94e-06 cap 1e-05 (iii True) -> EXPLAINED
+  d03 TAUSS   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.91e-03 cap 5e-02 (iii True) -> EXPLAINED
+  d03 QNICE   @2026-01-18_15: flagged  112 (iv True) | GPU exact 0 True (ii) | CPU max 4.50e+04 cap 1e+01 (iii False) -> REAL FAIL
+ANNEX FAIL

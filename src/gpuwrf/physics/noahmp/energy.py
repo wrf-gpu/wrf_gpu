@@ -1054,11 +1054,11 @@ def noahmp_energy_canopy(
     chb = bf["ch"]
     ch = jnp.where(use_veg, fveg * vf["chv"] + (1.0 - fveg) * bf["ch"], bf["ch"])
     cm = jnp.where(use_veg, fveg * vf["cm"] + (1.0 - fveg) * bf["cm"], bf["cm"])
-    # QSFC = Q1 tile-combine (ENERGY :2300/2318): veg = FVEG*(EAH canopy-air q) +
-    # (1-FVEG)*QSFC_bare; bare = QSFC_bare. The driver writes Q1 back as QSFC
-    # (module_sf_noahmpdrv.F:1244).
+    # Legacy: Q1 tile-combine (ENERGY :2300/2318). In WRF Q1 is an ENERGY local (lsm:645), never exported:
+    # grid%QSFC = QSFC1D (drv:1244) = NOAHMP_SFLX QSFC = BARE_FLUX's last overwrite (lsm:4435) on every land
+    # column -> GPUWRF_NOAH_QSFC_WRF=1 (V033-W2, default 0) writes that bare value; urban override below kept.
     q1_canopy = vf["eah"] * 0.622 / (forcing.sfcprs - 0.378 * vf["eah"])
-    qsfc = jnp.where(use_veg, fveg * q1_canopy + (1.0 - fveg) * bf["qsfc"], bf["qsfc"])
+    qsfc = jnp.where(use_veg, fveg * q1_canopy + (1.0 - fveg) * bf["qsfc"], bf["qsfc"]) if not _qsfc_wrf() else _qsfc_export(bf["qsfc"])
     z0wrf = jnp.where(use_veg, z0m, z0mg)
 
     # net emissivity + TRAD (ENERGY :2337-2348)
@@ -1146,7 +1146,19 @@ def noahmp_energy_canopy(
         qsnow=forcing.prcpsnow, qmelt=jnp.zeros_like(fsh),
         imelt=jnp.zeros((NSNOW + NSOIL,) + fveg.shape, dtype=jnp.int32),
     )
-    return ls, ef, et
+    # Fence only completed energy/ET exports; unchanged land-carry leaves need no new boundary.
+    return ls, lax.optimization_barrier(ef), lax.optimization_barrier(et)
+
+
+def _qsfc_wrf():
+    """GPUWRF_NOAH_QSFC_WRF (V033-W2, default 0): land QSFC = WRF grid%QSFC = BARE_FLUX QSFC (see noahmp_energy_canopy)."""
+    return os.environ.get("GPUWRF_NOAH_QSFC_WRF", "0") == "1"
+
+
+def _qsfc_export(qsfc_bare):
+    """Output-only fusion firewall for the exported bare QSFC (E204): keeps the PSI/RHSUR/QSFC chain out of the carry
+    select/transpose fusion (MON33W2 E41 STACK). Value-neutral: optimization_barrier is identity."""
+    return lax.optimization_barrier(qsfc_bare)
 
 
 __all__ = ["noahmp_radiation_twostream", "noahmp_energy_canopy", "EnergyParams"]

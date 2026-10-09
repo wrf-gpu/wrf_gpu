@@ -10,7 +10,7 @@ import jax
 from jax import config
 import jax.numpy as jnp
 
-from gpuwrf.physics.mynn_constants import BULK_CD, BULK_CH, BULK_CQ, MIN_WIND, P608, R_D
+from gpuwrf.physics.mynn_constants import BULK_CD, BULK_CH, BULK_CQ, MIN_WIND, P608, R_D, mynn_constant
 
 
 configure_jax_x64()
@@ -54,6 +54,10 @@ class SurfaceFluxes(NamedTuple):
     # superadiabatic activation test.  ``-1`` retains the standalone fixture's
     # no-skin fallback (the operational coupler always supplies State.t_skin).
     t_skin: jax.Array = -1.0
+    # Exact SFCLAY_mynn WSPD (WSTAR/VSGD included); absent in analytic stubs.
+    wspd: jax.Array | None = None
+    # Transient MYNN caller operand; absent when RHOSFC_WRF is disabled.
+    psfc: jax.Array | None = None
 
 
 def bulk_surface_fluxes(
@@ -74,8 +78,10 @@ def bulk_surface_fluxes(
     qv_flux = BULK_CQ * wind * surface_qv_delta
     tau_u = -BULK_CD * wind * u0
     tau_v = -BULK_CD * wind * v0
-    rhosfc = jnp.maximum(p0 / (R_D * (theta0 + P608 * qv0)), 1.0e-4)
-    fltv = (1.0 + P608 * qv0) * theta_flux + P608 * theta0 * qv_flux
+    rd = mynn_constant("R_D", theta0.dtype, R_D)
+    p608 = mynn_constant("P608", theta0.dtype, P608)
+    rhosfc = jnp.maximum(p0 / (rd * (theta0 + p608 * qv0)), 1.0e-4)
+    fltv = (1.0 + p608 * qv0) * theta_flux + p608 * theta0 * qv_flux
     return SurfaceFluxes(
         ustar=ustar,
         theta_flux=theta_flux,

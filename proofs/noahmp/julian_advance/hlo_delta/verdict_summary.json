@@ -1,0 +1,102 @@
+{
+ "prod/d01": {
+  "off_identical": true,
+  "scalar_added": 37,
+  "scalar_removed": 6,
+  "all_added_rank0_or_len1": true,
+  "scalar_removed_ops": {
+   "get-tuple-element f64[]": 4,
+   "parameter f64[]": 2
+  },
+  "tuple_shape_swaps_added": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "tuple_shape_swaps_removed": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "carry_tuple_lengths": [
+   249,
+   251
+  ],
+  "structural_changed": {}
+ },
+ "prod/d02": {
+  "off_identical": true,
+  "scalar_added": 37,
+  "scalar_removed": 6,
+  "all_added_rank0_or_len1": true,
+  "scalar_removed_ops": {
+   "get-tuple-element f64[]": 4,
+   "parameter f64[]": 2
+  },
+  "tuple_shape_swaps_added": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "tuple_shape_swaps_removed": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "carry_tuple_lengths": [
+   224,
+   226
+  ],
+  "structural_changed": {}
+ },
+ "wn3/d01": {
+  "off_identical": true,
+  "scalar_added": 37,
+  "scalar_removed": 6,
+  "all_added_rank0_or_len1": true,
+  "scalar_removed_ops": {
+   "get-tuple-element f64[]": 4,
+   "parameter f64[]": 2
+  },
+  "tuple_shape_swaps_added": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "tuple_shape_swaps_removed": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "carry_tuple_lengths": [
+   251,
+   253
+  ],
+  "structural_changed": {}
+ },
+ "wn3/fused/d02": {
+  "off_identical": true,
+  "scalar_added": 74,
+  "scalar_removed": 16,
+  "all_added_rank0_or_len1": true,
+  "scalar_removed_ops": {
+   "get-tuple-element f64[]": 8,
+   "parameter f64[]": 8
+  },
+  "tuple_shape_swaps_added": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "tuple_shape_swaps_removed": {
+   "parameter": 2,
+   "tuple": 2,
+   "while": 1
+  },
+  "carry_tuple_lengths": [
+   226,
+   228
+  ],
+  "structural_changed": {}
+ }
+}

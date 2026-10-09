@@ -1,0 +1,86 @@
+{
+ "hours": 24,
+ "annex": "NONE (strict)",
+ "source": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_0115_ATTEMPT03_ACTUAL_20261009/results/W3_0115/d6_72h",
+ "scorer_sha256": "ba1b5972f191edfdac825341bc39d855085a34d083f30740f9a114a6c3dff24d",
+ "domains": {
+  "d01": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d02": {
+   "status": "PASS",
+   "pass": true,
+   "paired_frames": 25,
+   "frame_failures": [],
+   "incomplete": []
+  },
+  "d03": {
+   "status": "FAIL",
+   "pass": false,
+   "paired_frames": 25,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0436208341580304
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.041817560868642
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0448152953801015
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.04331265644194
+      }
+     ]
+    }
+   ],
+   "incomplete": []
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "source_report_sha256": {
+  "d01": "85968633a343d0ffd3c9ebdc9a9e436f635179ef0dbfa43a07529d7457aa8e5e",
+  "d02": "583e60fe90f9c2960df8ddf66cc08874522d4747301a94a67dafeecaa95b23bf",
+  "d03": "d1f444c04548462da1c708cf48faa4cdd867fa68a1cc0c8430e78f39fe86835f"
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "verdict": "FAIL-new-class",
+ "domains": {
+  "d02": {
+   "R2": {
+    "QICE": [
+     "2026-03-01_17"
+    ],
+    "QNICE(companion)": [
+     "2026-03-01_17"
+    ]
+   },
+   "R5": {
+    "ACSNOM": [
+     "2026-03-02_20"
+    ]
+   }
+  },
+  "d03": {
+   "R5": {
+    "QSNOWXY": [
+     "2026-02-28_17"
+    ]
+   },
+   "R4": {
+    "ECAN": [
+     "2026-03-02_18"
+    ],
+    "EVC": [
+     "2026-03-02_18"
+    ],
+    "QRAINXY(companion)": [
+     "2026-03-02_18"
+    ]
+   }
+  }
+ },
+ "watch": [],
+ "new": [
+  "d01 QNICE@2026-03-01_13 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-03-01_16 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 QGRAUP@2026-03-02_19 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 QGRAUP@2026-03-03_00 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)"
+ ],
+ "r4_cells": [
+  "d03 ECAN/EVC@2026-03-02_18: <= 8 cells, CPU CANLIQ 0 CANWAT 0 mm, rain 1 h CPU 6.74e-06 GPU 0 mm, GPU canopy 0/0 -> R4"
+ ]
+}

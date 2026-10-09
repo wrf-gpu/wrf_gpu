@@ -4,7 +4,7 @@
 # version-keys its cache dir by ``gpuwrf.__version__`` (B1), so the attribute
 # must already exist when ``configure_compilation_cache()`` runs at import. (It
 # is re-exported via ``__all__`` at the foot of the module.)
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 # v0.3 release defaults: the validated fp32 fast paths are ON unless opted out
 # (explicit =0 per flag, or GPUWRF_FAST_DEFAULTS=0 for all). MUST run first:
@@ -44,7 +44,8 @@ from gpuwrf._x64_config import configure_jax_x64 as _configure_jax_x64
 _JAX_X64_FORCE_STATUS = _configure_jax_x64()
 
 # Keep launch/profiler command-buffer settings together, before backend init.
-# Whole-step GPU byte gate passes; capture removes radiation host round trips.
+# Dynamic slice copies stay in GPU kernels; capture policy has its own executable
+# identity and is qualified by the release's actual compiled/runtime gates.
 from gpuwrf.runtime.xla_autotune import configure_command_buffers as _configure_command_buffers
 
 _COMMAND_BUFFER_STATUS = _configure_command_buffers(default_on=True)

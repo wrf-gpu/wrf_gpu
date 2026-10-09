@@ -1,3 +1,5 @@
+**Historical precision/performance record. Current v0.3.3 uses native fp32 dynamics, with double precision only in WRF DOUBLE islands; earlier fp64 figures below describe their named older source.**
+
 # Performance — measured, reproducible
 
 ## v0.23.4 candidate — d03 regression measured, root-caused, not fixed

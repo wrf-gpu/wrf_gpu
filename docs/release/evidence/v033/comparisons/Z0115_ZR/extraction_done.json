@@ -1,0 +1,22 @@
+{
+  "receipt_sha256": "1a6e2b52af8209f8df2bca2b132e88896c26a3aff9e006fb91ad21e0d03fb5ea",
+  "compression_receipt_sha256": "672476ed430a9743b2c468ace0519ab402be39ee1eaf68b6eafcd49ca4751917",
+  "src_gpuwrf_tree": "f7934550e562fabfbbe48c6f9abe023369d63a0e",
+  "status": "EXTRACTION_DONE",
+  "revision": "471efc475aaa409a98fa54b88b739b01fdb54889",
+  "case": "20260115_18z_a1",
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "numeric_rows": 2406,
+  "raw_operands_full_finite": true,
+  "mask": "none",
+  "cpu_peak_rss_kb": 363828,
+  "generated_utc": "2026-10-07T10:30:10.516171+00:00",
+  "cache": "NONE",
+  "rendered": false,
+  "forecast_release_claim": false
+}

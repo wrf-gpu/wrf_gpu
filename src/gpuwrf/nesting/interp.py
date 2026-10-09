@@ -410,25 +410,33 @@ def interp_sint_full(
 
     if field.ndim not in (2, 3):
         raise ValueError(f"interp expects 2D or 3D field, got {field.shape}")
+    rr = int(parent_grid_ratio)
+    if rr <= 1:
+        raise ValueError(f"full SINT requires parent_grid_ratio > 1, got {rr}")
+
+    # Local import: sint_kernel imports InterpWeights from this module.
+    from gpuwrf.nesting.sint_kernel import _host_subcell_offsets, _int_centers
+
     was_2d = field.ndim == 2
     source = field[None, ...] if was_2d else field
-    x_center, xig = _sint_axis_plan(
-        weights.x0,
-        weights.wx,
-        ratio=int(parent_grid_ratio),
-        staggered=bool(xstag),
+    nx, ny = int(weights.x0.shape[0]), int(weights.y0.shape[0])
+    x_center = _int_centers(weights.x0, nx, rr, bool(xstag))
+    y_center = _int_centers(weights.y0, ny, rr, bool(ystag))
+    # Round the static offsets in each plan's dtype, then to the field dtype
+    # before tracing: XIG/XJG are REAL in WRF, with no device f64 planning.
+    xig = jnp.asarray(
+        _host_subcell_offsets(nx, rr, bool(xstag), weights.wx.dtype).astype(field.dtype)
     )
-    y_center, xjg = _sint_axis_plan(
-        weights.y0,
-        weights.wy,
-        ratio=int(parent_grid_ratio),
-        staggered=bool(ystag),
+    xjg = jnp.asarray(
+        _host_subcell_offsets(ny, rr, bool(ystag), weights.wy.dtype).astype(field.dtype)
     )
     offsets = jnp.arange(-2, 3, dtype=jnp.int32)
 
     # x pass for every parent row: (z, parent_y, child_x, 5) -> (..., child_x)
     x_stencil = jnp.take(source, x_center[:, None] + offsets[None, :], axis=2)
-    x_value = _sint_limited_1d(x_stencil, xig[None, None, :])
+    # Keep the completed first pass separate from y-gather layout copies and sibling field fusions.
+    # The final pass stays fusible with compact edge slices; do not materialize unused child interiors.
+    x_value = jax.lax.optimization_barrier(_sint_limited_1d(x_stencil, xig[None, None, :]))
 
     # y pass over the five already-x-interpolated parent rows.
     # take -> (z, child_y, 5, child_x); move stencil axis last.

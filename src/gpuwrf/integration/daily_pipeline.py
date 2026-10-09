@@ -92,6 +92,10 @@ WRITER_LATLON_FIELDS: tuple[str, ...] = (
 )
 
 
+# WRF carries these wrfinput fields unchanged into history. Output metadata only.
+WRITER_INPUT_HISTORY_FIELDS = ("T00", "TLP_STRAT", "WATER_DEPTH", "GOT_VAR_SSO")
+
+
 class PipelineBlocked(RuntimeError):
     """Raised when the full contracted run cannot be completed honestly."""
 
@@ -289,7 +293,7 @@ def _read_static_latlon(path: Path, name: str) -> np.ndarray | None:
             return None
         variable = dataset.variables[name]
         data = variable[0] if variable.dimensions and variable.dimensions[0] == "Time" else variable[:]
-        return np.asarray(np.ma.filled(data, np.nan), dtype=np.float32)
+        return np.asarray(np.ma.asarray(data, dtype=np.float32).filled(np.nan))
 
 
 def _candidate_static_latlon_paths(run: Gen2Run, domain: str) -> list[Path]:
@@ -331,8 +335,12 @@ def _load_static_latlon_writer_diagnostics(
     fields: dict[str, np.ndarray] = {}
     meta_fields: dict[str, Any] = {}
     errors: dict[str, str] = {}
-    for name in WRITER_LATLON_FIELDS:
-        for path in candidates:
+    for name in (*WRITER_LATLON_FIELDS, *WRITER_INPUT_HISTORY_FIELDS):
+        # Input constants must never be inferred from later forecast history.
+        sources = candidates if name in WRITER_LATLON_FIELDS else [
+            path for path in candidates if path.name == f"wrfinput_{domain}"
+        ]
+        for path in sources:
             try:
                 value = _read_static_latlon(path, name)
             except Exception as exc:  # noqa: BLE001 -- keep trying other static sources.
@@ -341,6 +349,8 @@ def _load_static_latlon_writer_diagnostics(
             if value is None:
                 continue
             expected = expected_shapes.get(name)
+            if name in WRITER_INPUT_HISTORY_FIELDS:
+                expected = expected_shapes.get("XLAT") if name == "WATER_DEPTH" else ()
             if expected is not None and tuple(value.shape) != expected:
                 raise ValueError(
                     f"{path}:{name} shape {tuple(value.shape)} does not match grid shape {expected}"
@@ -484,6 +494,7 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
     # GPUWRF_STRICT_GUARDS=0 restores the legacy safety-net guards for A/B runs).
     namelist = OperationalNamelist.from_grid(
         replay.grid,
+        use_mp_re=int(_domain_namelist_value(replay.run, "physics", "use_mp_re", config.domain, 1)),
         tendencies=replay.tendencies,
         metrics=replay.metrics,
         dt_s=float(config.dt_s),

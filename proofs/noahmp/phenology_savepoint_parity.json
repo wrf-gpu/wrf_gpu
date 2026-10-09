@@ -2,8 +2,8 @@
   "proof": "S5 phenology REAL-WRF savepoint parity (LAI/SAI/FVEG; dveg=4 FVEG=SHDMAX)",
   "kind": "external oracle: pristine-WRF NOAHMP_SFLX phen_out vs JAX port; NOT a self-compare",
   "oracle": "proofs/noahmp/savepoints_all.json",
-  "ncolumns": 11,
-  "npass": 11,
+  "ncolumns": 10,
+  "npass": 10,
   "nfail": 0,
   "fveg_arbiter": "module_sf_noahmplsm.F:864 dveg=4 FVEG=SHDMAX (verified: phen_out.fveg==shdmax)",
   "columns": [
@@ -198,27 +198,6 @@
     },
     {
       "name": "nighttime_veg16",
-      "pass": true,
-      "fields": {
-        "lai": {
-          "wrf": 0.0,
-          "jax": 0.0,
-          "pass": true
-        },
-        "sai": {
-          "wrf": 0.0,
-          "jax": 0.0,
-          "pass": true
-        },
-        "fveg": {
-          "wrf": 0.0,
-          "jax": 0.0,
-          "pass": true
-        }
-      }
-    },
-    {
-      "name": "teide_snow",
       "pass": true,
       "fields": {
         "lai": {

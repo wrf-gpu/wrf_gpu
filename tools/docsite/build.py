@@ -23,7 +23,7 @@ import shutil
 from html.parser import HTMLParser
 from pathlib import Path
 
-VERSION = "0.3.2"
+VERSION = "0.3.3"
 
 # ---- site structure: ordered groups -> pages -------------------------------
 # Each page: (id, nav_title, <title>, meta-description)
@@ -44,7 +44,7 @@ SITE = [
         ("running",      "Running the Model",           "Running the Model",
          "The gpuwrf run command reference: replay vs native-init, single-domain and nested forecasts, restart, and two-way nesting."),
         ("input-data",   "Input Data & Initialization", "Input Data & Initialization",
-         "How wrf_gpu builds its initial and boundary state from met_em forcing without real.exe, plus namelist.input and restart files."),
+         "Prepared wrfinput/wrfbdy inputs, optional wrflowinp SST forcing, namelist controls and verified restart."),
     ]),
     ("Configuration", [
         ("namelist",     "Namelist Compatibility",      "Namelist Compatibility",
@@ -58,7 +58,7 @@ SITE = [
     ]),
     ("The model", [
         ("dynamics",     "Dynamical Core",              "Dynamical Core",
-         "The nonhydrostatic split-explicit ARW dynamical core: RK3, acoustic sub-stepping, fp64, diffusion, gravity-wave drag and boundaries."),
+         "The nonhydrostatic split-explicit ARW dynamical core: RK3, WRF-derived acoustic substeps, default fp32 with DOUBLE islands, diffusion and boundaries."),
         ("nesting",      "Nesting",                     "Nesting",
          "One-way live nesting, domain ratios and sub-cycling, opt-in two-way feedback, moving nests, and gravity-wave drag on nests."),
     ]),
@@ -66,7 +66,7 @@ SITE = [
         ("performance",  "Performance & GPU Modes",     "Performance & GPU Modes",
          "Cold compile and warm-start cache, the batched-ensemble throughput mode, optional fp32, VRAM, the scaling law and energy."),
         ("validation",   "Validation & WRF Identity",   "Validation & WRF Identity",
-         "How wrf_gpu is validated against WRF as an oracle: the cell-for-cell identity proof, the frozen tolerance manifest, and the open skill gate."),
+         "How wrf_gpu is validated against WRF as an oracle: original CPU-WRF hourly comparisons, frozen metrics, predictability context and source-specific validated scope."),
         ("limitations",  "Boundaries & Known Issues",   "Boundaries & Known Issues",
          "What wrf_gpu does and does not claim: the forecast-skill gate, the terrain ceiling, out-of-scope schemes, and the known-issues list."),
     ]),

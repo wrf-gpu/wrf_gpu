@@ -36,7 +36,7 @@ from typing import NamedTuple, Optional
 import jax.numpy as jnp
 
 from gpuwrf.physics.noahmp.precision import real_dtype, real_tree
-from jax import config
+from jax import config, lax
 
 configure_jax_x64()
 
@@ -144,7 +144,7 @@ def build_energy_params(static: NoahMPStatic, scalar_shape) -> tuple[EnergyParam
         avcmx=vg("avcmx"), vcmx25=vg("vcmx25"), c3psn=vg("c3psn"),
         nroot_cell=jnp.clip(nroot_arr, 0, nroot),
     )
-    rad = TwoStreamParams(
+    energy = _urban_soil_energy(energy, vt, p); rad = TwoStreamParams(  # noqa: E702 (line-neutral, OFF identity)
         rhol=_gather_band(p.rhol, vt), rhos=_gather_band(p.rhos, vt),
         taul=_gather_band(p.taul, vt), taus=_gather_band(p.taus, vt),
         xl=vg("xl"),
@@ -278,7 +278,7 @@ def noah_mp_step(
                        imelt=imelt)
     water_result = noahmp_water_hydro(
         land_state, forcing_w, static, et_w, dt, sneqv_before_snow=sneqv_pre, qrain_ground=precip.qrain,
-        frozen_canopy=frozen_canopy0,
+        frozen_canopy=frozen_canopy0, phen=phen,
         **({"history": True} if history else {}))
     if history:
         land_state, runoff = water_result
@@ -314,12 +314,13 @@ def noah_mp_step(
             "FORCTLSM": forcing.sfctmp, "FORCQLSM": forcing.qair,
             "FORCPLSM": forcing.sfcprs, "FORCZLSM": forcing.zlvl,
             "FORCWLSM": jnp.sqrt(forcing.uu**2 + forcing.vv**2),
-            "SOILENERGY": jnp.sum(_dzsnso_from_zsnso(land_state.zsnso)[NSNOW:]
-                * hcpct_full[NSNOW:] * (land_state.tslb - 273.16) * .001, axis=0),
-            "SNOWENERGY": jnp.sum(jnp.where(
+            # Materialize completed layer energies before reduction; keep the original products and sum axis.
+            "SOILENERGY": jnp.sum(lax.optimization_barrier(_dzsnso_from_zsnso(land_state.zsnso)[NSNOW:]
+                * hcpct_full[NSNOW:] * (land_state.tslb - 273.16) * .001), axis=0),
+            "SNOWENERGY": jnp.sum(lax.optimization_barrier(jnp.where(
                 jnp.arange(-NSNOW + 1, 1).reshape((-1,) + (1,) * land_state.isnow.ndim) > land_state.isnow,
                 _dzsnso_from_zsnso(land_state.zsnso)[:NSNOW] * hcpct_full[:NSNOW]
-                * (land_state.tsno - 273.16) * .001, 0), axis=0),
+                * (land_state.tsno - 273.16) * .001, 0)), axis=0),
             "RUNSF": runoff[0], "RUNSB": runoff[1],
             "SNOM_INCREMENT": qmelt * dt + _ponding + snow_ponding,
             # PRECIP_HEAT ground snow/rain rates (:1547-1548), driver QSNOWXY/QRAINXY (:1258-1259).
@@ -357,6 +358,41 @@ def _dzsnso_from_zsnso(zsnso):
     z = jnp.asarray(zsnso, dtype=real_dtype())
     prev = jnp.concatenate([jnp.zeros_like(z[:1]), z[:-1]], axis=0)
     return prev - z
+
+
+def _urban_soil_on() -> bool:
+    """GPUWRF_NOAH_URBAN_SOIL_PARAMS (V033-W2, default 0; read at trace/init time -> cheap-key trace-env hash).
+
+    WRF TRANSFER_MP_PARAMETERS (module_sf_noahmpdrv.F:1694-1700) hard-codes the urban soil for URBAN_FLAG columns
+    (VEGTYPE == ISURBAN_TABLE or LCZ_1..LCZ_11, :1462-1467): SMCMAX = .45, SMCREF = .42, SMCWLT = .40, SMCDRY = .40,
+    CSOIL = 3.E6 (all layers), BEFORE FRZX (:1702-1705) -> THERMOPROP HCPCT/DF (TDFCND), RSURF/BTRAN, PHASECHANGE and
+    WATER/SOILWATER all see them. The port kept the SOILPARM/MPTABLE values (urban HCPCT ~30 % low -> larger diurnal soil
+    swing, colder urban nights; FINAL33V d03 urban TSLB/T2 signature). SMCDRY has no consumer under our options.
+    """
+    from os import environ
+    return environ.get("GPUWRF_NOAH_URBAN_SOIL_PARAMS", "0") == "1"
+
+
+URBAN_SOIL = {"smcmax": 0.45, "smcref": 0.42, "smcwlt": 0.40, "smcdry": 0.40, "csoil": 3.0e6}   # :1695-1699
+
+
+def urban_flag(ivgtyp, parameters):
+    """WRF parameters%URBAN_FLAG (module_sf_noahmpdrv.F:1462-1467): ISURBAN_TABLE or LCZ_1..LCZ_11 (51..61)."""
+    v = jnp.asarray(ivgtyp, dtype=jnp.int32)
+    return (v == int(getattr(parameters, "isurban", ISURBAN_MODIS))) | ((v >= 51) & (v <= 61))
+
+
+def urban_soil(value, ivgtyp, parameters, name):
+    """``value`` (per column or (NSOIL, ...)) with WRF's urban constant on URBAN_FLAG columns (key on)."""
+    a = jnp.asarray(value)
+    return jnp.where(urban_flag(ivgtyp, parameters), jnp.asarray(URBAN_SOIL[name], dtype=a.dtype), a)
+
+
+def _urban_soil_energy(energy, vt, p):
+    """EnergyParams with the urban SMCMAX/SMCREF/SMCWLT/CSOIL (key on); the input unchanged (key off)."""
+    if not _urban_soil_on():
+        return energy
+    return energy._replace(**{k: urban_soil(getattr(energy, k), vt, p, k) for k in ("smcmax", "smcref", "smcwlt", "csoil")})
 
 
 __all__ = ["noah_mp_step", "build_energy_params", "ClosureResiduals"]

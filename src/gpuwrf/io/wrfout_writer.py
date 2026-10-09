@@ -29,6 +29,8 @@ P0_THETA_OFFSET_K = 300.0
 # the DRY perturbation theta, so the writer decouples
 # theta_dry = theta_m / (1 + rvovrd*qv) and emits theta_m itself as ``THM``.
 RVOVRD = 461.6 / 287.0
+RVOVRD_REAL = np.float32(np.float32(461.6) / np.float32(287.0))
+_WRITER_RVOVRD_REAL = os.environ.get("GPUWRF_WRITER_RVOVRD_REAL", "0") == "1"
 CP_AIR_J_KG_K = CP_D
 LV_J_KG = XLV
 DATE_STR_LEN = 19
@@ -1816,6 +1818,9 @@ def prepare_wrfout_payload(
                 continue
             fields[name] = _coerce_array(name, diagnostics[name],
                 _shape_for_dimensions(spec.dimensions, dimensions), dtype=_numpy_dtype_for_spec(spec))
+        if float(lead_hours) == 0.0 and diagnostics is not None and "TH2" in diagnostics:
+            if requested_names is None or "TH2" in requested_names:
+                fields["TH2"] = _coerce_array("TH2", diagnostics["TH2"], (ny, nx))
         # These are held model diagnostics, including WRF's pre-solve t0 values.
         # Apply them after the compatibility builder so a hydrometeor proxy or
         # cold-start turbulence seed cannot replace the requested history leaf.
@@ -2233,7 +2238,7 @@ def _build_subset_output_fields(
     qi = _field_array(state, ("QICE", "qi", "qice"), shape_xyz) if need_qi else None
     qr = _field_array(state, ("QRAIN", "qr", "qrain"), shape_xyz) if need_qr else None
     if theta is not None and qv is not None:
-        theta_dry = theta / (1.0 + RVOVRD * np.maximum(qv, 0.0))
+        theta_dry = _theta_dry_for_output(state, theta, qv)
     else:
         theta_dry = theta
 
@@ -2526,7 +2531,7 @@ def _build_output_fields(
     # State.theta is moist theta_m (use_theta_m=1); WRF-compatible ``T`` and the
     # temperature-derived diagnostics below need the DRY theta view (identical
     # when qv = 0, e.g. synthetic/test states).
-    theta_dry = theta / (1.0 + RVOVRD * np.maximum(qv, 0.0))
+    theta_dry = _theta_dry_for_output(state, theta, qv)
     qc = _field_array(state, ("QCLOUD", "qc", "qcloud"), shape_xyz)
     qi = _field_array(state, ("QICE", "qi", "qice"), shape_xyz)
     qr = _field_array(state, ("QRAIN", "qr", "qrain"), shape_xyz)
@@ -2957,6 +2962,9 @@ def _full_source_value(
     grid: Any,
     namelist: Mapping[str, Any] | Any | None,
 ) -> np.ndarray | None:
+    # WRF's disabled SST-skin work arrays remain zero. SST and land TSK are distinct.
+    if name in {"SSTSK", "SST_INPUT"} and not bool(_lookup(namelist, "sst_skin", False)):
+        return np.zeros(shape, dtype=dtype)
     aliases = _full_source_aliases(name)
     for source in (diagnostics, state, land_state, grid, namelist):
         if source is None:
@@ -3020,18 +3028,18 @@ def _full_derived_value(
     if name == "AREA2D":
         return _full_area2d(fields, grid, shape)
     if name == "DX2D":
-        area = fields.get("AREA2D")
-        if area is None:
-            area = _full_area2d(fields, grid, shape)
-        if area is not None:
-            return np.sqrt(np.maximum(np.asarray(area, dtype=np.float64), 0.0))
+        # Active compute_2d_dx_area branch (physics_init.F:5683-5686).
+        projection = _lookup(grid, "projection")
+        return _lookup(projection, "dx_m", _lookup(grid, "dx", None))
     if name == "MF_VX_INV" and "MAPFAC_VX" in fields:
         return 1.0 / np.maximum(np.asarray(fields["MAPFAC_VX"], dtype=np.float64), 1.0e-12)
-    if name == "MAX_MSFTX" and "MAPFAC_MX" in fields:
-        return float(np.nanmax(np.asarray(fields["MAPFAC_MX"], dtype=np.float64)))
-    if name == "MAX_MSFTY" and "MAPFAC_MY" in fields:
-        return float(np.nanmax(np.asarray(fields["MAPFAC_MY"], dtype=np.float64)))
-    if name in {"IVGTYP", "CROPCAT"} and "LU_INDEX" in fields:
+    if name in {"MAX_MSFTX", "MAX_MSFTY"}:
+        # start_em only assigns these scalars for adaptive time stepping.
+        key = "MAPFAC_MX" if name == "MAX_MSFTX" else "MAPFAC_MY"
+        if bool(_lookup(namelist, "use_adaptive_time_step", False)) and key in fields:
+            return float(np.nanmax(np.asarray(fields[key], dtype=np.float64)))
+        return 0.0
+    if name == "IVGTYP" and "LU_INDEX" in fields:
         return np.rint(np.asarray(fields["LU_INDEX"], dtype=np.float64)).astype(dtype)
     if name == "LAKEMASK":
         return np.zeros(shape, dtype=dtype)
@@ -3055,9 +3063,9 @@ def _full_derived_value(
     if name == "THIS_IS_AN_IDEAL_RUN":
         return int(bool(_lookup(namelist, "this_is_an_ideal_run", False)))
     if name == "GOT_VAR_SSO":
-        return int(any(k in fields for k in ("VAR", "CON", "OA1", "OL1", "VAR_SSO")))
+        return int(bool(_lookup(namelist, "got_var_sso", False)))
     if name == "T00":
-        return float(_lookup(namelist, "t00", P0_THETA_OFFSET_K))
+        return float(_lookup(namelist, "t00", 290.0))
     if name == "P00":
         return float(_lookup(namelist, "p00", P0_PA))
     if name == "TLP":
@@ -3067,7 +3075,7 @@ def _full_derived_value(
     if name == "P_STRAT":
         return float(_lookup(namelist, "p_strat", 0.0))
     if name == "TLP_STRAT":
-        return float(_lookup(namelist, "tlp_strat", 0.0))
+        return float(_lookup(namelist, "tlp_strat", -11.0))
     if name == "ZETATOP":
         return float(_lookup(namelist, "zetatop", 0.0))
     if name == "RESM":
@@ -3089,10 +3097,7 @@ def _full_area2d(fields: Mapping[str, np.ndarray], grid: Any, shape: tuple[int, 
     if dx_m is None or dy_m is None:
         return None
     area = float(dx_m) * float(dy_m)
-    if "MAPFAC_MX" in fields and "MAPFAC_MY" in fields:
-        mapx = np.maximum(np.asarray(fields["MAPFAC_MX"], dtype=np.float64), 1.0e-12)
-        mapy = np.maximum(np.asarray(fields["MAPFAC_MY"], dtype=np.float64), 1.0e-12)
-        return area / (mapx * mapy)
+    # WRF compiles out the map-factor branch (#if 0, physics_init.F:5675).
     return np.full(shape, area, dtype=np.float64)
 
 
@@ -3135,8 +3140,10 @@ def _add_derived_diagnostic_fields(
     # CLAT == XLAT (computational == geographic latitude on the operational grid).
     fields["CLAT"] = _coerce_array("CLAT", np.asarray(xlat), shape_xy)
 
-    # COSZEN from the WRF solar-geometry transcription + the forecast clock.
-    if run_start is not None:
+    # WRF lead-zero history precedes the first radiation call.
+    if float(lead_hours) == 0.0:
+        fields["COSZEN"] = np.zeros(shape_xy, dtype=np.float32)
+    elif run_start is not None:
         try:
             from gpuwrf.coupling.physics_couplers import _compute_coszen
 
@@ -3474,6 +3481,23 @@ def _perturbation_base_pair(
     if base is None:
         base = zeros
     return perturbation.astype(np.float32), base.astype(np.float32)
+
+
+def _theta_dry_for_output(state: Any, theta: np.ndarray, qv: np.ndarray) -> np.ndarray:
+    """Use WRF's per-operation REAL constant only for a real fp32 source carry.
+
+    The ordinary writer coerces host arrays to fp32 before deriving fields, so
+    inspect the original leaves to preserve the historical fp64-source path.
+    WRF module_model_constants.F:41 folds rvovrd = r_v/r_d in REAL arithmetic.
+    """
+    if _WRITER_RVOVRD_REAL:
+        sources = (
+            next((v for name in names if (v := _lookup(state, name)) is not None), None)
+            for names in (("theta", "THETA"), ("QVAPOR", "qv", "qvapor"))
+        )
+        if all(getattr(value, "dtype", None) == np.dtype(np.float32) for value in sources):
+            return theta / (np.float32(1.0) + RVOVRD_REAL * np.maximum(qv, np.float32(0.0)))
+    return theta / (1.0 + RVOVRD * np.maximum(qv, 0.0))
 
 
 def _field_array(

@@ -23,6 +23,7 @@ C24 = dict(GPUWRF_THOMPSON_NATIVE_REAL="1", GPUWRF_THOMPSON_COLUMN_SED="1", GPUW
            GPUWRF_THOMPSON_COLUMN_LAYOUT="1", GPUWRF_THOMPSON_FULL_COLUMN="1",
            GPUWRF_THOMPSON_FULL_COLUMN_EARLY_EXIT="1", GPUWRF_THOMPSON_SED_PREP_FUSED="0")
 LITERAL_XLA = "--xla_disable_hlo_passes=algsimp"
+_SOURCE_EXITS = full._inactive_source_branches
 
 
 def _columns():
@@ -42,7 +43,24 @@ def _run(out_dir, exits, mutant=""):
 
 
 def _diff(a, b):
+    assert len(a) == len(b), 'exit leaf count differs'
+    for index, (x, y) in enumerate(zip(a, b, strict=True)):
+        assert np.isfinite(x).all() and np.isfinite(y).all(), f'nonfinite exit leaf {index}'
     return [i for i, (x, y) in enumerate(zip(a, b)) if x.tobytes() != y.tobytes()]
+
+
+@pytest.mark.parametrize('leaf', range(len(tc.ThompsonColumnState.__slots__) + 5))
+@pytest.mark.parametrize('role', ('candidate', 'reference', 'both'))
+@pytest.mark.parametrize('bad', (np.nan, np.inf, -np.inf))
+def test_exit_diff_rejects_nonfinite_before_bytes(leaf, role, bad):
+    a = [np.array([.25, .5]) for _ in range(len(tc.ThompsonColumnState.__slots__) + 5)]
+    b = [value.copy() for value in a]
+    if role != 'reference':
+        a[leaf][-1] = bad
+    if role != 'candidate':
+        b[leaf][-1] = bad
+    with pytest.raises(AssertionError, match='nonfinite exit leaf'):
+        _diff(a, b)
 
 
 @pytest.fixture(scope="module")
@@ -56,6 +74,11 @@ def test_exits_are_bitwise_on_rain_cloud_dry_and_adversarial_columns(no_exit_ref
 
 def _warm_exit_without_cloud_term(env, tc_module, valid):
     """Mutant: the warm exit tests rain only, so cloud-only columns lose autoconversion."""
+    if tc_module._mixed_phase_wrf_enabled():
+        activity = env["_wrf_mixed_phase_activity"]
+        env["_wrf_mixed_phase_activity"] = lambda state: (state.qr > tc_module.R1, activity(state)[1])
+        _SOURCE_EXITS(env, tc_module, valid)
+        return
     warm_fn, apply_warm = env["_warm_rain_collection"], env["_apply_warm_rain_rates"]
 
     def warm(state, dt, tables=env["THOMPSON_TABLES"]):
@@ -114,6 +137,8 @@ if __name__ == "__main__":  # child of _run: literal XLA flags are fixed at back
     out_path, mutant_name = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else "")
     if mutant_name:
         target, mutant_fn = MUTANTS[mutant_name]
+        if mutant_name == "warm_no_cloud" and tc._mixed_phase_wrf_enabled():
+            target = "_inactive_source_branches"
         setattr(full, target, mutant_fn)
     result, ppt = full.full_column(_columns(), 18.0, interpret=True)
     np.savez(out_path, **{f"a{i}": np.asarray(v) for i, v in enumerate(jax.tree.leaves((result, ppt)))})

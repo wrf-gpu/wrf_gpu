@@ -1,0 +1,36 @@
+{
+  "status": "ADMITTED_SOURCE_VALIDATION_NOT_RELEASE",
+  "measured_execution_labels_preserved": true,
+  "CF": {
+    "commit": "cf873d2152906e429a34e48ab5d850716c2bcb3d",
+    "src_tree": "93fe7545eefa3c58fa8509f6fa574509b1f0d5fd",
+    "package_tree": "9371f511e70ca92c95e80ba822dbb83d62d2d130",
+    "arms": [
+      "W3_0115",
+      "W3R",
+      "W3_0408",
+      "W3P",
+      "W3P_0115",
+      "W3Rf_0115"
+    ]
+  },
+  "B6": {
+    "commit": "b6b69175d916fdeff5833fc71c425d0ef5069514",
+    "src_tree": "c196ce89ba7624d01831d871a716c3fe8d1a0b3e",
+    "package_tree": "e7b639e8d1df037fa1fb9da9ae0a9a6fda520e6d",
+    "arms": [
+      "MON33W3",
+      "SWISS33W3"
+    ]
+  },
+  "numerical_basis": "168fcdb9107bc408153b26c40179d13bad4b8cd0",
+  "accepted_BYTE_bridge": {
+    "proof_sha256": "7a167497bcf5e644a396eb55e249fd0bdca97fcf3723d75e003373edfafbec20",
+    "sole_critic_sha256": "389caff4964a154142774d61fe36c88403d95b42bc127c1ca23225973806a7ed",
+    "scope": "first+ordinary whole-field proof and source/carry admission; no CF-to-b6 execution relabel or release acceptance"
+  },
+  "CPU_reference_policy": "exact sole-comparator originalCPU references; IC-P versus R disclosed; originalCPU-P0115 absent; olderGPU only frozen C spread context",
+  "local_exact_report_snapshots": "private input/reference/authority hash map retained; public authority hashes in PLOT_MANIFEST",
+  "station_terminal_sha256": "8b925e7c94ab1cd138d0dca480c5ba640af47b65e105f3e7b7b522021ec996f5",
+  "release_GO": false
+}

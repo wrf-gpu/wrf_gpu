@@ -1,0 +1,19 @@
+{
+  "status": "EXTRACTION_DONE",
+  "arm": "W2bR",
+  "domain_hours": 219,
+  "numeric_rows": 2406,
+  "executed_revision": "5a2adb6e117f0f9e55866a37c3a42bdc9fb0f8ab",
+  "candidate_revision": "e83ec1fa7aca0b839357814ead52cb33bfdb8ea1",
+  "candidate_src_tree": "fb50726fee1e701dbc9e874cd90bbcaed99aee86",
+  "a6_proof_sha256": "fb5a64e0a5b24932841e02e77b3ff0f59a9ca4b979a7798d9df5adbdea033a61",
+  "attestation_sha256": "e2344f575d439c4cb055f8c2fc6a4e24c872aa478d58fe17e23e0793cb8d3657",
+  "receipt_sha256": "df68573c04fd39a55c940dca1e41ddb474f8aca320648a9bc1fde1e75756106c",
+  "compression_receipt_sha256": "1cd91a37c029ad113376259d3dab5ea946bbe0d746a966f973c51233ffb316bf",
+  "raw_operands_full_finite": true,
+  "mask": "none",
+  "cpu_extraction_peak_rss_kb": 458740,
+  "forecast_gate_claim": false,
+  "cache": "NONE",
+  "rendered": false
+}

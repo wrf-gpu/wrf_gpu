@@ -1,0 +1,8 @@
+{
+  "all3_domains": true,
+  "fields": 10,
+  "hours": 73,
+  "rmse_bias_match": true,
+  "source_frame_rereads": 0,
+  "comparator_runs": 0
+}

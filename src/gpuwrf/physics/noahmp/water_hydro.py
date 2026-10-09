@@ -155,7 +155,7 @@ def _canwater(
     fveg: jnp.ndarray,
     ch2op: jnp.ndarray,
     dt: jnp.ndarray,
-    frozen_canopy=None,
+    frozen_canopy=None, phen=None,
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """WRF CANWATER, with ET already provided as mass fluxes.
 
@@ -176,12 +176,12 @@ def _canwater(
     qsubc = jnp.where(frozen_canopy, jnp.maximum(ecan, 0.0), 0.0)
     qfroc = jnp.where(frozen_canopy, jnp.maximum(-ecan, 0.0), 0.0)
 
-    maxliq = fveg * ch2op * (land_state.lai + land_state.sai)
+    maxliq = fveg * ch2op * (land_state.lai + land_state.sai) if not _cw_elai() else _cw_fveg(fveg, phen) * ch2op * _cw_area(land_state, phen)
     canliq = jnp.maximum(0.0, canliq + (qdewc - jnp.minimum(canliq / dt, qevac)) * dt)
     canliq = jnp.where(canliq <= 1.0e-6, 0.0, canliq)
 
     bdfall = jnp.minimum(120.0, 67.92 + 51.25 * jnp.exp((forcing.sfctmp - _TFRZ) / 2.59))
-    maxsno = fveg * 6.6 * (0.27 + 46.0 / jnp.maximum(bdfall, 1.0e-12)) * (land_state.lai + land_state.sai)
+    maxsno = fveg * 6.6 * (0.27 + 46.0 / jnp.maximum(bdfall, 1.0e-12)) * (land_state.lai + land_state.sai) if not _cw_elai() else _cw_fveg(fveg, phen) * 6.6 * (0.27 + 46.0 / jnp.maximum(bdfall, 1.0e-12)) * _cw_area(land_state, phen)
     canice = jnp.maximum(0.0, canice + (qfroc - jnp.minimum(canice / dt, qsubc)) * dt)
     canice = jnp.where(canice <= 1.0e-6, 0.0, canice)
 
@@ -676,7 +676,7 @@ def noahmp_water_hydro(
     *, history: bool = False,
     sneqv_before_snow=None,
     qrain_ground=None,
-    frozen_canopy=None,
+    frozen_canopy=None, phen=None,
 ) -> NoahMPLandState:
     """Advance soil/canopy water one ``dt`` (Schaake96).
 
@@ -702,9 +702,9 @@ def noahmp_water_hydro(
 
     zsoil, dzs = _geometry(static, smc)
     bexp = _soil_param(parameters, "bexp", static, smc, 5.0)
-    smcmax = _soil_param(parameters, "smcmax", static, smc, 0.45)
-    smcref = _soil_param(parameters, "smcref", static, smc, 0.35)
-    smcwlt = _soil_param(parameters, "smcwlt", static, smc, 0.10)
+    smcmax = _soil_param(parameters, "smcmax", static, smc, 0.45) if not _urban_soil_on() else _urban_soil(_soil_param(parameters, "smcmax", static, smc, 0.45), static, parameters, "smcmax")
+    smcref = _soil_param(parameters, "smcref", static, smc, 0.35) if not _urban_soil_on() else _urban_soil(_soil_param(parameters, "smcref", static, smc, 0.35), static, parameters, "smcref")
+    smcwlt = _soil_param(parameters, "smcwlt", static, smc, 0.10) if not _urban_soil_on() else _urban_soil(_soil_param(parameters, "smcwlt", static, smc, 0.10), static, parameters, "smcwlt")
     dksat = _soil_param(parameters, "dksat", static, smc, 1.0e-6)
     dwsat = _soil_param(parameters, "dwsat", static, smc, 1.0e-5)
 
@@ -725,7 +725,7 @@ def noahmp_water_hydro(
     ivgtyp = jnp.asarray(static.ivgtyp)
     fveg = jnp.where((ivgtyp == 25) | (ivgtyp == 26) | (ivgtyp == 27), 0.0, fveg)
     canliq, canice, fwet, tv, etran = _canwater(land_state, forcing, static, et_fluxes, fveg, ch2op, dt_arr,
-                                                frozen_canopy=frozen_canopy)
+                                                frozen_canopy=frozen_canopy, phen=phen)
 
     ground_et = jnp.where(jnp.abs(et_fluxes.edir) > 0.0, et_fluxes.edir, et_fluxes.qseva)
     qvap = jnp.maximum(jnp.asarray(ground_et, dtype=surface.dtype), 0.0)
@@ -796,6 +796,51 @@ def noahmp_water_hydro(
         udrunoff=land_state.udrunoff + runsub_m,
     )
     return (updated, (runsrf_mm_s * dt_arr, (runsub_mm_s + qdrain_mm_s) * dt_arr)) if history else updated
+
+
+def _urban_soil_on() -> bool:
+    """GPUWRF_NOAH_URBAN_SOIL_PARAMS: see noahmp_driver._urban_soil_on (WRF urban soil, TRANSFER_MP_PARAMETERS :1694-1700).
+
+    WATER sees the urban SMCMAX/SMCREF/SMCWLT; FRZX below is formed from them, as WRF forms FRZX after the override.
+    """
+    from gpuwrf.physics.noahmp.noahmp_driver import _urban_soil_on as on
+    return on()
+
+
+def _urban_soil(value, static, parameters, name):
+    from gpuwrf.physics.noahmp.noahmp_driver import urban_soil
+    return urban_soil(value, static.ivgtyp, parameters, name)
+
+
+def _cw_elai() -> bool:
+    """GPUWRF_NOAH_CANWATER_ELAI (V033-W2, default 0; read at trace time -> cheap-key trace-env hash).
+
+    WRF NOAHMP_SFLX hands CANWATER (module_sf_noahmplsm.F:6116 -> :6265) PHENOLOGY's snow-burial-adjusted ELAI/ESAI
+    (:1255-1358; ESAI < .05 -> 0, ELAI < .05 or ESAI == 0 -> 0) and the caller FVEG (:864-875: SHDMAX floored at .05,
+    urban/barren -> 0, ELAI+ESAI == 0 -> 0): MAXLIQ = FVEG*CH2OP*(ELAI+ESAI) (:6323), MAXSNO = FVEG*6.6*(0.27+46/BDFALL)
+    *(ELAI+ESAI) (:6351) -> FWET and the canopy melt/freeze TV pin. The legacy port used the unburied LAI+SAI and a local
+    SHDMAX-only FVEG (identical except on snow-buried canopies). ON: both from ``phen`` (the driver's PHENOLOGY);
+    OFF: the legacy expressions stay inline on their original lines (OFF HLO + locations identical).
+    """
+    from os import environ
+    return environ.get("GPUWRF_NOAH_CANWATER_ELAI", "0") == "1"
+
+
+def _cw_phen(phen):
+    if phen is None:
+        raise ValueError("GPUWRF_NOAH_CANWATER_ELAI=1 needs the step's PHENOLOGY (phen=) at the CANWATER call")
+    return phen
+
+
+def _cw_fveg(fveg, phen):
+    """CANWATER FVEG = the NOAHMP_SFLX/PHENOLOGY FVEG (key on)."""
+    return jnp.asarray(_cw_phen(phen).fveg, dtype=jnp.asarray(fveg).dtype)
+
+
+def _cw_area(land_state, phen):
+    """CANWATER canopy area ELAI+ESAI (REAL sum as in WRF, then the carry dtype; key on)."""
+    p = _cw_phen(phen)
+    return jnp.asarray(p.elai + p.esai, dtype=jnp.asarray(land_state.lai).dtype)
 
 
 __all__ = ["noahmp_water_hydro"]

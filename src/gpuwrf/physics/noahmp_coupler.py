@@ -33,14 +33,16 @@ dycore + microphysics + State.__slots__ untouched.
 from __future__ import annotations
 
 from typing import Any
+import os
 
 import jax.numpy as jnp
+from jax import lax
 
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.types import NoahMPForcing
-from gpuwrf.physics.noahmp.precision import real_dtype, real_scalar, real_tree
+from gpuwrf.physics.noahmp.precision import real_dtype, real_scalar, real_tree; from gpuwrf.kernels.layout_pin import small_grid_firewall as _small_grid_firewall
 from gpuwrf.physics.surface_constants import (
     CP_D,
     EP1,
@@ -49,7 +51,13 @@ from gpuwrf.physics.surface_constants import (
     R_D,
     R_D_OVER_CP,
 )
-from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
+from gpuwrf.physics.mynn_constants import mynn_constant as _mynn_constant
+from gpuwrf.physics.surface_layer import (
+    _mynn_surface_exner_kwargs,
+    mynn_driver_surface_fluxes,
+    mynn_fltv_wrf_enabled,
+    surface_layer_with_diagnostics,
+)
 
 # R_v / R_d for the WRF moist-potential-temperature decoupling. MUST match the
 # constant the dycore couples with (operational_mode._RVRD = 461.6/287.0) so the
@@ -128,7 +136,7 @@ def assemble_noahmp_forcing(
         # lowest-level air temperature ~+4 K too warm (= the (1+R_v/R_d*q_v)
         # factor), biasing the whole Noah-MP land-tile surface energy balance.
         theta_m0 = _surface(_get(state, "theta"))
-        theta_dry0 = theta_m0 / (1.0 + RVOVRD * qv_mixing_ratio)
+        theta_dry0 = theta_m0 / (1.0 + _mynn_constant("RVOVRD", real_dtype(), RVOVRD) * qv_mixing_ratio)
         sfctmp = theta_dry0 * (jnp.maximum(sfcprs, 1.0) / P0_PA) ** R_D_OVER_CP
     qc = _surface(_get(state, "qc", None)) if _get(state, "qc", None) is not None else jnp.zeros_like(qair)
     shape = sfctmp.shape
@@ -206,7 +214,7 @@ def _mynn_pbl_surface_density(
             R_D
             * (
                 jnp.asarray(forcing.sfctmp, dtype=dtype)
-                + P608 * qv
+                + _mynn_constant("P608", dtype, P608) * qv
             )
         )
     )
@@ -279,7 +287,7 @@ def noahmp_surface_adapter(
     # seed sfclay CH/CM (opt_sfc=1 supplies the drag coeffs Noah-MP consumes).
     ch_seed = _surface(_get(diag, "ch", land_state.ch))
     cm_seed = _surface(_get(diag, "cm", land_state.cm))
-    land_state = land_state.replace(ch=ch_seed, cm=cm_seed)
+    land_state = land_state.replace(ch=ch_seed, cm=cm_seed); land_state, forcing, diag, sf = _small_grid_firewall((land_state, forcing, diag, sf), flux_density.shape)
 
     land_state_out, nm = noah_mp_step(
         land_state, forcing, static, dt,
@@ -313,7 +321,17 @@ def noahmp_surface_adapter(
     thx = jnp.asarray(_thx(state, flux_density), dtype=real_dtype())
     theta_flux = hfx / jnp.maximum(rho_cpm, 1.0e-12)
     qv_flux = qfx / jnp.maximum(flux_density, 1.0e-12)
-    fltv = (1.0 + EP1 * qx) * theta_flux + EP1 * thx * qv_flux
+    ep1 = _mynn_constant("P608", real_dtype(), EP1)
+    fltv = (1.0 + ep1 * qx) * theta_flux + ep1 * thx * qv_flux
+    if mynn_fltv_wrf_enabled():
+        # WRF's MYNN derives flt/flqv/fltv itself from the blended HFX/QFX, TSK and the lowest-level
+        # p_phy (module_bl_mynnedmf.F:859-876); same helper as the surface-layer producer.
+        r = real_dtype()
+        p1 = jnp.asarray(_surface(_get(state, "p", jnp.full_like(flux_density, 1.0e5))), dtype=r)
+        mynn = mynn_driver_surface_fluxes(jnp.asarray(hfx, dtype=r), jnp.asarray(qfx, dtype=r), flux_density,
+                                          qx, jnp.asarray(tsk, dtype=r), p1,
+                                          **_mynn_surface_exner_kwargs(state, r))
+        theta_flux, qv_flux, fltv = mynn.flt, mynn.flqv, mynn.fltv
 
     blended = SurfaceFluxes(
         ustar=sf.ustar,            # momentum: sfclay owns ustar/tau everywhere (opt_sfc=1)
@@ -324,6 +342,7 @@ def noahmp_surface_adapter(
         rhosfc=pbl_density,
         fltv=fltv,
         xland=sf.xland,            # carry land/sea mask through to MYNN mixing length
+        wspd=sf.wspd,              # WRF Noah-MP does not overwrite SFCLAY WSPD.
     )
 
     # ---- 5. state write-back (blended t_skin / roughness_m). State.__slots__
@@ -356,6 +375,7 @@ def noahmp_surface_adapter(
                        jnp.where(iswater, t2_water, jnp.asarray(diag.t2, dtype=real_dtype())))
         q2 = jnp.where(is_land, jnp.asarray(nm.q2),
                        jnp.where(iswater, q2_water, jnp.asarray(diag.q2, dtype=real_dtype())))
+        q2 = _land_q2_postlsm(q2, _surface(_get(state, "qv")), is_land)
         fields = {"hfx": hfx, "lh": lh, "t2": t2, "q2": q2, "u10": diag.u10, "v10": diag.v10}
         if land_history:
             fields["land_history"] = {name: jnp.where(is_land, value, 0)
@@ -363,6 +383,15 @@ def noahmp_surface_adapter(
             fields["grdflx"] = jnp.where(is_land, nm.grdflx, 0)
         return state_out, land_state_out, blended, fields
     return state_out, land_state_out, blended
+
+
+def _land_q2_postlsm(q2, qv_mixing_ratio, is_land):
+    """Original surface_driver post-LSM cap uses this call's QV_CURR(kts)."""
+    if os.environ.get("GPUWRF_LAND_Q2_CAP_POSTLSM", "0") != "1":
+        return q2
+    limit = jnp.asarray(1.05, dtype=q2.dtype) * jnp.asarray(qv_mixing_ratio, dtype=q2.dtype)
+    # The completed post-LSM cap leaves the surface/land producers outside its carry export.
+    return lax.optimization_barrier(jnp.where(is_land, jnp.minimum(q2, limit), q2))
 
 
 def _wrf_water_2m(tsk, psfc, hfx, qfx, qsfc, chs2, cqs2):

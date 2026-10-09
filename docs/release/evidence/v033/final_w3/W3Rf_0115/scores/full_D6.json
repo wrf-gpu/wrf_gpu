@@ -1,0 +1,235 @@
+{
+ "domains": {
+  "d03": {
+   "pass": false,
+   "status": "FAIL",
+   "paired_frames": 73,
+   "policy_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "U10",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.6664902821998442
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 41,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.5633084464470868
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 42,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.7250170631773973
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 44,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.6230805229529648
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 48,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.9894513537051557
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 49,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.8145983579910427
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 50,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.539604190149492
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.7264829887885638
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 53,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.5143011719987751
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 54,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.8891961622267368
+      }
+     ]
+    }
+   ],
+   "summary_tolerance_failures": 0,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "U10",
+     "lead_h": 51,
+     "value": 1.6664902821998442,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 41,
+     "value": 1.5633084464470868,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 42,
+     "value": 1.7250170631773973,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 44,
+     "value": 1.6230805229529648,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 48,
+     "value": 1.9894513537051557,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 49,
+     "value": 1.8145983579910427,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 50,
+     "value": 1.539604190149492,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 51,
+     "value": 1.7264829887885638,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 53,
+     "value": 1.5143011719987751,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 54,
+     "value": 1.8891961622267368,
+     "limit": 1.5
+    }
+   ]
+  },
+  "d01": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d02": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "hours": 72,
+ "summary_top_pass": false,
+ "domains_scored": [
+  "d03",
+  "d01",
+  "d02"
+ ],
+ "breaches_compact": "d03: U10 \u03c451\u201351 (1 frames, max 1.67 > 1.5); V10 \u03c441\u201354 (9 frames, max 1.99 > 1.5)",
+ "tooling": {
+  "scorer": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/tools_src/scripts/wn3_score.py (single loop-line substitution)",
+  "verdict": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/d6_verdict.py (single domain-tuple substitution)"
+ }
+}

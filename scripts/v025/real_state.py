@@ -428,6 +428,7 @@ def load_real_snapshot(
         "epssm": float(first(dynamics, "epssm", 0.1)),
         "mp_physics": int(first(physics, "mp_physics", 0)),
         "ra_lw_physics": int(first(physics, "ra_lw_physics", 0)),
+        "use_mp_re": int(first(physics, "use_mp_re", 1)),
         "ra_sw_physics": int(first(physics, "ra_sw_physics", 0)),
         "sf_sfclay_physics": int(first(physics, "sf_sfclay_physics", 0)),
         "sf_surface_physics": int(first(physics, "sf_surface_physics", 0)),

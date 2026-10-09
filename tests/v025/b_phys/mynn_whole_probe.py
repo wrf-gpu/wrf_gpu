@@ -37,8 +37,10 @@ with np.load(path) as data:
     arrays = {name: jnp.asarray(data[name]) for name in data.files}
 if args.mode in ('fp32', 'native'):
     arrays = {name: value.astype(jnp.float32) for name, value in arrays.items()}
-state = P.MynnPBLColumnState(**{name: arrays[f'state_{name}'] for name in P.MynnPBLColumnState.__slots__})
-flux = SurfaceFluxes(**{name: arrays[f'flux_{name}'] for name in SurfaceFluxes._fields})
+state = P.MynnPBLColumnState(**{
+    name: None if name in ('exner', 'ni') and f'state_{name}' not in arrays else arrays[f'state_{name}']
+    for name in P.MynnPBLColumnState.__slots__})
+flux = SurfaceFluxes(**{name: arrays[f'flux_{name}'] for name in SurfaceFluxes._fields if f'flux_{name}' in arrays})
 
 def step(state, flux):
     if args.mode == 'native':
@@ -84,6 +86,8 @@ else:
     leaves = jax.tree_util.tree_leaves(result)
     record['nonfinite_outputs'] = int(jax.device_get(sum(jnp.sum(~jnp.isfinite(v)) for v in leaves)))
     record['output_dtypes'] = sorted({str(v.dtype) for v in leaves})
-    np.savez(args.output / 'outputs.npz', **{name: np.asarray(getattr(result[0], name)) for name in P.MynnPBLColumnState.__slots__}, pblh=np.asarray(result[1]))
+    np.savez(args.output / 'outputs.npz', **{
+        name: np.asarray(getattr(result[0], name)) for name in P.MynnPBLColumnState.__slots__
+        if getattr(result[0], name) is not None}, pblh=np.asarray(result[1]))
 (args.output / 'result.json').write_text(json.dumps(record, indent=2) + '\n')
 print(json.dumps(record))

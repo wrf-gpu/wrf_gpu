@@ -32,7 +32,7 @@ from typing import NamedTuple
 import jax.numpy as jnp
 
 from gpuwrf.physics.noahmp.precision import real_dtype, real_tree
-from jax import config
+from jax import config, lax
 
 configure_jax_x64()
 
@@ -256,7 +256,8 @@ def noahmp_precip_heat(
         fp=fp, fpice=fpice, rain=rain, snow=snow,
         fwet=fwet, canliq=canliq, canice=canice, cmc=cmc,
     )
-    return out, canliq, canice
+    # Keep completed interception/heat outputs separate from radiation and carry transposes.
+    return lax.optimization_barrier((out, canliq, canice))
 
 
 __all__ = ["PrecipHeat", "noahmp_precip_heat"]

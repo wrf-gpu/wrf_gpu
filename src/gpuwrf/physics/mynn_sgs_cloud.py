@@ -36,6 +36,8 @@ import jax.numpy as jnp
 
 from gpuwrf.physics.mynn_edmf import _qsat_blend
 
+_DMP_KTOP_BOUND = os.environ.get("GPUWRF_MYNN_DMP_KTOP_BOUND", "0") == "1"
+
 
 def sgs_cloud_enabled() -> bool:
     """Single source of truth for the v0.15 MYNN SGS-cloud chain gate.
@@ -307,6 +309,14 @@ def dmp_shallow_cu_overwrite(
     cond = (0.5 * (qc_hi + qc_lo) > 0.0) & (cldfra_bl[sl] < CF_THRESH)
     midx = jnp.arange(1, nz - 1)
     cond = cond & (midx <= nz - 3)
+    if _DMP_KTOP_BOUND:
+        # WRF module_bl_mynnedmf.F:6601-6602 stops the SGS overwrite at
+        # KTOP, the highest live plume interface (one-based). The existing
+        # plume area gives that extent; retain the CB cloud above it.
+        ktop = jnp.max(
+            jnp.where(edmf_a > 0.0, jnp.arange(nz) + 1, 0), axis=-1
+        )
+        cond = cond & (midx < ktop[..., None])
 
     qc_bl_new = jnp.where(cond, qc_bl_mf, qc_bl[sl])
     cf_new = jnp.where(cond, mf_cf, cldfra_bl[sl])

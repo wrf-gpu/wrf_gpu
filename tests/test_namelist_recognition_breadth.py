@@ -242,6 +242,34 @@ def test_unsupported_recognized_key_is_rejected_not_silently_accepted() -> None:
         assert sel[0].wrf_scheme, f"{key} rejected without a control label"
 
 
+def test_noahmp_soiltstep_positive_fails_closed() -> None:
+    """WRF soiltstep>0 (Noah-MP soil solved every NINT(soiltstep/dt) steps) is not wired.
+
+    The port solves soil temperature/water at every land-surface call, which is
+    WRF's soiltstep=0 (module_sf_noahmpdrv.F:648-675). A positive soil timestep
+    must fail closed, not run the every-step soil silently.
+    """
+
+    for value in (0, 0.0, "0."):
+        assert classify_control("soiltstep", value).status is SupportStatus.IMPLEMENTED
+    validate_operational_namelist({"noah_mp": {"soiltstep": 0.0}})
+    validate_operational_namelist("&noah_mp\n soiltstep = 0.,\n/\n")
+
+    for config in (
+        {"noah_mp": {"soiltstep": 3600.0}},
+        {"noah_mp": {"soiltstep": 60}},
+        "&noah_mp\n soiltstep = 3600.,\n/\n",
+    ):
+        with pytest.raises(UnsupportedSchemeError) as excinfo:
+            validate_operational_namelist(config)
+        sel = [s for s in excinfo.value.selections if s.key == "soiltstep"]
+        assert sel, f"soiltstep in {config!r} was silently accepted"
+        assert sel[0].outcome == "recognized_control_not_wired"
+        assert sel[0].wrf_scheme == "noahmp-soil-cadence"
+        assert "soiltstep=0" in sel[0].action
+        assert "module_sf_noahmpdrv.F" in sel[0].implemented
+
+
 def test_recognized_control_keyspace_is_covered() -> None:
     """Every key this sprint promised to recognize is in the catalog namespace."""
 
@@ -265,6 +293,7 @@ def test_recognized_control_keyspace_is_covered() -> None:
         "radt",
         "bldt",
         "cudt",
+        "soiltstep",
     }
     assert promised_recognized <= RECOGNIZED_CONTROL_KEYS
     # slope_rad/topo_shading are recognized AND implemented (not fail-closed).

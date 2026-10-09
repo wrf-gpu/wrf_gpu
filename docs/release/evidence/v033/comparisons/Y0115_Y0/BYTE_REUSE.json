@@ -1,0 +1,7 @@
+{
+  "source": "471efc475",
+  "matched_whole_frames": 219,
+  "proof": "alisios R32-67v2 2026-10-07T08:47:51Z:219/219 whole frames+803field checks; wn3 09:09:05Z; manager09:09:00Z exact retirement",
+  "reuse": "../../w2/W0115/metrics.json",
+  "scope": "Y0 pinned replay, not independent realization; same originalCPU reference"
+}

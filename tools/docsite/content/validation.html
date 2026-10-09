@@ -1,5 +1,14 @@
-<h1>Validation &amp; WRF Identity</h1>
-
+<h1>Validation &amp; original-WRF comparisons</h1><h2 id="final-wave">v0.3.3 validation</h2><p>All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed. </p><p>Seven 72-hour forecasts and Swiss 24 h; every original-CPU paired hour and native cell. Spatial bands are distributions, not confidence intervals. Initial-condition members include their IC difference; 0115 grey spread is an older GPU IC pair, not a CPU pair.</p><p><a href="release/evidence/v033/final_w3/index.html">All final identity plots and exact source/reference manifests</a> · <a href="release/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md">Technical appendix and raw-failure disclosures</a></p><table><thead><tr><th>Comparison</th><th>Strict24 raw</th><th>Full D6 raw</th><th>Disposition</th></tr></thead><tbody><tr><td>Tenerife 0115 primary</td><td>FAIL</td><td>FAIL</td><td>61 floor-limited rows; one real V10 miss. Rain and cirrus lifetime differences disclosed (L4/L6/L7).</td></tr><tr><td>Tenerife 0227 primary</td><td>PASS</td><td>FAIL</td><td>All eight breaches pass the frozen CPU-pair spread annex (L5).</td></tr><tr><td>Tenerife 0408 primary</td><td>PASS</td><td>PASS</td><td>D6 passes; trace graupel integrity miss disclosed (L1).</td></tr><tr><td>0227 IC member</td><td>PASS</td><td>FAIL</td><td>All six breaches pass the frozen CPU-pair spread annex; integrity annex passes.</td></tr><tr><td>0115 IC member</td><td>FAIL</td><td>FAIL</td><td>54 floor-limited rows; strict rain FAIL retained. Integrity annex passes; IC difference included.</td></tr><tr><td>0115 same-IC replica</td><td>PASS</td><td>FAIL</td><td>Eight floor-limited rows, two real V10 misses (h42/h44). Cirrus lifetime integrity FAIL disclosed; same-IC fresh-compile replica.</td></tr><tr><td>Storm Monica</td><td>PASS</td><td>PASS</td><td>D6 and all-frame integrity pass.</td></tr><tr><td>Shipped Swiss</td><td>PASS</td><td>PASS</td><td>D6 and all-frame integrity pass; 25 frames on one domain.</td></tr></tbody></table><p>0227 stations: raw DAMAGE, classification CLEAR. 0115: raw DAMAGE, classification SYSTEMATIC; wind-speed RMSE about 1.8% higher, temperature/humidity/wind direction better. The manager accepts this disclosed coastal-wind difference; CLEAR is not renamed PASS. Actual WN/Mon execution uses 7a; the exact native-byte bridge binds those programs to final be0. Swiss executes be0 directly.</p><h2>Earlier source-dated validation records</h2>
+<p>Selected regional cases have original-CPU comparisons through 24 and 72 hours.
+All eight current W3 arms completed, but v0.3.3 remains held: strict0115 rain,
+0408 rain/graupel and replicated0115 station WS10 A/B failures remain. Earlier BASE,
+pre-W2 and W2 results keep their measured source and member-level qualifications.</p>
+<p><a href="release/evidence/v033/current_w3/index.html">Current eight-arm identity plots</a>
+(1,485 paired domain-hours): six executed CF arms with an explicit b6 source bridge,
+plus actual b6 Monica72/Swiss24. Original CPU-WRF is fidelity truth; Monica/Swiss
+D6 and integrity pass, 0227 stations CLEAR. These findings do not establish release acceptance.</p>
+<div class="card-grid"><a class="card" href="release/evidence/v033/index.html"><div class="card-title">Every retained identity gallery</div><div class="card-desc">Hourly heatmaps, RMSE/bias, spatial bands, pairs and cross-case summaries.</div></a>
+<a class="card" href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.3.md"><div class="card-title">Rules, receipts and current release scope</div><div class="card-desc">Frozen D6/floor/integrity rules, station qualifications and source hashes.</div></a></div>
 <div class="admon measured">
   <div class="admon-title">v0.3.2 — matched timing and original-WRF validation</div>
   <p>RTX 5090 (sm_120, CUDA 13), Ryzen 9 9950X: cached Canary 24-hour
@@ -25,21 +34,16 @@ GPU <code>wrfout</code> against a CPU-WRF <code>wrfout</code> from the same init
 <strong>frozen tolerance manifest</strong> that is read before comparison and never tuned. WRF is
 the oracle; this is the project's primary fidelity gate.</p>
 
-<h2 id="method">The cell-identity method</h2>
-<p>Cell-identity is a per-cell, per-lead, per-variable proof — not an aggregate station-RMSE
-summary. For a matching GPU/CPU pair it scores every field at every grid cell and every forecast
-hour against a limit fixed in advance. A field is <strong>green</strong> only if it stays inside
-its frozen tolerance everywhere; a field that breaches is drawn <strong>red</strong> and carried
-honestly — the limit is never widened to paint it green. Full method and reproduce commands are in
-<code>docs/IDENTITY_PROOF.md</code> in the repository.</p>
-
-<div class="admon note">
-  <div class="admon-title">Why not bitwise equality?</div>
-  <p>Bit-for-bit reproduction of a specific WRF build is impossible across compilers and MPI rank
-  counts (WRF is not bit-identical to itself under those changes). wrf_gpu instead proves
-  cell-for-cell agreement within a frozen physical tolerance — a stronger, more meaningful claim
-  for a rewrite than chasing one compiler's rounding.</p>
-</div>
+<h2 id="method">All cells, declared metrics, frozen limits</h2>
+<p>All native grid cells enter each field/lead statistic. Passing means every declared
+metric, such as domain RMSE or static max_abs, meets its frozen limit. An RMSE threshold
+does not bound every individual cell. Complete domains/hours and finite operands are
+required before a verdict; no masking is used to hide a failure.</p>
+<p>Original CPU-WRF is fidelity truth. CPU twins and explicitly labelled GPU IC pairs
+provide empirical predictability context, not confidence intervals. Strict 24-hour D6
+and the separately frozen 72-hour floor annex retain raw failures. Original-WRF
+comparisons establish the tested numerical scope; universal observational-skill
+equivalence is not claimed.</p>
 
 <h2 id="result">Earlier result: v0.3.0 release gate</h2>
 <div class="admon measured">

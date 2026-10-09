@@ -213,3 +213,67 @@ TABLE_SOURCE_LINES = {
     "snow_moments": "module_mp_thompson.F.pre:2093-2191",
     "graupel_moments": "module_mp_thompson.F.pre:760-770",
 }
+
+
+# ---------------------------------------------------------------------------
+# GPUWRF_THOMPSON_MIXED_PHASE_WRF tables (thompson-mixed-phase-v1.npz, written and proven by
+# proofs/thompson/mixed_phase/extract_mixed_phase_tables.py from the .dat files CPU-WRF reads):
+# - tcg_racg, warm rain-graupel branch (module_mp_thompson.F:2537), stored as WRF writes it. mp8 reads every
+#   qr_acr_qg table at idx_bg1 = 5 on a dimNRHG = 1 axis (:79, :465, :1896): out of bounds by
+#   (idx_bg1-1)*ntb_g1*ntb_g elements in Fortran memory order. thompson-cold-collection-v1.npz already holds that
+#   effective read for the four cold-branch tables; the loader applies the same offset to tcg_racg (tail = 0, as v1).
+# - tpi_qcfz/tni_qcfz at WRF's idx_n = 66: nic1 is INTEGER (:246), so idx_n = NINT(1+nbc*DLOG(Nt_c/t_Nc(1))/nic1)
+#   (:2278) is 66, not the idx_n = 59 planes stored in v1.
+# ---------------------------------------------------------------------------
+MIXED_PHASE_ASSET = ROOT / "data" / "fixtures" / "thompson-mixed-phase-v1.npz"
+IDX_BG1_OFFSET = (5 - 1) * 37 * 37
+
+
+class WrfColdCollectionTables(NamedTuple):
+    """ColdCollectionTables with WRF's qcfz planes + the effective (idx_bg1-offset) tcg_racg read (fp64)."""
+
+    tcs_racs1: jnp.ndarray
+    tmr_racs1: jnp.ndarray
+    tcs_racs2: jnp.ndarray
+    tmr_racs2: jnp.ndarray
+    tcr_sacr1: jnp.ndarray
+    tms_sacr1: jnp.ndarray
+    tcr_sacr2: jnp.ndarray
+    tms_sacr2: jnp.ndarray
+    tnr_racs1: jnp.ndarray
+    tnr_racs2: jnp.ndarray
+    tnr_sacr1: jnp.ndarray
+    tnr_sacr2: jnp.ndarray
+    tmr_racg: jnp.ndarray
+    tcr_gacr: jnp.ndarray
+    tnr_racg: jnp.ndarray
+    tnr_gacr: jnp.ndarray
+    tpi_qcfz: jnp.ndarray
+    tni_qcfz: jnp.ndarray
+    tcg_racg: jnp.ndarray
+
+
+def mixed_phase_numpy_tables(path: str = str(MIXED_PHASE_ASSET)) -> dict:
+    """Effective tcg_racg (fixture layout (g1, g, r1, r)) and the idx_n = 66 qcfz planes (ntb_c, ntb_tc), fp64."""
+
+    with np.load(Path(path), allow_pickle=False) as loaded:
+        flat = loaded["tcg_racg"].reshape(-1, order="F")
+        planes = {name: np.ascontiguousarray(loaded[name]) for name in ("tpi_qcfz", "tni_qcfz")}
+    eff = np.concatenate([flat[IDX_BG1_OFFSET:], np.zeros(IDX_BG1_OFFSET)])
+    return {"tcg_racg": np.ascontiguousarray(eff.reshape((37, 37, 37, 37), order="F")), **planes}
+
+
+@lru_cache(maxsize=1)
+def load_wrf_cold_collection_tables(path: str = str(COLD_TABLE_ASSET)) -> WrfColdCollectionTables:
+    """Cold-collection tables for the mixed-phase flag as read-only HOST NumPy fp64 (loaded on first use, flag on).
+
+    Never cache a jax value here: the first call can sit inside a jit trace, where jnp.asarray stages a tracer that
+    the next program would reuse (F0, FINDINGS E206). thompson_column._mixed_phase_cold_tables converts per call.
+    """
+
+    with np.load(Path(path), allow_pickle=False) as loaded:
+        host = {name: np.asarray(loaded[name], dtype=np.float64) for name in COLD_TABLE_NAMES}
+    host.update(mixed_phase_numpy_tables())
+    for value in host.values():
+        value.setflags(write=False)
+    return WrfColdCollectionTables(**host)

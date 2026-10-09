@@ -98,6 +98,7 @@ def test_initial_fields_equal_cpu_wrf_t0_history(domain):
         "LWDNBC", "LWUPBC", "LWDNTC", "LWUPTC",
         "QKE", "CLDFRA", "QC_BL", "CLDFRA_BL", "DTAUX3D", "DTAUY3D",
         "DUSFCG", "DVSFCG",
+        "TH2", "UST", "COSZEN",
         "T",  # th_phy_m_t0 = input dry theta; nest adjust_tempqv reaches only THM/QVAPOR (fid-q2 R01)
     }
     cpu_t0 = sorted(WN3_0227.glob(f"wrfout_{domain}_*"))[0]

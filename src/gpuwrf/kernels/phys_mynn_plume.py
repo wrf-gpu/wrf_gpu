@@ -63,8 +63,8 @@ def _plume_level(k, carry, l, pblh, col, env, c):
     outputs ``(ea, ew, eqt, eqc, ethl, eu, ev)`` already masked by ``still``.
     """
 
-    w_p, thl_p, qt_p, qc_p, u_p, v_p, area_p, alive = carry
-    thl_ref, qt1_ref, thv_ref, p_ref, dz_ref, zw_ref, u_ref, v_ref = env
+    w_p, thl_p, qt_p, qc_p, u_p, v_p, area_p, alive = carry[:8]
+    thl_ref, qt1_ref, thv_ref, p_ref, dz_ref, zw_ref, u_ref, v_ref = env[:8]
     c0, c1 = c["c0"], c["c1"]
 
     zw_k = zw_ref[k, col]
@@ -98,7 +98,9 @@ def _plume_level(k, carry, l, pblh, col, env, c):
     pk = p_k * ak + p_k1 * bk
 
     # condensation fixed point -- REFERENCE CODE, verbatim (:381 -> :171)
-    thvn, qcn = _edmf_condensation(qtn, thln, pk, zw_k1)
+    from gpuwrf.physics.mynn_edmf import _condensation_wrf_kwargs
+    thvn, qcn = _edmf_condensation(qtn, thln, pk, zw_k1,
+                                  **_condensation_wrf_kwargs(qc_p))
 
     thvk = thv_k * ak + thv_k1 * bk
     buoy = c["grav"] * (thvn / thvk - c1)
@@ -132,6 +134,12 @@ def _plume_level(k, carry, l, pblh, col, env, c):
         area_n,
         still.astype(alive.dtype),
     )
+    if len(carry) == 9:
+        # Passive QNI follows the same linear entrainment, with no feedback
+        # into plume thermodynamics (WRF :6173/:6311).
+        ni_n = carry[8] * (c1 - entexp) + env[8][k, col] * entexp
+        emits = emits + (jnp.where(still, ni_n, c0),)
+        new_carry = new_carry + (jnp.where(still, ni_n, carry[8]),)
     return still, emits, new_carry
 
 
@@ -201,6 +209,7 @@ def _plume_sums_kernel(
     l_ref, upa0_ref, upw0_ref, upthl0_ref, upqt0_ref, upqc0_ref, upu0_ref, upv0_ref,
     thl_ref, qt1_ref, thv_ref, p_ref, dz_ref, zw_ref, u_ref, v_ref,
     pblh_ref, active_ref, rhoz_ref, s_ref, *outs, nz: int, nup: int,
+    ni_init_ref=None, ni_env_ref=None,
 ):
     """Same plume sweep as :func:`_plume_rise_kernel`, but each level emits the
     per-column NUP sums the DMP assembly needs (F90:6363-6491) instead of the
@@ -211,7 +220,8 @@ def _plume_sums_kernel(
     UPA*{UPQC,UPQT,UPTHL} -- the products in the order of ``_assemble_native``.
     """
 
-    sum_outs, first_out = outs[:len(_SUM_NAMES)], outs[len(_SUM_NAMES)]
+    n_sums = len(_SUM_NAMES) + (ni_env_ref is not None)
+    sum_outs, first_out = outs[:n_sums], outs[n_sums]
     pid = pl.program_id(0)
     lanes = pid * TX + jnp.arange(TX, dtype=jnp.int32)
     col = jnp.minimum(lanes // nup, thl_ref.shape[1] - 1)
@@ -227,6 +237,9 @@ def _plume_sums_kernel(
     upa0 = upa0_ref[lanes]
     carry0 = (upw0_ref[lanes], upthl0_ref[lanes], upqt0_ref[lanes], upqc0_ref[lanes],
               upu0_ref[lanes], upv0_ref[lanes], upa0, active_ref[col].astype(work_dtype))
+    if ni_env_ref is not None:
+        env = env + (ni_env_ref,)
+        carry0 = carry0 + (ni_init_ref[lanes],)
     pblh = pblh_ref[col]
 
     def clear(k, unused):
@@ -238,17 +251,19 @@ def _plume_sums_kernel(
 
     def keep(state):
         k, carry, _first = state
-        return (k < nz - 1) & (jnp.max(carry[-1]) > c["c0"])
+        return (k < nz - 1) & (jnp.max(carry[7]) > c["c0"])
 
     def advance(state):
         k, carry, first = state
         still, emits, new_carry = _plume_level(k, carry, l, pblh, col, env, c)
-        _ea, ew, eqt, eqc, ethl, eu, ev = emits
+        _ea, ew, eqt, eqc, ethl, eu, ev = emits[:7]
         upa = upa0 * still.astype(work_dtype)
         upa_w = upa * ew
         wgt = rhoz_ref[k, col] * upa_w
         values = (wgt, wgt * eqt, wgt * eqc, wgt * ethl, wgt * eu, wgt * ev,
                   upa, upa_w, upa * eqc, upa * eqt, upa * ethl)
+        if ni_env_ref is not None:
+            values = values + (wgt * emits[7],)
         for out, value in zip(sum_outs, values):
             out[k - 1, gcols] = gsum(value)
         # WRF first-level veto: every plume of the column survives level 1.
@@ -260,12 +275,12 @@ def _plume_sums_kernel(
     first_out[gcols] = (first == jnp.asarray(nup, work_dtype)).astype(work_dtype)
 
 
-def _edmf_condensation(qt, thl, p, zagl):
+def _edmf_condensation(qt, thl, p, zagl, **kwargs):
     """Verbatim re-export shim (kept indirection one line for provenance)."""
 
     from gpuwrf.physics import mynn_edmf as _edmf
 
-    return _edmf._condensation_edmf(qt, thl, p, zagl)
+    return _edmf._condensation_edmf(qt, thl, p, zagl, **kwargs)
 
 
 def fused_plume_scan(
@@ -334,7 +349,7 @@ def plume_sums_enabled() -> bool:
 
 def fused_plume_sums(
     l_per_plume, upa0, upw0, upthl0, upqt0, upqc0, upu0, upv0, *,
-    thl, qt1, thv, p, dz, zw, u, v, pblh, rhoz_dmp, active=None, interpret: bool = True,
+    thl, qt1, thv, p, dz, zw, u, v, pblh, rhoz_dmp, active=None, interpret: bool = True, qni=None,
 ):
     """Plume sweep returning the per-level NUP sums instead of the plume arrays.
 
@@ -371,17 +386,28 @@ def fused_plume_sums(
         t(rhoz_dmp),
     )
     sum_shape = jax.ShapeDtypeStruct((nz - 2, b_pad), jnp.float32)
+    names = _SUM_NAMES
+    if qni is None:
+        inputs = (*lane_args, *env_args, _scalar_stack())
+        kernel = lambda *refs: _plume_sums_kernel(*refs, nz=nz, nup=nup)
+    else:
+        ni0 = (qni[:,0]*dz[:,1]+qni[:,1]*dz[:,0])/(dz[:,0]+dz[:,1])
+        ni0 = jnp.broadcast_to(ni0[:,None],(B,nup))
+        inputs = (*lane_args,*env_args,pad_tail(ni0),t(qni),_scalar_stack())
+        kernel = lambda *refs: _plume_sums_kernel(*refs[:19],refs[21],*refs[22:],
+            nz=nz,nup=nup,ni_init_ref=refs[19],ni_env_ref=refs[20])
+        names = names + ('awqni',)
     outs = pl.pallas_call(
-        lambda *refs: _plume_sums_kernel(*refs, nz=nz, nup=nup),
+        kernel,
         grid=(n_lanes_pad // TX,),
-        out_shape=[sum_shape] * len(_SUM_NAMES) + [jax.ShapeDtypeStruct((b_pad,), jnp.float32)],
+        out_shape=[sum_shape] * len(names) + [jax.ShapeDtypeStruct((b_pad,), jnp.float32)],
         interpret=interpret,
-    )(*lane_args, *env_args, _scalar_stack())
-    sums = {name: out[:, :B] for name, out in zip(_SUM_NAMES, outs[:-1])}
+    )(*inputs)
+    sums = {name: out[:, :B] for name, out in zip(names, outs[:-1])}
     return sums, outs[-1][:B] > 0.0
 
 
-def _assemble_from_sums(s, rho, thv, dz, fltv, active, sums):
+def _assemble_from_sums(s, rho, thv, dz, fltv, active, sums, qni=None):
     """Batched :func:`_assemble_native` fed with in-kernel NUP sums (same F90:6363-6491 ops).
 
     Level 0 (surface plume inits) is summed here; kernel levels come from the
@@ -405,6 +431,9 @@ def _assemble_from_sums(s, rho, thv, dz, fltv, active, sums):
     zero_top = jnp.zeros((1, B), jnp.float32)
     full = {name: jnp.concatenate([jnp.sum(level0[name], axis=-1)[None], sums[name], zero_top], axis=0)
             for name in _SUM_NAMES}                                       # (nz, B)
+    if qni is not None:
+        ni0=(qni[:,0]*dz[:,1]+qni[:,1]*dz[:,0])/(dz[:,0]+dz[:,1])
+        full['awqni']=jnp.concatenate([jnp.sum(wgt0*ni0[:,None],axis=-1)[None],sums['awqni'],zero_top],axis=0)
 
     def to_iface(inner):  # WRF s_aw1(K+1): shift up one level, [0]=0
         return jnp.concatenate([jnp.zeros((1, B), inner.dtype), inner], axis=0)[: nz + 1]
@@ -441,7 +470,7 @@ def _assemble_from_sums(s, rho, thv, dz, fltv, active, sums):
     edmf_thl_inner = keep(jnp.where(has_a, full["athl"] * adjustment / safe, 0.0))
     maxmf = jnp.where(active & (jnp.max(edmf_qc_inner, axis=0) < 1e-8), -maxmf, maxmf)
 
-    return {
+    result = {
         "s_aw": s_aw.T, "s_awqv": s_awqv.T, "s_awqt": s_awqt.T, "s_awqc": s_awqc.T,
         "s_awthl": s_awthl.T, "s_awu": s_awu.T, "s_awv": s_awv.T,
         "edmf_a": edmf_a_inner.T, "edmf_qc": edmf_qc_inner.T, "edmf_qt": edmf_qt_inner.T,
@@ -450,6 +479,11 @@ def _assemble_from_sums(s, rho, thv, dz, fltv, active, sums):
         "ztop_plume": _edmf._plume_top_height(s, full["a_w"].T > 0.0),
         "active": active.astype(jnp.float32), "psig_w": psig_w,
     }
+    if _edmf._wrf_plume_velocity_needed():
+        result["edmf_w"] = keep(jnp.where(has_a, full["a_w"] * adjustment / safe, 0.0)).T
+    if qni is not None:
+        result['s_awqni']=keep(to_iface(full['awqni']*psig_w)*adjustment).T
+    return result
 
 
 def _assemble_native(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
@@ -541,7 +575,7 @@ def _assemble_native(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
     # WRF:6740-6742 reports dry-plume maximum mass flux as negative.
     maxmf = jnp.where(active & (jnp.max(edmf_qc_inner) < 1e-8), -maxmf, maxmf)
 
-    return {
+    result = {
         "s_aw": s_aw,
         "s_awqv": s_awqv,
         "s_awqt": s_awqt,
@@ -559,10 +593,14 @@ def _assemble_native(s, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL,
         "active": active.astype(jnp.float32),
         "psig_w": psig_w,
     }
+    if _edmf._wrf_plume_velocity_needed():
+        result["edmf_w"] = jnp.where(active & has_a, jnp.sum(upa_w, axis=0) / safe, 0.0)
+    return result
+
 
 def _dmp_mf_columns_impl(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                          p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-                         pblh, ts, dx, xland, dt, psig_shcu=None, *, interpret=True):
+                         pblh, ts, dx, xland, dt, psig_shcu=None, cloud_base=None, *, interpret=True, qni=None):
     """Batched ``mynn_edmf.dmp_mf_columns`` with the fused plume kernel.
 
     Identical signature and output dict.  Setup reuses the
@@ -581,20 +619,29 @@ def _dmp_mf_columns_impl(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     if psig_shcu is None:
         psig_shcu = jnp.ones((B,))
 
-    setup = jax.vmap(
-        lambda *a: _edmf._dmp_setup(*a[:-1], dx=dx, psig_shcu=a[-1])
-    )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
-      flt, fltv, flq, psig_shcu)
+    if cloud_base is None:
+        setup = jax.vmap(
+            lambda *a: _edmf._dmp_setup(*a[:-1], dx=dx, psig_shcu=a[-1])
+        )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+          flt, fltv, flq, psig_shcu)
+    else:
+        setup = jax.vmap(
+            lambda *a: _edmf._dmp_setup(*a[:-2], dx=dx,
+                psig_shcu=a[-2], cloud_base=a[-1])
+        )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+          flt, fltv, flq, psig_shcu, cloud_base)
 
-    if plume_sums_enabled():
+    if plume_sums_enabled() or qni is not None:
         rhoz_dmp = jnp.concatenate([setup["rhoz_mid"], rho[:, -1:]], axis=-1)   # (B, nz)
         sums, first_ok = fused_plume_sums(
             setup["l_per_plume"], setup["upa0"], setup["upw0"], setup["upthl0"],
             setup["upqt0"], setup["upqc0"], setup["upu0"], setup["upv0"],
             thl=thl, qt1=setup["qt1"], thv=thv, p=p, dz=dz, zw=zw, u=u, v=v,
             pblh=pblh, rhoz_dmp=rhoz_dmp, active=setup["active"], interpret=interpret,
+            **({} if qni is None else {'qni':qni}),
         )
-        return _assemble_from_sums(setup, rho, thv, dz, fltv, setup["active"] & first_ok, sums)
+        return _assemble_from_sums(setup, rho, thv, dz, fltv, setup["active"] & first_ok, sums,
+            **({} if qni is None else {'qni':qni}))
 
     ea, ew, eqt, eqc, ethl, eu, ev = fused_plume_scan(
         setup["l_per_plume"], setup["upa0"], setup["upw0"], setup["upthl0"],

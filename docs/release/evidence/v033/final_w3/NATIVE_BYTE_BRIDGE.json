@@ -1,0 +1,127 @@
+{
+  "utc": "2026-10-09T04:38:05.771837+00:00",
+  "source": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+  "source_snapshot": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL33W3/FINAL_E41_FINAL_be0dd543c9f7_SWISS_ROOT/snapshot",
+  "native_identity_status": "ALL3_ACTUAL_GPU_ELFs_AND_RAW_SERIALIZED_THUNK_RECORDS_BYTE_IDENTICAL_TO_FORMAL7A",
+  "actual_cases": [
+    {
+      "case": "WN0115",
+      "primary": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/WN0115/ACTUAL_FINAL_vs_FORMAL7A_NATIVE_IDENTITY.json",
+        "sha256": "3e94e34fafde9727057cdba4ca38d439506f87e7ed9854c11586cbde5dc0ffb2"
+      },
+      "programs": [
+        {
+          "program": "d01",
+          "actual_final_source": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+          "actual_AOT_path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/WN0115/cache/jax/aot/0.3.3-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/603435587b819f8addc793d02a5d48ba2259187a04a2a27041a62a2d4ee2d30b.xlaexec",
+          "actual_AOT_sha256": "450db46c32b32e45094653e937686e4c3f12b9505abdfa8e6b75339ab9f75eb2",
+          "actual_native_record2_sha256": "a04dbafe422f52d9abbdca37f8b8479e1e5fb12500082f780c03c6acae9fd9c3",
+          "actual_final_ELFs": [
+            "a04dbafe422f52d9abbdca37f8b8479e1e5fb12500082f780c03c6acae9fd9c3"
+          ],
+          "actual_formal7a_ELFs": [
+            "a04dbafe422f52d9abbdca37f8b8479e1e5fb12500082f780c03c6acae9fd9c3"
+          ],
+          "ELFs_BYTE_identical": true,
+          "raw_native_thunk_sequence_BYTE_identical": true,
+          "actual_thunk_sequence_sha256": "b12f3865eea70bddbea04fe5fb7d4187372349c74f38e77b4b884978232f5921",
+          "formal7a_thunk_sequence_sha256": "b12f3865eea70bddbea04fe5fb7d4187372349c74f38e77b4b884978232f5921",
+          "actual_final_options_sha256": "27eefd05be576ed65a3d5b7bcbe9c99798da66432c707aa489f576f2ea1733b6",
+          "actual_formal7a_options_sha256": "58cc7260222fc1421447fc5cf2d777ffdca7b0652a77e8f66d204628842a0382",
+          "literal_final_PIN": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/WN0115/pin",
+          "literal_formal7a_PIN": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL33W3/FINAL_E41_DUAL_A_ROOTPIN84_7a0c93ff4d19_WN_ROOT/pin",
+          "options_scope": "Private literalPIN differs as declared; no wholeoptions identity claimed byELF-only. Rawthunk sequence includes allbranches/info/id/launchdimension/buffers, no name/order normalization."
+        },
+        {
+          "program": "fused_d02",
+          "actual_final_source": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+          "actual_AOT_path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/WN0115/cache/jax/aot/0.3.3-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/7431de34eb40224946c2e5d451df1901adc26af4272abf2d6c9c47de0cea77e0.xlaexec",
+          "actual_AOT_sha256": "7c3c84c45f53049aedec47eb6daab1862e632b5d48d5b473cfd6bad892112490",
+          "actual_native_record2_sha256": "3a848ea96ed88c19cfd4e3fa809d0129e0b356de6651b62ea0ff1b96149c4b82",
+          "actual_final_ELFs": [
+            "3a848ea96ed88c19cfd4e3fa809d0129e0b356de6651b62ea0ff1b96149c4b82"
+          ],
+          "actual_formal7a_ELFs": [
+            "3a848ea96ed88c19cfd4e3fa809d0129e0b356de6651b62ea0ff1b96149c4b82"
+          ],
+          "ELFs_BYTE_identical": true,
+          "raw_native_thunk_sequence_BYTE_identical": true,
+          "actual_thunk_sequence_sha256": "de0901505e0889577e5ae6c308f03c6a2b729442a276426ecd3cd347f229b0e7",
+          "formal7a_thunk_sequence_sha256": "de0901505e0889577e5ae6c308f03c6a2b729442a276426ecd3cd347f229b0e7",
+          "actual_final_options_sha256": "4a71baea132241fdda5281251d676157c2d1de529651a10372482e9536f43e46",
+          "actual_formal7a_options_sha256": "8290beb76fc568af9bcb647fa99931b37245c983fb5f2e98213e3c091148a016",
+          "literal_final_PIN": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/WN0115/pin",
+          "literal_formal7a_PIN": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL33W3/FINAL_E41_DUAL_A_ROOTPIN84_7a0c93ff4d19_WN_ROOT/pin",
+          "options_scope": "Private literalPIN differs as declared; no wholeoptions identity claimed byELF-only. Rawthunk sequence includes allbranches/info/id/launchdimension/buffers, no name/order normalization."
+        }
+      ]
+    },
+    {
+      "case": "Monica",
+      "primary": {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/Monica/ACTUAL_FINAL_vs_FORMAL7A_NATIVE_IDENTITY.json",
+        "sha256": "c0184c5f5397d260b26e64e6b7489f4f1f942cd0ddf4642cb320e2f83dff4435"
+      },
+      "programs": [
+        {
+          "program": "fused_d01",
+          "actual_final_source": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+          "actual_AOT_path": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/Monica/cache/jax/aot/0.3.3-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d01/3ba333039558204501adbd84672375f6b7003cd0d752b410ca747b1aab9927f8.xlaexec",
+          "actual_AOT_sha256": "f04c2694cfbf6d4e9a6ec43e878ef867cbb91ab4120aa17341e49fc244f61a85",
+          "actual_native_record2_sha256": "9c52f1d47c71d046347925686940af424b38e1b2561d381ef4f1bbcbd616a827",
+          "actual_final_ELFs": [
+            "9c52f1d47c71d046347925686940af424b38e1b2561d381ef4f1bbcbd616a827"
+          ],
+          "actual_formal7a_ELFs": [
+            "9c52f1d47c71d046347925686940af424b38e1b2561d381ef4f1bbcbd616a827"
+          ],
+          "ELFs_BYTE_identical": true,
+          "raw_native_thunk_sequence_BYTE_identical": true,
+          "actual_thunk_sequence_sha256": "15e324c867b176cffb715d8fb5e340f5850e5ed9d6f61504239d1d17641835f3",
+          "formal7a_thunk_sequence_sha256": "15e324c867b176cffb715d8fb5e340f5850e5ed9d6f61504239d1d17641835f3",
+          "actual_final_options_sha256": "a5c6e13aabfed80cdb15b7ac617699676f743ad017362437dce9e31af1f35e02",
+          "actual_formal7a_options_sha256": "6fe0b5b327d03023539e253a123c793dc4ac77d98d949e52888922ef3ead6f02",
+          "literal_final_PIN": "<USER_HOME>/wrf_gpu2_lanes/compile/FINAL_BE0_IDENTITY_20261009/Monica/pin",
+          "literal_formal7a_PIN": "<USER_HOME>/wrf_gpu2_lanes/integrate/FINAL33W3/FINAL_E41_DUAL_A_ROOTPIN84_7a0c93ff4d19_MONICA_ROOT/pin",
+          "options_scope": "Private literalPIN differs as declared; no wholeoptions identity claimed byELF-only. Rawthunk sequence includes allbranches/info/id/launchdimension/buffers, no name/order normalization."
+        }
+      ]
+    }
+  ],
+  "expected_formal7a_programs": [
+    "WN:d01:a04dbafe",
+    "WN:fused_d02:3a848ea9",
+    "Mon:fused_d01:9c52f1d4"
+  ],
+  "measurement_provenance": {
+    "WN_actual_roots": 1,
+    "Mon_actual_roots": 1,
+    "WN_own_steps": {
+      "d01": 1,
+      "d02": 3,
+      "d03": 9
+    },
+    "Mon_own_steps": {
+      "d01": 1,
+      "d02": 3
+    },
+    "GPUassertion": true,
+    "official_compile_lease_lock": true,
+    "hard_arm_timeout_s": 1200,
+    "elapsed_process_s": [
+      663.309615832055,
+      422.184630342992
+    ],
+    "baseline_or_forecast_or_new_profile_reruns": 0
+  },
+  "formal7a_hard_E41_carryforward": "ActualfullELF exact implies sameSTACK/SASS/callee footprint; reuse3989WN+9b94Mon actualstaticproofs, no redundantcubin disassembly/test required underOwner efficiencyrule",
+  "declared_non_native_delta": "ActualprivateliteralPINpaths/options field310 differ vsformal7a; flags/initializerwork/context/dts/clocks exacttakenformalcompletions. No fulloptions/ABI/terminalcarry/NetCDF field proof claimed solelyfromELF.",
+  "carryover_decision": "Managerexplicitrule nativeBYTE permits7a WNMon natives+F2+sciencecarryover; author supplies actualmeasurements, samecritic/sourcebinding remaining",
+  "formal_final_Swiss_packet": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/compile/FORMAL_BE0_SWISS_20261009/ACTUAL_FORMAL_FINAL_BE0_SWISS_NATIVE_PACKET.json",
+    "sha256": "a6a51663715e49e2674a4fe29c66fa2d7b1e290ff6281a81cfa9bd85136d69f1"
+  },
+  "source_caches_PIN_hold": "KEEP until manager/SAMEcritic binding acknowledged; cleanup exactownedprivatecaches nextafterlastreader",
+  "release_GO": false
+}

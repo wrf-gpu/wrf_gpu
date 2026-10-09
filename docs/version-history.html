@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.2</span>
+          <span class="brand-sub">User's Guide · v0.3.3</span>
         </span>
       </a>
       <div class="search-box">
@@ -56,6 +56,7 @@
 <div class="group-title">Reference</div>
 <a class="active" href="version-history.html">Version History</a>
 <div class="subnav">
+<a href="version-history.html#v033">v0.3.3 (2026-10-09)</a>
 <a href="version-history.html#current">v0.3.2 — layout and startup (2026-10-05)</a>
 <a href="version-history.html#v031">v0.3.1 — WRF-order fixes and performance (2026-10-05)</a>
 <a href="version-history.html#v030">v0.3.0 — fused fp32 GPU kernels by default (historical)</a>
@@ -65,6 +66,7 @@
 <a href="version-history.html#v021">v0.21 line — stability + compile-cache speed</a>
 <a href="version-history.html#v020">v0.20 line — correctness, capability, fp32</a>
 <a href="version-history.html#v018-earlier">v0.19 and earlier — foundation</a>
+<a href="version-history.html#v034-plan">Future v0.3.4 roadmap</a>
 </div>
 <a class="" href="credits.html">Credits, License &amp; Citation</a>
 <a class="" href="glossary.html">Glossary</a>
@@ -73,7 +75,7 @@
     <div class="content-wrap">
       <main>
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › Reference › Version History</div>
-        <h1>Version History</h1>
+        <h1>Version history and release notes</h1><p>v0.3.3: faster native Noah-MP radiation, corrected GPU layouts, Thompson snow fall speeds and small-grid stability barriers. <a href="release/RELEASE_NOTES_v0.3.3.md">Release notes and disclosures</a> · <a href="release/evidence/v033/final_w3/index.html">Final original-CPU plots</a>.</p><h2 id="v033">v0.3.3 (2026-10-09)<a class="headerlink" href="#v033" aria-label="Permalink">¶</a></h2><p>All eight final original-CPU comparisons are complete. Raw failed checks and accepted disclosures are linked from validation; earlier source labels remain historical.</p><h2>Earlier published releases</h2>
 
 <h2 id="current">v0.3.2 — layout and startup (2026-10-05)<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
 <p>Stable nested layout pin, accepted momentum fusion, lazy dormant-scheme
@@ -193,6 +195,8 @@ rebaseline, as v0.23.4 and v0.3.0 do. Full per-release notes live in the
 <p style="margin-top:1.4rem;">The complete, unabridged notes for every release are in the
 <a href="https://github.com/wrf-gpu/wrf_gpu/tree/main/release_notes">release_notes/</a> folder and
 <code>CHANGELOG.md</code> of the repository.</p>
+
+<h2 id="v034-plan">Future v0.3.4 roadmap<a class="headerlink" href="#v034-plan" aria-label="Permalink">¶</a></h2><p>Standalone restart, actual cluster interfaces qualified through simulation, grid FDDA first, then RUC/NSSL and further schemes. Chem/Fire are separate program tracks. This is a future plan, not current support or v0.3.3 closure; real-cluster performance is unmeasured. <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.4_ROADMAP.md">Ordered public roadmap and qualifications</a>.</p>
 
         <nav class="page-nav">
 <a class="prev" href="limitations.html"><span class="pn-dir">← Previous</span><span class="pn-title">Boundaries &amp; Known Issues</span></a>

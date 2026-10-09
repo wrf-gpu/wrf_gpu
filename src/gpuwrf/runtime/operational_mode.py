@@ -21,14 +21,18 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
-from gpuwrf.kernels.layout_pin import pin as _layout_pin
+from gpuwrf.kernels.layout_pin import pin as _layout_pin, small_grid_firewall as _small_grid_firewall
+from gpuwrf.dynamics.core.w_surface_reset import ENABLED as _W_SURFACE_RESET, reset_surface_w as _reset_surface_w
+from gpuwrf.dynamics.core.advance_w import W_DAMP_STAGE as _W_DAMP_STAGE, w_damp_rw_tend_wrf as _w_damp_rw_tend_wrf
 from gpuwrf.contracts.state import BaseState, State, Tendencies
+from gpuwrf.physics.rrtmg_mp_re import mp_re_active
 from gpuwrf.contracts.precision import (
     DEFAULT_ACOUSTIC_PRECISION_MODE,
     DEFAULT_DTYPES,
     STATE_FIELD_ORDER,
     SURFACE_LAYER_CARRY_LEAVES,
     MYNN_DIAGNOSTIC_LEAVES,
+    MP_RE_DIAGNOSTIC_LEAVES,
     GWDO_DIAGNOSTIC_LEAVES,
     GWDO_SURFACE_DIAGNOSTIC_LEAVES,
     acoustic_precision_mode_label,
@@ -40,12 +44,16 @@ from gpuwrf.coupling.boundary_apply import (
     DEFAULT_BOUNDARY_CONFIG,
     NESTED_BOUNDARY_SCALAR_SPECIES,
     apply_lateral_boundaries,
+    flow_dep_bdy,
     interpolate_boundary_leaf,
     normal_bdy_work_target_u,
     normal_bdy_work_target_v,
     nested_ph_relax_tendency,
     nested_scalar_boundary_tendencies,
     nested_w_relax_tendency,
+    root_scalar_bdy_rk1_enabled,
+    root_scalar_boundary_tendencies,
+    root_scalar_rk1_split,
     specified_boundary_tendency,
     specified_relax_dry_tendencies,
     SpecifiedRelaxTendencies,
@@ -65,6 +73,7 @@ from gpuwrf.coupling.physics_couplers import (
     rrtmg_lw_theta_tendency,
     rrtmg_radiation_diagnostics,
     rrtmg_sw_theta_tendency,
+    rrtmg_ozone_columns,
     rrtmg_theta_tendency,
     surface_adapter,
     surface_layer_diagnostics,
@@ -494,6 +503,7 @@ _PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
     "qi_bl",
     "cldfra_bl",
     *MYNN_DIAGNOSTIC_LEAVES,
+    *MP_RE_DIAGNOSTIC_LEAVES,
     "ustar",
     "theta_flux",
     "qv_flux",
@@ -523,6 +533,7 @@ _PHYSICS_NON_DRY_REPLACE_FIELDS: tuple[str, ...] = (
     "dtauy3d",
     "dusfcg",
     "dvsfcg",
+    "sfc_wspd",
 )
 
 _SHARDED_CARRY_HALO_CONTEXT: tuple[object, int] | None = None
@@ -1076,6 +1087,8 @@ class OperationalNamelist:
     # runs the two drivers separately), so any operationally wired pair is valid and
     # disabled components are true no-ops.
     ra_lw_physics: int = 4
+    # WRF default: Thompson supplies held effective radii to RRTMG.
+    use_mp_re: int = 1
     # Explicit Noah-classic (sf_surface_physics=2) operational inputs. The JAX SFLX
     # kernel consumes WRF-derived REDPRM/static fields and a 4-layer land carry; if
     # either is absent, the scan rejects sf_surface_physics=2 rather than deriving
@@ -1223,6 +1236,7 @@ class OperationalNamelist:
         h_sca_adv_order: int = 2,
         specified_bdy_cadence: bool = False,
         specified_adv_degrade: bool = False,
+        use_mp_re: int = 1,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -1287,6 +1301,7 @@ class OperationalNamelist:
             h_sca_adv_order=h_sca_adv_order,
             specified_bdy_cadence=specified_bdy_cadence,
             specified_adv_degrade=specified_adv_degrade,
+            use_mp_re=use_mp_re,
         )
 
     def tree_flatten(self):
@@ -1386,6 +1401,7 @@ class OperationalNamelist:
             int(self.gwd_opt),
             int(self.ra_sw_physics),
             int(self.ra_lw_physics),
+            int(self.use_mp_re),
             int(self.rad_rk_tendf),
             self.acoustic_precision_mode,
             float(self.radiation_interval_s),
@@ -1466,6 +1482,7 @@ class OperationalNamelist:
             gwd_opt,
             ra_sw_physics,
             ra_lw_physics,
+            use_mp_re,
             rad_rk_tendf,
             acoustic_precision_mode,
             radiation_interval_s,
@@ -1569,6 +1586,7 @@ class OperationalNamelist:
             data_assimilation=data_assimilation,
             ra_sw_physics=ra_sw_physics,
             ra_lw_physics=ra_lw_physics,
+            use_mp_re=use_mp_re,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
             radiation_interval_s=radiation_interval_s,
@@ -1712,7 +1730,7 @@ def _enforce_operational_precision(
         updates = {}
         for field in STATE_FIELD_ORDER:
             value = getattr(state, field)
-            if value is None or field in (*SURFACE_LAYER_CARRY_LEAVES, *MYNN_DIAGNOSTIC_LEAVES, *GWDO_DIAGNOSTIC_LEAVES):
+            if value is None or field in (*SURFACE_LAYER_CARRY_LEAVES, *MYNN_DIAGNOSTIC_LEAVES, *GWDO_DIAGNOSTIC_LEAVES, *MP_RE_DIAGNOSTIC_LEAVES):
                 # B39: WRF-REAL surface-layer carry is never upcast.
                 continue
             if value.dtype != jnp.float64:
@@ -2444,6 +2462,14 @@ def _acoustic_core_state_from_prep(
         rw_tend_stage = rw_tend_stage.at[1:nzs, :, :].add(_w_coriolis_curvature(
             state.u, state.v, prep.muu, prep.muv, glue_metrics, glue_dtype, wrf_real=real_glue,
         ))
+    if _W_DAMP_STAGE and int(namelist.w_damping) == 1:
+        # BD85: WRF rk_tendency adds w_damp ONCE per RK stage (module_em.F:738) with the stage
+        # grid%ww (calc_ww_cp = prep.ww_save), grid%w_2, grid%mut and the full grid%dt; the native
+        # acoustic never applied it and the legacy in-acoustic form used small-step operands.
+        rw_tend_stage = _w_damp_rw_tend_wrf(
+            rw_tend_stage, ww=prep.ww_save, w=state.w, mut=prep.mut,
+            c1f=glue_metrics.c1f, c2f=glue_metrics.c2f, rdnw=glue_metrics.rdnw, dt=float(namelist.dt_s),
+        )
 
     # F7J item 1 (PRIME): the large-step geopotential-equation RHS ``rhs_ph`` was
     # stubbed (``carry.ph_tend`` stayed 0; ``accumulate_ph_tend`` never wired in),
@@ -3248,7 +3274,8 @@ def _acoustic_scan(
             dy=float(namelist.grid.projection.dy_m),
             epssm=float(namelist.epssm),
             top_lid=bool(namelist.top_lid),
-            w_damping=int(namelist.w_damping),
+            # GPUWRF_W_DAMP_STAGE moves w_damp to the stage rw_tend (WRF cadence): no in-acoustic copy.
+            w_damping=0 if _W_DAMP_STAGE else int(namelist.w_damping),
             damp_opt=int(namelist.damp_opt),
             dampcoef=float(namelist.dampcoef),
             zdamp=float(namelist.zdamp),
@@ -3552,6 +3579,21 @@ def _nested_frozen_wrf_boundary_active(namelist: OperationalNamelist) -> bool:
         return False
     _per_x, _spec, nested = _acoustic_lateral_bc_flags(namelist)
     return bool(nested) and not bool(namelist.boundary_config.force_geopotential)
+
+
+def _root_scalar_bdy_rk1_active(namelist: OperationalNamelist) -> bool:
+    """B43 gate: GPUWRF_ROOT_SCALAR_BDY_RK1 on a specified root with explicit have_bcs flags."""
+
+    if not root_scalar_bdy_rk1_enabled():
+        return False
+    config = namelist.boundary_config
+    return (
+        _specified_bdy_cadence_active(namelist)
+        and not _nested_frozen_wrf_boundary_active(namelist)
+        and bool(namelist.use_flux_advection)
+        and config.have_bcs_moist is not None
+        and config.have_bcs_scalar is not None
+    )
 
 
 def nested_boundary_package_endpoint_seconds(
@@ -4134,6 +4176,21 @@ def _diffopt1_scalar_horizontal_diffusion(
     return tendencies
 
 
+def _real_theta_sum_fence(theta_tend: jax.Array) -> jax.Array:
+    """Output-only fusion fence on a REAL theta-tendency partial sum (E41/BD93).
+
+    Without it XLA packs the whole theta stage sum (coupled advection, sixth-order and horizontal
+    diffusion, rk_addtend_dry t_tendf/h_diabatic, root relax_bdy_dry) into ONE Triton transpose
+    fusion with 11 operands in three layouts; on the single-domain d01 program that kernel spills
+    (STACK 632 B).  The fence sits only where the producer ends in an add and the consumer is an
+    add, so no multiply-add pair is split (no FMA change) and the values are unchanged.  The f64
+    legacy graph stays byte-identical.
+    """
+    if theta_tend.dtype != jnp.float32:
+        return theta_tend
+    return jax.lax.optimization_barrier(theta_tend)
+
+
 def _augment_large_step_tendencies(
     haloed: State,
     tendencies: Tendencies,
@@ -4225,11 +4282,11 @@ def _augment_large_step_tendencies(
         u_t = namelist.tendencies.u * mass_u + advect_u_flux(
             haloed.u, vel, rdx=1.0 / dx, rdy=1.0 / dy, nested=_acoustic_lateral_bc_flags(namelist)[2],
             rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
-        )
+        ); u_t, haloed, vel, metrics = _small_grid_firewall((u_t, haloed, vel, metrics), haloed.theta.shape[-2:])
         v_t = namelist.tendencies.v * mass_v + advect_v_flux(
             haloed.v, vel, rdx=1.0 / dx, rdy=1.0 / dy, nested=_acoustic_lateral_bc_flags(namelist)[2],
             rdzw=metrics.rdnw, fzm=metrics.fnm, fzp=metrics.fnp,
-        )
+        ); v_t, haloed, vel, metrics = _small_grid_firewall((v_t, haloed, vel, metrics), haloed.theta.shape[-2:])
         w_t = namelist.tendencies.w * mass_f + advect_w_flux(
             haloed.w, vel, rdx=1.0 / dx, rdy=1.0 / dy,
             rdn=metrics.rdn, fzm=metrics.fnm, fzp=metrics.fnp,
@@ -4473,7 +4530,7 @@ def _augment_large_step_tendencies(
             base_state=base_state,
         )
         u_t = u_t + ru_pgf
-        v_t = v_t + rv_pgf
+        v_t = v_t + rv_pgf; u_t, v_t, haloed, metrics = _small_grid_firewall((u_t, v_t, haloed, metrics), haloed.theta.shape[-2:])
 
     # WRF rk_tendency adds the Coriolis force to the SAME coupled ru/rv_tend
     # immediately AFTER the horizontal PGF (module_em.F:717 PGF then :761 coriolis;
@@ -4492,7 +4549,7 @@ def _augment_large_step_tendencies(
             specified=bool(namelist.run_boundary),
         )
         u_t = u_t + ru_cor
-        v_t = v_t + rv_cor
+        v_t = v_t + rv_cor; u_t, v_t, haloed, metrics = _small_grid_firewall((u_t, v_t, haloed, metrics), haloed.theta.shape[-2:])
 
     # WRF calls normal-map curvature immediately after Coriolis
     # (module_em.F:773-781; module_big_step_utilities_em.F:4239-4446). The
@@ -4508,9 +4565,9 @@ def _augment_large_step_tendencies(
             specified=True,
         )
         u_t = u_t + ru_curv
-        v_t = v_t + rv_curv
+        v_t = v_t + rv_curv; u_t, v_t, haloed, metrics = _small_grid_firewall((u_t, v_t, haloed, metrics), haloed.theta.shape[-2:])
 
-    tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
+    tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=_real_theta_sum_fence(th_t))
 
     # WRF rk_addtend_dry per-stage merge (module_em.F:1711-1786): field-specific
     # map/mass coupling of RK1-fixed non-timesplit physics tendencies.  Physics-off
@@ -4543,7 +4600,7 @@ def _augment_large_step_tendencies(
             merged = merged.replace(
                 u=merged.u + bdy_relax.ru,
                 v=merged.v + bdy_relax.rv,
-                theta=merged.theta + bdy_relax.t,
+                theta=_real_theta_sum_fence(merged.theta) + bdy_relax.t,
                 mu=mu_aug,
             )
         else:
@@ -4551,9 +4608,15 @@ def _augment_large_step_tendencies(
                 u=merged.u + bdy_relax.ru,
                 v=merged.v + bdy_relax.rv,
                 w=merged.w + bdy_relax.w,
-                theta=merged.theta + bdy_relax.t,
+                theta=_real_theta_sum_fence(merged.theta) + bdy_relax.t,
                 mu=mu_aug,
             )
+    if physics_tendencies is not None and physics_tendencies.moist_tendf:
+        # E41/E204: fence assembled outputs, preserving WRF arithmetic. Monica's
+        # fused cascade otherwise joins U/V PGF and advection into spilling
+        # transpose kernels, alongside the BD99 theta fusion.
+        u, v, theta = jax.lax.optimization_barrier((merged.u, merged.v, merged.theta))
+        merged = merged.replace(u=u, v=v, theta=theta)
     return merged
 
 
@@ -4660,6 +4723,7 @@ def _scalar_transport_coupled_tendencies(
     advection_opt: int,
     transport_velocities: CoupledVelocities | None = None,
     species_batch_width: int = 1,
+    f2_pd_out: dict | None = None,
 ) -> tuple[jax.Array, ...]:
     """WRF scalar-loop coupled large-step tendency ``d(mu*q)/dt`` per stage.
 
@@ -4690,6 +4754,8 @@ def _scalar_transport_coupled_tendencies(
         else _stage_transport_velocities(haloed, namelist)
     )
     fields = tuple(getattr(haloed, name) for name in species)
+    if f2_pd_out is not None:
+        f2_pd_out["species"] = species
     # The limiter (advection option 1/2) is the final-RK3-stage FCT; it needs the
     # start-of-step moisture (WRF ``moist_old``) and ``mu_old`` (grid%mu_1).  The
     # selection inside advect_moisture_scalars is STATIC, so on opt==0 / non-final
@@ -4723,6 +4789,7 @@ def _scalar_transport_coupled_tendencies(
         dt=float(namelist.dt_s),
         species_batch_width=int(species_batch_width),
         msfty=metrics.msfty,
+        **({"f2_pd_out": f2_pd_out} if f2_pd_out is not None else {}),
     )
 
 
@@ -4733,6 +4800,7 @@ def _moisture_coupled_tendencies(
     rk_step: int,
     step_origin: State | None,
     transport_velocities: CoupledVelocities | None = None,
+    f2_pd_out: dict | None = None,
 ) -> tuple[jax.Array, ...]:
     """Released WRF moist-loop coupled tendencies in its existing order."""
 
@@ -4744,6 +4812,7 @@ def _moisture_coupled_tendencies(
         species=_advected_scalar_species(namelist),
         advection_opt=int(namelist.moist_adv_opt),
         transport_velocities=transport_velocities,
+        **({"f2_pd_out": f2_pd_out} if f2_pd_out is not None else {}),
     )
 
 
@@ -4851,6 +4920,7 @@ def _apply_moisture_large_step(
     dt_rk: float,
     metrics: DycoreMetrics,
     species: tuple[str, ...] = _MOISTURE_SPECIES,
+    f2_pd_out: dict | None = None,
 ) -> State:
     """WRF scalar large-step update for moisture AFTER the acoustic loop.
 
@@ -4887,7 +4957,13 @@ def _apply_moisture_large_step(
     for name, q_tend in zip(species, q_tendencies):
         q_old = getattr(step_origin, name)
         # q_new = (mut_old*moist_old + dt_rk*adv_tend) / mut_new (WRF scalar update).
-        q_new = (mass_old * q_old + float(dt_rk) * q_tend) * inv_mass_new
+        if f2_pd_out is not None and name == "qc":
+            f2_numerator = mass_old * q_old + float(dt_rk) * q_tend
+            q_new = f2_numerator * inv_mass_new
+            f2_pd_out["update"] = dict(mass_old=mass_old, mass_new=mass_new,
+                inverse_mass_new=inv_mass_new, numerator=f2_numerator, result=q_new)
+        else:
+            q_new = (mass_old * q_old + float(dt_rk) * q_tend) * inv_mass_new
         updates[name] = q_new
     return state.replace(**updates)
 
@@ -5003,6 +5079,131 @@ def _root_scalar_stage_tendencies(
     return tuple(merged)
 
 
+def _root_sc_with_boundary(
+    sc_tendencies: dict[str, jax.Array] | None,
+    boundary: dict[str, jax.Array],
+    spec_zone: int,
+) -> dict[str, jax.Array]:
+    """B43 root RK1 ``sc_tend``: rk_scalar_tend terms, then relax_bdy_scalar
+    (added) and spec_bdy_scalar (overwrites the spec zone), solve_em.F:2299-2380."""
+
+    merged = dict(sc_tendencies or {})
+    for name, bdy in boundary.items():
+        base = merged.get(name)
+        if base is None:
+            merged[name] = bdy
+            continue
+        ny, nx = (int(n) for n in base.shape[-2:])
+        y = jnp.arange(ny)[:, None]
+        x = jnp.arange(nx)[None, :]
+        spec = (jnp.minimum(jnp.minimum(y, ny - 1 - y), jnp.minimum(x, nx - 1 - x)) < int(spec_zone))[None]
+        bdy = bdy.astype(base.dtype)
+        merged[name] = jnp.where(spec, bdy, base + bdy)
+    return merged
+
+
+def _root_flow_dep(state: State, names: tuple[str, ...], ru_m, rv_m, config: BoundaryConfig) -> State:
+    """B43 flow_dep_bdy on the root flow species, fenced from the next stage's species stack.
+
+    Unfenced, XLA merged the seven ring copy/selects into the stacked scalar-update transpose
+    fusion that packs the next stage's f32[8,44,70,120] (review-b 03:05Z: input_transpose_fusion_76,
+    255 regs, 30 spills, STACK 216 B; the A19/E38 pattern).  One barrier on the OUTPUTS stops that
+    consumer-side merge; an extra barrier on the inputs (species, ru_m, rv_m) perturbed layout
+    assignment into a new 11-input transposing Triton fusion (STACK 528 B, BD92 fence r1), so it is
+    not used.  Values are unchanged (flow_dep_bdy is copy/select only).
+    """
+
+    if not names:
+        return state
+    out = jax.lax.optimization_barrier(
+        tuple(flow_dep_bdy(getattr(state, name), ru_m, rv_m, config) for name in names))
+    return state.replace(**dict(zip(names, out)))
+
+
+_SCALAR_FAMILY_SPECIES = frozenset(("Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "Nh", "nwfa", "nifa"))
+
+
+def _pd_family_species(namelist: OperationalNamelist, species) -> tuple[str, ...]:
+    """Species whose WRF loop takes rk_update_scalar_pd at rk_step == rk_order.
+
+    solve_em.F:1932-2000: every moist_adv_opt / scalar_adv_opt except ORIGINAL (0)
+    and WENO_SCALAR (3) pre-applies the frozen moist_tend / scalar_tend to the
+    step-start field before the limited final-stage advection.
+    """
+
+    moist = int(namelist.moist_adv_opt) not in (0, 3)
+    scalar = int(namelist.scalar_adv_opt) not in (0, 3)
+    return tuple(n for n in species if (scalar if n in _SCALAR_FAMILY_SPECIES else moist))
+
+
+def _physics_sc_outside_spec(
+    physics_sc: dict, owned: tuple[str, ...], spec_zone: int, *, bounded: bool,
+) -> dict:
+    """Lateral ring ownership of the physics part of sc_tend (WRF caller wiring, E62).
+
+    Moist species reach moist_tend through update_phy_ten -> add_a2a
+    (module_physics_addtendc.F:2435-2481), which on a specified or nested domain
+    (``bounded``) skips exactly the outermost mass ring (i in [ids+1, ide-2],
+    j in [jds+1, jde-2]) whatever spec_zone is.  MYNN number scalars bypass add_a2a:
+    pbl_driver writes scalar_tend(P_QNI) = RQNIBLTEN on the full mass tile
+    (module_pbl_driver.F:1866-1874) and calculate_phy_tend couples it there
+    (module_em.F:2473-2481).  spec_bdy_scalar then OVERWRITES rings < spec_zone of
+    every species with a lateral spec (``owned``; solve_em.F:2345-2372, :2892-2920).
+    """
+
+    out = {}
+    for name, tend in physics_sc.items():
+        width = 1 if bool(bounded) and name not in _SCALAR_FAMILY_SPECIES else 0
+        if name in owned:
+            width = max(width, int(spec_zone))
+        if width > 0:
+            ny, nx = (int(n) for n in tend.shape[-2:])
+            y = jnp.arange(ny)[:, None]
+            x = jnp.arange(nx)[None, :]
+            ring = jnp.minimum(jnp.minimum(y, ny - 1 - y), jnp.minimum(x, nx - 1 - x))
+            tend = jnp.where((ring < width)[None], jnp.zeros_like(tend), tend)
+        out[name] = tend
+    return out
+
+
+def _rk_update_scalar_pd(origin: State, species, sources, dt_rk: float, metrics: DycoreMetrics) -> State:
+    """module_em.F rk_update_scalar_pd as solve_em.F:1942-1948 calls it.
+
+    ``scalar = ((c1*mu_old+c2)*scalar + dt*sc_tend)/(c1*mu_new+c2)`` with
+    mu_old = mu_new = grid%mu_1 (the step-start mass) for every PD-family species;
+    ``sc_tend`` is the whole frozen moist_tend (physics + diffusion + boundary), zero
+    where none, and is consumed here (the final rk_update_scalar adds advection only).
+    """
+
+    m1 = metrics.c1h[:, None, None] * origin.mu_total[None, :, :] + metrics.c2h[:, None, None]
+    updates = {}
+    for name in species:
+        q = getattr(origin, name)
+        tend = None
+        for src in sources:
+            if src is not None and name in src:
+                part = jnp.asarray(src[name], q.dtype)
+                tend = part if tend is None else tend + part
+        tend = jnp.zeros_like(q) if tend is None else tend
+        mass = m1.astype(q.dtype)
+        updates[name] = (mass * q + jnp.asarray(float(dt_rk), q.dtype) * tend) / mass
+    return origin.replace(**updates)
+
+
+def _with_physics_sc(q_species, q_tendencies, physics_sc: dict | None, skip: tuple[str, ...]) -> tuple:
+    """Add the physics part of sc_tend (unscaled, full mass grid) to non-PD stage tendencies."""
+
+    if physics_sc is None:
+        return q_tendencies
+    missing = sorted(set(physics_sc) - set(q_species))
+    if missing:
+        raise NotImplementedError(f"GPUWRF_PHYS_TEND_RK_WRF: physics sc_tend for non-advected {missing}")
+    return tuple(
+        t + jnp.asarray(physics_sc[n], t.dtype) if (n in physics_sc and n not in skip) else t
+        for n, t in zip(q_species, q_tendencies, strict=True)
+    )
+
+
 def _rk_scan_step(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -5014,6 +5215,8 @@ def _rk_scan_step(
     capture_rca: bool = False,
     capture_phase_tap: bool = False,
     capture_ladder: bool = False,
+    root_scalar_flux_out: dict | None = None,
+    f2_pd_out: dict | None = None,
 ) -> OperationalCarry | _PreHaloCaptureResult | _RcaRkResult | CorrectedNiPhaseTapResult | _RkLadderResult:
     if sum(bool(value) for value in (capture_pre_halo, capture_rca, capture_phase_tap, capture_ladder)) > 1:
         raise ValueError("pre-halo, RCA, phase-tap, and ladder captures are mutually exclusive")
@@ -5027,7 +5230,16 @@ def _rk_scan_step(
         )
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
+    if f2_pd_out is not None:
+        f2_pd_out["rk1_origin"] = rk1_reference
     nested_frozen_bundle = _nested_frozen_wrf_boundary_active(namelist)
+    # GPUWRF_PHYS_TEND_RK_WRF: the physics part of moist_tend/scalar_tend (coupled,
+    # RK1-frozen); None keeps every released program unchanged.
+    phys_moist_sc = (
+        physics_tendencies.moist_tendf
+        if physics_tendencies is not None and physics_tendencies.moist_tendf
+        else None
+    )
     # WRF first_rk_step_part2 builds diff_opt=1 coefficients from the time-t
     # fields and module_em.F::rk_tendency adds the dry diffusion only inside
     # ``forward_step`` (rk_step == 1).  rk_addtend_dry then reuses the complete
@@ -5116,6 +5328,13 @@ def _rk_scan_step(
     # mass; the stage function forms it once at RK1 and caches it (stages are
     # Python-unrolled in one trace).
     rk1_scalar_cache: dict[str, object] = {}
+    # B43 (GPUWRF_ROOT_SCALAR_BDY_RK1, default off): the specified root's
+    # moist/scalar lateral forcing in WRF's RK cadence -- RK1-frozen
+    # relax/spec sc_tend for QV (solve_em.F:2345-2380) and flow_dep_bdy after
+    # every stage's scalar update for the other species (:2426-2438, :2995).
+    root_scalar_rk1 = (not nested_frozen_bundle) and _root_scalar_bdy_rk1_active(namelist)
+    if root_scalar_rk1 and lead_seconds is None:
+        raise ValueError("GPUWRF_ROOT_SCALAR_BDY_RK1 needs the step boundary lead")
     root_scalar_diff6_active = (
         not nested_frozen_bundle
         and sixth_order_frozen
@@ -5299,7 +5518,7 @@ def _rk_scan_step(
             frozen_diffopt1_tendencies=rk1_forward_diffopt1,
             frozen_diff6_theta_tendency=rk1_forward_diff6_theta,
             frozen_diff6_uvw_tendencies=rk1_forward_diff6_uvw,
-        )
+        ); tendencies, stage_carry, haloed = _small_grid_firewall((tendencies, stage_carry, haloed), stage_carry.state.theta.shape[-2:])
         # WRF advances moisture/other scalars after acoustic integration and
         # constructs their tendencies with ``sumflux`` -- the time-average of
         # live acoustic ru/rv/ww plus the saved linear stage flux.  The released
@@ -5448,7 +5667,7 @@ def _rk_scan_step(
             capture_phase_tap=capture_stage_phase_tap,
             return_scalar_transport=post_acoustic_scalar_transport,
             bdy_relax=bdy_relax,
-        )
+        ); acoustic_result, stage_carry = _small_grid_firewall((acoustic_result, stage_carry), stage_carry.state.theta.shape[-2:])
         scalar_transport_velocities = None
         if post_acoustic_scalar_transport:
             assert isinstance(acoustic_result, _AcousticScalarTransportResult)
@@ -5478,11 +5697,46 @@ def _rk_scan_step(
         # while the coupled dry mass and transporting fluxes do.  Match WRF's
         # post-``small_step_finish`` ownership and construct every represented
         # scalar tendency from that state and the finalized acoustic average.
+        f2_pd_stage_out = f2_pd_out if int(stage.rk_step) == int(namelist.rk_order) else None
+        if f2_pd_stage_out is not None:
+            f2_pd_stage_out.update(spec_zone=int(namelist.boundary_config.spec_zone),
+                nested=nested_frozen_bundle, root_flow_qc=False, pd_preload=False,
+                physics_sc=None, other_sc=None, dt_rk=float(stage.dt_rk))
+        scalar_origin = rk1_reference
+        pd_sc_species: tuple[str, ...] = ()
+        if phys_moist_sc is not None and not post_acoustic_scalar_transport:
+            raise NotImplementedError(
+                "GPUWRF_PHYS_TEND_RK_WRF needs the post-acoustic scalar transport path")
+        pd_stage = phys_moist_sc is not None and int(stage.rk_step) == int(namelist.rk_order)
         if post_acoustic_scalar_transport:
             if nested_frozen_bundle:
                 advected_species = moist_species + (
                     ("Ni", "Nr") if number_scalars_advected else ()
                 )
+                stage_phys_sc = None
+                if phys_moist_sc is not None:
+                    stage_phys_sc = _physics_sc_outside_spec(
+                        phys_moist_sc,
+                        tuple(n for n in NESTED_BOUNDARY_SCALAR_SPECIES
+                              if getattr(rk1_reference, f"{n}_bdy", None) is not None),
+                        int(namelist.boundary_config.spec_zone),
+                        bounded=any(_acoustic_lateral_bc_flags(namelist)[1:]),
+                    )
+                if pd_stage:
+                    pd_sc_species = _pd_family_species(namelist, advected_species)
+                    child_sc = dict(zip(
+                        NESTED_BOUNDARY_SCALAR_SPECIES,
+                        _rk1_cached("child", stage, stage_carry.state.mu_total, _child_frozen_scalar),
+                        strict=True,
+                    ))
+                    if f2_pd_stage_out is not None:
+                        f2_pd_stage_out.update(pd_preload="qc" in pd_sc_species,
+                            physics_sc=None if stage_phys_sc is None else stage_phys_sc.get("qc"),
+                            other_sc=child_sc.get("qc"))
+                    scalar_origin = _rk_update_scalar_pd(
+                        rk1_reference, pd_sc_species, (stage_phys_sc, child_sc),
+                        float(stage.dt_rk), namelist.metrics,
+                    )
                 limiter_stage = (
                     int(namelist.moist_adv_opt) in (1, 2)
                     and int(stage.rk_step) == int(namelist.rk_order)
@@ -5510,11 +5764,12 @@ def _rk_scan_step(
                         stage_carry.state,
                         namelist,
                         rk_step=int(stage.rk_step),
-                        step_origin=rk1_reference,
+                        step_origin=scalar_origin,
                         species=advected_species,
                         advection_opt=int(namelist.moist_adv_opt),
                         transport_velocities=scalar_transport_velocities,
                         species_batch_width=species_batch_width,
+                        **({"f2_pd_out": f2_pd_stage_out} if f2_pd_stage_out is not None else {}),
                     )
                 else:
                     moist_tendencies = (
@@ -5522,8 +5777,9 @@ def _rk_scan_step(
                             stage_carry.state,
                             namelist,
                             rk_step=int(stage.rk_step),
-                            step_origin=rk1_reference,
+                            step_origin=scalar_origin,
                             transport_velocities=scalar_transport_velocities,
+                            **({"f2_pd_out": f2_pd_stage_out} if f2_pd_stage_out is not None else {}),
                         )
                         if moisture_advected
                         else ()
@@ -5533,7 +5789,7 @@ def _rk_scan_step(
                             stage_carry.state,
                             namelist,
                             rk_step=int(stage.rk_step),
-                            step_origin=rk1_reference,
+                            step_origin=scalar_origin,
                             transport_velocities=scalar_transport_velocities,
                         )
                         if number_scalars_advected
@@ -5541,14 +5797,60 @@ def _rk_scan_step(
                     )
                     scalar_tendencies = moist_tendencies + number_tendencies
                 assert nested_frozen_scalar is not None
+                child_frozen = _rk1_cached("child", stage, stage_carry.state.mu_total, _child_frozen_scalar)
+                if pd_sc_species:
+                    # rk_update_scalar_pd consumed (and zeroed) sc_tend for these.
+                    child_frozen = tuple(
+                        jnp.zeros_like(f) if n in pd_sc_species else f
+                        for n, f in zip(NESTED_BOUNDARY_SCALAR_SPECIES, child_frozen, strict=True)
+                    )
                 q_species, q_tendencies = _nested_scalar_stage_tendencies(
                     scalar_tendencies,
                     advected_species,
-                    _rk1_cached("child", stage, stage_carry.state.mu_total, _child_frozen_scalar),
+                    child_frozen,
                     namelist.boundary_config,
                     namelist.metrics.msfty,
                 )
+                q_tendencies = _with_physics_sc(q_species, q_tendencies, stage_phys_sc, pd_sc_species)
             else:
+                def _root_stage_sc():
+                    root_sc = _rk1_cached(
+                        "root", stage, stage_carry.state.mu_total, _root_scalar_sc_tend,
+                    ) if (root_scalar_diff6_active or root_scalar_hdiff_active) else None
+                    relaxed = flow = ()
+                    if root_scalar_rk1:
+                        relaxed, flow = root_scalar_rk1_split(namelist.boundary_config, q_species)
+                        root_sc = _root_sc_with_boundary(
+                            root_sc,
+                            _rk1_cached("root_bdy", stage, None, lambda _unused: root_scalar_boundary_tendencies(
+                                rk1_reference, lead_seconds, namelist.metrics, float(namelist.dt_s),
+                                namelist.boundary_config, relaxed,
+                            )),
+                            int(namelist.boundary_config.spec_zone),
+                        )
+                    return root_sc, relaxed, flow
+
+                stage_phys_sc = None
+                root_sc_early = None
+                if phys_moist_sc is not None:
+                    owned = (
+                        root_scalar_rk1_split(namelist.boundary_config, q_species)[0]
+                        if root_scalar_rk1 else ()
+                    )
+                    stage_phys_sc = _physics_sc_outside_spec(
+                        phys_moist_sc, tuple(owned), int(namelist.boundary_config.spec_zone),
+                        bounded=any(_acoustic_lateral_bc_flags(namelist)[1:]))
+                if pd_stage:
+                    pd_sc_species = _pd_family_species(namelist, q_species)
+                    root_sc_early = _root_stage_sc()
+                    if f2_pd_stage_out is not None:
+                        f2_pd_stage_out.update(pd_preload="qc" in pd_sc_species,
+                            physics_sc=None if stage_phys_sc is None else stage_phys_sc.get("qc"),
+                            other_sc=None if root_sc_early[0] is None else root_sc_early[0].get("qc"))
+                    scalar_origin = _rk_update_scalar_pd(
+                        rk1_reference, pd_sc_species, (stage_phys_sc, root_sc_early[0]),
+                        float(stage.dt_rk), namelist.metrics,
+                    )
                 if (
                     moisture_advected
                     and number_scalars_advected
@@ -5558,24 +5860,32 @@ def _rk_scan_step(
                     # the native stencils see all species in one stacked launch.
                     root_advection = _scalar_transport_coupled_tendencies(
                         stage_carry.state, namelist, rk_step=int(stage.rk_step),
-                        step_origin=rk1_reference, species=q_species,
+                        step_origin=scalar_origin, species=q_species,
                         advection_opt=int(namelist.moist_adv_opt),
                         transport_velocities=scalar_transport_velocities,
+                        **({"f2_pd_out": f2_pd_stage_out} if f2_pd_stage_out is not None else {}),
                     )
                 else:
                     root_advection = (
                         _moisture_coupled_tendencies(
                             stage_carry.state, namelist, rk_step=int(stage.rk_step),
-                            step_origin=rk1_reference,
+                            step_origin=scalar_origin,
                             transport_velocities=scalar_transport_velocities,
+                            **({"f2_pd_out": f2_pd_stage_out} if f2_pd_stage_out is not None else {}),
                         ) if moisture_advected else ()
                     ) + (
                         _nested_number_scalar_coupled_tendencies(
                             stage_carry.state, namelist, rk_step=int(stage.rk_step),
-                            step_origin=rk1_reference,
+                            step_origin=scalar_origin,
                             transport_velocities=scalar_transport_velocities,
                         ) if number_scalars_advected else ()
                     )
+                root_sc, root_rk1_relaxed, root_rk1_flow = (
+                    root_sc_early if root_sc_early is not None else _root_stage_sc()
+                )
+                if pd_sc_species and root_sc is not None:
+                    # rk_update_scalar_pd consumed (and zeroed) sc_tend for these.
+                    root_sc = {n: t for n, t in root_sc.items() if n not in pd_sc_species}
                 q_tendencies = _root_scalar_stage_tendencies(
                     root_advection,
                     q_species,
@@ -5583,15 +5893,14 @@ def _rk_scan_step(
                     namelist.boundary_config,
                     namelist.metrics.msfty,
                     bounded=any(_acoustic_lateral_bc_flags(namelist)[1:]),
-                    sc_tendencies=_rk1_cached(
-                        "root", stage, stage_carry.state.mu_total, _root_scalar_sc_tend,
-                    ) if (root_scalar_diff6_active or root_scalar_hdiff_active) else None,
+                    sc_tendencies=root_sc,
                 )
+                q_tendencies = _with_physics_sc(q_species, q_tendencies, stage_phys_sc, pd_sc_species)
         if moisture_advected or number_scalars_advected or nested_frozen_bundle:
             stage_carry = stage_carry.replace(
                 state=_apply_moisture_large_step(
                     stage_carry.state,
-                    rk1_reference,
+                    scalar_origin,
                     q_tendencies=q_tendencies,
                     dt_rk=float(stage.dt_rk),
                     metrics=namelist.metrics,
@@ -5599,8 +5908,24 @@ def _rk_scan_step(
                     # above (core six for every wired scheme; + qh for WSM7 mp=24
                     # and the rest of the wired hail family; + nwfa/nifa for mp=28).
                     species=q_species,
+                    **({"f2_pd_out": f2_pd_stage_out} if f2_pd_stage_out is not None else {}),
                 )
             )
+        if f2_pd_stage_out is not None:
+            f2_pd_stage_out.update(mu_update=stage_carry.state.mu_total,
+                before_flow=stage_carry.state.qc,
+                merged_tendency=q_tendencies[q_species.index("qc")])
+        if root_scalar_rk1 and (moisture_advected or number_scalars_advected):
+            # solve_em.F:2426-2438 / :2995-3015: flow_dep_bdy right after this
+            # stage's rk_update_scalar, signed by the acoustic-averaged ru_m/rv_m.
+            assert scalar_transport_velocities is not None and scalar_transport_velocities.ru_full is not None
+            ru_m, rv_m = scalar_transport_velocities.ru_full, scalar_transport_velocities.rv_full
+            stage_carry = stage_carry.replace(state=_root_flow_dep(
+                stage_carry.state, root_rk1_flow, ru_m, rv_m, namelist.boundary_config))
+            if f2_pd_stage_out is not None:
+                f2_pd_stage_out["root_flow_qc"] = "qc" in root_rk1_flow
+            if root_scalar_flux_out is not None:
+                root_scalar_flux_out.update(ru_m=ru_m, rv_m=rv_m, relaxed=root_rk1_relaxed, flow=root_rk1_flow)
         if tke_advected:
             stage_carry = stage_carry.replace(
                 state=_apply_tke_large_step(
@@ -5681,9 +6006,9 @@ def _rk_scan_step(
             rk3_fin_u=stage3.state.u,
             rk3_fin_v=stage3.state.v,
         )
-    carry = advance_stage(carry, stages[0])
-    carry = advance_stage(carry, stages[1])
-    return advance_stage(carry, stages[2], capture_stage_pre_halo=capture_pre_halo)
+    carry = advance_stage(carry, stages[0]); fwcar = _small_grid_firewall(carry, carry.state.theta.shape[-2:])
+    carry = advance_stage(fwcar, stages[1]); fwcar = _small_grid_firewall(carry, carry.state.theta.shape[-2:])
+    return advance_stage(fwcar, stages[2], capture_stage_pre_halo=capture_pre_halo)
 
 
 def _rk_scan_step_with_pre_halo_capture(
@@ -5852,6 +6177,40 @@ class _NoahMPClock(NamedTuple):
 
     julian: float
     yearlen: float
+
+
+def _noahmp_julian_advance_enabled() -> bool:
+    return os.environ.get("GPUWRF_NOAHMP_JULIAN_ADVANCE", "0") == "1"
+
+
+def _noahmp_clock(namelist, clock_base, lead_seconds, *, output_time=False) -> _NoahMPClock:
+    """Noah-MP ``JULIAN``/``YEARLEN`` for an LSM call at ``init + lead_seconds``.
+
+    Default (flag unset): the run-start clock for every step, unchanged. GPUWRF_NOAHMP_JULIAN_ADVANCE=1:
+    WRF's CURRENT grid%julian (surface_driver JULIAN_IN=grid%julian, first_rk_step_part1.F:624), i.e. the
+    clock at the START of the step, so phenology (module_sf_noahmplsm.F:1301-1316) advances with model time.
+    Dated runs read the traced CLWRF anchor (exact seconds of year + year wrap); undated runs advance the
+    run-start julian within its year. Output-time recomputes (``output_time``) step back one dt: WRF's frame-t
+    land fields come from the LSM call of the step that started at t - dt.
+    """
+
+    if clock_base is None:
+        julian, yearlen = float(namelist.noahmp_julian), float(namelist.noahmp_yearlen)
+    else:
+        julian, yearlen = clock_base.noahmp_julian, clock_base.noahmp_yearlen
+    if not _noahmp_julian_advance_enabled():
+        return _NoahMPClock(julian=julian, yearlen=yearlen)
+    from gpuwrf.physics.wrf_clwrf_ghg import wrf_julian_yearlen_at_lead  # noqa: PLC0415
+
+    if output_time:
+        lead_seconds = jnp.maximum(jnp.asarray(lead_seconds, jnp.float64) - float(namelist.dt_s), 0.0)
+    ghg_clock = getattr(clock_base, "ghg_clock", None)
+    if ghg_clock is not None:
+        return _NoahMPClock(*wrf_julian_yearlen_at_lead(ghg_clock, lead_seconds))
+    seconds = jnp.mod(jnp.asarray(julian, jnp.float64) * 86400.0 + jnp.asarray(lead_seconds, jnp.float64),
+                      jnp.asarray(yearlen, jnp.float64) * 86400.0)
+    advanced = (1.0 + seconds / 86400.0).astype(jnp.float32) - jnp.float32(1.0)
+    return _NoahMPClock(julian=advanced.astype(jnp.float64), yearlen=jnp.asarray(yearlen, jnp.float64))
 
 
 class _ClockBase(NamedTuple):
@@ -6024,6 +6383,7 @@ def noahmp_initial_rad(
         land_state=land_state,
         _kernel_call=_kernel_call,
         with_clear_sky=True,
+        use_mp_re=int(mp_re_active(namelist)),
     )
     soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
     lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
@@ -6292,7 +6652,9 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
 
     from gpuwrf.diagnostics.census import enabled as census_enabled, initial_census, count_work
 
-    state = state.ensure_conditional_leaves(mp_physics=int(namelist.mp_physics))
+    state = state.ensure_conditional_leaves(mp_physics=int(namelist.mp_physics), use_mp_re=int(namelist.use_mp_re),
+                                             ra_lw_physics=int(namelist.ra_lw_physics),
+                                             ra_sw_physics=int(namelist.ra_sw_physics))
     native_real_carry = os.environ.get("GPUWRF_DYN_CARRY_FP32", "0") == "1"
     if native_real_carry:
         if (os.environ.get("GPUWRF_DYN_FP32", "0") != "1"
@@ -6510,6 +6872,9 @@ def _operational_scan_state(state: State, namelist: OperationalNamelist) -> Stat
     return state.ensure_conditional_leaves(
         mp_physics=int(namelist.mp_physics),
         include_all_conditional=True,
+        use_mp_re=int(namelist.use_mp_re),
+        ra_lw_physics=int(namelist.ra_lw_physics),
+        ra_sw_physics=int(namelist.ra_sw_physics),
     )
 
 
@@ -6592,7 +6957,27 @@ def _refresh_rrtmg_driver(carry, namelist, lead_seconds, run_radiation, clock_ba
     if interval == 0.0:
         interval = float(namelist.dt_s) * int(namelist.radiation_cadence_steps)
 
+    # nesting/nest_o3.py (GPUWRF_NEST_O3_FROM_PARENT): with a held o3rad leaf a nest (live-child boundary,
+    # force_geopotential False) radiates with the parent's force-down field, while the root refreshes its held
+    # o3rad from the CAM climatology at its own radiation call (WRF o3input=2 runs on id 1 only).
+    held_o3 = getattr(carry, "o3rad", None)
+    nest_o3 = held_o3 is not None and not bool(getattr(namelist.boundary_config, "force_geopotential", True))
+
     def refresh(_unused):
+        o3_kwargs, new_o3 = {}, held_o3
+        if held_o3 is not None:
+            if nest_o3:
+                o3_columns = jnp.moveaxis(held_o3, 0, -1)
+            else:
+                o3_columns = rrtmg_ozone_columns(
+                    carry.state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds,
+                    clock_base=_rad_clock_base(clock_base), radiation_static=namelist.radiation_static,
+                    land_state=carry.noahmp_land,
+                )
+                if o3_columns is not None:
+                    new_o3 = jnp.moveaxis(o3_columns, -1, 0).astype(held_o3.dtype)
+            if o3_columns is not None:
+                o3_kwargs["ozone_vmr_override"] = o3_columns
         rate, diag = rrtmg_theta_tendency(
             carry.state, namelist.grid, time_utc=namelist.time_utc,
             lead_seconds=lead_seconds,
@@ -6603,19 +6988,28 @@ def _refresh_rrtmg_driver(carry, namelist, lead_seconds, run_radiation, clock_ba
             topo_shading=int(namelist.topo_shading), slope_rad=int(namelist.slope_rad),
             shadow_length_m=float(namelist.topo_shadow_length_m),
             land_state=carry.noahmp_land, _with_diagnostics=True, with_clear_sky=True,
+            use_mp_re=int(mp_re_active(namelist)),
+            **o3_kwargs,
         )
 
         from gpuwrf.kernels.dyn_carry_fp32 import like, real_all_enabled
         if real_all_enabled():  # E65: the refreshed slices take the held REAL carry dtypes
             rate, diag = like((rate, diag), (carry.rthraten, carry.radiation_diagnostics))
-        return rate, diag, count_work(carry.census, "radiation_tendency_calls")
+        out = (rate, diag, count_work(carry.census, "radiation_tendency_calls"))
+        return out if held_o3 is None else out + (new_o3,)
 
     held = (carry.rthraten, carry.radiation_diagnostics, carry.census)
+    if held_o3 is not None:
+        held = held + (held_o3,)
     if isinstance(run_radiation, bool):
-        rate, diag, census = refresh(None) if run_radiation else held
+        refreshed = refresh(None) if run_radiation else held
     else:
-        rate, diag, census = jax.lax.cond(run_radiation, refresh, lambda _u: held, None)
-    return carry.replace(rthraten=rate, radiation_diagnostics=diag, census=census)
+        refreshed = jax.lax.cond(run_radiation, refresh, lambda _u: held, None)
+    if held_o3 is None:
+        rate, diag, census = refreshed
+        return carry.replace(rthraten=rate, radiation_diagnostics=diag, census=census)
+    rate, diag, census, o3rad = refreshed
+    return carry.replace(rthraten=rate, radiation_diagnostics=diag, census=census, o3rad=o3rad)
 
 
 def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None, census=None, held_diagnostics=None):
@@ -6677,6 +7071,7 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
             slope_rad=int(namelist.slope_rad),
             shadow_length_m=float(namelist.topo_shadow_length_m),
             land_state=land_state,
+            use_mp_re=int(mp_re_active(namelist)),
         )
         soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
         lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
@@ -6803,6 +7198,21 @@ def _microphysics_wrf_order_enabled() -> bool:
     return os.environ.get("GPUWRF_MICROPHYSICS_WRF_ORDER", "1") == "1"
 
 
+def _phys_tend_rk_wrf_enabled() -> bool:
+    """D2/D3 physics->RK coupling in WRF form (default off).
+
+    D2: the MYNN moist tendencies enter WRF's moist_tend/scalar_tend coupled with
+    the time-n mass (calculate_phy_tend + update_phy_ten) and are integrated by the
+    scalar update of every RK stage -- at the final stage of a positive-definite or
+    monotonic family through rk_update_scalar_pd (solve_em.F:1932-2000) -- instead
+    of a post-RK increment; the MYNN prognostics are restored right after the PBL
+    call so later drivers read the step-entry state like WRF's.  D3: the held
+    RTHRATEN is coupled with mut at RK1 and decoupled with the end-of-RK muts
+    (phy_prep_part2, solve_em.F:3669), so the coupled rate is what stays held.
+    """
+    return os.environ.get("GPUWRF_PHYS_TEND_RK_WRF", "0") == "1"
+
+
 def _microphysics_spec_zone(namelist: OperationalNamelist) -> int:
     """solve_em.F:3693-3707 ``sz``: spec_zone on specified/nested domains, else 0."""
 
@@ -6909,6 +7319,12 @@ def _kf_cadence_step(state, carry, namelist, step_index):
     rates, w0avg, nca, census = jax.lax.cond(
         run_cu, refresh, lambda _u: (held, w0avg, nca, carry.census), None
     )
+    from gpuwrf.coupling.kf_rk import kf_tend_rk_enabled
+    if kf_tend_rk_enabled():
+        # Driver outputs remain rates. RK consumes a step-local coupled copy;
+        # advance_ppt/phy_prep_part2 run only after the last RK consumer.
+        return state, carry.replace(
+            cumulus_carry=(w0avg, nca), cumulus_tendencies=rates, census=census)
     # KFETASCHEME clears R*CUTEN on the last active cloud step. PRATEC is
     # accumulated each timestep, exactly as module_physics_addtendc.F:2289.
     updates = {
@@ -6932,7 +7348,7 @@ def _kf_cadence_step(state, carry, namelist, step_index):
 
 def _source_leaf_dry_tendencies(
     mu_total, held_rthraten, rthblten, rqvblten, rublten, rvblten, qv, theta,
-    namelist_metrics, theta_dtype, *, real_glue=False,
+    namelist_metrics, theta_dtype, *, real_glue=False, kf_tendf=None,
 ) -> DryPhysicsTendencies:
     """WRF calculate_phy_tend + update_phy_ten (add_a2a/add_a2c) + conv_t_tendf_to_moist.
 
@@ -6965,6 +7381,11 @@ def _source_leaf_dry_tendencies(
         if rqvblten is None
         else mass_h * (jnp.asarray(rqvblten, glue_dtype) if real_glue else rqvblten)
     )
+    if kf_tendf is not None:
+        # update_phy_ten sums RA, BL, CU before one moist-theta conversion.
+        # KF has already undergone calculate_phy_tend and add_a2a ownership.
+        t_tendf_source = t_tendf_source + jnp.asarray(kf_tendf[0], glue_dtype)
+        qv_tendf_source = qv_tendf_source + jnp.asarray(kf_tendf[1], glue_dtype)
     # WRF use_theta_m=1 converts dry theta forcing to moist theta in
     # conv_t_tendf_to_moist immediately after update_phy_ten.
     rvrd = _RVRD_REAL if real_glue else _RVRD
@@ -7017,6 +7438,48 @@ def _source_leaf_dry_tendencies(
     )
 
 
+def _pbl_scalar_rate(post, entry, dt: float, dtype):
+    """RQNIBLTEN as the MYNN source-leaf adapter forms RQ?BLTEN: (post - entry) / dt."""
+
+    return (jnp.asarray(post, dtype) - jnp.asarray(entry, dtype)) / float(dt)
+
+
+def _decouple_held_rthraten(rthraten, mut, muts, namelist_metrics):
+    """D3 (GPUWRF_PHYS_TEND_RK_WRF): WRF's held RTHRATEN round trip of one step.
+
+    calculate_phy_tend couples RTHRATEN in place with the time-n mass at RK1
+    (module_em.F:2243) and phy_prep_part2 decouples it with the end-of-RK grid%muts
+    (solve_em.F:3669, module_big_step_utilities_em.F:5098), so between radiation
+    calls the COUPLED rate is what persists.  Same glue precision as t_tendf.
+    """
+    from gpuwrf.kernels.dyn_carry_fp32 import real_all_enabled
+    real = real_all_enabled()
+    metrics = namelist_metrics
+    if real:
+        from gpuwrf.kernels.dyn_rk_fp32 import real_metrics
+        metrics = real_metrics(metrics)
+    glue = jnp.float32 if real else jnp.float64
+    c1, c2 = metrics.c1h[:, None, None], metrics.c2h[:, None, None]
+    coupled = (c1 * jnp.asarray(mut, glue)[None] + c2) * jnp.asarray(rthraten, glue)
+    return (coupled / (c1 * jnp.asarray(muts, glue)[None] + c2)).astype(rthraten.dtype)
+
+
+def _coupled_physics_moist_tendf(mu_total, raw, namelist_metrics, *, real_glue=False) -> dict:
+    """WRF calculate_phy_tend for the moist/scalar physics tendencies (GPUWRF_PHYS_TEND_RK_WRF).
+
+    RQ?BLTEN (moist_tend, module_em.F calculate_phy_tend) and scalar_tend(P_QNI)
+    (the '4d couple scalar tendencies' loop) are multiplied by c1h*mut+c2h with the
+    time-n mass, in the same glue precision as the t_tendf source.
+    """
+    glue_dtype = jnp.float32 if real_glue else jnp.float64
+    metrics = namelist_metrics
+    if real_glue:
+        from gpuwrf.kernels.dyn_rk_fp32 import real_metrics
+        metrics = real_metrics(metrics)
+    mass_h = metrics.c1h[:, None, None] * mu_total[None, :, :] + metrics.c2h[:, None, None]
+    return {name: mass_h * jnp.asarray(rate, glue_dtype) for name, rate in raw.items()}
+
+
 def _physics_step_forcing(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -7058,6 +7521,7 @@ def _physics_step_forcing(
     pbl_u_face_delta = None
     pbl_v_face_delta = None
     pbl_after_state = None
+    pbl_moist_raw = None
     # GPUWRF_CARRY_REAL_ALL: PBL/GWDO folds and the source-leaf coupling in WRF REAL.
     from gpuwrf.kernels.dyn_carry_fp32 import real_all_enabled
     real_glue = real_all_enabled()
@@ -7066,6 +7530,12 @@ def _physics_step_forcing(
     mp_opt = int(namelist.mp_physics)
     sf_opt = int(namelist.sf_sfclay_physics)
     cu_opt = int(namelist.cu_physics)
+    from gpuwrf.coupling.kf_rk import (
+        kf_tend_rk_enabled, couple_kf_rates, kf_add_a2a)
+    kf_rk = kf_tend_rk_enabled() and cu_opt == 1
+    kf_tendf = None
+    if kf_rk and (not source_leaf_mode or carry.cumulus_tendencies is None):
+        raise ValueError("KF_TEND_RK_WRF requires source-leaf forcing and held KF rates")
 
     if carry.radiation_diagnostics is not None:
         next_carry = _refresh_rrtmg_driver(
@@ -7142,14 +7612,7 @@ def _physics_step_forcing(
             if next_carry.census is not None:
                 next_carry_rad, census = next_carry_rad
                 next_carry = next_carry.replace(census=census)
-        clock = (
-            _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
-            if clock_base is not None
-            else _NoahMPClock(
-                julian=float(namelist.noahmp_julian),
-                yearlen=float(namelist.noahmp_yearlen),
-            )
-        )
+        clock = _noahmp_clock(namelist, clock_base, lead_seconds)
         radiation = _NoahMPRadiation(*next_carry_rad)
         ep, rp = _noahmp_params(namelist)
         history = getattr(next_carry, "history_diagnostics", None)
@@ -7285,7 +7748,7 @@ def _physics_step_forcing(
     # layer already run in the surface slot); it re-derives the surface coupling
     # and threads the TKE carry via qke. Defined in physics.myj_adapters.
     bl_opt = int(namelist.bl_pbl_physics)
-    pbl_entry_state = next_state
+    next_state, next_carry = _small_grid_firewall((next_state, next_carry), next_state.theta.shape[-2:]); pbl_entry_state = next_state
     if bl_opt == 2:
         next_state = myj_pbl_adapter(next_state, float(namelist.dt_s), namelist.grid)
     elif bl_opt in PBL_SCAN_ADAPTERS:
@@ -7307,7 +7770,27 @@ def _physics_step_forcing(
             # proofs/v014/switzerland_uv_lane_decomposition).
             rublten = mynn.rublten
             rvblten = mynn.rvblten
-            if real_glue:
+            if _phys_tend_rk_wrf_enabled():
+                # WRF's MYNN driver writes tendencies only (module_pbl_driver.F); every
+                # later driver (KF :1380/1511) reads the step-entry prognostics.  Restore
+                # them now and keep the PBL memory/diagnostic leaves; the dycore gets
+                # theta/u/v through t_tendf/ru/rv_tendf and the moist species through
+                # DryPhysicsTendencies.moist_tendf at the WRF RK cadence.
+                pbl_moist_raw = {"qv": rqvblten}
+                restore = {"theta": pbl_entry_state.theta, "u": pbl_entry_state.u,
+                           "v": pbl_entry_state.v, "qv": pbl_entry_state.qv}
+                if mynn.rqcblten is not None:
+                    pbl_moist_raw.update(qc=mynn.rqcblten, qi=mynn.rqiblten)
+                    restore.update(qc=pbl_entry_state.qc, qi=pbl_entry_state.qi)
+                if next_state.Ni is not pbl_entry_state.Ni:
+                    # module_pbl_driver.F:1866-1874 (bl_mynn_mixscalars=1):
+                    # scalar_tend(P_QNI) = RQNIBLTEN, coupled later like moist_tend.
+                    pbl_moist_raw["Ni"] = _pbl_scalar_rate(
+                        next_state.Ni, pbl_entry_state.Ni, float(namelist.dt_s),
+                        jnp.float32 if real_glue else jnp.float64)
+                    restore["Ni"] = pbl_entry_state.Ni
+                next_state = next_state.replace(**restore)
+            elif real_glue:
                 # Removed below as entry + (post-PBL changes): exact in REAL and equal to
                 # the wide delta form (the post-PBL theta change is Sterbenz-exact).
                 pbl_after_state = next_state
@@ -7342,7 +7825,7 @@ def _physics_step_forcing(
             - jnp.asarray(pbl_entry_state.qv, jnp.float64)
         )
         / float(namelist.dt_s)
-    )
+    ) if pbl_moist_raw is None else jnp.asarray(pbl_moist_raw["qv"], jnp.float64)
 
     # --- orographic gravity-wave drag slot (gwd_opt=1) ---
     # WRF applies GWDO inside the PBL driver, right after the PBL momentum
@@ -7401,10 +7884,24 @@ def _physics_step_forcing(
         )
     elif cu_opt == 1:
         if carry.cumulus_tendencies is not None:
-            next_state, next_carry = _kf_cadence_step(
-                next_state, next_carry, namelist,
-                1 + jnp.rint(jnp.asarray(lead_seconds) / float(namelist.dt_s)).astype(jnp.int32),
-            )
+            if kf_rk:
+                # WRF drivers all read the time-n physics entry. Do not feed
+                # PBL's prognostic state replacements into the KF trigger.
+                _unused_state, next_carry = _kf_cadence_step(
+                    before, next_carry, namelist,
+                    1 + jnp.rint(jnp.asarray(lead_seconds) / float(namelist.dt_s)).astype(jnp.int32))
+                coupled = couple_kf_rates(next_carry.cumulus_tendencies, before.mu_total, namelist.metrics)
+                # Preserve unmasked coupled driver rates for final decoupling;
+                # add_a2a alone owns the specified/nested interior restriction.
+                next_carry = next_carry.replace(cumulus_tendencies=coupled)
+                periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
+                kf_tendf = tuple(kf_add_a2a(rate, specified_or_nested=specified or nested,
+                                          periodic_x=periodic_x) for rate in coupled[:6])
+            else:
+                next_state, next_carry = _kf_cadence_step(
+                    next_state, next_carry, namelist,
+                    1 + jnp.rint(jnp.asarray(lead_seconds) / float(namelist.dt_s)).astype(jnp.int32),
+                )
         else:
             w0avg, nca = (
                 carry.cumulus_carry if carry.cumulus_carry is not None
@@ -7434,7 +7931,7 @@ def _physics_step_forcing(
     # rrtmg_theta_tendency (single column-input build, byte-unchanged). Any other
     # combination composes the SW-only and LW-only couplers. The held rate is added
     # into theta at every dynamics step over the radt interval (shared cadence).
-    ra_sw = int(namelist.ra_sw_physics)
+    ra_sw = int(namelist.ra_sw_physics); next_state, next_carry = _small_grid_firewall((next_state, next_carry), next_state.theta.shape[-2:])
     ra_lw = int(namelist.ra_lw_physics)
     land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
     # #91/S3: traced (julian, utc_minute) + CLWRF gas anchor for the radiation
@@ -7476,6 +7973,7 @@ def _physics_step_forcing(
             slope_rad=int(namelist.slope_rad),
             shadow_length_m=float(namelist.topo_shadow_length_m),
             land_state=land_for_rad,
+            use_mp_re=int(mp_re_active(namelist)),
         )
 
     def _lw_tendency() -> jnp.ndarray:
@@ -7511,6 +8009,7 @@ def _physics_step_forcing(
             clock_base=rad_clock_base,
             radiation_static=namelist.radiation_static,
             land_state=land_for_rad,
+            use_mp_re=int(mp_re_active(namelist)),
         )
 
     def _refresh_rthraten(_unused) -> jnp.ndarray:
@@ -7527,9 +8026,15 @@ def _physics_step_forcing(
                 slope_rad=int(namelist.slope_rad),
                 shadow_length_m=float(namelist.topo_shadow_length_m),
                 land_state=land_for_rad,
+                use_mp_re=int(mp_re_active(namelist)),
             )
         return _sw_tendency() + _lw_tendency()
 
+    if next_carry.radiation_diagnostics is None and getattr(next_carry, "o3rad", None) is not None:
+        raise NotImplementedError(
+            "GPUWRF_NEST_O3_FROM_PARENT needs the RRTMG driver refresh (radiation_diagnostics seeded); "
+            "the legacy RTHRATEN refresh would ignore the held o3rad"
+        )
     if next_carry.radiation_diagnostics is not None:
         held_rthraten = next_carry.rthraten
     elif next_carry.census is not None:
@@ -7565,8 +8070,19 @@ def _physics_step_forcing(
     if source_leaf_mode:
         dry = _source_leaf_dry_tendencies(
             next_state.mu_total, held_rthraten, rthblten, rqvblten, rublten, rvblten,
-            before.qv, before.theta, namelist.metrics, next_state.theta.dtype, real_glue=real_glue,
+            before.qv, before.theta, namelist.metrics, next_state.theta.dtype,
+            real_glue=real_glue, kf_tendf=kf_tendf,
         )
+        if pbl_moist_raw is not None:
+            dry = dataclass_replace(dry, moist_tendf=_coupled_physics_moist_tendf(
+                next_state.mu_total, pbl_moist_raw, namelist.metrics, real_glue=real_glue))
+        if kf_tendf is not None:
+            # The shared RK scalar consumer is supplied by BD99. These sources
+            # are already coupled and must not receive an advection map factor.
+            scalars = dict(dry.moist_tendf or {})
+            for name, rate in zip(("qv", "qc", "qr", "qi", "qs"), kf_tendf[1:6], strict=True):
+                scalars[name] = scalars[name] + rate if name in scalars else rate
+            dry = dataclass_replace(dry, moist_tendf=scalars)
         if pbl_after_state is not None:
             # REAL: entry + (changes after the PBL call, e.g. KF theta); u/v return to entry.
             next_state = next_state.replace(
@@ -7729,16 +8245,25 @@ def _physics_boundary_step_with_limiter_diagnostics(
     if capture_rca:
         state_health.append(_rca_state_health(physics_forcing.state))
         state_target.append(_rca_state_target(physics_forcing.state))
-    carry = physics_forcing.carry
+    carry, physics_dry_tendencies, namelist_fw = _small_grid_firewall((physics_forcing.carry, physics_forcing.dry_tendencies, namelist), physics_forcing.carry.state.theta.shape[-2:])
+    # B43: the RK3 stage's acoustic-averaged ru_m/rv_m and the root species
+    # split, filled inside the same trace when GPUWRF_ROOT_SCALAR_BDY_RK1 is active.
+    root_scalar_flux: dict = {}
+    f2_pd_context = None
+    if carry.census is not None and getattr(carry.census, "f2_qc_packet", None) is not None:
+        f2_pd_context = dict(physical_origin=physical_origin,
+            boundary_lead_seconds=boundary_lead_seconds, physics_lead_seconds=physics_lead_seconds)
     rk_result = _rk_scan_step(
         carry,
-        namelist,
+        namelist_fw,
         debug=debug,
         lead_seconds=boundary_lead_seconds,
-        physics_tendencies=physics_forcing.dry_tendencies,
+        physics_tendencies=physics_dry_tendencies,
         capture_rca=capture_rca,
         capture_phase_tap=capture_phase_tap,
         capture_ladder=capture_ladder,
+        root_scalar_flux_out=root_scalar_flux,
+        **({"f2_pd_out": f2_pd_context} if f2_pd_context is not None else {}),
     )
     acoustic_health = None
     acoustic_target = None
@@ -7758,13 +8283,44 @@ def _physics_boundary_step_with_limiter_diagnostics(
         carry = rk_result
     next_state = carry.state
     carry = carry.replace(census=observe_f2_state(
-        carry.census, "post_rk", next_state, step_index))
+        carry.census, "post_rk", next_state, step_index,
+        **({"pd_context": f2_pd_context} if f2_pd_context is not None else {})))
+    if (
+        _phys_tend_rk_wrf_enabled()
+        and bool(physics_forcing.enabled)
+        and int(namelist.rad_rk_tendf) != 0
+        and carry.rthraten is not None
+    ):
+        carry = carry.replace(rthraten=_decouple_held_rthraten(
+            carry.rthraten, physical_origin.mu_total, next_state.mu_total, namelist.metrics))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
     if bool(physics_forcing.enabled):
         next_state = _apply_physics_non_dry_updates(next_state, physical_origin, physics_forcing.state)
         carry = carry.replace(state=next_state)
+    f2_post_nondry_qc = next_state.qc if f2_pd_context is not None else None
+    from gpuwrf.coupling.kf_rk import kf_tend_rk_enabled, finish_kf_rates
+    if kf_tend_rk_enabled() and int(namelist.cu_physics) == 1 and bool(physics_forcing.enabled):
+        rates, nca, rain_increment = finish_kf_rates(
+            carry.cumulus_tendencies, carry.cumulus_carry[1], next_state.mu_total,
+            namelist.metrics, float(namelist.dt_s))
+        next_state = next_state.replace(
+            rainc_acc=(next_state.rainc_acc + rain_increment).astype(next_state.rainc_acc.dtype))
+        carry = carry.replace(state=next_state,
+            cumulus_carry=(carry.cumulus_carry[0], nca), cumulus_tendencies=rates)
+    if root_scalar_flux.get("flow"):
+        # B43: WRF's RK3 flow_dep_bdy copies an interior that already holds the
+        # physics tendencies (moist_tend), so repeat it on the post-physics
+        # state with the RK3 ru_m/rv_m, before microphysics (which skips the
+        # spec zone, solve_em.F:3693-3707).
+        next_state = _root_flow_dep(next_state, root_scalar_flux["flow"], root_scalar_flux["ru_m"],
+                                    root_scalar_flux["rv_m"], namelist.boundary_config)
+        carry = carry.replace(state=next_state)
+    if f2_pd_context is not None:
+        from gpuwrf.diagnostics.f2_scalar_pd_packet import finish_seam
+        carry = carry.replace(census=carry.census._replace(f2_qc_packet=finish_seam(
+            carry.census.f2_qc_packet, step_index, f2_post_nondry_qc, next_state.qc)))
     if _microphysics_wrf_order_enabled():
         pre_microphysics_theta = next_state.theta
         if carry.noahmp_precipitation is not None:
@@ -7832,6 +8388,9 @@ def _physics_boundary_step_with_limiter_diagnostics(
             # Guards-disabled (strict) runs keep WRF's unclamped moist/scalar
             # boundary result; census then observes the true values.
             positivity_floor=not bool(namelist.disable_guards),
+            root_scalar_rk1=(
+                (root_scalar_flux["relaxed"], root_scalar_flux["flow"]) if root_scalar_flux else None
+            ),
         )
         carry = carry.replace(census=observe_f2_state(
             carry.census, "pre_boundary_guard", bounded, step_index))
@@ -7857,6 +8416,14 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 carry = carry.replace(census=count_water_repair(
                     carry.census, "boundary", bounded, next_state,
                     guard_dry_mass_kg(next_state, namelist)))
+    if _W_SURFACE_RESET:
+        # WRF solve_em.F:4818-4834: after all RK stages, the microphysics and the boundary
+        # updates, every step ends with set_w_surface(fill_w_flag=.false.) from the final u/v.
+        if _SHARDED_CARRY_HALO_CONTEXT is not None:
+            raise NotImplementedError("GPUWRF_W_SURFACE_RESET does not support the sharded carry")
+        next_state = next_state.replace(w=_reset_surface_w(
+            next_state, namelist.grid, namelist.metrics,
+            periodic_x=_acoustic_lateral_bc_flags(namelist)[0]))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))
         state_target.append(_rca_state_target(next_state))
@@ -8181,6 +8748,9 @@ def _psfc_from_state(state: State, metrics: DycoreMetrics) -> jax.Array:
     return p_top + column.sum(axis=0)
 
 
+_HISTORY_SWDOWN_HORIZONTAL = os.environ.get("GPUWRF_HISTORY_SWDOWN_HORIZONTAL", "0") == "1"
+
+
 def compute_m9_diagnostics(
     state: State,
     namelist: OperationalNamelist,
@@ -8237,6 +8807,7 @@ def compute_m9_diagnostics(
             land_state=radiation_land,
             column_tile_cols=_M9_RRTMG_COLUMN_TILE_COLS,
             _m9_flux_slices_only=True,
+            use_mp_re=int(mp_re_active(namelist)),
         )
         # This output solve executed; return its count with the live diagnostics.
         radiation_calls += 1
@@ -8246,13 +8817,7 @@ def compute_m9_diagnostics(
     else:
         hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if history is None and bool(namelist.use_noahmp) and noahmp_land is not None:
-        clock = (
-            _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
-            if clock_base is not None
-            else _NoahMPClock(
-                julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
-            )
-        )
+        clock = _noahmp_clock(namelist, clock_base, lead_seconds, output_time=True)
         radiation = (
             _NoahMPRadiation(*noahmp_rad) if noahmp_rad is not None
             else _NoahMPRadiation(rad.swnorm, rad.glw, rad.coszen)
@@ -8290,6 +8855,11 @@ def compute_m9_diagnostics(
     if noahmp_rad is not None:
         swdown_out = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)
         glw_out = jnp.asarray(noahmp_rad[1], dtype=jnp.float64)
+    if _HISTORY_SWDOWN_HORIZONTAL:
+        # WRF surface_driver restores horizontal SWDOWN after the LSM; the
+        # slope-adjusted forcing remains SWNORM. Only history changes here:
+        # Noah still receives the unchanged held noahmp_rad (rad.swnorm).
+        swdown_out = rad.swdown
     if not sw_enabled:
         swdown_out = jnp.zeros_like(swdown_out)
     if not lw_enabled:

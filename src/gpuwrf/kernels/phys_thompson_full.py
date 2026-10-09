@@ -4,6 +4,8 @@ The current retained function code is reused in a private trace namespace.
 Runtime table refs replace only lookup operations; column reductions use the
 physical level count and explicit sedimentation remains in registers. Keeping
 current code objects also keeps the frozen oracle's source mutations live.
+The native mixed-phase entry includes mp_gt_driver's vapor copyback after the
+inner mp_thompson call, including its original returned-negative repair.
 """
 from __future__ import annotations
 
@@ -24,6 +26,30 @@ from gpuwrf.kernels.phys_thompson_sedimentation import _gather, _load, _store
 def _any(values, axis=None, keepdims=False):
     # Installed Triton lowering supports integer max/min, not reduce_or/and.
     return jnp.max((values != 0).astype(jnp.int32), axis=axis, keepdims=keepdims) != 0
+
+
+def _driver_vapor_copyback(qv_input, qv_output, nz):
+    """mp_gt_driver :1350/:1435-1445 copyback and returned-negative repair.
+
+    The bottom-to-top copyback loop sees the already updated lower neighbor
+    and the original input upper neighbor. The inner no_micro RETURN leaves
+    raw qv1d alone; only this enclosing driver repairs its negative outputs.
+    """
+    width = qv_output.shape[-1]
+    k = jnp.arange(width, dtype=jnp.int32)
+
+    def copyback():
+        def level(index, live):
+            live = jnp.where(k == index, qv_output, live)
+            below = _gather.bind(live, (k - 1) % width)
+            above = _gather.bind(live, (k + 1) % width)
+            interior = (k > 1) & (k < nz - 3)  # WRF k>kts+1, k<kte-2.
+            replacement = jnp.where(interior, jnp.maximum(1.0e-7, 0.5 * (below + above)), 1.0e-7)
+            return jnp.where((k == index) & (qv_output < 0.0), replacement, live)
+
+        return jax.lax.fori_loop(0, nz, level, qv_input)
+
+    return jax.lax.cond(_any((k < nz) & (qv_output < 0.0)), copyback, lambda: qv_output)
 
 
 class _RegisterNumpy:
@@ -123,6 +149,8 @@ def _namespace(tc, tables, cold, nz, width):
             ksed = jnp.max(jnp.where(visited & (rc > tc.R2), k, 0))
             return k <= ksed
         env["_wrf_cloud_sed_band"] = band
+    env["_mixed_phase_cold_tables"] = lambda: cold
+    env["_wrf_melting_band"] = lambda tempc: k <= jnp.max(jnp.where(valid & (tempc > 0.), k, -1))
 
     def cloud(state, dt, cloud_sed_on=None, cloud_rho=None):
         rho_rc, rho_f, rho_o = (state.rho,) * 3 if cloud_rho is None else cloud_rho
@@ -190,14 +218,17 @@ def _inactive_warm_branches(env, tc, valid):
                             lambda: apply_warm(state, dt, zero64, zero64, zero64,
                                                jnp.zeros_like(state.qc, dtype=jnp.float32)))
 
-    def evaporation(state, dt, skip_evaporation=False, graupel_melt=0.0):
+    def evaporation(state, dt, skip_evaporation=False, graupel_melt=0.0, *, vapor=None):
         active = _any(valid & (state.qr > tc.R1))
 
         def inactive():
             _tempc, _diffu, _visco, _tcond, lvap, ocp, *_ = air(state)
-            return apply_evap(state, jnp.zeros_like(state.qr, dtype=jnp.float64), lvap, ocp)
+            zero = jnp.zeros_like(state.qr, dtype=jnp.float64)
+            if vapor is not None:
+                return apply_evap(state, zero, lvap, ocp, vapor=vapor, vapor_rate=zero, dt=dt)
+            return apply_evap(state, zero, lvap, ocp)
 
-        return jax.lax.cond(active, lambda: evap_fn(state, dt, skip_evaporation, graupel_melt), inactive)
+        return jax.lax.cond(active, lambda: evap_fn(state, dt, skip_evaporation, graupel_melt, vapor=vapor), inactive)
 
     env["_warm_rain_collection"], env["_rain_evaporation"] = warm, evaporation
 
@@ -239,7 +270,7 @@ def _inactive_source_branches(env, tc, valid):
 
         def inactive():
             rr = jnp.maximum(state.qr * rho, tc.R1)
-            nr_max = tc.CRG2 * tc.ORG3 * rr * ((3. + .672) / (tc.D0R * .75)) ** 3. / tc.AM_R / rho
+            nr_max = tc.CRG2 * tc.ORG3 * rr * ((3. + .672) / (tc.D0R * .75)) ** 3. / tc._am_r() / rho
             ni = jnp.minimum(state.Ni, 999.e3 / state.rho)            # freeze-stage ceiling (entry rho)
             ni = jnp.minimum(jnp.maximum(0., ni), 999.e3 / rho)        # final ceiling (recomputed rho)
             out = state.replace(rho=rho, Ni=ni, Nr=jnp.maximum(0., jnp.minimum(state.Nr, nr_max)))
@@ -249,6 +280,21 @@ def _inactive_source_branches(env, tc, valid):
         return jax.lax.cond(active, full, inactive)
 
     env["_cold_collection_rates"], env["_ice_sources_with_process_flags"] = cold, ice
+
+    # GPUWRF_THOMPSON_MIXED_PHASE_WRF single pass: skip the cold/mixed-phase block (and the warm rates) in columns
+    # where _wrf_mixed_phase_activity proves every such rate is exactly zero; the shared tail runs in every branch.
+    mixed_fn, activity = env["_wrf_mixed_phase_sources"], env["_wrf_mixed_phase_activity"]
+
+    def mixed_phase(state, dt, tables, cold_tables, *, vapor=None):
+        warm, cold_cells = activity(state)
+        warm_any, cold_any = _any(valid & warm), _any(valid & cold_cells)
+        return jax.lax.cond(
+            cold_any, lambda: mixed_fn(state, dt, tables, cold_tables, vapor=vapor),
+            lambda: jax.lax.cond(warm_any, lambda: mixed_fn(state, dt, tables, cold_tables, cold_rates=False, vapor=vapor),
+                                 lambda: mixed_fn(state, dt, tables, cold_tables, warm_rates=False, cold_rates=False,
+                                                  vapor=vapor)))
+
+    env["_wrf_mixed_phase_sources"] = mixed_phase
 
 
 def full_column(state, dt, *, interpret=False, return_events=False):
@@ -265,7 +311,8 @@ def full_column(state, dt, *, interpret=False, return_events=False):
     keys = tc.ThompsonColumnState.__slots__
     arrays = [getattr(state, key).reshape(ncol, nz) for key in keys]
     table_arrays = list(tc.THOMPSON_TABLES)
-    cold_arrays = list(tc.COLD_COLLECTION_TABLES)
+    cold_src = tc._mixed_phase_cold_tables() if tc._mixed_phase_wrf_enabled() else tc.COLD_COLLECTION_TABLES
+    cold_arrays = list(cold_src)
     ntables, ncold = len(table_arrays), len(cold_arrays)
     precip_keys = ("rain", "snow", "graupel", "ice", "cloudw")
     defaults = dict(T=280., p=100000., rho=1., dz=250.)
@@ -280,7 +327,7 @@ def full_column(state, dt, *, interpret=False, return_events=False):
         offset = len(keys)
         tables = tc.ThompsonTableBundle(*[_Table(ref, valid) for ref in refs[offset:offset+ntables]])
         offset += ntables
-        cold = type(tc.COLD_COLLECTION_TABLES)(*[_Table(ref, valid) for ref in refs[offset:offset+ncold]])
+        cold = type(cold_src)(*[_Table(ref, valid) for ref in refs[offset:offset+ncold]])
         offset += ncold
         env = _namespace(tc, tables, cold, nz, width)
         events = {}
@@ -300,7 +347,11 @@ def full_column(state, dt, *, interpret=False, return_events=False):
             for key in keys:
                 input_finite = input_finite & jnp.isfinite(getattr(source, key))
             events["input_nonfinite"] = jnp.sum(valid & ~input_finite, dtype=jnp.int32)
-        out, ppt = env["_thompson_source_sink_body"](source, dt, False, sediment=True)
+        raw_vapor = tc._mixed_phase_wrf_enabled() and tc._native_real_enabled()
+        out, ppt = env["_thompson_source_sink_body"](source, dt, False, sediment=True,
+                                                   raw_vapor=raw_vapor)
+        if raw_vapor:
+            out = out.replace(qv=_driver_vapor_copyback(source.qv, out.qv, nz))
         for key, ref in zip(keys, refs[offset:offset+len(keys)]):
             _store(ref, (col, k), getattr(out, key), mask=valid)
         offset += len(keys)

@@ -1,0 +1,358 @@
+{
+ "prod/d01": {
+  "off_raw_hlo_identical_main_vs_branch": true,
+  "off_sha256": "062bd029f56c5b87e44ad55cd64e5c641d49b570a7e3b0159e3d66211e74cb37",
+  "on_sha256": "e0238a839601daa64cdc93070dd8ad28fc1cf2e80c2d38901812d06a0c9f2060",
+  "instructions_off_on": [
+   56746,
+   56777
+  ],
+  "added": 42,
+  "removed": 11,
+  "added_by_op_shape": {
+   "add f64[]": 2,
+   "add s32[]": 4,
+   "add s64[]": 1,
+   "compare pred[1]": 1,
+   "compare pred[]": 3,
+   "constant f64[]": 1,
+   "constant s32[]": 1,
+   "convert f32[]": 1,
+   "convert f64[]": 1,
+   "convert s32[1]": 1,
+   "convert s32[]": 1,
+   "convert s64[1]": 1,
+   "divide f64[]": 2,
+   "dynamic-slice f64[1]": 3,
+   "parameter tuple[249 elems]": 2,
+   "parameter s64[]": 2,
+   "reduce s64[]": 1,
+   "reshape f64[1]": 1,
+   "reshape f64[]": 3,
+   "select s32[]": 3,
+   "slice f64[1]": 1,
+   "subtract f32[]": 1,
+   "subtract f64[]": 2,
+   "tuple tuple[249 elems]": 2,
+   "while tuple[249 elems]": 1
+  },
+  "removed_by_op_shape": {
+   "get-tuple-element f64[]": 4,
+   "parameter tuple[251 elems]": 2,
+   "parameter f64[]": 2,
+   "tuple tuple[251 elems]": 2,
+   "while tuple[251 elems]": 1
+  },
+  "added_not_scalar": {
+   "parameter tuple[249 elems]": 2,
+   "tuple tuple[249 elems]": 2,
+   "while tuple[249 elems]": 1
+  },
+  "structural_off_on": {
+   "while": [
+    11,
+    11
+   ],
+   "conditional": [
+    5,
+    5
+   ],
+   "transpose": [
+    161,
+    161
+   ],
+   "custom-call": [
+    142,
+    142
+   ],
+   "call": [
+    3923,
+    3923
+   ],
+   "fusion": [
+    0,
+    0
+   ],
+   "scatter": [
+    330,
+    330
+   ],
+   "gather": [
+    202,
+    202
+   ],
+   "sort": [
+    0,
+    0
+   ]
+  },
+  "structural_changed": {}
+ },
+ "prod/d02": {
+  "off_raw_hlo_identical_main_vs_branch": true,
+  "off_sha256": "7cd8b3ab40a448cbe0ff9152e36afb5dbf1c3db8bc337d64b383c5ded11d88f6",
+  "on_sha256": "780ba8c285e9a87395ed44acef59cb5e86cccb56e3f9a4cbad60ca96a11c46c0",
+  "instructions_off_on": [
+   54153,
+   54184
+  ],
+  "added": 42,
+  "removed": 11,
+  "added_by_op_shape": {
+   "add f64[]": 2,
+   "add s32[]": 4,
+   "add s64[]": 1,
+   "compare pred[1]": 1,
+   "compare pred[]": 3,
+   "constant f64[]": 1,
+   "constant s32[]": 1,
+   "convert f32[]": 1,
+   "convert f64[]": 1,
+   "convert s32[1]": 1,
+   "convert s32[]": 1,
+   "convert s64[1]": 1,
+   "divide f64[]": 2,
+   "dynamic-slice f64[1]": 3,
+   "parameter tuple[224 elems]": 2,
+   "parameter s64[]": 2,
+   "reduce s64[]": 1,
+   "reshape f64[1]": 1,
+   "reshape f64[]": 3,
+   "select s32[]": 3,
+   "slice f64[1]": 1,
+   "subtract f32[]": 1,
+   "subtract f64[]": 2,
+   "tuple tuple[224 elems]": 2,
+   "while tuple[224 elems]": 1
+  },
+  "removed_by_op_shape": {
+   "get-tuple-element f64[]": 4,
+   "parameter tuple[226 elems]": 2,
+   "parameter f64[]": 2,
+   "tuple tuple[226 elems]": 2,
+   "while tuple[226 elems]": 1
+  },
+  "added_not_scalar": {
+   "parameter tuple[224 elems]": 2,
+   "tuple tuple[224 elems]": 2,
+   "while tuple[224 elems]": 1
+  },
+  "structural_off_on": {
+   "while": [
+    12,
+    12
+   ],
+   "conditional": [
+    4,
+    4
+   ],
+   "transpose": [
+    146,
+    146
+   ],
+   "custom-call": [
+    1156,
+    1156
+   ],
+   "call": [
+    3752,
+    3752
+   ],
+   "fusion": [
+    0,
+    0
+   ],
+   "scatter": [
+    258,
+    258
+   ],
+   "gather": [
+    214,
+    214
+   ],
+   "sort": [
+    0,
+    0
+   ]
+  },
+  "structural_changed": {}
+ },
+ "wn3/d01": {
+  "off_raw_hlo_identical_main_vs_branch": true,
+  "off_sha256": "fa713d7d12b5eb9a14f5fbed1f7f726d8fc603639190f40b405d126ce3cd99a4",
+  "on_sha256": "56760d425ea7288bf5e73df61ef3bd92e2d921274b8bb76ca013e59cab4ee1cb",
+  "instructions_off_on": [
+   56792,
+   56823
+  ],
+  "added": 42,
+  "removed": 11,
+  "added_by_op_shape": {
+   "add f64[]": 2,
+   "add s32[]": 4,
+   "add s64[]": 1,
+   "compare pred[1]": 1,
+   "compare pred[]": 3,
+   "constant f64[]": 1,
+   "constant s32[]": 1,
+   "convert f32[]": 1,
+   "convert f64[]": 1,
+   "convert s32[1]": 1,
+   "convert s32[]": 1,
+   "convert s64[1]": 1,
+   "divide f64[]": 2,
+   "dynamic-slice f64[1]": 3,
+   "parameter tuple[251 elems]": 2,
+   "parameter s64[]": 2,
+   "reduce s64[]": 1,
+   "reshape f64[1]": 1,
+   "reshape f64[]": 3,
+   "select s32[]": 3,
+   "slice f64[1]": 1,
+   "subtract f32[]": 1,
+   "subtract f64[]": 2,
+   "tuple tuple[251 elems]": 2,
+   "while tuple[251 elems]": 1
+  },
+  "removed_by_op_shape": {
+   "get-tuple-element f64[]": 4,
+   "parameter tuple[253 elems]": 2,
+   "parameter f64[]": 2,
+   "tuple tuple[253 elems]": 2,
+   "while tuple[253 elems]": 1
+  },
+  "added_not_scalar": {
+   "parameter tuple[251 elems]": 2,
+   "tuple tuple[251 elems]": 2,
+   "while tuple[251 elems]": 1
+  },
+  "structural_off_on": {
+   "while": [
+    11,
+    11
+   ],
+   "conditional": [
+    5,
+    5
+   ],
+   "transpose": [
+    161,
+    161
+   ],
+   "custom-call": [
+    142,
+    142
+   ],
+   "call": [
+    3926,
+    3926
+   ],
+   "fusion": [
+    0,
+    0
+   ],
+   "scatter": [
+    331,
+    331
+   ],
+   "gather": [
+    202,
+    202
+   ],
+   "sort": [
+    0,
+    0
+   ]
+  },
+  "structural_changed": {}
+ },
+ "wn3/fused/d02": {
+  "off_raw_hlo_identical_main_vs_branch": true,
+  "off_sha256": "3432fb9f3ab7728504c6192dafcf6f530aa62dc78e579773dfc570422b76316e",
+  "on_sha256": "9801c6daa568424f82100d79fc20e670c87dcc852bf916e051499ad739ec9548",
+  "instructions_off_on": [
+   120138,
+   120196
+  ],
+  "added": 84,
+  "removed": 26,
+  "added_by_op_shape": {
+   "add f64[]": 4,
+   "add s32[]": 8,
+   "add s64[]": 2,
+   "compare pred[1]": 2,
+   "compare pred[]": 6,
+   "constant f64[]": 2,
+   "constant s32[]": 2,
+   "convert f32[]": 2,
+   "convert f64[]": 2,
+   "convert s32[1]": 2,
+   "convert s32[]": 2,
+   "convert s64[1]": 2,
+   "divide f64[]": 4,
+   "dynamic-slice f64[1]": 6,
+   "parameter tuple[226 elems]": 2,
+   "parameter s64[]": 4,
+   "reduce s64[]": 2,
+   "reshape f64[1]": 2,
+   "reshape f64[]": 6,
+   "select s32[]": 6,
+   "slice f64[1]": 2,
+   "subtract f32[]": 2,
+   "subtract f64[]": 4,
+   "tuple tuple[226 elems]": 2,
+   "while tuple[226 elems]": 1
+  },
+  "removed_by_op_shape": {
+   "get-tuple-element f64[]": 8,
+   "parameter tuple[228 elems]": 2,
+   "parameter f64[]": 8,
+   "tuple tuple[228 elems]": 2,
+   "while tuple[228 elems]": 1
+  },
+  "added_not_scalar": {
+   "parameter tuple[226 elems]": 2,
+   "tuple tuple[226 elems]": 2,
+   "while tuple[226 elems]": 1
+  },
+  "structural_off_on": {
+   "while": [
+    23,
+    23
+   ],
+   "conditional": [
+    8,
+    8
+   ],
+   "transpose": [
+    439,
+    439
+   ],
+   "custom-call": [
+    2304,
+    2304
+   ],
+   "call": [
+    8075,
+    8075
+   ],
+   "fusion": [
+    0,
+    0
+   ],
+   "scatter": [
+    518,
+    518
+   ],
+   "gather": [
+    546,
+    546
+   ],
+   "sort": [
+    0,
+    0
+   ]
+  },
+  "structural_changed": {}
+ }
+}

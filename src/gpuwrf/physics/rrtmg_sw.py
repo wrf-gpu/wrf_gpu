@@ -19,6 +19,9 @@ from gpuwrf.physics.rrtmg_constants import (
     AVOGADRO,
     CH4_VMR,
     CO2_VMR,
+    rrtmg_constant,
+    rrtmg_cloud_water_path,
+    rrtmg_heating_rate,
     CP_AIR,
     DRY_AIR_MOLECULAR_WEIGHT,
     GRAVITY,
@@ -166,6 +169,15 @@ _SW_COLUMN_TILE_COLS_EXPLICIT = (
 _REAL_DEFAULT_COLUMN_TILE_COLS = 4096
 
 
+def _sw_reftra_wrf_enabled():
+    """WRF uses PIFM (kmodts=2), only opt in on the paired REAL entry."""
+    return _env_bool("GPUWRF_RRTMG_SW_REFTRA_WRF", False) and _real_entry()
+
+
+def _sw_ssa_upper():
+    return 1.0 if _sw_reftra_wrf_enabled() else 0.999999
+
+
 def _default_sw_column_tile_cols() -> int:
     """Trace-time default tile width (explicit env > REAL-path 4096 > 1024)."""
 
@@ -201,10 +213,14 @@ _SW_ARRAY_FIELDS: tuple[str, ...] = (
     "pressure_interfaces",
     "temperature_interfaces",
     "ozone_vmr",
+    "re_cloud", "re_ice", "re_snow", "xland",
 )
 _SW_GAS_FIELDS: tuple[str, ...] = ("co2_vmr", "n2o_vmr", "ch4_vmr")
 _SW_STATIC_FIELDS: tuple[str, ...] = ()
-_SW_CHILD_FIELDS: tuple[str, ...] = _SW_ARRAY_FIELDS + _SW_GAS_FIELDS
+# Append new optional leaves after the existing gas leaves: OFF argument paths
+# and the original column ABI remain identical.
+_SW_MP_RE_FIELDS = ("re_cloud", "re_ice", "re_snow", "xland")
+_SW_CHILD_FIELDS: tuple[str, ...] = tuple(n for n in _SW_ARRAY_FIELDS if n not in _SW_MP_RE_FIELDS) + _SW_GAS_FIELDS + _SW_MP_RE_FIELDS
 # Non-array scalars, in the historical aux order, for equality and hashing.
 _SW_SCALAR_FIELDS: tuple[str, ...] = _SW_STATIC_FIELDS + _SW_GAS_FIELDS
 
@@ -246,6 +262,7 @@ class RRTMGSWColumnState:
         "pressure_interfaces",
         "temperature_interfaces",
         "ozone_vmr",
+        "re_cloud", "re_ice", "re_snow", "xland",
         "co2_vmr",
         "n2o_vmr",
         "ch4_vmr",
@@ -272,6 +289,7 @@ class RRTMGSWColumnState:
         n2o_vmr: float | None = None,
         ch4_vmr: float | None = None,
         ozone_vmr=None,
+        re_cloud=None, re_ice=None, re_snow=None, xland=None,
     ) -> None:
         self.T = T
         self.p = p
@@ -315,6 +333,17 @@ class RRTMGSWColumnState:
         # WRF o3input=2 supplies O3RAD on model mass layers.  None preserves
         # the historical INIRAD/O3DATA profile exactly.
         self.ozone_vmr = ozone_vmr
+        # Explicit radii request the WRF has_reqc/i/s optics. None retains
+        # the established fixed-radius operator and contributes no array leaf.
+        radii = (re_cloud, re_ice, re_snow)
+        if any(v is None for v in radii) and not all(v is None for v in radii):
+            raise ValueError("re_cloud/re_ice/re_snow must be all supplied or all None")
+        if re_cloud is not None:
+            if xland is None:
+                raise ValueError("MP effective radii require WRF XLAND for liquid fallback")
+            if any(tuple(v.shape) != tuple(p.shape) for v in radii):
+                raise ValueError("MP effective radii must have the column-layer shape")
+        self.re_cloud, self.re_ice, self.re_snow, self.xland = re_cloud, re_ice, re_snow, xland
         gases = (co2_vmr, n2o_vmr, ch4_vmr)
         if any(value is None for value in gases) and not all(
             value is None for value in gases
@@ -695,6 +724,10 @@ def _flatten_sw_state(state: RRTMGSWColumnState, leading_shape: tuple[int, ...],
             if state.ozone_vmr is None
             else _flatten_layer_field(state.ozone_vmr, leading_shape, ncol)
         ),
+        re_cloud=None if state.re_cloud is None else _flatten_layer_field(state.re_cloud, leading_shape, ncol),
+        re_ice=None if state.re_ice is None else _flatten_layer_field(state.re_ice, leading_shape, ncol),
+        re_snow=None if state.re_snow is None else _flatten_layer_field(state.re_snow, leading_shape, ncol),
+        xland=None if state.xland is None else _flatten_surface_field(state.xland, leading_shape, ncol),
     )
 
 
@@ -730,6 +763,10 @@ def _pad_sw_state(state: RRTMGSWColumnState, ncol: int, padded_ncol: int) -> RRT
             if state.ozone_vmr is None
             else _pad_leading_columns(state.ozone_vmr, ncol, padded_ncol)
         ),
+        re_cloud=None if state.re_cloud is None else _pad_leading_columns(state.re_cloud, ncol, padded_ncol),
+        re_ice=None if state.re_ice is None else _pad_leading_columns(state.re_ice, ncol, padded_ncol),
+        re_snow=None if state.re_snow is None else _pad_leading_columns(state.re_snow, ncol, padded_ncol),
+        xland=None if state.xland is None else _pad_leading_columns(state.xland, ncol, padded_ncol),
     )
 
 
@@ -771,6 +808,10 @@ def _slice_sw_state(state: RRTMGSWColumnState, start, tile_cols: int, padded_nco
                 state.ozone_vmr, start, tile_cols, padded_ncol
             )
         ),
+        re_cloud=None if state.re_cloud is None else _slice_leading_columns(state.re_cloud, start, tile_cols, padded_ncol),
+        re_ice=None if state.re_ice is None else _slice_leading_columns(state.re_ice, start, tile_cols, padded_ncol),
+        re_snow=None if state.re_snow is None else _slice_leading_columns(state.re_snow, start, tile_cols, padded_ncol),
+        xland=None if state.xland is None else _slice_leading_columns(state.xland, start, tile_cols, padded_ncol),
     )
 
 
@@ -1086,7 +1127,7 @@ def _pressure_layer_mass(p):
 
     nz = p.shape[-1]
     interfaces = _pressure_interfaces(p)
-    return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / GRAVITY, MIN_LAYER_MASS)
+    return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / rrtmg_constant("GRAVITY", p.dtype, GRAVITY), MIN_LAYER_MASS)
 
 
 def _sw_extended_profiles(state: RRTMGSWColumnState):
@@ -1367,6 +1408,7 @@ def _sw_setcoef(
     co2_vmr = CO2_VMR if co2_vmr is None else co2_vmr
     n2o_vmr = N2O_VMR if n2o_vmr is None else n2o_vmr
     ch4_vmr = CH4_VMR if ch4_vmr is None else ch4_vmr
+    constant_dtype = pressure_interfaces_pa.dtype
     dtype = jnp.float32
     qv = qv.astype(dtype)
     p_pa = p_pa.astype(dtype)
@@ -1380,7 +1422,7 @@ def _sw_setcoef(
     pz = jnp.maximum(pressure_interfaces_pa * jnp.asarray(0.01, dtype=dtype), jnp.asarray(1.0e-12, dtype=dtype))
     dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], jnp.asarray(1.0e-12, dtype=dtype))
     coldry = dp_mb * jnp.asarray(1.0e3, dtype=dtype) * jnp.asarray(AVOGADRO, dtype=dtype) / (
-        jnp.asarray(1.0e2, dtype=dtype) * jnp.asarray(GRAVITY, dtype=dtype) * amm * (1.0 + h2ovmr)
+        jnp.asarray(1.0e2, dtype=dtype) * jnp.asarray(rrtmg_constant("GRAVITY", constant_dtype, GRAVITY), dtype=dtype) * amm * (1.0 + h2ovmr)
     )
 
     plog = jnp.log(pavel)
@@ -1796,7 +1838,7 @@ def _rrtmg_column_amounts(
     h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
     dp_mb = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) * 0.01, 1.0e-8)
-    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * rrtmg_constant("GRAVITY", pressure_interfaces.dtype, GRAVITY) * amm * (1.0 + h2ovmr))
     colh2o = 1.0e-20 * coldry * h2ovmr
     colco2 = 1.0e-20 * coldry * co2_vmr
     colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
@@ -1817,7 +1859,7 @@ def _delta_scale(tau, omega, asymmetry):
     tau_scaled = denom_tau * tau
     omega_scaled = (1.0 - f) * omega / denom_tau
     asym_scaled = (asymmetry - f) / denom_g
-    return tau_scaled, jnp.clip(omega_scaled, 0.0, 0.999999), jnp.clip(asym_scaled, -0.999999, 0.999999)
+    return tau_scaled, jnp.clip(omega_scaled, 0.0, _sw_ssa_upper()), jnp.clip(asym_scaled, -0.999999, 0.999999)
 
 
 def _kissvec_step(seed1, seed2, seed3, seed4):
@@ -1842,7 +1884,12 @@ def _kissvec_step(seed1, seed2, seed3, seed4):
 
 
 def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
-    """Builds WRF `mcica_subcol_sw` random-overlap cloud masks for reduced SW g-points."""
+    """Builds WRF `mcica_subcol_sw` cloud masks for reduced SW g-points.
+
+    `icld=1` random overlap by default; GPUWRF_RRTMG_MAXRAND=1 applies WRF's
+    `icld=2` maximum-random chain to the same draws.
+    """
+    from gpuwrf.kernels import rad_mcica
 
     if _MCICA_JUMPAHEAD:
         from gpuwrf.kernels.rad_mcica import sw_cloud_mask
@@ -1868,6 +1915,9 @@ def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     _, cdf_flat = lax.scan(advance, (seed1, seed2, seed3, seed4), None, length=nsteps)
     cdf = jnp.reshape(cdf_flat, (sum(_SW_GPOINT_COUNTS), nlay) + p_pa.shape[:-1])
     cdf = jnp.moveaxis(cdf, (0, 1), (-1, -2))
+    if rad_mcica._MAXRAND:
+        cloud_fraction = jnp.where(cloud_fraction < 1.0e-20, 0.0, cloud_fraction)
+        cdf = rad_mcica.max_random_cdf(cdf, cloud_fraction)
     cloudy_global = cdf >= (1.0 - cloud_fraction[..., :, None])
     cloudy_reduced = jnp.take(cloudy_global, _SW_GLOBAL_GPOINT_INDEX, axis=-1)
     return cloudy_reduced.astype(_canonical_float()) * gpoint_mask
@@ -1896,12 +1946,16 @@ def _reftra_eddington(tau, omega, asymmetry, mu0, active):
     """Computes Eddington direct/diffuse layer reflectance and transmittance."""
 
     tau = jnp.maximum(tau, MIN_OPTICAL_DEPTH).astype(jnp.float32)
-    omega = jnp.clip(omega, 0.0, 0.999999).astype(jnp.float32)
+    omega = jnp.clip(omega, 0.0, _sw_ssa_upper()).astype(jnp.float32)
     asymmetry = jnp.clip(asymmetry, -0.999999, 0.999999).astype(jnp.float32)
     mu0 = jnp.maximum(mu0[..., None, None, None], 1.0e-6).astype(jnp.float32)
     g3 = 3.0 * asymmetry
-    gamma1 = (7.0 - omega * (4.0 + g3)) * 0.25
-    gamma2 = -(1.0 - omega * (4.0 - g3)) * 0.25
+    if _sw_reftra_wrf_enabled():
+        gamma1 = (8.0 - omega * (5.0 + g3)) * 0.25
+        gamma2 = 3.0 * omega * (1.0 - asymmetry) * 0.25
+    else:
+        gamma1 = (7.0 - omega * (4.0 + g3)) * 0.25
+        gamma2 = -(1.0 - omega * (4.0 - g3)) * 0.25
     gamma3 = (2.0 - g3 * mu0) * 0.25
     gamma4 = 1.0 - gamma3
 
@@ -2369,6 +2423,7 @@ def _sw_band_scan_optics_fluxes(
     cloud_dtype,
     chunk: int,
     with_clear_sky: bool = False,
+    mp_radii=None,
 ):
     """Builds the SW optics per band-tile INSIDE the two-stream band scan.
 
@@ -2421,7 +2476,7 @@ def _sw_band_scan_optics_fluxes(
     def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
         denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
         tau_scaled = denom * tau_orig
-        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, _sw_ssa_upper())
         asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
         scattering = tau_scaled * omega_scaled
         return tau_scaled, scattering, asym_scaled
@@ -2438,7 +2493,7 @@ def _sw_band_scan_optics_fluxes(
         def band_coeffs(forward, ssa, asy):
             # scale_cloud_component's band-only terms (tau factor, omega, asymmetry).
             denom = jnp.maximum(1.0 - forward * ssa, 1.0e-12)
-            omega = jnp.clip(ssa * (1.0 - forward) / denom, 0.0, 0.999999)
+            omega = jnp.clip(ssa * (1.0 - forward) / denom, 0.0, _sw_ssa_upper())
             asym = jnp.clip((asy - forward) / jnp.maximum(1.0 - forward, 1.0e-12), -0.999999, 0.999999)
             return denom[:, 0], omega[:, 0], asym[:, 0]
 
@@ -2448,6 +2503,12 @@ def _sw_band_scan_optics_fluxes(
         cloud_coeffs = jnp.stack([liquid_coeff[:, 0], ice_coeff[:, 0], snow_coeff[:, 0],
                                   lq[0], iq[0], sq[0], lq[1], iq[1], sq[1], lq[2], iq[2], sq[2]])
         incloud = jnp.stack([liquid_incloud[..., 0, 0], ice_incloud[..., 0, 0], snow_incloud[..., 0, 0]], axis=-1)
+        if mp_radii is not None:
+            from gpuwrf.physics.rrtmg_mp_re import raw_cloud_tables
+            raw = raw_cloud_tables("sw")
+            names = ("extliq1", "ssaliq1", "asyliq1", "extice3", "ssaice3", "asyice3", "fdlice3")
+            cloud_coeffs = jnp.asarray(np.stack([np.pad(raw[n], ((0,0),(0,64-raw[n].shape[1]))) for n in names]), jnp.float32)
+            incloud = jnp.concatenate((incloud, jnp.stack([mp_radii.liquid_um, mp_radii.ice_um, mp_radii.snow_um], axis=-1)), axis=-1)
 
         if band_sums == 2:
             tau_all, ray_all = _sw_taumol(coef, tables)
@@ -2508,10 +2569,14 @@ def _sw_band_scan_optics_fluxes(
         liquid_forward_t = _coeff_tile(liquid_forward, start)
         ice_forward_t = _coeff_tile(ice_forward, start)
         snow_forward_t = _coeff_tile(snow_forward, start)
+        if mp_radii is not None:
+            from gpuwrf.physics.rrtmg_mp_re import sw_radius_coefficients
+            (liquid_coeff_t, ice_coeff_t, snow_coeff_t, liquid_ssa_t, ice_ssa_t, snow_ssa_t,
+             liquid_asy_t, ice_asy_t, snow_asy_t, liquid_forward_t, ice_forward_t, snow_forward_t) = sw_radius_coefficients(mp_radii, cloud_dtype, band_start=start, band_count=chunk)
 
         # ---- clear (gas + Rayleigh) optics + delta-scaling (WRF :8330-8360).
         tau_clear_orig = tau_gas + tau_rayleigh
-        omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
         asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
         tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
 
@@ -2524,7 +2589,7 @@ def _sw_band_scan_optics_fluxes(
         tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa_t, snow_asy_t, snow_forward_t)
         tau_cloud = tau_liquid + tau_ice + tau_snow
         scattering_cloud = scat_liquid + scat_ice + scat_snow
-        omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
         omega_cloud = jnp.where(cloud_amount_t > 0.0, omega_cloud, 1.0)
         asymmetry_cloud = jnp.where(
             scattering_cloud > MIN_OPTICAL_DEPTH,
@@ -2534,7 +2599,7 @@ def _sw_band_scan_optics_fluxes(
 
         scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
         tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
-        omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+        omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
         asymmetry_total_cloud = jnp.where(
             scattering_total_cloud > MIN_OPTICAL_DEPTH,
             (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
@@ -2610,15 +2675,18 @@ def _shortwave_impl(
         if state.pressure_interfaces is None
         else jnp.maximum(
             (original_interfaces[..., :-1] - original_interfaces[..., 1:])
-            / GRAVITY,
+            / rrtmg_constant("GRAVITY", state.p.dtype, GRAVITY),
             MIN_LAYER_MASS,
         )
     )
-    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
+    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / rrtmg_constant("GRAVITY", state.p.dtype, GRAVITY), MIN_LAYER_MASS)
     cloud_dtype = jnp.float32
-    liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
-    ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
-    snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    liquid_path_g = rrtmg_cloud_water_path(qc_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    ice_path_g = rrtmg_cloud_water_path(qi_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    snow_path_g = rrtmg_cloud_water_path(0.99 * qs_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    mp_radii = None if state.re_cloud is None else _sw_mp_radii(state, p_ext.shape[-1])
+    if mp_radii is not None:
+        snow_path_g = rrtmg_cloud_water_path(qs_ext * mp_radii.snow_mass_factor, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
 
     coef = _sw_setcoef(
         qv_ext,
@@ -2669,6 +2737,7 @@ def _shortwave_impl(
             cloud_dtype,
             chunk,
             with_clear_sky,
+            mp_radii=mp_radii,
         )
         if with_clear_sky:
             flux_down_model, flux_up_model, direct_down_model, clear_flux_down, clear_flux_up = scan_out
@@ -2684,7 +2753,7 @@ def _shortwave_impl(
         net_down = flux_down_model - flux_up_model
         column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
         column_absorbed_total = net_down[..., -1] - net_down[..., 0]
-        heating_rate = column_absorbed_layers / (layer_mass.astype(out_dtype) * CP_AIR)
+        heating_rate = rrtmg_heating_rate(column_absorbed_layers, layer_mass.astype(out_dtype), original_interfaces, shortwave=True)
         surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
         flux_down = flux_down_model
         flux_up = flux_up_model
@@ -2713,9 +2782,13 @@ def _shortwave_impl(
     liquid_forward = liquid_asy * liquid_asy
     ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
     snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
+    if mp_radii is not None:
+        from gpuwrf.physics.rrtmg_mp_re import sw_radius_coefficients
+        (liquid_coeff, ice_coeff, snow_coeff, liquid_ssa, ice_ssa, snow_ssa,
+         liquid_asy, ice_asy, snow_asy, liquid_forward, ice_forward, snow_forward) = sw_radius_coefficients(mp_radii, cloud_dtype)
 
     tau_clear_orig = tau_gas + tau_rayleigh
-    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
     tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
 
@@ -2726,7 +2799,7 @@ def _shortwave_impl(
     def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
         denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
         tau_scaled = denom * tau_orig
-        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, _sw_ssa_upper())
         asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
         scattering = tau_scaled * omega_scaled
         return tau_scaled, scattering, asym_scaled
@@ -2736,7 +2809,7 @@ def _shortwave_impl(
     tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa, snow_asy, snow_forward)
     tau_cloud = tau_liquid + tau_ice + tau_snow
     scattering_cloud = scat_liquid + scat_ice + scat_snow
-    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     omega_cloud = jnp.where(cloud_amount > 0.0, omega_cloud, 1.0)
     asymmetry_cloud = jnp.where(
         scattering_cloud > MIN_OPTICAL_DEPTH,
@@ -2746,7 +2819,7 @@ def _shortwave_impl(
 
     scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
     tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
-    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     asymmetry_total_cloud = jnp.where(
         scattering_total_cloud > MIN_OPTICAL_DEPTH,
         (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
@@ -2810,7 +2883,7 @@ def _shortwave_impl(
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
-    heating_rate = column_absorbed_layers / (layer_mass.astype(out_dtype) * CP_AIR)
+    heating_rate = rrtmg_heating_rate(column_absorbed_layers, layer_mass.astype(out_dtype), original_interfaces, shortwave=True)
     surface_absorbed = flux_down_model[..., 0] - flux_up_model[..., 0]
     flux_down = flux_down_model
     flux_up = flux_up_model
@@ -2899,11 +2972,14 @@ def compute_rrtmg_sw_intermediates(
     qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
     qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
-    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
+    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / rrtmg_constant("GRAVITY", state.p.dtype, GRAVITY), MIN_LAYER_MASS)
     cloud_dtype = jnp.float32
-    liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
-    ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
-    snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
+    liquid_path_g = rrtmg_cloud_water_path(qc_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    ice_path_g = rrtmg_cloud_water_path(qi_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    snow_path_g = rrtmg_cloud_water_path(0.99 * qs_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
+    mp_radii = None if state.re_cloud is None else _sw_mp_radii(state, p_ext.shape[-1])
+    if mp_radii is not None:
+        snow_path_g = rrtmg_cloud_water_path(qs_ext * mp_radii.snow_mass_factor, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype).astype(cloud_dtype)
     coef = _sw_setcoef(
         qv_ext,
         p_ext,
@@ -2930,6 +3006,10 @@ def compute_rrtmg_sw_intermediates(
     liquid_forward = liquid_asy * liquid_asy
     ice_forward = tables.sw_cloud_ice_forward_fraction.astype(cloud_dtype)[:, None]
     snow_forward = tables.sw_cloud_snow_forward_fraction.astype(cloud_dtype)[:, None]
+    if mp_radii is not None:
+        from gpuwrf.physics.rrtmg_mp_re import sw_radius_coefficients
+        (liquid_coeff, ice_coeff, snow_coeff, liquid_ssa, ice_ssa, snow_ssa,
+         liquid_asy, ice_asy, snow_asy, liquid_forward, ice_forward, snow_forward) = sw_radius_coefficients(mp_radii, cloud_dtype)
     mask = tables.sw_gpoint_mask.astype(cloud_dtype)
 
     cloud_box = cloud_ext.astype(cloud_dtype)[..., None, None]
@@ -2941,7 +3021,7 @@ def compute_rrtmg_sw_intermediates(
     snow_incloud = jnp.where(cloud_present, snow_path_g[..., None, None] / cloud_safe, 0.0)
 
     tau_clear_orig = tau_gas + tau_rayleigh
-    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_clear_orig = jnp.clip(tau_rayleigh / jnp.maximum(tau_clear_orig, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     asymmetry_clear_orig = jnp.zeros_like(tau_clear_orig)
     tau_clear, omega_clear, asymmetry_clear = _delta_scale(tau_clear_orig, omega_clear_orig, asymmetry_clear_orig)
 
@@ -2953,7 +3033,7 @@ def compute_rrtmg_sw_intermediates(
     def scale_cloud_component(tau_orig, omega_orig, asym_orig, forward_fraction):
         denom = jnp.maximum(1.0 - forward_fraction * omega_orig, 1.0e-12)
         tau_scaled = denom * tau_orig
-        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, 0.999999)
+        omega_scaled = jnp.clip(omega_orig * (1.0 - forward_fraction) / denom, 0.0, _sw_ssa_upper())
         asym_scaled = jnp.clip((asym_orig - forward_fraction) / jnp.maximum(1.0 - forward_fraction, 1.0e-12), -0.999999, 0.999999)
         scattering = tau_scaled * omega_scaled
         return tau_scaled, scattering, asym_scaled
@@ -2963,7 +3043,7 @@ def compute_rrtmg_sw_intermediates(
     tau_snow, scat_snow, asym_snow = scale_cloud_component(tau_snow_orig, snow_ssa, snow_asy, snow_forward)
     tau_cloud = tau_liquid + tau_ice + tau_snow
     scattering_cloud = scat_liquid + scat_ice + scat_snow
-    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_cloud = jnp.clip(scattering_cloud / jnp.maximum(tau_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     omega_cloud = jnp.where(cloud_amount > 0.0, omega_cloud, 1.0)
     asymmetry_cloud = jnp.where(
         scattering_cloud > MIN_OPTICAL_DEPTH,
@@ -2973,7 +3053,7 @@ def compute_rrtmg_sw_intermediates(
 
     scattering_total_cloud = tau_clear * omega_clear + tau_cloud * omega_cloud
     tau_total_cloud = jnp.maximum(tau_clear + tau_cloud, MIN_OPTICAL_DEPTH)
-    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, 0.999999)
+    omega_total_cloud = jnp.clip(scattering_total_cloud / jnp.maximum(tau_total_cloud, MIN_OPTICAL_DEPTH), 0.0, _sw_ssa_upper())
     asymmetry_total_cloud = jnp.where(
         scattering_total_cloud > MIN_OPTICAL_DEPTH,
         (tau_clear * omega_clear * asymmetry_clear + tau_cloud * omega_cloud * asymmetry_cloud) / jnp.maximum(scattering_total_cloud, MIN_OPTICAL_DEPTH),
@@ -3166,3 +3246,14 @@ def solve_rrtmg_sw_column_debug_stripped(
                                      _sw_floating_dtype(tables, jnp.float32), False)
         return _sw_floating_dtype(result, output_dtype)
     return _shortwave_impl(state, tables, False)
+
+
+def _sw_mp_radii(state, nlev):
+    from gpuwrf.physics.rrtmg_mp_re import prepare_radiation_radii, RadiationRadii
+    r = prepare_radiation_radii(state.T, state.cloud_fraction, state.xland,
+                                state.re_cloud, state.re_ice, state.re_snow)
+    n = nlev - state.p.shape[-1]
+    def extend(v, value):
+        return jnp.concatenate((v, jnp.full(v.shape[:-1] + (n,), value, v.dtype)), axis=-1)
+    return RadiationRadii(extend(r.liquid_um, 2.5), extend(r.ice_um, 5.),
+                          extend(r.snow_um, 10.), extend(r.snow_mass_factor, .99))

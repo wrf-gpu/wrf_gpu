@@ -1,0 +1,45 @@
+{
+ "verdict": "FAIL-new-class",
+ "domains": {
+  "d02": {
+   "R2": {
+    "QICE": [
+     "2026-03-01_17"
+    ],
+    "QSNOW": [
+     "2026-03-02_19"
+    ],
+    "QNICE(companion)": [
+     "2026-03-01_17"
+    ]
+   },
+   "R5": {
+    "ACSNOM": [
+     "2026-03-02_20"
+    ]
+   }
+  },
+  "d03": {
+   "R5": {
+    "CANICE": [
+     "2026-02-28_09"
+    ],
+    "QSNOWXY": [
+     "2026-02-28_09"
+    ]
+   }
+  }
+ },
+ "watch": [],
+ "new": [
+  "d01 QNICE@2026-03-01_13 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-03-01_16 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 QGRAUP@2026-03-02_19 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 QGRAUP@2026-03-03_00 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOW@2026-03-02_20 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWC@2026-03-02_20 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWH@2026-03-02_20 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 TAUSS@2026-03-02_20 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)"
+ ],
+ "r4_cells": []
+}

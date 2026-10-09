@@ -88,6 +88,36 @@ def _floor_pos(x: jax.Array, eps: float) -> jax.Array:
 # WRF vertical-CFL ``w_damping`` constants (``share/module_model_constants.F:88-89``).
 W_ALPHA = 0.3   # strength m/s/s
 W_BETA = 1.0    # activation CFL number (w_damp_on for non-IEVA)
+W_CRIT_CFL = 1.0  # Registry.EM_COMMON ``w_crit_cfl`` default (namelist,dynamics)
+# GPUWRF_W_DAMP_STAGE (b-core BD85, default off): WRF ``w_damp`` once per RK stage on the stage ``rw_tend``
+# (rk_tendency, module_em.F:738) for every acoustic path -- the native fp32 acoustic never applied it.
+W_DAMP_STAGE = os.environ.get("GPUWRF_W_DAMP_STAGE", "0") == "1"
+
+
+def w_damp_rw_tend_wrf(rw_tend, *, ww, w, mut, c1f, c2f, rdnw, dt, w_crit_cfl=W_CRIT_CFL, w_damp_on=W_BETA):
+    """WRF ``w_damp`` (module_big_step_utilities_em.F:2503-2711) as ``rk_tendency`` calls it (module_em.F:738).
+
+    Once per RK stage with the stage omega ``grid%ww``, the physical ``grid%w_2``, the stage ``mut`` and the FULL
+    ``grid%dt``. Interior faces k=2..kde-1 (Python 1..nz-1): ``vert_cfl = abs(ww/(c1f*mut+c2f)*rdnw*dt)``; where
+    ``vert_cfl > w_damp_on`` (w_beta, zadvect_implicit=0) ``rw_tend -= sign(1.,w)*w_alpha*(vert_cfl-w_crit_cfl)
+    *(c1f*mut+c2f)``. Arithmetic in ``rw_tend``'s dtype in WRF's evaluation order; ``sign(1.,w)`` keeps the sign of
+    a signed zero like Fortran SIGN (copysign), unlike ``jnp.sign``.
+    """
+    import numpy as np
+
+    dt_ = rw_tend.dtype
+    nz = int(rw_tend.shape[0]) - 1
+    if nz < 2:
+        return rw_tend
+    c1 = jnp.asarray(c1f, dt_)[1:nz, None, None]
+    c2 = jnp.asarray(c2f, dt_)[1:nz, None, None]
+    mass = c1 * jnp.asarray(mut, dt_)[None, :, :] + c2
+    vert_cfl = jnp.abs(jnp.asarray(ww, dt_)[1:nz] / mass * jnp.asarray(rdnw, dt_)[1:nz, None, None]
+                       * np.asarray(dt, dt_))
+    damp = (jnp.copysign(np.asarray(1.0, dt_), jnp.asarray(w, dt_)[1:nz]) * np.asarray(W_ALPHA, dt_)
+            * (vert_cfl - np.asarray(w_crit_cfl, dt_)) * mass)
+    interior = rw_tend[1:nz]
+    return rw_tend.at[1:nz].set(jnp.where(vert_cfl > np.asarray(w_damp_on, dt_), interior - damp, interior))
 
 
 def w_damp_vertical_cfl(

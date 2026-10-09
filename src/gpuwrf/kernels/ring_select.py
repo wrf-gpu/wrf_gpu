@@ -17,6 +17,15 @@ import numpy as np
 _NESTED_STEP = contextvars.ContextVar("gpuwrf_ring_select_nested_step", default=False)
 
 
+def _pin_scope():
+    """Row-major scatter pin scope: nested-child steps, and also the root step when GPUWRF_LAYOUT_PIN pins the
+    root (carry without the ``nested`` scope, e41-class) -- the root flip below cannot happen once its carry is pinned."""
+    if _NESTED_STEP.get():
+        return True
+    from gpuwrf.kernels import layout_pin
+    return "carry" in layout_pin.PARTS and "nested" not in layout_pin.PARTS
+
+
 @contextlib.contextmanager
 def nested_step(nested):
     token = _NESTED_STEP.set(bool(nested))
@@ -55,14 +64,15 @@ def scatter_mask(field, target, mask):
     On nested-child steps operand and result are pinned to the row-major layout of the REAL carry: the
     z-window scatter otherwise pulls its operand, and through it the RK fields,
     to a z-fastest layout once nothing else anchors them (strict guards default,
-    F2C): d02 step 498 -> 233 transposes, legacy guards 230 (b-diff BD69/BD70).
+    F2C): d02 step 498 -> 233 transposes, legacy guards 230 (b-diff BD69/BD70). Root steps pin too when
+    GPUWRF_LAYOUT_PIN pins the root (``_pin_scope``).
     """
     ys, xs = np.nonzero(np.asarray(mask))
     if ys.size == 0:
         return field
     ys, xs = jnp.asarray(ys, jnp.int32), jnp.asarray(xs, jnp.int32)
     values = jnp.asarray(target)[..., ys, xs].astype(field.dtype)
-    if not _NESTED_STEP.get():
+    if not _pin_scope():
         return field.at[..., ys, xs].set(values, indices_are_sorted=True, unique_indices=True)
     out = _row_major(field).at[..., ys, xs].set(values, indices_are_sorted=True, unique_indices=True)
     return _row_major(out)

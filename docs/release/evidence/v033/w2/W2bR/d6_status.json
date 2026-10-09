@@ -1,0 +1,44 @@
+{
+  "complete": true,
+  "verdict": "RAW_D6_FAILURES",
+  "domains": {
+    "d01": "PASS",
+    "d02": "PASS",
+    "d03": "PASS"
+  },
+  "breach_frames": {
+    "d01": [],
+    "d02": [],
+    "d03": [
+      {
+        "field": "RAINNC",
+        "lead_h": 67
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 68
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 69
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 70
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 71
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 72
+      },
+      {
+        "field": "W",
+        "lead_h": 69
+      }
+    ]
+  },
+  "note": "Raw D6 verdict; registered predictability/integrity classifications are separate."
+}

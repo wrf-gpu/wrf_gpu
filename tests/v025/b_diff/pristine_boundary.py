@@ -11,33 +11,38 @@ import numpy as np
 
 WRF = Path('<USER_HOME>/src/wrf_pristine/WRF')
 EM_ROUTINES = ('relax_bdy_dry', 'relax_bdy_scalar', 'spec_bdy_dry',
-               'spec_bdyupdate_ph', 'mass_weight', 'lbc_fcx_gcx')
+               'spec_bdyupdate_ph', 'mass_weight', 'lbc_fcx_gcx', 'spec_bdy_scalar')
 SHARE_ROUTINES = ('relax_bdytend', 'relax_bdytend_tile', 'relax_bdytend_core',
-                  'spec_bdytend', 'spec_bdyupdate', 'flow_dep_bdy')
+                  'spec_bdytend', 'spec_bdyupdate', 'flow_dep_bdy', 'spec_bdy_final')
+# dyn_em/module_em.F (B43 root scalar cadence): called with solve_em's keywords.
+MODULE_EM_ROUTINES = ('rk_update_scalar',)
 # New phases are appended so existing phase indices stay stable.
 PHASES = ('relax_bdy_dry', 'relax_bdy_scalar', 'spec_bdy_dry',
           'spec_bdyupdate_ph', 'spec_bdytend', 'spec_bdyupdate', 'relax_bdytend',
-          'flow_dep_bdy')
+          'flow_dep_bdy', 'spec_bdy_scalar', 'spec_bdy_final', 'rk_update_scalar')
 FIELDS3 = ('ru', 'rv', 'ph', 't', 'w', 'ru_tendf', 'rv_tendf', 'ph_tendf',
-           't_tendf', 'rw_tendf', 'scalar', 'scalar_tend', 'ph_save', 'field', 'field_tend')
-FIELDS2 = ('mu', 'mut', 'mu_tend', 'muts')
+           't_tendf', 'rw_tendf', 'scalar', 'scalar_tend', 'ph_save', 'field', 'field_tend',
+           'scalar_1', 'scalar_2', 'sc_tend', 'advect_tend', 'h_tendency', 'z_tendency')
+FIELDS2 = ('mu', 'mut', 'mu_tend', 'muts', 'mu_old', 'mu_new', 'mu_base', 'msftx', 'msfty', 'msf')
 VECTORS = ('c1h', 'c2h', 'c1f', 'c2f')
 VARIABLES = ('u', 'v', 'ph', 't', 'w', 'mu', 'scalar')
 
 
 def build(directory):
     directory.mkdir(parents=True, exist_ok=True)
-    sources = {n: (WRF/n).read_text() for n in ('dyn_em/module_bc_em.F', 'share/module_bc.F')}
+    sources = {n: (WRF/n).read_text() for n in ('dyn_em/module_bc_em.F', 'share/module_bc.F', 'dyn_em/module_em.F')}
     routines = {}
     for source, names in ((sources['dyn_em/module_bc_em.F'], EM_ROUTINES),
-                          (sources['share/module_bc.F'], SHARE_ROUTINES)):
+                          (sources['share/module_bc.F'], SHARE_ROUTINES),
+                          (sources['dyn_em/module_em.F'], MODULE_EM_ROUTINES)):
         for name in names:
             routines[name] = re.search(r'(?ims)^\s*SUBROUTINE '+name+r'\b.*?^\s*END SUBROUTINE '+name+r'\b', source).group(0)
     header = '''module bdiff_boundary_oracle
 use iso_c_binding
 implicit none
 type grid_config_rec_type
-logical :: nested=.false.,periodic_x=.false.
+logical :: nested=.false.,periodic_x=.false.,specified=.true.
+integer :: rk_ord=3
 end type
 contains
 '''
@@ -50,6 +55,7 @@ character :: variable
 type(grid_config_rec_type) :: config_flags
 integer :: ktop
 config_flags%nested=nested/=0
+config_flags%specified=nested==0
 ktop=nz+1
 if(tag==5.and.phase>=5)ktop=1
 variable='q'
@@ -71,6 +77,19 @@ select case(phase)
                   dtbc='s(2)', dt='s(3)', dts='s(3)', fcx='fcx', gcx='gcx',
                   variable_in='variable', c1='v(:,3)', c2='v(:,4)')
     for phase, name in enumerate(PHASES, 1):
+        if name == 'rk_update_scalar':
+            f3 = lambda n: f'f3(:,:,:,{FIELDS3.index(n)+1})'
+            f2 = lambda n: f'f2(:,:,{FIELDS2.index(n)+1})'
+            f4 = lambda n: f'f3(:,:,:,{FIELDS3.index(n)+1}:{FIELDS3.index(n)+1})'
+            wrapper += (f'case({phase})\ncall rk_update_scalar(scs=1, sce=1, scalar_1={f4("scalar_1")}, '
+                        f'scalar_2={f4("scalar_2")}, sc_tend={f4("sc_tend")}, advect_tend={f3("advect_tend")}, &\n'
+                        f'h_tendency={f3("h_tendency")}, z_tendency={f3("z_tendency")}, msftx={f2("msftx")}, '
+                        f'msfty={f2("msfty")}, c1=v(:,1), c2=v(:,2), &\n'
+                        f'mu_old={f2("mu_old")}, mu_new={f2("mu_new")}, mu_base={f2("mu_base")}, rk_step=tag, '
+                        f'dt=s(3), spec_zone=1, config_flags=config_flags, tenddec=.false., &\n'
+                        'ids=1, ide=nx+1, jds=1, jde=ny+1, kds=1, kde=ktop, ims=0, ime=nx+2, jms=0, jme=ny+2, '
+                        'kms=1, kme=nz+1, its=1, ite=nx+1, jts=1, jte=ny+1, kts=1, kte=ktop)\n')
+            continue
         signature = re.sub(r'![^\n]*', '', routines[name][:routines[name].index(')')+1]).replace('&', '')
         args = [n.strip().lower() for n in signature[signature.index('(')+1:-1].split(',')]
         actual = []
@@ -84,6 +103,10 @@ select case(phase)
             if name == 'flow_dep_bdy':
                 # WRF passes ru_m/rv_m: the staggered momentum slots.
                 arg = {'u': 'ru', 'v': 'rv'}.get(arg, arg)
+            if name == 'spec_bdy_final' and arg in ('c1', 'c2'):
+                # solve_em.F:4717 passes grid%c1h/c2h for the moist ('t') call.
+                actual.append({'c1': 'v(:,1)', 'c2': 'v(:,2)'}[arg])
+                continue
             match = re.fullmatch(r'(u|v|ph|t|w|mu|scalar|field)_b(t?)(xs|xe|ys|ye)', arg)
             if match:
                 var, tend, side = match.groups()

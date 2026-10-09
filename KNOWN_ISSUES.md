@@ -1,389 +1,111 @@
-# Known issues — v0.3.2
+# Known issues — v0.3.3
 
-- **Three-nest identity:** d01 is bitwise vs v0.3.1; d02/d03 differ at round-off
-  level and pass original-CPU D6. No universal bitwise claim. Raw R2/R5 strict
-  fields/frames remain registered exceptions, not a blanket clean scan.
-- **Native-code gates:** actual v0.3.2 PROD/WN3 programs have maximum STACK
-  32 B; conservative CALL/kInput flags remain classified, not erased. The
-  [critic verdict](docs/release/evidence/v032/critic_verdict.json) records scope.
-- **Historical v0.3.1 E41 evidence:** eight conservative kInput flags were
-  runtime-bound (maximum 0.049 ms, sum 0.213 ms/ordinary root, STACK 32 B;
-  compile 08:32Z). Those timings are not a new v0.3.2 profile.
-- **Timing scope:** the accepted matched pair improves whole-run wall by 9.9%;
-  absolute 3.305 s/hour was measured under contention and is conservative.
-- **Scaling figures:** all 72 h durations and giant-domain capacities/times are
-  inferred; H100/B200/B300 are untested on v0.3.2. Linear bytes/cell from one
-  allocated peak includes pools/context/scratch and is not a memory-scaling proof.
-- **Glacier runtime:** dedicated Noah-MP glacier physics remains unported;
-  initialization/writer parity does not prove every glacier process.
-- **Evidence dates:** Swiss/demonstrator are v0.3.1; full 72 h/162 h studies are
-  v0.3.0, including the disclosed Tenerife long-lead exceedances. No new run is implied.
-- **Options/hardware:** supported physics combinations are a subset; MPI and
-  multi-GPU decomposition remain unimplemented. RTX 5090/CUDA 13 is the measured platform.
-- **Deferred optimization:** EOS pruning is off; component acoustic fusion was
-  rejected on runtime/compile costs. The new layout pin is on after its gate,
-  and install-path auxiliary cache misses were repaired in the relocation probe.
+All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed.
 
-[Current measurements and source receipts](docs/release/V0.3.2.md).
+- 0115 strict24 accumulated rain RMSE 1.042–1.045 mm versus 1 mm; fresh same-IC replica .845–.886 mm passes, demonstrating trajectory sensitivity without replacing the failed primary.
+- 0115 late V10: primary h44 1.692 m/s; fresh replica h42 1.725/h44 1.623 versus1.5. Frozen A3 REAL FAIL rows retained. Coastal station wind-speed RMSE +1.8%; T2/RH2/WD improve.
+- 0408 trace graupel: CPU2.46e-10kg/kg/GPU0 in5boundary cells. 0115 cirrus lifetime: primaryd02h60 QICE2.28e-7kg/kg/QNICE2.4e4/kg in50columns; freshd03h63 QICE2.14e-8/QNICE4.5e4 in112columns, GPU0. Both raw integrity annexFAILs disclosed.
+- Unclipped WRF-order source/transport may briefly produce negative moisture: qc−3.84e-6,qv−4.20e-6kg/kg;634857censusvisits,0nonfinite/newclass. This is not a claim of pure round-off.
+- Swiss≤4096-column stability firewall:+12%kernels/~8%ordinary-root time, notwholewall; larger WN/Mon programs unchanged.
 
-## Historical v0.23.4 record
+[All final plots](docs/release/evidence/v033/final_w3/index.html) · [Raw reports, scope and ledger](docs/release/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md#final-eight-arm-results).
 
-The following sections describe that previous candidate, not the current v0.3
-capabilities. Release-specific current behavior is governed by the reports above.
+## Historical issue records (source-dated)
 
+# Known issues and validation limits — v0.3.3
 
-## v0.23.4 carried limitations
+## Current CF/b6 wave — release HOLD
 
-- **Nested radiation cadence:** the nested pipeline targets a fixed 30-minute
-  interval instead of honoring arbitrary namelist `radt`. The one-hour
-  nine-domain gate is accepted, but this limits longer-horizon radiation-fidelity
-  claims.
-- **Nested terrain radiation:** `topo_shading=1` and `slope_rad=1` currently
-  bind disabled in the nested runtime. This is documented future work, not an
-  active v0.23.4 capability.
-- **Single-domain daily advection binding:** the accepted nested path honors
-  `moist_adv_opt`/`scalar_adv_opt`, but the single-domain daily pipeline
-  currently drops requested values and runs `0/0`. Operators must disclose the
-  effective behavior rather than claiming the requested limiter ran.
-- **Acoustic substep / dry-mass mismatch:** when `time_step_sound` is omitted,
-  pristine WRF derives 4 acoustic substeps on the tracked fixture while the
-  current runtime selects 10. A four-substep discriminator improved the initial
-  interior U/V result but did not pass the terminal comparison; the residual
-  dry-mass behavior remains unresolved and the default is unchanged.
-- **Broad 24-72 hour skill:** v0.23.4 passes its specific 24-hour SP2 chain and
-  one-hour nine-nest fixtures; seasonal/configuration-independent forecast-skill
-  equivalence remains open.
-- **Thompson follow-ups:** static `NSED_MAX=16` can silently cap demanded
-  sedimentation substeps, and widespread exact-zero carried Ni remains
-  unexplained. Both need separate future contracts; neither was changed here.
-- **AOT cache-key fragmentation:** fused-phase shape and namespace-specific
-  terrain provenance can miss an otherwise reusable executable key. The safe
-  result is a recompile; this is compile/warm-start debt, not a numerical
-  workaround.
+[Exact current eight-arm evidence](docs/release/CURRENT_W3_EVIDENCE.md) retains
+strict0115 d03 RAINNC h21–24 FAIL, hard72 0408 d02 RAINNC h39–72 FAIL and two
+0408 QGRAUP REAL FAILs. Current original-CPU/station evidence has0227 8/8 CLEAR
+and0115 WS10 A/B DAMAGE+REPLICATED, SYSTEMATIC (2/16); other14 CLEAR.
+Monica72/Swiss24 D6 and all-frame integrity annex pass, without clearing the
+other cases. Replica CANICE/SNOWENERGY raw flags remain disclosed separately.
+Six arms executed CF; Monica/Swiss executed b6. No publication or fullE41 PASS.
 
-## Resolved in v0.23.4
+## Historical W2 record — source-dated
 
-- The SP2 mass-flux seam, S2 child-boundary retention, V/V10 moist/scalar
-  transport ordering, and Thompson late-Ni mass/number balance are closed in one
-  linear correctness chain. The terminal all-physics d01-d09 fixture writes
-  27/27 outputs; all 177,497,511 numeric values are finite and all 9 × 102
-  compared fields pass the frozen gates.
+Reviewed W2 source/defaults candidate is `e83ec1fa7` (`src/` tree
+`fb50726fee1e`). Its external gates remain open; source MERGE is not release
+acceptance. Original 69d8a9a7d evidence is retained as **pre-W2**.
 
-## v0.23.4 (prepared, pending publication) — d03 performance regression, understood, not fixed
+- **W0115 D6+floor annex: FAIL.** Of 89 raw d03 rows, 57 are floor-limited
+  and 32 remain REAL: U10 h38–52 (15), V10 h37–58 (17). Raw wind maxima
+  2.38/3.04 m/s; 54 RAINNC h19–72 rows are floor-limited. The strict
+  24-hour window is unchanged. Y0 is a 219/219-byte-identical pinned replay,
+  not an independent realization; distinct ZR/ZP checks are pending.
+- **W0115 station WS10: OPEN.** Non-data-chosen whole-run RMSE excess
+  +0.027 m/s versus S 0.018; CI [0.015,0.042]. Late h48–72 is CLEAR.
+  T2/RH2*/WD10 are CLEAR; data-chosen scopes are separately disclosed.
+- **W0408:** raw D6 PASS, all 73 frames/domain. Two d02 QGRAUP exceptions
+  have identical cells/values to pre-W2, so the manager's boundary-trace
+  judgement applies. Canopy trace CPU 1.65e-6 mm/GPU zero lies at WRF's
+  1e-6 zeroing threshold; interception is active and snow-burial key inert.
+- **0227 afternoon WS10: NOT REPRODUCED.** Fresh XC +0.122 versus S
+  0.452; realization-class disposition, no named code cause.
+- **W2 Monica/Swiss:** Monica diagnostic available with E41 HARD FAIL;
+  W2 Swiss cancelled. Old identity/benchmarks stay on
+  69d8a9a7d. The new [W2 bands](docs/release/evidence/v033/w2/index.html)
+  cover 657 paired domain-hours. This source-dated candidate was held.
+- **W2 Monica E41: HARD FAIL [M].** Two-domain fused d01 contains three
+  STACK results 664/520/648 B, above 256 B. Their small measured runtime
+  share is not a waiver. W3 must compose a reviewed fix and revalidate
+  every executable; its attribution and source are pending.
 
-- **Symptom:** 3-domain (`maxdom3`) and 9-domain configurations that engage `d03` run
-  measurably slower than v0.23.3 — production-faithful measurement: v0.23.3
-  **1.9668543059 s/root-step** vs the v0.23.4 candidate **2.9831176877 s/root-step**
-  (**ratio 1.516694795, a 51.67% regression**). 2-domain (d01+d02) configurations are
-  unaffected (measured 0.960–1.018×, no regression).
-- **Ruled out:** not a measurement artifact (a canary-harness reload-cost confound was
-  found and excluded via a production-faithful re-measurement using the real
-  `execute_nested_pipeline` entry point); not a scalar-batching dispatch defect (the
-  dispatch-level fix that made this regression's root cause visible is itself bit-exact
-  and WRF-fidelity-clean on a long-horizon gate; it fixed a real but secondary dispatch
-  cost, not the dominant one); not scheduling/fusion overhead (a B1/B2/B3 architecture
-  retest closed with zero additional GPU time — the current default already issues an
-  identical dispatch sequence to the alternative it was compared against).
-- **Root cause:** a CPU component profile localized the added cost to inside the FCT
-  flux-limiter kernel's own flux-renormalization computation — 79.95% of the d03
-  activation cost increment is inside the limiter call itself, which is 5.237x slower
-  than the unlimited path on only 1.087x more HLO operations but 2.188x more estimated
-  bytes accessed and 1.903x more FLOPs (a memory-traffic/lowering inefficiency in the
-  kernel, not a dispatch or batching-width problem).
-- **Workaround:** none needed for 2-domain (d01+d02) use cases (unaffected). For
-  3-domain/9-domain d03 use cases, expect roughly 1.5x the v0.23.3 wall-clock until this
-  closes; there is no configuration flag that avoids the cost while still running d03.
-- **Follow-up:** a dedicated kernel-optimization sprint
-  (`worker/gpt/v0234-fct-limiter-optimization`) tested the known source-level
-  levers. Three fusion-boundary-control techniques were tried and cleanly falsified (an
-  `optimization_barrier` insertion that XLA saw through; a `lax.map`/`scan`
-  restructuring with a real numerical divergence, and separately re-adjudicated on CPU
-  performance grounds — 1.115x slower, not adopted; disabling XLA's multi-output-fusion
-  pass, which broke the diagnosed mega-fusion but made runtime *worse*, refuting a
-  register-pressure theory of the regression). The roll-substitution candidate passed
-  a small single-shape safety check but was rejected at production scale: it failed the
-  exact-output gate and remained 38.9% slower than v0.23.3. A follow-up Nsight Compute
-  hardware measurement of the isolated dominant kernel then settled the open bound
-  question: **occupancy/latency-bound, not memory-bandwidth-bound** (DRAM throughput
-  20.3% of peak, achieved occupancy 15.6%, register-limited to 2 of 24 possible
-  concurrent blocks). This rules out a reduced-precision fix and identifies concurrent
-  sibling-domain scheduling as the mechanistically-mapped next lever — design-scoped in
-  `RANK6_SIBLING_SCHEDULING_DESIGN.md`, not implemented or validated, no established
-  delivery schedule. **The investigation is closed; this regression ships as a known,
-  understood limitation, not an open blocker.** Full trail:
-  `.agent/decisions/VERSION-SPRINT-LEDGER.md` (2026-07-22 through 2026-07-24 entries),
-  `RELEASE_NOTES_v0.23.4.md`.
+- **W2 0227 B/T2: one-realization class [M].** R32-65 is 8/8 CLEAR, but
+  gate A is DAMAGE on IC R (+0.0148 vs S 0.0109); IC P is −0.0038,
+  NOT REPLICATED → CLEAR under the frozen pair rule. One realization per
+  IC; W3 requires a fresh reading, not an inherited clearance.
 
-## Resolved in v0.19.0
+## Archived pre-W2 findings
 
-- **All-7 nested speed gate was host-orchestration-bound.** The fori-loop
-  `_advance_chunk` restore alone was still slower than the 12-rank CPU baseline;
-  v0.19.0 ships the fused nested cascade default-on and measures **713
-  s/forecast-hour warm** vs **1020 s/forecast-hour CPU** (**1.43x faster**).
-  Proof: `proofs/v019/release_prep/gate_summary.json`.
-- **Nested terrain/base-state blend mismatch.** Runtime nest initialization now
-  matches WRF's terrain/base-state blend path, closing the HGT/MUB/PB/PHB red
-  class on nests and enabling the all-fields gate: all 9 domains PASS the
-  established grid comparator, **102 compared numeric fields/domain**, **0
-  tolerance failures**. Proof:
-  `proofs/v019/release_prep/grid_compare_summary.json`.
+- **BD92(c): KNOWN RESIDUAL**, not zero/fixed. Binding d01 diagnostic maximum
+  0.0136 K; the non-binding 0227 d03 h67 −0.0596 K departure remains. Clear-night
+  cooling aloft is a v0.3.4 roadmap item.
+- **0227 model-side cloud/wind defect: fixed in the final default set [M].**
+  MYNN step-one/two, F1'', R32 and whole-run gates pass. Observational R32-60 is DAMAGE [M] in A/WD10, B/T2 and B/RH2*;
+  the station defect remains OPEN and tag/push is held.
+- **MYNN predictor floor: OPEN.** WRF applies plume `s_aw` floors in TKE
+  prediction; the held port omits that path. The upper variance-face extent
+  also differs. Default-off fixes are under pristine-oracle review.
+- **SWDOWN history on slopes: OPEN.** With slope_rad=1 the held port writes
+  slope-normal SWNORM as SWDOWN; WRF restores horizontal flux after the LSM.
+  This output-only convention fix is being validated; forcing is unchanged.
+- **72 h D6:** 0227 d03 retains five raw failures. Original CPU-WRF's IC twin
+  breaches the same fields/leads with larger errors; frozen floor annex accepts
+  them. Other final cases are raw clean. Strict 24 h limits are unchanged.
+- **Integrity:** all frames are scanned. Trace annex and two manager judgements
+  explain recorded flags without changing caps: frozen-dew canopy placement
+  (CPU twin reproduces one of two cells) and parent-boundary graupel traces.
+  These are disclosed exceptions, not blanket clean-output parity.
+- **Native code:** hard stack coverage passes; conservative CALL/kInput flags
+  remain, runtime-bound. Compact AOT kInput metadata is UNKNOWN, not zero.
+- **Scope:** dedicated Noah-MP glacier runtime, universal physics-option parity
+  and MPI/multi-GPU domain decomposition remain unimplemented/unvalidated.
+  Original CPU-WRF restart compatibility is not claimed; GPU checkpoint/resume
+  and WRF-style history are separate capabilities.
+- Existing speed/energy and data-centre extrapolations remain explicitly
+  v0.3.2 evidence. No new whole-machine energy or four-core Swiss CPU energy
+  measurement is claimed.
 
-## v0.19 carried caveat
+[Current validation and exact annexes](docs/release/V0.3.3.md),
+[per-hour statistical bands](docs/release/evidence/v033/final33v/index.html),
+and the [verbatim candidate history](docs/release/evidence/v033/CANDIDATE_HISTORY.txt)
+keep source scopes and old failures visible. Candidate history is not the final
+release verdict.
 
-- **Default fused mode is tolerance-green, not bitwise-vs-eager, and has a large
-  one-time compile.** The first all-7 fused run pays a large XLA compile (about
-  41 min wall on the reference system, cached after). Use `GPUWRF_BITWISE=1` or
-  `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug comparisons.
+## W2 source and publication dependencies
 
-## Resolved in v0.18.3
-
-- **`--max-dom 9` (all-7-island nest) compile blowup.** `jit__advance_chunk`
-  compiled forever (never integrated) because Thompson sedimentation scans
-  materialized static `s64[nz]` index arrays that XLA constant-folded unbounded
-  across the 9 domain shapes. Fixed by threading scalar `int32` scan counters
-  (bit-identical): all 9 domain-shape compiles now bounded (≤409 s cold / ≤22 s
-  warm), integration stable (~85 % util), output written. Proof:
-  `proofs/v018/maxdom9_fix/report.md`.
-- **Nested output ignored `history_interval`.** The nested pipeline hardcoded
-  hourly output; it now honors the namelist per-domain `history_interval` (hourly
-  gates unchanged). Proof: d03 `wrfout` at forecast +5 min (`XTIME=5.0`).
+The [W2 source inventory](docs/release/V033_W2_FIXES.md) covers urban soil
+(overrides/FRZX order), SWDOWN history, MYNN predictor floors, CANWATER
+ELAI/ESAI and the **land-only** post-LSM Q2 cap. The old RC k0 warm PBL bias
+masked the urban cold term; preserving that compensator is not a fix.
+A/WD10 is NOT REPLICATED (roadmap); replicated B/T2/B/RH2* remain the active
+fix target in the archived reading. Eight W2 keys are now reviewed defaults;
+full release acceptance remains separate. Approved
+[history cleanup](docs/release/HISTORY_CLEANUP.md) requires sealed maps,
+full-object scans and verified remote refs; credential rotation is unconfirmed.
 
 
-Honest, code-grounded list of what is open or bounded. Each entry states the
-symptom, the current understanding, the workaround, and the tracked follow-up.
-No spin. The deeper per-issue history (KI-1…KI-11, including resolved items) is in
-[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md); the v0.15 release-gate detail is
-retained verbatim below the v0.18 section.
-
-## Resolved in v0.18.2
-
-- **1 km nested all-island VRAM/OOM path.** The prior AC1_FIT 9/3/1 nested 1 km
-  path OOMed near **31.8/32 GiB** and failed a **12.72 GiB** contiguous-arena
-  request plus recurring **2.09 GiB** allocations. v0.18.2 resolves this with
-  bit-identical RRTMG radiation column tiling (**16384→2048**) plus tiled MYNN
-  cold-start BouLac initialization: warm-cache 1-forecast-hour run PASS,
-  **18.1 GiB peak VRAM**, 26/26 `wrfout` fields exact (`max_abs_diff=0.0`).
-  Proof: `proofs/v018/oom_fix/fix_report.md`.
-
-## v0.18 carried items (this release)
-
-- **RAINNC bounded accumulated-precip residual.** Accumulated grid-scale precip is
-  an operationally-bounded diagnostic. The v0.18 RAINNC/QVAPOR work is accepted as
-  class-c with a measured **5.22 mm RMSE** vs the 1.0 mm atlas bound — **no
-  tolerance widening**, judged no forecast-skill impact by decision. A
-  precipitation-placement sensitivity, not a dynamics blow-up. Proof:
-  `proofs/v018/rainnc_qvapor_status.json`. (Continuation of the v0.15 RAINNC KI.)
-- **CLM4 (`sf_surface_physics=5`) / CTSM (`6`) — documented architecture boundary,
-  fail-closed.** Not registry-accepted; `oracle_path=None` (no oracle claimed); the
-  registry rejects them and the catalog lists them in the recognized fail-closed
-  table. A deliberate v1.0 scope boundary, not a silent gap. Proof:
-  `proofs/v018/lsm_family_status.json`.
-- **K2 multi-GPU specified-BC — EXPERIMENTAL, default-OFF.** The K2 domain-decomp
-  lane is periodic-only-faithful; **specified-BC is NOT faithful** (boundary ring
-  excluded from the pass gate; a prior tolerance-widening was reverted). Default-off
-  is proven (no collectives emitted: `proofs/v018/k2_flag_off_graph.json`). Do not
-  enable specified-BC multi-GPU for production. Proof: `proofs/v018/k2_multigpu_report.md`.
-- **PBL11 Shin-Hong TKE-diagnostic follow-up.** Shin-Hong is operational despite a
-  28.5 % TKE-diagnostic residual: the TKE/EL fields are source-traced as
-  non-driving (dynamics tendencies never read them), `tke_diagnostic_exact_pass`
-  is surfaced (not masked), and a TKE-oracle upgrade is the tracked follow-up. The
-  operational promotion is justified on the driving fields. Detail:
-  `proofs/v018/schemes_critic_opus.md` §1.
-
-### Carried CPU-suite test-debt (pre-existing on v0.17; honest xfail, not silent RED)
-
-The full CPU test suite on this workstation carries **38 xfailed tests** (36
-newly converted by the v0.18 triage + 2 pre-existing), all
-**pre-existing** (each fails identically on tag `v0.17.0`; none is a
-v0.18-introduced regression — verified). They are converted to documented
-**non-strict xfail** (registry: `tests/conftest.py::_PREEXISTING_CPU_XFAILS`;
-full table + reasons: `proofs/v018/suite_triage.md`). Each test still RUNS — an
-unexpected pass surfaces as XPASS — and **no assertion was deleted or loosened**.
-The three categories:
-
-- **ENV (host environment).** External single-column WRF Fortran harnesses
-  (MYNN/RRTMG/Thompson), warmed `nsys` traces, the read-only Gen2 corpus, the
-  paper publication-audit corpus, and the agentos skill-evals corpus are not all
-  present on a plain CPU checkout; plus three byte-/bitwise-identity checks
-  (`test_v013_{mrf,myj}_operational` default-suite, `test_v015_stream_a_bitwise`)
-  that are non-deterministic only on the **XLA:CPU AOT** path (machine-feature
-  mismatch, `+prefer-no-gather`/SIGILL warnings) and are bit-stable on the GPU
-  operational backend.
-- **GPU-NUM (GPU-native numeric oracle on the CPU backend).** The m6b4/m6b5
-  acoustic/dycore savepoint-parity and m6b0r `calc_coef_w` top-row oracles, the
-  m6x ADR-023 MPAS-slice RMSE and `c2_metrics` identity, and the step-46
-  v-runaway bound run on the CPU backend against fixtures that target the GPU
-  operational hydrostatic path (the idealized fixtures predate the F7
-  hydrostatic-column requirement and hit NaN on the CPU vertical-solver path).
-  The operational GPU forecast is unaffected; the GPU-lock suite is green.
-- **STALE (assertion pins a superseded value/source/design).** HaloSpec
-  width-rejection rule, init-allocator allowlist, the all-fp64 precision-registry
-  expectation (fp32 fields now exist), refactored operational/acoustic source
-  strings, the theta-guard per-level ceiling (700→450 K), the default MYNN
-  condensation `niter` (50→16, documented shipped default), and drifted
-  stabilizer-count / scout-snapshot / boundary-replay baselines. These should be
-  updated to the current shipped values in a follow-up test-maintenance sprint.
-
-Nine other previously-RED tests were **fixed to green** this triage (not
-carried): the three operational `device_get` source guards (made loop-precise —
-the v0.18 `_assert_nonzero_initial_mu_total` host pull is a verified OUT-OF-LOOP
-one-time pre-flight check, not a hot-loop transfer), the two `m7_1km_memory_audit`
-tests (audit now sizes all 67 State leaves), the two `wsm_sm_savepoint_parity`
-path-form checks (expanduser), and the two `v013_compile_perf2` recompile-hygiene
-tests (cleared global JAX caches to remove a test-order artifact).
-
-**Proof-artifact hygiene.** 18 committed proof JSONs that the suite previously
-re-wrote with fp/path/timing noise on every run are now write-gated
-(`GPUWRF_WRITE_PROOFS=1` or a tmp `out=`/`--proof-dir`); the canonical proofs are
-unchanged and the worktree ends clean after a full suite run. Detail:
-`proofs/v018/suite_triage.md`.
-
-### Resolved in v0.18 (was a regression risk, fixed in code — not carried)
-
-- **Thompson warm-process graupel-melt fidelity (m5 WRF mass oracle).** Accepted
-  commit `044bb65a` (cold-process fidelity) bundled a finer diagnostic
-  graupel-number distribution without WRF's sparse-graupel `N0_melt` melt override
-  (module_mp_thompson.F:2802-2806), under-melting warm-cell graupel (spurious
-  `qg≈5e-7` where WRF melts to 0), and added rci/sci ice-collection without WRF's
-  `if(temp<T_0)` cold gate (line 2554). Both were transcribed from pristine WRF;
-  the warm-process oracle (`tests/test_m5_thompson_process_residuals.py`) is now
-  bit-exact and the cold-process gain is preserved (cold-collection oracle GREEN).
-  **Fixed, not a carried tolerance.** Detail: `proofs/v018/integration_report.md`
-  → "Honesty-fix closeout".
-
----
-
-# Known Issues — v0.15.0 (retained release-gate detail)
-
-Honest, code-grounded list of what was open or bounded in the v0.15 release. Each
-entry states the symptom, the current understanding, the workaround, and the
-tracked follow-up. No spin. The deeper per-issue history (KI-1…KI-11, including
-resolved items) is in [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
-
-> **Release framing.** v0.15 is a **kernel-architecture + WRF-fidelity** release,
-> **not** an end-to-end speedup release. It delivers the project's final fp64 GPU
-> kernel (adversarially confirmed near-optimal, device-bound), the MYNN-EDMF
-> condensation `niter` 50 → 16 + Thompson cold-collection WRF-fidelity fixes, the
-> MUB/PB nest-base-state seam fix, and re-closes both 72 h GPU-vs-CPU-WRF
-> field-parity gates (Switzerland d01 + Canary L2 d02) with the reproducible
-> identity-proof plot system ([`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md)).
-> Performance is honestly **~parity total-wall** (0.99×/1.04×), forecast-only
-> ~1.05–1.20×; **no multi-× and no large-grid speedup is claimed.** The honest
-> numbers are below.
-
-## Final-gate verdicts (both gates re-closed on the final v0.15 code)
-
-- **Switzerland d01 72 h field-parity gate:** stable to h72; **9/10 prognostic
-  fields within frozen tolerance**, dynamics/thermo/mass all green; **1 atlas
-  tolerance failure** (vs v0.14's 3). The single Grid-Delta Atlas hard-gate miss
-  is **RAINNC rmse 5.08 mm vs the 1.0 mm bound** (bounded precip sensitivity;
-  cold-collection moved it −15 % from v0.14's 5.99 mm). DZS/ZS now PASS paired.
-  Run `v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z` vs CPU truth
-  `v014_switzerland_72h_cpu_20260610T122909Z`; **total-wall GPU 2941 s vs CPU
-  2906 s ≈ 0.99× (forecast-only ~1.20×)**, peak VRAM **22.9 GiB** (up from
-  v0.14's 20.5 GiB). Proof: `proofs/v015/finalgates/switzerland_d01/`.
-- **Canary L2 d02 72 h field-parity gate:** stable to h72; operational verdict
-  **L2_D02_GREEN** (bounds PASS, rmse PASS, pipeline green); **9/10 prognostic
-  fields within frozen tolerance**; **1 atlas tolerance failure** (vs v0.14's 3).
-  The lone bounded Atlas miss is **QVAPOR rmse 1.44×10⁻³ vs 1.0×10⁻³ kg/kg**
-  (+44%, **no regression** from v0.14's 1.45×10⁻³). The v0.14 **MUB/PB**
-  nest-frame-seam statics are now **fixed** (250.7 → 0.0078 Pa). Run
-  `v015_canary_d02_72h_gpu_finalgates_20260613T095113Z` vs CPU truth
-  `20260501_18z_l2_72h_20260519T173026Z`; **total-wall GPU 8414 s vs CPU ~8713 s
-  ≈ 1.04× (forecast-only ~1.05×)**, peak VRAM **29.8 GiB** (up from v0.14's
-  21.1 GiB — a disclosed regression). Proof: `proofs/v015/finalgates/canary_l2_d02/`.
-
-## Bounded acceptances (honest, with their numeric justification)
-
-These fields are **bounded-not-exact**: operationally acceptable but not painted
-as bitwise-exact channels. They are drawn red (never green) when they breach
-their envelope in the identity-proof plots.
-
-- **KI — RAINNC bounded precipitation sensitivity.** Accumulated grid-scale
-  precipitation is an operationally-bounded diagnostic with a 1.0 mm RMSE
-  envelope. On the final Switzerland d01 72 h v0.15 run it sat at **5.08 mm RMSE**
-  (out of the 1.0 mm bound) — a precipitation-placement sensitivity, not a
-  dynamics blow-up; the full dynamics/thermodynamics core stayed within envelope.
-  v0.15 **Thompson cold-collection** moved it −15 % from v0.14's 5.99 mm; the
-  RAINNC WRF-convention bug (snow + graupel + ice were dropped from the
-  accumulation) was FIXED in v0.14. Per-cell/number refinement → v0.16.
-- **KI — Canary QVAPOR bounded.** 3D water-vapour mixing ratio carries a tight
-  1.0×10⁻³ kg/kg envelope. On the final Canary L2 d02 72 h v0.15 run it was
-  marginal at **1.44×10⁻³ kg/kg (+44%)** — **no regression** from v0.14's
-  1.45×10⁻³ (MYNN marine entrainment-depth class; surface flux exonerated).
-  Carried → v0.16 stability lane.
-- **KI — Canary MUB/PB nest-frame-seam base-state artifact (FIXED in v0.15).**
-  v0.14's static base-state mass (`MUB`)/base pressure (`PB`) nest-frame-seam
-  artifact (Atlas max_abs MUB 250.7 / PB 249.9) is **fixed in v0.15** — the nest
-  now packs its own static base ring (WRF never forces nest base state). On the
-  final Canary L2 d02 72 h v0.15 run MUB/PB max_abs is **0.0078 Pa**. Resolved.
-- **KI — GRAUPELNC source-fidelity gap.** Accumulated graupel has a microphysics
-  source-fidelity gap vs CPU-WRF (the same Thompson parity debts tracked under
-  KI-4 in `docs/KNOWN_ISSUES.md`: snow fall-speed approximation, cloud-water
-  sedimentation, invalid-column fallback). Bounded; tracked, not a dynamics
-  issue.
-
-## Scope boundaries (deliberate, not silent gaps)
-
-- **KI-3 — focused wrfout writer field subset.** The operational writer emits a
-  focused **104-variable** `wrfout` (core met/spatial/vertical/soil + radiation
-  flux + Noah-MP snow-layer) vs WRF's 375. Missing fields are stochastic-seed
-  arrays and less-common diagnostics. Full 375-variable coverage is deferred.
-- **KI — tier3_coupled double-count.** The tier-3 coupled validation aggregation
-  can double-count a contribution in one path; this is a reporting/aggregation
-  caveat in the validation tooling, not a forecast-state error. The per-field
-  gate numbers (the identity-proof scoreboard and the grid-delta atlas) are the
-  authoritative parity evidence and are not affected.
-
-## Performance
-
-- **KI — ~parity total-wall; fp64 kernel near-optimal (the lever is fp32-operational).**
-  v0.15 is **not** an end-to-end speedup release: total-wall is ~parity
-  (Switzerland 0.99×, Canary 1.04×), forecast-only ~1.05–1.20×. The fp64 GPU
-  kernel is **adversarially confirmed near-optimal without megakernels** — the
-  step is **device-bound** (~4 % idle), every host-side lever (whole-step
-  CUDA-graph capture, denominator hoist, scan-unrolls) is shipped or proven
-  wall-neutral, and cuSPARSE PCR + column tiling are already live. The per-step
-  MYNN-condensation `niter` 50 → 16 win (~1.4× isolated) dilutes to forecast-only
-  ~1.05–1.20× in the full pipeline. **No multi-× / large-grid speedup is claimed**
-  (the prior "6–10× per-cell at large grids" framing is **refuted** by the
-  project's own `km_bench`: per-cell cost slightly worsens; honest large-grid
-  asymptote ~1.6×). Evidence: `proofs/perf/v015/kernel_characterization.md`.
-- **KI — opt-in fp32-BouLac (~1.67×) blocked by a compile pathology.** fp32-BouLac
-  and an O(nz) BouLac memory win are proven correct in isolation (WRF oracles to
-  machine epsilon) but hit an XLA mixed-precision "very-slow-compile" pathology in
-  the full forecast jit; they ship as **opt-in flags** (`GPUWRF_MYNN_BOULAC_FP32`,
-  `GPUWRF_MYNN_BOULAC_ONZ`), default off.
-- **KI — higher peak VRAM (a v0.15 regression).** Peak VRAM rose vs v0.14
-  (Switzerland 20.5 → 22.9 GiB, Canary 21.1 → 29.8 GiB) from the `niter`-16
-  unrolled temporaries + larger nested arena. The intrinsic ~21.7 GiB fp64 dycore
-  working set is the binding 1 km ceiling; the deferred fp32-operational
-  restructuring ~halves the dycore arena.
-
-## Precision
-
-- **KI — fp32 operational-state restructuring is the named next major lever.** The
-  standalone CLI path is fp64-only; gated-fp32 remains an experimental ADR-007
-  preview. The **fp32-operational-state restructuring (ADR-007 / ADR-031)** is the
-  **single** structural fix for both the genuine speedup (the opt-in fp32-BouLac
-  ~1.67× lands once the mixed-precision compile pathology is gone) and 1 km
-  scalability (it ~halves the VRAM arena). It is a pervasive precision change with
-  a full identity re-gate — the defined next major lever, not a v0.15 add-on.
-
-## Carried from v0.13.0 (see `docs/KNOWN_ISSUES.md` for full detail)
-
-- **KI-9** — 24 h/72 h forecast-skill equivalence (T2/U10/V10) vs CPU-WRF is the
-  credibility gate; v0.14 reports the field-parity gates honestly but does not
-  claim closed forecast-skill equivalence. Hard dynamics-`ph'`/MYNN/`*_tendf`
-  GPU work, no cheap knob.
-- **KI-4** — d02 U10 episodic final-lead under-prediction (tied to KI-9).
-- **KI-6** — RRTMG SW intermediate `taug` top-layer convention differs in 4 UV
-  bands; integrated fluxes pass tier-1 (< 0.05% rel). Isolated, pre-existing.
-- **KI-7** — free-running (`run_boundary=False`) on wide domains (nx≈160+) can go
-  unstable beyond ~14 h. The validated operational path uses boundary forcing.
-- **KI-10** — moisture-advection cadence refinements (opt-in, default-off; no
-  shipped-behavior impact).
-- **KI-11** — 2-way nesting equivalence vs CPU-WRF untested (only finite/stable
-  proven).
-- **KI-5** — powered n=15 TOST is underpowered (n≈27 for full power); scoring
-  path is unblocked. No TOST PASS is claimed.
+W2 qualification update (2026-10-07 10:18Z, source471): the distinct ZR realization leaves two REAL V10 rows at h42/h44; ZP has zero REAL rows. Frozen Z class is PROPERTY, IC-R-specific, and the original W0115 FAIL is retained. R32-67 v3 confirms SYSTEMATIC station WS10 damage in A/B/C (13 CLEAR, 3 SYSTEMATIC, 0 OPEN); B′ remains CLEAR. Earlier OPEN statements above are dated readings, superseded by this result. W3 must apply the affected original-CPU and station gates on its final source; no W2 waiver or inherited clearance.

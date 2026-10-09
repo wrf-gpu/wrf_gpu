@@ -1,0 +1,1223 @@
+{
+ "domains": {
+  "d03": {
+   "pass": false,
+   "status": "FAIL",
+   "paired_frames": 73,
+   "policy_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0436208341580304
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.041817560868642
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0448152953801015
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.04331265644194
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 25,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0453615142717991
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 26,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0404442787896306
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 27,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0380667601851612
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 28,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0364120543133564
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 29,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0429199987552324
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 30,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0455489882245612
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 31,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.045910078497063
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 32,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0490158051775575
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 33,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0487554481190868
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 34,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0486681821777863
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 35,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0486362754102507
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 36,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.048582951344607
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 37,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0485308884375648
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 38,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0486425863258753
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 39,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0447546537802612
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 40,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0625254347239708
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 41,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0650102864538882
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 42,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0657181172710564
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 43,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.065582998092626
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 44,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0666437947690803
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 45,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0677108750988396
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 46,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.067077238640164
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 47,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.06702307983728
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 48,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0670136327577642
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 49,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.066978039595088
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 50,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0671418519629632
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0680139635264358
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 52,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0676761256734266
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 53,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0712956627804433
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 54,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0708956456317864
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 55,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0690383168865885
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 56,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0683189954534407
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 57,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.068565238525019
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 58,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0692133044103243
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 59,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0702155851985946
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 60,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0741152027592455
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 61,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0878147238127724
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 62,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0859735596377074
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 63,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0885001435629136
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 64,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.0863750542301582
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 65,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.089756314977407
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 66,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1119363341747457
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1172525166983212
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.119462404450878
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1199817745631138
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.11984242175717
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1199223421438997
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "detail": [
+      {
+       "limit": 1.0,
+       "metric": "rmse",
+       "value": 1.1202380371312712
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "U10",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.6622894221377476
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 41,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.5600227910959457
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 42,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.6873930788798306
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 44,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.6919175182118025
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 48,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 2.011494190015469
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 49,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.8549563333970276
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 50,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.557801249835737
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 51,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.7597609079631653
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 53,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.5328254568884405
+      }
+     ]
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 54,
+     "detail": [
+      {
+       "limit": 1.5,
+       "metric": "rmse",
+       "value": 1.9622674587675475
+      }
+     ]
+    }
+   ],
+   "summary_tolerance_failures": 0,
+   "frame_failures": [
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 21,
+     "value": 1.0436208341580304,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 22,
+     "value": 1.041817560868642,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 23,
+     "value": 1.0448152953801015,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 24,
+     "value": 1.04331265644194,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 25,
+     "value": 1.0453615142717991,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 26,
+     "value": 1.0404442787896306,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 27,
+     "value": 1.0380667601851612,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 28,
+     "value": 1.0364120543133564,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 29,
+     "value": 1.0429199987552324,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 30,
+     "value": 1.0455489882245612,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 31,
+     "value": 1.045910078497063,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 32,
+     "value": 1.0490158051775575,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 33,
+     "value": 1.0487554481190868,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 34,
+     "value": 1.0486681821777863,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 35,
+     "value": 1.0486362754102507,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 36,
+     "value": 1.048582951344607,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 37,
+     "value": 1.0485308884375648,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 38,
+     "value": 1.0486425863258753,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 39,
+     "value": 1.0447546537802612,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 40,
+     "value": 1.0625254347239708,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 41,
+     "value": 1.0650102864538882,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 42,
+     "value": 1.0657181172710564,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 43,
+     "value": 1.065582998092626,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 44,
+     "value": 1.0666437947690803,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 45,
+     "value": 1.0677108750988396,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 46,
+     "value": 1.067077238640164,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 47,
+     "value": 1.06702307983728,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 48,
+     "value": 1.0670136327577642,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 49,
+     "value": 1.066978039595088,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 50,
+     "value": 1.0671418519629632,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 51,
+     "value": 1.0680139635264358,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 52,
+     "value": 1.0676761256734266,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 53,
+     "value": 1.0712956627804433,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 54,
+     "value": 1.0708956456317864,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 55,
+     "value": 1.0690383168865885,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 56,
+     "value": 1.0683189954534407,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 57,
+     "value": 1.068565238525019,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 58,
+     "value": 1.0692133044103243,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 59,
+     "value": 1.0702155851985946,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 60,
+     "value": 1.0741152027592455,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 61,
+     "value": 1.0878147238127724,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 62,
+     "value": 1.0859735596377074,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 63,
+     "value": 1.0885001435629136,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 64,
+     "value": 1.0863750542301582,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 65,
+     "value": 1.089756314977407,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 66,
+     "value": 1.1119363341747457,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 67,
+     "value": 1.1172525166983212,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 68,
+     "value": 1.119462404450878,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 69,
+     "value": 1.1199817745631138,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 70,
+     "value": 1.11984242175717,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 71,
+     "value": 1.1199223421438997,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "RAINNC",
+     "lead_h": 72,
+     "value": 1.1202380371312712,
+     "limit": 1.0
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "U10",
+     "lead_h": 51,
+     "value": 1.6622894221377476,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 41,
+     "value": 1.5600227910959457,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 42,
+     "value": 1.6873930788798306,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 44,
+     "value": 1.6919175182118025,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 48,
+     "value": 2.011494190015469,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 49,
+     "value": 1.8549563333970276,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 50,
+     "value": 1.557801249835737,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 51,
+     "value": 1.7597609079631653,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 53,
+     "value": 1.5328254568884405,
+     "limit": 1.5
+    },
+    {
+     "kind": "frame_tolerance",
+     "field": "V10",
+     "lead_h": 54,
+     "value": 1.9622674587675475,
+     "limit": 1.5
+    }
+   ]
+  },
+  "d01": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  },
+  "d02": {
+   "pass": true,
+   "status": "PASS",
+   "paired_frames": 73,
+   "policy_failures": [],
+   "summary_tolerance_failures": 0,
+   "frame_failures": []
+  }
+ },
+ "complete": true,
+ "status": "FAIL",
+ "pass": false,
+ "hours": 72,
+ "summary_top_pass": false,
+ "domains_scored": [
+  "d03",
+  "d01",
+  "d02"
+ ],
+ "breaches_compact": "d03: RAINNC \u03c421\u201372 (52 frames, max 1.12 > 1.0); U10 \u03c451\u201351 (1 frames, max 1.66 > 1.5); V10 \u03c441\u201354 (9 frames, max 2.01 > 1.5)",
+ "tooling": {
+  "scorer": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/tools_src/scripts/wn3_score.py (single loop-line substitution)",
+  "verdict": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/gate/d6_verdict.py (single domain-tuple substitution)"
+ }
+}

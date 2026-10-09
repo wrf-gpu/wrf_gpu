@@ -21,8 +21,9 @@ INT32 = jnp.int32
 # enforcement skips SURFACE_LAYER_CARRY_LEAVES; producers cast to the seeded
 # leaf dtype on write (b-carry REAL-carry seeding rule).
 FP32_REAL = jnp.float32
-SURFACE_LAYER_CARRY_LEAVES: tuple[str, ...] = ("mol", "hfx", "qfx", "qsfc", "pblh")
+SURFACE_LAYER_CARRY_LEAVES: tuple[str, ...] = ("mol", "hfx", "qfx", "qsfc", "pblh", "sfc_wspd")
 MYNN_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("el_pbl", "maxmf", "maxwidth", "ztop_plume")
+MP_RE_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("re_cloud", "re_ice", "re_snow")
 GWDO_VOLUME_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("dtaux3d", "dtauy3d")
 GWDO_SURFACE_DIAGNOSTIC_LEAVES: tuple[str, ...] = ("dusfcg", "dvsfcg")
 GWDO_DIAGNOSTIC_LEAVES = GWDO_VOLUME_DIAGNOSTIC_LEAVES + GWDO_SURFACE_DIAGNOSTIC_LEAVES
@@ -219,9 +220,13 @@ STATE_FIELD_ORDER = (
     "Ni_bdy",
     "Nr_bdy",
     # --- B39 MYNN surface-layer carry (REAL-locked, append-only) ---
-    *SURFACE_LAYER_CARRY_LEAVES,
+    # Preserve the historical pytree positions; BP90 WSPD is appended after
+    # the MYNN/GWDO diagnostics even though it belongs to the REAL group.
+    "mol", "hfx", "qfx", "qsfc", "pblh",
     *MYNN_DIAGNOSTIC_LEAVES,
     *GWDO_DIAGNOSTIC_LEAVES,
+    "sfc_wspd",
+    *MP_RE_DIAGNOSTIC_LEAVES,
 )
 
 
@@ -362,8 +367,10 @@ PRECISION_MATRIX = {
     "qfx": (FP32_REAL, False),
     "qsfc": (FP32_REAL, False),
     "pblh": (FP32_REAL, False),
+    "sfc_wspd": (FP32_REAL, False),
     # Held WRF MYNN outputs, never prognostic inputs or output-time solves.
     **{name: (FP32_REAL, False) for name in MYNN_DIAGNOSTIC_LEAVES},
+    **{name: (FP32_REAL, False) for name in MP_RE_DIAGNOSTIC_LEAVES},
     # Held WRF REAL GWDO stress tendencies on mass points.
     "dtaux3d": (FP32_REAL, False),
     "dtauy3d": (FP32_REAL, False),

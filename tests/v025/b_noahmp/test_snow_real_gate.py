@@ -28,11 +28,20 @@ def test_native_real_snow_matches_pristine_wrf_real4(monkeypatch):
 def test_gate_rejects_a_compaction_mutant(monkeypatch, factor):
     monkeypatch.setenv("GPUWRF_NOAHMP_NATIVE_REAL", "1")
     gate = _gate()
-    original = gate.snowmod._compact
-    monkeypatch.setattr(gate.snowmod, "_compact", lambda *a, **k: original(*a, **k) * factor)
+    target = "_compact_lists" if gate.snowmod.lists_enabled() else "_compact"
+    original = getattr(gate.snowmod, target)
+    calls = []
+
+    def compact(*args, **kwargs):
+        calls.append(target)
+        result = original(*args, **kwargs)
+        return [value * factor for value in result] if isinstance(result, list) else result * factor
+
+    monkeypatch.setattr(gate.snowmod, target, compact)
     jax.clear_caches()  # noahmp_snow is jitted; the canonical test's trace would hide the mutant
     try:
         assert not gate.run_gate()["all_pass"]
+        assert calls, "compaction mutant missed the active implementation"
     finally:
         monkeypatch.undo()
         jax.clear_caches()

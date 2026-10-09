@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.2</span>
+          <span class="brand-sub">User's Guide · v0.3.3</span>
         </span>
       </a>
       <div class="search-box">
@@ -138,7 +138,7 @@ covers 24&nbsp;h.</p>
   JIT compile (details below), then advances the forecast and writes output.</li>
   <li><strong>Output</strong> — a WRF-compatible <code>wrfout_d01_*</code> history
   file plus a run-payload JSON land under <code>--output-dir</code>. The writer emits
-  a focused 104-variable subset of WRF's fields (see
+  full WRF history by default, with a case-specific inventory (see
   <a href="output.html">Output</a>).</li>
 </ol>
 

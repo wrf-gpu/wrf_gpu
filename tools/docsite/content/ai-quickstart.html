@@ -70,37 +70,15 @@ long each wait should take, roughly like this:</p>
   ETA from observed progress. See <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
 </div>
 
-<h2 id="honesty">The agent stays honest</h2>
-<p>The operator runbook instructs the agent to relay the same honesty this guide holds:</p>
-<ul>
-  <li>v0.3.0 is the current release. The release gate covers <strong>6 Tenerife cases × 3 domains × 24&nbsp;h</strong>: 375 output fields compared with original CPU-WRF, 62 of them with frozen per-variable limits (D6), <strong>0 bound failures</strong>, all compared values finite. Beyond 24&nbsp;h, a complete six-case comparison on an earlier internal build of v0.3.0 (identical
-except the Noah-MP albedo/snow-aging fix) exceeds those limits for some 1&nbsp;km wind/rain fields in two
-of the six 72&nbsp;h cases; every affected frame is listed in the <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/VALIDATION.md">validation report</a>. The agent states this scope for
-  72&nbsp;h runs and does not claim station skill (verified separately by the ALISIOS forecasting project);</li>
-  <li>the default path runs the validated <strong>fp32</strong> kernels (WRF's own single precision;
-  double precision only where WRF uses it); <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off;</li>
-  <li>unsupported namelist options <strong>fail closed</strong> — the agent will not silently swap a
-  scheme, and will ask you before changing your physics;</li>
-  <li>a successful user run does <strong>not</strong> close broad seasonal/configuration-independent
-  24–72 h forecast skill; three-domain nests run with demand GPU memory allocation in v0.3.0 (the C-auto
-  plan covers two-domain nests; fix planned for v0.3.1);</li>
-  <li>the single-domain daily path currently runs moist/scalar advection as <code>0/0</code> even
-  when different values are requested, and omitted <code>time_step_sound</code> selects 10 acoustic
-  substeps where WRF derives 4 on the tracked fixture; the agent reports both rather than changing
-  controls or claiming parity;</li>
-  <li>the Thompson <code>NSED_MAX=16</code> cap and exact-zero carried Ni remain separate
-  fidelity debt, and known AOT cheap-key fragmentation can force a safe recompile rather than a
-  warm hit; the agent reports both without changing physics or hiding compile wall;</li>
-  <li>there is no masking or clamping; if the finite guard aborts, the agent reports the exact
-  failure rather than hiding it. See <a href="performance.html">Performance &amp; GPU Modes</a>
-  for the current performance evidence.</li>
-</ul>
-
-<div class="admon honest">
-  <div class="admon-title">Why ship an operator skill at all?</div>
-  <p>We think this is where user documentation is heading: the human-readable guide you are reading
-  now is one half; the other half is a repository an AI can operate <em>for</em> you. The operator
-  skill turns "read the docs, install the stack, remember the flags, watch the compile" into
-  "describe your goal in plain language and let the agent execute it" — while keeping every honest
-  caveat intact.</p>
-</div>
+<h2 id="honesty">Use source-specific evidence</h2>
+<p>The agent follows current native controls and the installed release's runbook.
+Prepared inputs, supported schemes, full history, automatic sound steps and memory
+admission have explicit scope. Original CPU-WRF is fidelity truth; selected
+24/72-hour comparisons and all hourly plots are linked on <a href="validation.html">validation</a>.
+The W3 candidate remains held pending its affected gates; no universal observational
+equivalence or old-source transfer is claimed.</p>
+<h2 id="current-operator">Version-matched operator guide</h2><p>The candidate guide and
+<a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/AI_OPERATOR.md">AI_OPERATOR</a> share
+current CLI controls. Direct HTTP confirmed the live published guide v0.3.2 on
+2026-10-07 10:15Z; a five-day-old search crawl is not publication evidence.
+Use original CPU-WRF comparisons with named source and scope, not old GPU output as truth.</p>

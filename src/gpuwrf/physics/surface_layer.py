@@ -43,12 +43,17 @@ Sign conventions (kinematic, positive upward into the atmosphere), matching the
 
 from __future__ import annotations
 
+import os
+
+from gpuwrf.contracts.state import mynn_sfc_wspd_enabled
+
 from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp
 
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
+from gpuwrf.physics.mynn_constants import mynn_constant as _mynn_constant
 from gpuwrf.physics.surface_constants import (
     CP_D,
     EP1,
@@ -61,6 +66,7 @@ from gpuwrf.physics.surface_constants import (
     PRT,
     R_D,
     R_D_OVER_CP,
+    R_V,
     SFCLAYREV_TABLE_DZOL,
     SFCLAYREV_TABLE_N,
     SVP1_KPA,
@@ -74,6 +80,9 @@ from gpuwrf.physics.surface_constants import (
     ZOLRI_MAX_ITER,
 )
 
+_MYNN_PSIQ_FLUX_WRF = os.environ.get("GPUWRF_MYNN_PSIQ_FLUX_WRF", "0").strip().lower() in {"1", "true", "yes", "on"}
+_MYNN_SFC_PBLH_WRF = os.environ.get("GPUWRF_MYNN_SFC_PBLH_WRF", "0").strip().lower() in {"1", "true", "yes", "on"}
+
 
 # ==================================================================================
 # CB05 integrated similarity functions (sf_sfclayrev.F90:987-1030 "_full" forms)
@@ -86,10 +95,18 @@ def _psim_stable_full(zolf):
     return -6.1 * jnp.log(zolf + (1.0 + zolf**2.5) ** (1.0 / 2.5))
 
 
+def _psih_stable_reciprocal(zolf):
+    """Original MYNN REAL 1./1.1; DOUBLE and flag-OFF keep old folding."""
+    if (jnp.result_type(zolf) == jnp.float32
+            and os.environ.get("GPUWRF_MYNN_SFC_PSI_REAL", "0").strip().lower() in {"1", "true", "yes", "on"}):
+        return jnp.asarray(1.0, jnp.float32) / jnp.asarray(1.1, jnp.float32)
+    return 1.0 / 1.1
+
+
 def _psih_stable_full(zolf):
     """psih_stable_full, sf_sfclayrev.F90:995-1000."""
 
-    return -5.3 * jnp.log(zolf + (1.0 + zolf**1.1) ** (1.0 / 1.1))
+    return -5.3 * jnp.log(zolf + (1.0 + zolf**1.1) ** _psih_stable_reciprocal(zolf))
 
 
 def _psim_unstable_full(zolf):
@@ -137,6 +154,15 @@ with _np.load(_io.BytesIO(_table_bytes), allow_pickle=False) as _tables:
     _PSIH_STAB_TABLE = jnp.asarray(_tables["_PSIH_STAB_TABLE"], dtype=jnp.float64)
     _PSIM_UNSTAB_TABLE = jnp.asarray(_tables["_PSIM_UNSTAB_TABLE"], dtype=jnp.float64)
     _PSIH_UNSTAB_TABLE = jnp.asarray(_tables["_PSIH_UNSTAB_TABLE"], dtype=jnp.float64)
+# Original MYNN psi_init(psi_opt=0), REAL nodes at float(n)*0.01.
+# This separate asset preserves the historical DOUBLE table byte for byte.
+_real_table_bytes = _resource_files(__package__).joinpath("surface_most_tables_wrf_real.npz").read_bytes()
+if _hashlib.sha256(_real_table_bytes).hexdigest() != "20566b4b4a3c30c7c251990dd25df0de0013fe2dcbb205e298eb90cdf595a828":
+    raise ValueError("WRF REAL surface MOST table asset checksum mismatch")
+with _np.load(_io.BytesIO(_real_table_bytes), allow_pickle=False) as _real_tables:
+    _WRF_REAL_TABLES = tuple(jnp.asarray(_real_tables[name], dtype=jnp.float32) for name in (
+        "_PSIM_STAB_TABLE", "_PSIH_STAB_TABLE", "_PSIM_UNSTAB_TABLE", "_PSIH_UNSTAB_TABLE"))
+del _real_table_bytes, _real_tables
 del _hashlib, _resource_files, _io, _np, _tables, _table_bytes
 # REAL copies for the native path (WRF psi_init tabulates in REAL); the f64 default
 # path keeps using the f64 arrays above, selected by the argument dtype.
@@ -149,7 +175,10 @@ _TABLES = {
 
 
 def _psi_table(zolf, index):
-    return _TABLES[jnp.dtype(jnp.result_type(zolf))][index]
+    dtype = jnp.dtype(jnp.result_type(zolf))
+    if dtype == jnp.float32 and os.environ.get("GPUWRF_MYNN_SFC_PSI_REAL", "0").strip().lower() in {"1", "true", "yes", "on"}:
+        return _WRF_REAL_TABLES[index]
+    return _TABLES[dtype][index]
 
 
 def _lit(like, value):
@@ -457,6 +486,52 @@ def _as_surface(value, shape, dtype=jnp.float64):
     return jnp.broadcast_to(data, shape)
 
 
+def mynn_fltv_wrf_enabled() -> bool:
+    """``GPUWRF_MYNN_FLTV_WRF`` (read at trace time, default off): hand MYNN the kinematic surface fluxes
+    WRF's MYNN driver forms itself from HFX/QFX (:func:`mynn_driver_surface_fluxes`) instead of the
+    surface-layer handles ``HFX/(rho*cpm_sfclay)`` and ``(1+EP1*qv)*theta_flux + EP1*theta_air*qv_flux``."""
+    return os.environ.get("GPUWRF_MYNN_FLTV_WRF", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+class MynnDriverSurfaceFluxes(NamedTuple):
+    flt: jax.Array
+    flqv: jax.Array
+    fltv: jax.Array
+
+
+def _mynn_surface_exner_kwargs(state, dtype):
+    """Supply WRF's independent pi_phy under the existing MYNN Exner key."""
+    if os.environ.get("GPUWRF_MYNN_PHY_EXNER", "0").strip().lower() not in {"1", "true", "yes", "on"}:
+        return {}
+    exner = _field(state, "exner", None)
+    return {} if exner is None else {"exner": _surface(jnp.asarray(exner, dtype=dtype))}
+
+
+def mynn_driver_surface_fluxes(hfx, qfx, rho1, qv1, tsk, p1, *, exner=None) -> MynnDriverSurfaceFluxes:
+    """WRF MYNN-PBL kinematic surface fluxes, formed inside the MYNN driver from HFX/QFX (lowest level).
+
+    Same statements and order as pristine WRF, arithmetic in the dtype of ``hfx`` (REAL on the native path):
+    ``sqv(k) = qv(k)/(1.+qv(k))`` (module_bl_mynnedmf_driver.F:849); ``ex1(kts) = pi_phy = (p_phy/p1000mb)**rcp``
+    (module_big_step_utilities_em.F:4854); ``cpm = cp*(one + 0.84*max(sqv1(kts),1e-8))`` (module_bl_mynnedmf.F:859);
+    ``flqv = qfx/rho1(kts)`` (:869); ``th_sfc = ts/ex1(kts)`` with ``ts = TSK`` (:871);
+    ``flt = hfx/(rho1(kts)*cpm) - xlvcp*flqc/ex1(kts)`` with ``flqc = zero`` (:870, :875);
+    ``fltv = flt + flqv*p608*th_sfc`` (:876), ``p608 = r_v/r_d - 1.`` in REAL (module_model_constants).
+    """
+    c = lambda value: _lit(hfx, value)
+    sqv1 = qv1 / (c(1.0) + qv1)
+    ex1 = (p1 / c(P0_PA)) ** c(R_D_OVER_CP)
+    if exner is not None and os.environ.get("GPUWRF_MYNN_PHY_EXNER", "0").strip().lower() in {"1", "true", "yes", "on"}:
+        ex1 = jnp.asarray(exner, dtype=hfx.dtype)
+    cpm = c(CP_D) * (c(1.0) + c(0.84) * jnp.maximum(sqv1, c(1.0e-8)))
+    flqv = qfx / rho1
+    th_sfc = tsk / ex1
+    flt = hfx / (rho1 * cpm)
+    p608 = c(R_V) / c(R_D) - c(1.0)
+    fltv = flt + flqv * p608 * th_sfc
+    # Keep the completed driver fluxes out of surface/land carry-layout fusions.
+    return jax.lax.optimization_barrier(MynnDriverSurfaceFluxes(flt=flt, flqv=flqv, fltv=fltv))
+
+
 # ==================================================================================
 # Main surface-layer solve
 # ==================================================================================
@@ -520,6 +595,7 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     """
 
     # --- lowest-level column inputs (sf_sfclayrev_pre_run picks kts) ---
+    EP1 = _mynn_constant("P608", F, globals()["EP1"])
     u0 = _surface(jnp.asarray(state.u, dtype=F))
     v0 = _surface(jnp.asarray(state.v, dtype=F))
     theta0 = _surface(jnp.asarray(state.theta, dtype=F))
@@ -542,7 +618,11 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     ust_in = jnp.where(first_step, first_ust, ust_warm)
     mol_warm = _as_surface(_field(state, "mol", 0.0), shape, F)
     mol_in = jnp.where(first_step, _lit(mol_warm, 0.0), mol_warm)
-    pblh = jnp.maximum(_as_surface(_field(state, "pblh", 1000.0), shape, F), 1.0)
+    pblh = _as_surface(_field(state, "pblh", 1000.0), shape, F)
+    # WRF SFCLAY1D_mynn uses the supplied PBLH in WSTAR (F:574/578).
+    # A zero cold-start PBLH gives zero convective gust, without a 1 m floor.
+    if not _MYNN_SFC_PBLH_WRF:
+        pblh = jnp.maximum(pblh, 1.0)
     dx_m = jnp.maximum(_as_surface(_field(state, "dx_m", 3000.0), shape, F), 1.0)
     znt = jnp.maximum(_roughness_from_state(state, shape, xland, F), 1.0e-7)
 
@@ -776,6 +856,10 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     psim10 = jnp.where(unstable, psim10_capped, psim10)
     psih10 = jnp.where(unstable, psih10_capped, psih10)
 
+    # Completed similarity corrections leave the z/L solve unchanged and bound the flux/diagnostic phase.
+    psim, psih, psim10, psih10, psih2 = jax.lax.optimization_barrier(
+        (psim, psih, psim10, psih10, psih2))
+
     # Regime class (module_sf_mynn.F:783-790, 855, 875): BR>0.2 -> 1 (nighttime
     # stable), 0<BR<=0.2 -> 2 (damped mechanical turbulence), BR==0 -> 3 (neutral),
     # BR<0 -> 4 (free convection). Diagnostic only; the PSI path is identical for
@@ -807,6 +891,13 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     psiq = jnp.maximum(jnp.log((za + znt) / z_q) - psih, 1.0)    # 975
     psiq2 = jnp.maximum(jnp.log((2.0 + znt) / z_q) - psih2, 1.0)  # 976
     psiq10 = jnp.maximum(jnp.log((10.0 + znt) / z_q) - psih10, 1.0)  # 977
+
+    # WRF retains the resistance above for first-loop QSTAR (:995), then
+    # recomputes moisture resistances in the flux loop (:1023-1025).
+    psiq_flux, psiq2_flux = psiq, psiq2
+    if _MYNN_PSIQ_FLUX_WRF:
+        psiq_flux = jnp.maximum(jnp.log((za + z_q) / z_q) - psih, 1.0)
+        psiq2_flux = jnp.maximum(jnp.log((2.0 + z_q) / z_q) - psih2, 1.0)
 
     # --- 2 m thermal/moisture weight: FAITHFUL MYNN-SL ``psit2/psit`` ---
     # WRF's MYNN-SL 2-m diagnostic is ``TH2 = THGB + DTG*PSIT2/PSIT`` (module_sf_mynn.F
@@ -864,7 +955,7 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     # Q2 uses the surface MIXING RATIO anchor (module_sf_mynn.F:1147), faithful MYNN
     # ``psiq2/psiq`` (the land Q2 overwrite to the Noah-MP LSM Q2 is owned by the
     # coupler, mirroring the T2 overwrite, when wired).
-    q2w = psiq2 / psiq
+    q2w = psiq2_flux / psiq_flux
     q2 = qsfcmr + (qx - qsfcmr) * q2w
     # MYNN 2-m mixing-ratio brackets (module_sf_mynn.F:1148-1149):
     # Q2 = MAX(Q2, MIN(QSFCMR, QV1D)) then Q2 = MIN(Q2, 1.05*QV1D). WRF reference
@@ -883,7 +974,7 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     # FLQC/FLHC exchange coefficients (1051-1052): direct resistance form, NOT the
     # sfclayrev mol/(thx-thgb) form. With the heat resistance PSIT this is the
     # WRF-faithful MYNN flux and is numerically robust at thx==thgb (no divide).
-    flqc = rhox * mavail * ustar * KARMAN / psiq
+    flqc = rhox * mavail * ustar * KARMAN / psiq_flux
     flhc = cpm * rhox * ustar * KARMAN / psit
     # QFX/LH (1057-1060): QFX uses the surface MIXING RATIO QSFCMR (NOT the specific
     # humidity QSFC); small negative QFX allowed, floored -0.02.
@@ -901,6 +992,17 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
     tau_u = -(ustar * ustar) * u0 / wind_for_tau
     tau_v = -(ustar * ustar) * v0 / wind_for_tau
     fltv = (1.0 + EP1 * qx) * theta_flux + EP1 * thx * qv_flux
+    if mynn_fltv_wrf_enabled():
+        # WRF's MYNN derives flt/flqv/fltv itself from HFX/QFX and TSK (module_bl_mynnedmf.F:859-876).
+        mynn = mynn_driver_surface_fluxes(hfx, qfx, rhox, qx, tgdsa, p1d_pa,
+                                        **_mynn_surface_exner_kwargs(state, F))
+        theta_flux, qv_flux, fltv = mynn.flt, mynn.flqv, mynn.fltv
+
+    # Fence completed array exports only; SurfaceFluxes' static sentinels stay Python scalars.
+    (ustar, theta_flux, qv_flux, tau_u, tau_v, rhox, fltv, hfx, lh,
+     u10, v10, th2, t2, q2, qsfc, mol, znt) = jax.lax.optimization_barrier(
+        (ustar, theta_flux, qv_flux, tau_u, tau_v, rhox, fltv, hfx, lh,
+         u10, v10, th2, t2, q2, qsfc, mol, znt))
 
     fluxes = SurfaceFluxes(
         ustar=ustar,
@@ -911,6 +1013,7 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
         rhosfc=rhox,
         fltv=fltv,
         xland=xland,
+        wspd=wspd if mynn_sfc_wspd_enabled() else None,
     )
     return SurfaceLayerDiagnostics(
         fluxes=fluxes,

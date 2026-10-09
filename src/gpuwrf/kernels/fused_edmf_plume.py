@@ -151,6 +151,7 @@ def _plume_rise_kernel(
     c0_3, c0_0005, c0_33, c0_9, c0_0003 = s(_C03), s(_C0005), s(_C033), s(_C09), s(_C0003)
     c5e6, c1500, c4000, c0_15, c0_2 = s(_C5E6), s(_C1500), s(_C4000), s(_C015), s(_C02)
     c250, c2, c1_25, c200, c3, c0_3333 = s(_C250), s(_C2), s(_C125), s(_C200), s(_C3), s(_C03333)
+    from gpuwrf.physics import mynn_edmf as _edmf
     c1, c0, grav = s(_C1), s(_C0), s(_GRAV)
 
     l = l_ref[lanes]
@@ -198,7 +199,8 @@ def _plume_rise_kernel(
         pk = p_k * ak + p_k1 * bk
 
         # condensation fixed point -- REFERENCE CODE, verbatim (:381 -> :171)
-        thvn, qcn = _edmf_condensation(qtn, thln, pk, zw_k1)
+        thvn, qcn = _edmf_condensation(qtn, thln, pk, zw_k1,
+                                      **_edmf._condensation_wrf_kwargs(qc_p))
 
         thvk = thv_k * ak + thv_k1 * bk
         buoy = grav * (thvn / thvk - c1)
@@ -245,12 +247,12 @@ def _plume_rise_kernel(
     lax.fori_loop(1, nz - 1, step, carry0)  # ks = arange(1, nz-1), emit rows k-1
 
 
-def _edmf_condensation(qt, thl, p, zagl):
+def _edmf_condensation(qt, thl, p, zagl, **kwargs):
     """Verbatim re-export shim (kept indirection one line for provenance)."""
 
     from gpuwrf.physics import mynn_edmf as _edmf
 
-    return _edmf._condensation_edmf(qt, thl, p, zagl)
+    return _edmf._condensation_edmf(qt, thl, p, zagl, **kwargs)
 
 
 def fused_plume_scan(
@@ -310,7 +312,7 @@ def fused_plume_scan(
 
 def dmp_mf_columns_fused(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                          p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-                         pblh, ts, dx, xland, dt, psig_shcu=None):
+                         pblh, ts, dx, xland, dt, psig_shcu=None, cloud_base=None, qni=None):
     """Batched ``mynn_edmf.dmp_mf_columns`` with the fused plume kernel.
 
     Identical signature and output dict.  Setup and assembly reuse the
@@ -328,7 +330,8 @@ def dmp_mf_columns_fused(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         return dmp_mf_columns_native(
             sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
             p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
-            pblh, ts, dx, xland, dt, psig_shcu=psig_shcu,
+            pblh, ts, dx, xland, dt, psig_shcu=psig_shcu, cloud_base=cloud_base,
+            **({} if qni is None else {"qni": qni}),
             interpret=jax.default_backend() == "cpu",
         )
 
@@ -338,10 +341,17 @@ def dmp_mf_columns_fused(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     if psig_shcu is None:
         psig_shcu = jnp.ones((B,))
 
-    setup = jax.vmap(
-        lambda *a: _edmf._dmp_setup(*a[:-1], dx=dx, psig_shcu=a[-1])
-    )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
-      flt, fltv, flq, psig_shcu)
+    if cloud_base is None:
+        setup = jax.vmap(
+            lambda *a: _edmf._dmp_setup(*a[:-1], dx=dx, psig_shcu=a[-1])
+        )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+          flt, fltv, flq, psig_shcu)
+    else:
+        setup = jax.vmap(
+            lambda *a: _edmf._dmp_setup(*a[:-2], dx=dx,
+                psig_shcu=a[-2], cloud_base=a[-1])
+        )(sqw, sqv, u, v, w, thv, thl, p, dz, zw, rho, pblh, ts, xland,
+          flt, fltv, flq, psig_shcu, cloud_base)
 
     ea, ew, eqt, eqc, ethl, eu, ev = fused_plume_scan(
         setup["l_per_plume"], setup["upa0"], setup["upw0"], setup["upthl0"],
@@ -372,5 +382,10 @@ def dmp_mf_columns_fused(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
             s_one, rho_c, thv_c, dz_c, fltv_c, active_c,
             upa_c, upw_c, upqt_c, upqc_c, upthl_c, upu_c, upv_c)
 
-    return jax.vmap(one)(
+    result = jax.vmap(one)(
         setup, rho, thv, dz, fltv, active, UPA, UPW, UPQT, UPQC, UPTHL, UPU, UPV)
+    if qni is not None:
+        result["s_awqni"] = jax.vmap(_edmf._passive_ni_flux)(
+            qni, setup, rho, thv, dz, zw, fltv, pblh, active, UPA, UPW
+        )
+    return result

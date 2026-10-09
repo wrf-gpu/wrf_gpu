@@ -1,0 +1,145 @@
+{
+  "source_path": "<USER_HOME>/wrf_gpu2_lanes/wn3/V33/p0227/run/wrfrst_d03_2026-03-02_00:00:00",
+  "source_sha256": "db792e15d75649909bb85bb653c651db029ede77d10f5ab3ca8c341afe885f44",
+  "original_wrf_executable_sha256": "1d0f5779 (P0227 provenance.json)",
+  "source_time": "2026-03-02_00:00:00",
+  "crop": {
+    "j": 13,
+    "i": 37,
+    "ny": 8,
+    "nx": 8,
+    "nz": 10,
+    "land_columns": 32,
+    "marine_columns": 32
+  },
+  "use_theta_m": 1,
+  "fields": {
+    "T": {
+      "dimensions": [
+        "Time",
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "",
+      "units": "K",
+      "MemoryOrder": "XYZ",
+      "source_description": "perturbation potential temperature theta-t0",
+      "array_sha256": "e8cc53127685d6294e4b3ed88fc69bb34733352be0874aad44817e4eae8c14e1"
+    },
+    "THM_2": {
+      "dimensions": [
+        "Time",
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "",
+      "units": "K",
+      "MemoryOrder": "XYZ",
+      "source_description": "either 1) pert moist pot temp=(1+Rv/Rd Qv)*(theta)-T0, or 2) pert dry pot temp=t",
+      "array_sha256": "abce54c564f80a067a3b4eeec6f7e368fccd9590199e74e2f02b965123360a2d"
+    },
+    "QVAPOR": {
+      "dimensions": [
+        "Time",
+        "bottom_top",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "",
+      "units": "kg kg-1",
+      "MemoryOrder": "XYZ",
+      "source_description": "Water vapor mixing ratio",
+      "array_sha256": "e9ccd6ce1af25a67c6731626d371ff986af6bde7ab4567a61a694d325226bf71"
+    },
+    "U_2": {
+      "dimensions": [
+        "Time",
+        "bottom_top",
+        "south_north",
+        "west_east_stag"
+      ],
+      "dtype": "float32",
+      "stagger": "X",
+      "units": "m s-1",
+      "MemoryOrder": "XYZ",
+      "source_description": "x-wind component",
+      "array_sha256": "88a750fa52e448008b7de6b3763e5d3b68b5a8cd45f2839f5132781dcec23a0e"
+    },
+    "V_2": {
+      "dimensions": [
+        "Time",
+        "bottom_top",
+        "south_north_stag",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "Y",
+      "units": "m s-1",
+      "MemoryOrder": "XYZ",
+      "source_description": "y-wind component",
+      "array_sha256": "6d7b40073f1ef294a3c536d9ef8bc7b7228243552584d83a6c7647747b4d6e96"
+    },
+    "W_2": {
+      "dimensions": [
+        "Time",
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "Z",
+      "units": "m s-1",
+      "MemoryOrder": "XYZ",
+      "source_description": "z-wind component",
+      "array_sha256": "a02bb7f933749b8d225cb610950b9f251754fe041b7d1d031e2ed7c55ec45650"
+    },
+    "PH_2": {
+      "dimensions": [
+        "Time",
+        "bottom_top_stag",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "Z",
+      "units": "m2 s-2",
+      "MemoryOrder": "XYZ",
+      "source_description": "perturbation geopotential",
+      "array_sha256": "fd91edf117b69dd95737de306a68498b7fc72512269efdd5f944c40c31d79137"
+    },
+    "MU_2": {
+      "dimensions": [
+        "Time",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "",
+      "units": "Pa",
+      "MemoryOrder": "XY ",
+      "source_description": "perturbation dry air mass in column",
+      "array_sha256": "2d98c85b2e5f175db9448cf657a6b5ccb31a3b2151651ad0bc410fd470325e51"
+    },
+    "LANDMASK": {
+      "dimensions": [
+        "Time",
+        "south_north",
+        "west_east"
+      ],
+      "dtype": "float32",
+      "stagger": "",
+      "units": "",
+      "MemoryOrder": "XY ",
+      "source_description": "LAND MASK (1 FOR LAND, 0 FOR WATER)",
+      "array_sha256": "9b2f148b593bdcc4febb21cafade4ea32ad679e31dd0058604ff26ccf63a8e99"
+    }
+  },
+  "dry_theta_bridge_max_abs_K": 6.103515625e-05,
+  "fixture_sha256": "b0e1a35eeabd70faea1bd971cff6329e8b559233a381076f80fef942da29ede5",
+  "transform": "Verbatim dtype-preserving hyperslabs of original CPU-WRF variables; no regenerated expected values."
+}

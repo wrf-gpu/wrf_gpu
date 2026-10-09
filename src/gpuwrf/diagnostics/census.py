@@ -73,6 +73,12 @@ class DeviceCensus(NamedTuple):
     f2_first_value: jax.Array | None = None
     water_changes: jax.Array | None = None
     unknown_water_changes: jax.Array | None = None
+    f2_min_negative: jax.Array | None = None
+    f2_min_step: jax.Array | None = None
+    f2_min_index: jax.Array | None = None
+    f2_negative_location: jax.Array | None = None
+    f2_field_observations: jax.Array | None = None
+    f2_qc_packet: object = None
 
 
 def enabled() -> bool:
@@ -80,6 +86,8 @@ def enabled() -> bool:
 
 
 def initial_census() -> DeviceCensus:
+    from gpuwrf.diagnostics.f2_scalar_pd_packet import enabled as f2_packet_enabled, initial_packet
+    f2_packet = initial_packet() if f2_packet_enabled() else None
     shape = (len(F2_PHASES), len(F2_FIELDS), len(F2_EVENTS))
     return DeviceCensus(jnp.zeros((len(GUARDS), len(EVENTS)), jnp.uint64),
                         jnp.zeros((len(WORK),), jnp.uint64),
@@ -88,18 +96,31 @@ def initial_census() -> DeviceCensus:
                         jnp.full(shape, -1, jnp.int32),
                         jnp.zeros(shape, jnp.float32),
                         jnp.zeros((len(F2_REPAIRS), len(MOISTURE_FIELDS), 2), jnp.float32),
-                        jnp.zeros((len(F2_REPAIRS), len(MOISTURE_FIELDS)), jnp.uint64))
+                        jnp.zeros((len(F2_REPAIRS), len(MOISTURE_FIELDS)), jnp.uint64),
+                        jnp.zeros(shape[:2], jnp.float32),
+                        jnp.full(shape[:2], -1, jnp.int32),
+                        jnp.full(shape[:2], -1, jnp.int32),
+                        jnp.zeros((*shape[:2], 2), jnp.uint64),
+                        jnp.zeros((*shape[:2], 3), jnp.uint64),
+                        f2_packet)
 
 
-def observe_f2_state(census, phase, state, step):
+def observe_f2_state(census, phase, state, step, *, pd_context=None):
     """Resident classification before any policy repairs; does not alter state."""
     if census is None or census.f2_counts is None:
         return census
     p = F2_PHASES.index(phase)
+    f2_packet = census.f2_qc_packet
     counts, steps, indices, values = (census.f2_counts, census.f2_first_step,
                                     census.f2_first_index, census.f2_first_value)
+    minima, min_steps, min_indices = (census.f2_min_negative, census.f2_min_step,
+                                      census.f2_min_index)
+    locations, observations = census.f2_negative_location, census.f2_field_observations
     for f, name in enumerate(F2_FIELDS):
         value = getattr(state, name, None)
+        if observations is not None:
+            # present, absent, present-but-not-REAL32; no unobserved zero is coverage.
+            observations = observations.at[p, f, int(value is None)].add(jnp.uint64(1))
         if value is None:
             continue
         value = jnp.asarray(value)
@@ -115,8 +136,34 @@ def observe_f2_state(census, phase, state, step):
             indices = indices.at[p, f, e].set(jnp.where(first, index, indices[p, f, e]))
             sample = value.reshape(-1)[index].astype(jnp.float32)
             values = values.at[p, f, e].set(jnp.where(first, sample, values[p, f, e]))
+        if minima is not None:
+            # REAL32 diagnostic only. Non-REAL32 inputs are explicitly marked
+            # unsupported for an exact magnitude bound in the host summary.
+            observations = observations.at[p, f, 2].add(jnp.uint64(value.dtype != jnp.float32))
+            negative = masks[0]
+            candidates = jnp.where(negative, value.astype(jnp.float32), jnp.float32(jnp.inf))
+            index = jnp.argmin(candidates.reshape(-1)).astype(jnp.int32)
+            minimum = candidates.reshape(-1)[index]
+            smaller = minimum < minima[p, f]
+            if f2_packet is not None and phase == "post_rk" and name == "qc":
+                from gpuwrf.diagnostics.f2_scalar_pd_packet import capture
+                f2_packet = capture(f2_packet, smaller, pd_context, step, index, value)
+            minima = minima.at[p, f].set(jnp.where(smaller, minimum, minima[p, f]))
+            min_steps = min_steps.at[p, f].set(jnp.where(smaller, jnp.asarray(step, jnp.int32), min_steps[p, f]))
+            min_indices = min_indices.at[p, f].set(jnp.where(smaller, index, min_indices[p, f]))
+            # Ring 0 is the lateral outer row/column at every level, not the
+            # top/bottom vertical levels. The remaining horizontal cells are interior.
+            ny, nx = value.shape[-2:]
+            j, i = jnp.arange(ny)[:, None], jnp.arange(nx)[None, :]
+            ring0 = (j == 0) | (j == ny - 1) | (i == 0) | (i == nx - 1)
+            locations = locations.at[p, f].add(jnp.stack((
+                jnp.sum(negative & ring0, dtype=jnp.uint64),
+                jnp.sum(negative & ~ring0, dtype=jnp.uint64))))
     return census._replace(f2_counts=counts, f2_first_step=steps,
-                           f2_first_index=indices, f2_first_value=values)
+                           f2_first_index=indices, f2_first_value=values,
+                           f2_min_negative=minima, f2_min_step=min_steps,
+                           f2_min_index=min_indices, f2_negative_location=locations,
+                           f2_field_observations=observations, f2_qc_packet=f2_packet)
 
 
 def count_water_repair(census, phase, before, after, dry_mass_kg):
@@ -245,6 +292,43 @@ def f2_record(census, field_shape):
             "events": events, "guard_water": water}
 
 
+def f2_negative_summary(census, field_shape):
+    """Segment-boundary readout; evidence only, never a justification verdict.
+
+    Separate sidecar preserves the existing census.json schema and readers.
+    Legacy/resumed carries without the new leaves supply no summary evidence.
+    """
+    if census.f2_min_negative is None:
+        return {"status": "UNAVAILABLE"}
+    records = []
+    for p, phase in enumerate(F2_PHASES):
+        for f, field in enumerate(F2_FIELDS):
+            present, absent, non_real32 = map(int, census.f2_field_observations[p, f])
+            coverage = ("UNOBSERVED" if not present and not absent else
+                        "N_A" if not present else "PARTIAL" if absent else "OBSERVED")
+            count = int(census.f2_counts[p, f, 0])
+            minimum = None
+            if count:
+                flat = int(census.f2_min_index[p, f])
+                minimum = {"value": _json_float(census.f2_min_negative[p, f]),
+                           "step": int(census.f2_min_step[p, f]), "flat_index": flat}
+                if field_shape is not None and flat >= 0:
+                    minimum["index_kji"] = [int(i) for i in np.unravel_index(flat, field_shape)]
+            ring0, interior = map(int, census.f2_negative_location[p, f])
+            records.append({"phase": phase, "field": field, "coverage": coverage,
+                            "present_observations": present, "absent_observations": absent,
+                            "non_real32_observations": non_real32,
+                            "exact_real32_extremum": bool(present and not non_real32),
+                            "negative_count": count, "minimum_negative": minimum,
+                            "ring0_count": ring0, "interior_count": interior,
+                            "nonfinite_count": int(census.f2_counts[p, f, 1]),
+                            "moisture_cap_applicability": "APPLICABLE" if field in MOISTURE_FIELDS else "N_A"})
+    return {"status": "RECORDED", "summary_dtype": "float32",
+            "ring0_definition": "j=0 or j=ny-1 or i=0 or i=nx-1, all k",
+            "minimum_ties": "first observation; lowest flat index within that observation",
+            "records": records}
+
+
 def resolved_namelist(namelist, *, output_cadence_steps, output_set):
     """Serialize resolved runtime values, never derive executed counts from them."""
     names = ("dt_s", "acoustic_substeps", "rk_order", "radiation_cadence_steps",
@@ -271,8 +355,12 @@ def write_segment(output_dir, carries, bundles, own_steps, writer, output_cadenc
         return
     if not all(active):
         raise ValueError("census carry missing from one or more domains")
-    records = {}
+    records, summaries = {}, {}
     resident = {name: carry.census for name, carry in carries.items()}
+    if any(c.f2_qc_packet is not None for c in resident.values()):
+        from gpuwrf.diagnostics.f2_scalar_pd_packet import retain_terminal
+        retain_terminal(output_dir, carries, bundles, own_steps)
+        resident = {name: c._replace(f2_qc_packet=None) for name, c in resident.items()}
     host = jax.device_get(resident)
     ledger = getattr(writer, "census_io_ledger", None)
     persisted = ledger.snapshot() if ledger is not None else {}
@@ -295,9 +383,16 @@ def write_segment(output_dir, carries, bundles, own_steps, writer, output_cadenc
         }
         if census.f2_counts is not None:
             state = getattr(carries[domain], "state", None)
-            records[domain]["f2"] = f2_record(census, None if state is None else state.qv.shape)
+            shape = None if state is None else state.qv.shape
+            records[domain]["f2"] = f2_record(census, shape)
+            summaries[domain] = f2_negative_summary(census, shape)
     payload = {"schema_version": 1, "counter_dtype": "uint64", "domains": records}
     path = Path(output_dir) / "census.json"
     pending = path.with_suffix(".json.tmp")
     pending.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     pending.replace(path)
+    summary_path = Path(output_dir) / "f2_negative_summary.json"
+    summary_pending = summary_path.with_suffix(".json.tmp")
+    summary_pending.write_text(json.dumps({"schema_version": 1, "domains": summaries},
+                                         indent=2, sort_keys=True, allow_nan=False) + "\n")
+    summary_pending.replace(summary_path)

@@ -111,6 +111,7 @@ import.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -388,7 +389,7 @@ COMMAND_BUFFER_STATUS: dict[str, object] = {}
 
 
 def configure_command_buffers(default_on: bool = False) -> dict[str, object]:
-    """Share CUDA conditional capture flags between launches and profilers.
+    """Share device control capture and kernel lowering policy at CLI startup.
 
     Add to the installed capture set; never replace operator-set flag values.
     CPU pins and unsupported builds remain unchanged. Call before backend init.
@@ -406,11 +407,31 @@ def configure_command_buffers(default_on: bool = False) -> dict[str, object]:
         return status
     raw = os.environ.get("XLA_FLAGS", "")
     existing = _parse_existing_flags(raw)
+    # DynamicMemcpy lowering needs host loop offsets. Keep dynamic slice/update
+    # work in GPU kernels so WHILE/CONDITIONAL capture remains device resident.
+    # This changes compilation identity; old native blobs must not be relabeled.
+    disabled_pass = "fusion-dynamic-memcpy-rewriter"
+    disabled_prefix = "--xla_disable_hlo_passes="
+    pass_tokens = [token for token in raw.split() if token.startswith(disabled_prefix)]
+    if len(pass_tokens) > 1 or any(
+        token.startswith("--xla_enable_hlo_passes_only=") and token.split("=", 1)[1]
+        for token in raw.split()
+    ):
+        status["reason"] = "explicit-pass-policy"
+        return status
+    old_pass_token = pass_tokens[0] if pass_tokens else None
+    disabled = old_pass_token[len(disabled_prefix):].split(",") if old_pass_token else []
+    new_pass_token = None
+    if disabled_pass not in disabled:
+        names = [name for name in disabled if name]
+        new_pass_token = disabled_prefix + ",".join([*names, disabled_pass])
     candidates = (
-        "--xla_gpu_enable_command_buffer=+CONDITIONAL",
+        "--xla_gpu_enable_command_buffer=+CONDITIONAL,+WHILE",
         "--xla_enable_command_buffers_during_profiling=true",
     )
     missing = [flag for flag in candidates if flag[2:].split("=", 1)[0] not in existing]
+    if new_pass_token is not None:
+        missing.append(new_pass_token)
     validate = os.environ.get("GPUWRF_XLA_AUTOTUNE_PROBE", "1").strip().lower() not in _DISABLE_VALUES
     if missing and validate:
         ok, detail = probe_flag_supported(" ".join(missing))
@@ -419,7 +440,14 @@ def configure_command_buffers(default_on: bool = False) -> dict[str, object]:
             status["reason"] = "unsupported-flags"
             return status
     if missing:
-        os.environ["XLA_FLAGS"] = " ".join([raw, *missing]).strip()
+        append_flags = missing
+        if old_pass_token is not None and new_pass_token is not None:
+            raw = re.sub(
+                r"(?<!\S)" + re.escape(old_pass_token) + r"(?!\S)",
+                lambda _: new_pass_token, raw, count=1,
+            )
+            append_flags = [flag for flag in missing if flag != new_pass_token]
+        os.environ["XLA_FLAGS"] = " ".join([raw, *append_flags]).strip()
     status["injected_flags"] = missing
     capture = next((token.split("=", 1)[1] for token in os.environ.get("XLA_FLAGS", "").split()
                     if token.startswith("--xla_gpu_enable_command_buffer=")), "")

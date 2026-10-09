@@ -7,6 +7,8 @@ lookup tables use device loads. Candidate and closure loops stop per column.
 The independent frozen WRF savepoints govern this default-off experiment.
 """
 from __future__ import annotations
+import os
+import numpy as np
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl
@@ -117,6 +119,7 @@ R_D = 287.0
 G = 9.81
 
 def _column(T0, QV0, P0, DZQ, RHOE, W0A, U0, V0, dt, dx, KX, the0_ref, ttab_ref, qstab_ref, alu_ref, warm_rain, f_qi, f_qs, zero_runtime):
+    ALIQ, GDRY = _runtime_constants()
     def _table_interp(p, thes):
         tp = (p - tables.PLUTOP) * tables.RDPR
         qq = tp - jnp.floor(tp)
@@ -1241,6 +1244,18 @@ BLIQ = SVP2
 CLIQ = SVP2 * SVPT0
 DLIQ = SVP3
 GDRY = -G / CP
+
+# WRF module_cu_kfeta.F:720/730: the operands and results are REAL.
+# Retain the old Python/fp64 values above for the default-OFF path.
+_ALIQ_REAL = np.float32(np.float32(SVP1) * np.float32(1000.0))
+_GDRY_REAL = np.float32(-np.float32(G) / np.float32(CP))
+
+
+def _runtime_constants():
+    """Native-column constants; trace-time flag is covered by the E80 env key."""
+    if os.environ.get("GPUWRF_KF_REAL_CONSTANTS", "0") == "1":
+        return _ALIQ_REAL, _GDRY_REAL
+    return ALIQ, GDRY
 
 _PROFILE_FIELDS = ('DTDT', 'DQDT', 'DQCDT', 'DQRDT', 'DQIDT', 'DQSDT',
                    'RTHCUTEN', 'RQVCUTEN', 'RQCCUTEN', 'RQRCUTEN', 'RQICUTEN', 'RQSCUTEN')

@@ -1,0 +1,50 @@
+{
+ "verdict": "FAIL-new-class",
+ "domains": {
+  "d02": {
+   "R5": {
+    "QSNOWXY": [
+     "2026-01-16_08"
+    ]
+   },
+   "R2": {
+    "QSNOW": [
+     "2026-01-16_23",
+     "2026-01-17_15"
+    ],
+    "QGRAUP(companion)": [
+     "2026-01-17_16"
+    ]
+   }
+  },
+  "d03": {
+   "R4": {
+    "ECAN": [
+     "2026-01-16_11",
+     "2026-01-16_12"
+    ],
+    "EVC": [
+     "2026-01-16_11",
+     "2026-01-16_12"
+    ],
+    "QRAINXY(companion)": [
+     "2026-01-16_11",
+     "2026-01-16_12"
+    ]
+   }
+  }
+ },
+ "watch": [],
+ "new": [
+  "d01 QNICE@2026-01-16_16 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d01 QNICE@2026-01-18_13 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOW@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWC@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWH@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 TAUSS@2026-01-17_16 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)"
+ ],
+ "r4_cells": [
+  "d03 ECAN/EVC@2026-01-16_11: <= 2 cells, CPU CANLIQ 0 CANWAT 0 mm, rain 1 h CPU 1.5e-05 GPU 2.04e-05 mm, GPU canopy 0/0 -> R4",
+  "d03 ECAN/EVC@2026-01-16_12: <= 2 cells, CPU CANLIQ 0 CANWAT 0 mm, rain 1 h CPU 8.28e-06 GPU 5.44e-06 mm, GPU canopy 0/0 -> R4"
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "verdict": "FAIL-new-class",
+ "domains": {},
+ "watch": [],
+ "new": [
+  "d01 QNICE@2026-04-11_05 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d02 QGRAUP@2026-04-10_00 (R2 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOW@2026-04-09_22 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWC@2026-04-09_22 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 SNOWH@2026-04-09_22 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)",
+  "d03 TAUSS@2026-04-09_22 (R5 companion invalid: no accepted parent-class flag within +-1 h; GPU 0.0)"
+ ],
+ "r4_cells": []
+}

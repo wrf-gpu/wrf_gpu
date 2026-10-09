@@ -1,0 +1,167 @@
+{
+  "id": "W3Rf_0115",
+  "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+  "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+  "original_cpu_reference": "original CPU-WRF R0115",
+  "hours": 72,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "scope": "Actual source-labelled comparison against original CPU-WRF; releasebe0 via explicit nativeBYTE628 bridge where measured source is7a. Frozen raw failures, frozen annex and manager Owner-ledger dispositions remain distinct; no source-execution relabel.",
+  "verdicts": {
+    "strict24": {
+      "status": "PASS",
+      "hours": 24,
+      "sha256": "b669e9178195bb5630329f4c6256c6d4d602cd2cd064284b0bab470eb5222ac2",
+      "report": "d6_24h_strict_verdict.json",
+      "breaches": {
+        "d01": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d02": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d03": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        }
+      }
+    },
+    "full_D6": {
+      "status": "FAIL",
+      "hours": 72,
+      "sha256": "66a9efcff40dd671588255ce61c8324fe0fbd269df248b787620f2409f49880f",
+      "report": "d6_72h_verdict.json",
+      "breaches": "d03: U10 \u03c451\u201351 (1 frames, max 1.67 > 1.5); V10 \u03c441\u201354 (9 frames, max 1.99 > 1.5)"
+    },
+    "integrity": {
+      "status": "PENDING",
+      "expected_report": "classes_all_72h.json"
+    },
+    "annex": {
+      "status": "PENDING",
+      "expected_report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": true,
+  "elapsed_seconds": 0.03742930793669075,
+  "receipt_sha256": "abc161d2447b7f097a8c518c02be8e6937e0e14a050f0472bddb1b204313e243",
+  "compression_receipt_sha256": "28f3bc6a16bfab69701d6d47f34ef732294793840b4d0c772fc7d6193b821d33",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "fb678075f6553971d72f0ccbba3ec5d3622f88a7073ac908fd8bf00960eda777"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "c789a2dcac8aece9bca6ae4151d2d72737f3ca562b69ce26eef16be8ac80e808"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "bd6e85f8499b5344afa0f3115cdeeb4337415d75e4e3bc809b99eb25cb69feb7"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "4df81d09073f2cfe25ff0946906035285682cc9d616e8c6b68538075b6b7a48b"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "751de952fac0e402422249f170e2ddc0df10d58025bb102907157a49e54b54ab"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "9dded252e0f82f29c1bc1b2e245fc4a76285eb125042c9a921539c81dd888090"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "3edf5cecb80f8167cca106207b705450bbb0dfc59fa7a8d0bb8cb494404a7d45"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "98f4f380bc2d873a9d5b37abf1ca6d9added41091b72d90ceb8522b135e80c6a"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "d3757ad11b34ebc958b88c1d8cffccc4f8cd8a2cf396bb3144219af40573f5e7"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "8c65c3600f22b3e4415d05eb7821e4d40bead869ffd6447be2366c52784b0135"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "ad59037056ff4d2600cc2272603a4c83ab4ff905166b876304613aefca565f80"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "a67060548979ffbeb6929d658c917cfc94e0ebdfc05be9197e6c0a01aacf22fe"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "51256320c76f95f59f837a5a3e8e6e6d53e0ca4a3ec5c0c6ce7dd63a6ed9e6a7"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "68f802ea451051c684a0a6a1531420766d084297f9bd683ce489630f1995a01d"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "900805dc848bd1b67d2dae5475458a5aa3415da9d6bb3ceebdaedb4716e9d427"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "d8091af8a838796e960eae9cbb0efc193041028194d5050729756abf36a28d2b"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "5173d767436d7943c2f789b4c0727abf65f6b098525dfd05b039281dffc90b6e"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "bd741ad4b352217d3b40c166d412cc812a57f0487015e31e2ddfc5dca17d44a9"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "69438238c3bb7d616757fefc7834cd4c268a7253d093e769e243989ec447fb7d"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "68622a414547b4cfceb187b502a2c22f40b5e229324cb56e24d1d04334076053"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "27f824902c45a9898b49917e2b9c108c1cd20613e3c8ceb86a30eda095e3d974"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "6354fc6164c8bb9e7c0c90da7f85addaf91031844346facdb0028091b35d2870"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "bc2bd322753ba3a6807babfa0c6e32cd834da6d99ef91cef3eb43cad570f2e8e"
+    },
+    {
+      "path": "index.html",
+      "sha256": "4fdf998444d95b04829ced82c776ebfbf5cd049752a4688f9755fa71147c59d1"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "9e9db41ba6bd885fa577bc9198733ce7e73df29d4f380df4cc982112deb7dfd9"
+    }
+  ],
+  "ready_part_reused": true
+}

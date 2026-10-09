@@ -19,6 +19,12 @@ from jax.experimental.pallas import triton as pt
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState
 from gpuwrf.kernels import fused_vertical_implicit as vi
 
+# GPUWRF_ACOUSTIC_NO_MU_FLOOR (b-core ledger row 7, default off): drop the non-WRF dry-mass floor of the mass kernel
+# (specified/nested domains scale the mu tendency when mu would fall below max(1, .5*mut); its scale 0 for a nonfinite
+# tendency never masked it, NaN*0 = NaN).
+# WRF advance_mu_t has no floor; release-case census counted 0 events (native_mass_guard_events) -> bit-neutral there.
+_NO_MU_FLOOR = os.environ.get("GPUWRF_ACOUSTIC_NO_MU_FLOOR", "0") == "1"
+
 # Stage invariants are held outside the recurrence. theta_ave is a diagnostic
 # alias of theta, reconstructed by the adapter instead of returned twice.
 EVOLVING_FIELDS=("u","v","w","ph","mu","mu_work","muts","muave","mudf","ww",
@@ -274,7 +280,7 @@ def _mass_kernel(r, out, *, nz, ny, nx, block, cfg, interpret=False):
     mu_tend = l2("mu_tend")
     tendency = dmdt+mu_tend
     scale = jnp.ones_like(tendency)
-    if cfg.specified or cfg.nested:
+    if (cfg.specified or cfg.nested) and not _NO_MU_FLOOR:
         floor = jnp.maximum(1.,.5*mut)
         delta = dts*tendency
         allowed = jnp.maximum(mut+old_work-floor,0.)

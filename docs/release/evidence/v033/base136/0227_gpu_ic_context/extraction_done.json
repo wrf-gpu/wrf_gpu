@@ -1,0 +1,16 @@
+{
+  "status": "EXTRACTION_DONE",
+  "domain_hours": 219,
+  "native_numeric_rows": 2406,
+  "baseline_metric_comparisons": 14436,
+  "all_cpu_gpu_pair_operands_finite": true,
+  "base_bytes_preserved": true,
+  "base_sha256": "d026449fca9ad570a07c2ab620b15f460356d71d239ebf2d5f08578a05de93f6",
+  "twin_receipt_sha256": "adc47f53620a9890c5d853219a661736877829aa2adb9a6e9d53103e27ff9f60",
+  "pair_reference": "gpu",
+  "pair_count": 1,
+  "confidence_interval": false,
+  "forecast_gate_claim": false,
+  "station_hold": true,
+  "cache": "NONE"
+}

@@ -1,0 +1,2444 @@
+{
+  "status": "PASS",
+  "groups": {
+    "base136": {
+      "primary_sets": 14,
+      "domain_hours": 3066,
+      "numeric_rows": 33684,
+      "png": 389,
+      "source": "136c6e51c (= forecast tree ccf8b7cf2)"
+    },
+    "W2_Monica": {
+      "sets": 1,
+      "domain_hours": 146,
+      "numeric_rows": 1604,
+      "png": 23,
+      "source": "471efc475",
+      "release_gate": "E41 HARD FAIL; D6 and integrity-annex pass"
+    },
+    "standalone_diagnostics": {
+      "sets": 5,
+      "domain_hours": 1095,
+      "numeric_rows": 12030,
+      "png": 115,
+      "labels": [
+        "V0227M",
+        "Z0115_ZP",
+        "Z0115_ZR",
+        "Y0115_YN",
+        "Y0115_YM"
+      ],
+      "source_scope": "V0227M69d8 versus originalCPU P; W2 Z/Y471 versus originalCPU R (ZP ICdiff disclosed)"
+    }
+  },
+  "png_total": 776,
+  "html_links_checked": 1544,
+  "assets": [
+    {
+      "path": "base136/20260102_18z_a1/PSFC_bands.png",
+      "sha256": "d3fea4a6a657fd35eafeb12000fabd73e4ad18eb4f717caf90c71fa29acb8bc8"
+    },
+    {
+      "path": "base136/20260102_18z_a1/PSFC_summary.png",
+      "sha256": "ed85c880b58281725acfe225293a12c3b6036a124d4c64d8a163d9d446c33666"
+    },
+    {
+      "path": "base136/20260102_18z_a1/QVAPOR_bands.png",
+      "sha256": "c7f80f431a9b509701ed12d3ad481ea8ddfde2bce1cd74522c422e78f0f04986"
+    },
+    {
+      "path": "base136/20260102_18z_a1/QVAPOR_summary.png",
+      "sha256": "e21e295e6ab5c41eadea728c4a1dd750054326f7ab72b38ef75464e0e8f060f6"
+    },
+    {
+      "path": "base136/20260102_18z_a1/RAINNC_bands.png",
+      "sha256": "96a59c9971df5afface4cc399d9c7aaf1826a64d45d6202c3da03e9d635efd98"
+    },
+    {
+      "path": "base136/20260102_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "7230291e9a5dc5c1add734aef13bff60b93d7386080b310f1801e75513273e8b"
+    },
+    {
+      "path": "base136/20260102_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "ed3524210abf94e9f0292fd20a19e6ba0f9b1674327cdde0d40aeee19beb562d"
+    },
+    {
+      "path": "base136/20260102_18z_a1/RAINNC_summary.png",
+      "sha256": "103189976a6d10bb75c36b1e31309a1bdcd6bc820088a283e9ee6d8b842e778a"
+    },
+    {
+      "path": "base136/20260102_18z_a1/T2_bands.png",
+      "sha256": "381307893304585864dff7f0f1045ad9d19366d15ef9c3168c8a66925339e3f2"
+    },
+    {
+      "path": "base136/20260102_18z_a1/T2_summary.png",
+      "sha256": "92fc1aa4530fd15441d22d176bfe8e7f8e683b52ea68dea002d7cc08a0a17b31"
+    },
+    {
+      "path": "base136/20260102_18z_a1/T_bands.png",
+      "sha256": "9c19206545317aaac293e7900d5a76b9c307c20ccb2fe6425ad86406abbbcfa3"
+    },
+    {
+      "path": "base136/20260102_18z_a1/T_summary.png",
+      "sha256": "9b51e0c05dbebd8f63614e646ef7e7aa508b83d3b199ecd290b3b5db69d84a06"
+    },
+    {
+      "path": "base136/20260102_18z_a1/U10_bands.png",
+      "sha256": "36eaf90a0ff06abfcffe0025bcfab9e21726103b397597c84563fda9e4835ec3"
+    },
+    {
+      "path": "base136/20260102_18z_a1/U10_summary.png",
+      "sha256": "4041e644e66df5e59db4a0f28666ac1f30b06fbed3ccb411acaa3f1fd7b6b363"
+    },
+    {
+      "path": "base136/20260102_18z_a1/U_bands.png",
+      "sha256": "38f571297b86612651319e3cf306934d47f733c4b85669db6e24258b4d25c0f6"
+    },
+    {
+      "path": "base136/20260102_18z_a1/U_summary.png",
+      "sha256": "6c36c9ced7a0ca02a126b785cde3244541116b6b8431a8b466832247b5bf2dcb"
+    },
+    {
+      "path": "base136/20260102_18z_a1/V10_bands.png",
+      "sha256": "1792de041d31e5ba631291d3abb02baf386c217eeb1847d887ddda269ec876cd"
+    },
+    {
+      "path": "base136/20260102_18z_a1/V10_summary.png",
+      "sha256": "01c7919e6599f8edca498cc651c1ec2e3c0fcb03ab2da627fb6af1a59445e86c"
+    },
+    {
+      "path": "base136/20260102_18z_a1/V_bands.png",
+      "sha256": "1886fa90c0fbf301beebeba715d7e0a708a5ca30010d6a5fab49b35b11fe91ba"
+    },
+    {
+      "path": "base136/20260102_18z_a1/V_summary.png",
+      "sha256": "dae967d8b5c6f233b5bcbe57f0df8b6c7c0fc53484e1d5c5abf67a4f4bbdee4a"
+    },
+    {
+      "path": "base136/20260102_18z_a1/W_bands.png",
+      "sha256": "023406ed2aa60995f7f2b4c6b03583c5ddab2505505d482cfabb615aa0180e0a"
+    },
+    {
+      "path": "base136/20260102_18z_a1/W_summary.png",
+      "sha256": "f240737efecbcbfa3186273ab394aabe8e15139ff2be2336638d189946125ea3"
+    },
+    {
+      "path": "base136/20260102_18z_a1/extraction_done.json",
+      "sha256": "8e76b276dfb110ed3c05e0177f0c923dc6043002b054fde813f614f56f43e2f4"
+    },
+    {
+      "path": "base136/20260102_18z_a1/heatmap.png",
+      "sha256": "09b789c27b39c7c66133d8b3040b6d56b3043d11371f28375ac3336d996932b2"
+    },
+    {
+      "path": "base136/20260102_18z_a1/index.html",
+      "sha256": "2bcdb5d60a6e657682f35e0f4a3bfd3a2f1f0c2d3c24c7919e806463cd3e16dd"
+    },
+    {
+      "path": "base136/20260102_18z_a1/metrics.json",
+      "sha256": "837e29f733db4ffce19b930eb52233f2b04192e6222f90e2bcc95a52b3ac5e66"
+    },
+    {
+      "path": "base136/20260222_18z_a1/PSFC_bands.png",
+      "sha256": "9e41c06ce5624c4a22735a513eb82972496b3925a8043a0ac6a3f29c76742dc7"
+    },
+    {
+      "path": "base136/20260222_18z_a1/PSFC_summary.png",
+      "sha256": "cb7ffba7abf0ecab22064d50662a41aa2d78b7a1544597d88592b8cbbddf6fea"
+    },
+    {
+      "path": "base136/20260222_18z_a1/QVAPOR_bands.png",
+      "sha256": "f8299b024dbc08e18133a68652f22b62418488b70d3bbbdb5c68af04fb7d48d8"
+    },
+    {
+      "path": "base136/20260222_18z_a1/QVAPOR_summary.png",
+      "sha256": "53046b034267083a86d70e86e3efa7398db77da245adecf3965b1af5ddadc690"
+    },
+    {
+      "path": "base136/20260222_18z_a1/RAINNC_bands.png",
+      "sha256": "da6d227f28488da07ba745e1981904c0b67c2dd7ac889a189c0c3cc56d9f52ef"
+    },
+    {
+      "path": "base136/20260222_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "96d0cfaa5620d7829449db765ef990e378787870ea034a0490308a50c254e82d"
+    },
+    {
+      "path": "base136/20260222_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "0a04b1211b296b450a84db4fb47a9c6bc88f07f249a2cf0885bc343db9739056"
+    },
+    {
+      "path": "base136/20260222_18z_a1/RAINNC_summary.png",
+      "sha256": "b4000531ce75a1757f02f3bcc26218dad193b13bb2bb80149450102cf8522c68"
+    },
+    {
+      "path": "base136/20260222_18z_a1/T2_bands.png",
+      "sha256": "64b63d25289d7df9069689d08522bb751cfe0f58edf0472fe185c34872e053d0"
+    },
+    {
+      "path": "base136/20260222_18z_a1/T2_summary.png",
+      "sha256": "0d34027db37e4d6605b7b8073ec18989af81b3adbeabf78241bcfc90d7745885"
+    },
+    {
+      "path": "base136/20260222_18z_a1/T_bands.png",
+      "sha256": "d32c283a74aa896485f1f672b5135a45a1ad2d601f406cf18202f0e7a8374660"
+    },
+    {
+      "path": "base136/20260222_18z_a1/T_summary.png",
+      "sha256": "b483ba52dde2cae80fd0e88b94c59190a54d74f36d9920ba168693d26c79903f"
+    },
+    {
+      "path": "base136/20260222_18z_a1/U10_bands.png",
+      "sha256": "e3f9f6482c41dd9fb14df18072e45282bde4ecc7e1f7555ed0138583a9201581"
+    },
+    {
+      "path": "base136/20260222_18z_a1/U10_summary.png",
+      "sha256": "21ad37d518d884beda8aebd61caa4764e37310d197337000e841568373190a0a"
+    },
+    {
+      "path": "base136/20260222_18z_a1/U_bands.png",
+      "sha256": "54f1527acbf0e1592c658e58566c72a0d81b3f9fa6f3e1a77ece54d57d6eaa1a"
+    },
+    {
+      "path": "base136/20260222_18z_a1/U_summary.png",
+      "sha256": "3b44f304435765d75c7aa294b762b252592f9251d2221867255d114b645f1bb5"
+    },
+    {
+      "path": "base136/20260222_18z_a1/V10_bands.png",
+      "sha256": "0a58f43eeb63ab3251ebb7053803c5d05ada78e1260d1072bbfcfdc85a871ea4"
+    },
+    {
+      "path": "base136/20260222_18z_a1/V10_summary.png",
+      "sha256": "b13747f9991bf150e3fc305251e653e2f5fc83f442f6dd3c52d2eca0e7cd0b86"
+    },
+    {
+      "path": "base136/20260222_18z_a1/V_bands.png",
+      "sha256": "ae526955d47bee95e5a7e03424061196ce2f898308329f98ab0f40430fc5afb1"
+    },
+    {
+      "path": "base136/20260222_18z_a1/V_summary.png",
+      "sha256": "afd493e5747d619711a593d5d238e022d4a0e3efa72e380db07d8a0bd8f524d4"
+    },
+    {
+      "path": "base136/20260222_18z_a1/W_bands.png",
+      "sha256": "eadefd302f07e59791a5b45696996f02e914d97ccd5abad4eb523cb5602e0cac"
+    },
+    {
+      "path": "base136/20260222_18z_a1/W_summary.png",
+      "sha256": "a32d581dced87682f1b1fc7e2f47f266a25e90cdfc2820b5aa4e293c8b6a86f1"
+    },
+    {
+      "path": "base136/20260222_18z_a1/extraction_done.json",
+      "sha256": "36d1eb19c2850ffbe17d1b0f2a50ad8a8f171a77db867a93a80bbd7dbda7a7e3"
+    },
+    {
+      "path": "base136/20260222_18z_a1/heatmap.png",
+      "sha256": "414399dd170ee52b3e08fc238c8dfd5b05e520cf45e26eef8f5931383a122e92"
+    },
+    {
+      "path": "base136/20260222_18z_a1/index.html",
+      "sha256": "d183a9618845921615244fa87bdca09a9ac14b21316b69a8427b8cea94b2d4ae"
+    },
+    {
+      "path": "base136/20260222_18z_a1/metrics.json",
+      "sha256": "561afc72057c31c5a96f6fd396b20c4ffc353038eeb048b1ebde5de1f624d2fe"
+    },
+    {
+      "path": "base136/20260227_18z_a1/PSFC_bands.png",
+      "sha256": "05e2d9fec6701e539db4530a7fbe676e9c2be585fb791df4e6efd9e9dc7e91f0"
+    },
+    {
+      "path": "base136/20260227_18z_a1/PSFC_summary.png",
+      "sha256": "9c29ee304080531397e87fa2230125b5572286a2f762b1b19559b51bffe65ef9"
+    },
+    {
+      "path": "base136/20260227_18z_a1/QVAPOR_bands.png",
+      "sha256": "1d7df7c4f3703930371768984b6a56deb5e9ec5da0e12f682338ad3fa2468ff1"
+    },
+    {
+      "path": "base136/20260227_18z_a1/QVAPOR_summary.png",
+      "sha256": "dc499010a9be19006b4583b99541e1c2b1d27323fe617e3f79b8a5288348c9f0"
+    },
+    {
+      "path": "base136/20260227_18z_a1/RAINNC_bands.png",
+      "sha256": "d013a5dedc299341da3f29ebe8a4d41f671be7c8d0aa7d33932235d6dafdda5c"
+    },
+    {
+      "path": "base136/20260227_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "cd803ba706d18c348b9236c0c6204f2303b95c425146feddac97c16a5469d4d9"
+    },
+    {
+      "path": "base136/20260227_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "83674cf355840d4a0fbfcf25a772f3cd97c8def5e2d0dc0257cf9c5dd059311e"
+    },
+    {
+      "path": "base136/20260227_18z_a1/RAINNC_summary.png",
+      "sha256": "614cc13aa539b6f160526a2905360856410200dfc3270868c2483157936f00e5"
+    },
+    {
+      "path": "base136/20260227_18z_a1/T2_bands.png",
+      "sha256": "bbea92c2e8f482743d3f2075c613baef06a1a67470c2cb6e1a6b3e60960193df"
+    },
+    {
+      "path": "base136/20260227_18z_a1/T2_summary.png",
+      "sha256": "6af5b1c873bec7ee98e2199955a41d99235d8878c208060c59400d7aaffd6a31"
+    },
+    {
+      "path": "base136/20260227_18z_a1/T_bands.png",
+      "sha256": "25d2c6a62e6cf443322b292db76ed31413d4a8a10952f5451e9cab06954812c9"
+    },
+    {
+      "path": "base136/20260227_18z_a1/T_summary.png",
+      "sha256": "80c1eeec1ee6a5b7187a3b0c8a0aa74002e33c167249260f21661880eecd155c"
+    },
+    {
+      "path": "base136/20260227_18z_a1/U10_bands.png",
+      "sha256": "c28176c6589e72aa6cf1aedf1514a1b89e5ca9e856d24d359c60c74febf7de88"
+    },
+    {
+      "path": "base136/20260227_18z_a1/U10_summary.png",
+      "sha256": "5ba6346f4ddd01a6c7cb13db71b530c73c3ffc5afaf5725be07d1713e6873c3a"
+    },
+    {
+      "path": "base136/20260227_18z_a1/U_bands.png",
+      "sha256": "d2b4f8f524f6151177b4031fb9813e324d8040b8fd06d27c788904ed0e746e2a"
+    },
+    {
+      "path": "base136/20260227_18z_a1/U_summary.png",
+      "sha256": "ae48a9388b6acef380dc11e5b4b021b1fce936a25751576d571e6745875e0235"
+    },
+    {
+      "path": "base136/20260227_18z_a1/V10_bands.png",
+      "sha256": "24a2e782ba7c283e11a06768b950016b941d1eaef05c219c515a92df6982b4aa"
+    },
+    {
+      "path": "base136/20260227_18z_a1/V10_summary.png",
+      "sha256": "397418f49fb9596ca2d8ebf8e724e058034e7d2e07d9db4fbd00ac5457a4b9b8"
+    },
+    {
+      "path": "base136/20260227_18z_a1/V_bands.png",
+      "sha256": "1b1f0f2782a20c1a53bc7885adbd51c526c47e0ea0a257098fa98d7e6eb06767"
+    },
+    {
+      "path": "base136/20260227_18z_a1/V_summary.png",
+      "sha256": "f3a98ebbbc147d708478dd226afaef43866417be6f304defe48201e4dc369a05"
+    },
+    {
+      "path": "base136/20260227_18z_a1/W_bands.png",
+      "sha256": "7efa356f201e4d18d8bf5e999502540d085028f7cc77556baff45ad4aee7bea5"
+    },
+    {
+      "path": "base136/20260227_18z_a1/W_summary.png",
+      "sha256": "7bbdcc09c9961534e993aabd804bfef063293d6f1dcb14c7502fe0cd0c0c8ed2"
+    },
+    {
+      "path": "base136/20260227_18z_a1/extraction_done.json",
+      "sha256": "455da05eb57baf0d96d8ebff8e0794a02495f10bc328bd341e13bd93c13c8d08"
+    },
+    {
+      "path": "base136/20260227_18z_a1/heatmap.png",
+      "sha256": "b4e2259389da5019ca687b8cb50d15cb378da6b2dfdd50632b9f3e6b8244cccf"
+    },
+    {
+      "path": "base136/20260227_18z_a1/index.html",
+      "sha256": "96c310eaf058c908659b10d01155f4a271f51d86e8a1e373c0d7a127db08b2f9"
+    },
+    {
+      "path": "base136/20260227_18z_a1/metrics.json",
+      "sha256": "b93600bfb8aa315fa7f1e9907532529b41b47d595d360a0e7c6830e3dd6aa703"
+    },
+    {
+      "path": "base136/20260408_18z_a1/PSFC_bands.png",
+      "sha256": "46cbf6d24062cfebdb3cb16c1cb02f5b140dc5af8f60563f0ce5d348e7f83b56"
+    },
+    {
+      "path": "base136/20260408_18z_a1/PSFC_summary.png",
+      "sha256": "4b4166f80888db2784fc89818131edb2db2d599aa1002664a0db006715df3734"
+    },
+    {
+      "path": "base136/20260408_18z_a1/QVAPOR_bands.png",
+      "sha256": "2b3f18fd2dc56b284a790aed83bb886a128b262e16fc89d40d90df922a660f59"
+    },
+    {
+      "path": "base136/20260408_18z_a1/QVAPOR_summary.png",
+      "sha256": "a9c21bb00486ef6d6ab8ef0817d0eeb321b95db41351be85bc56e222f352e209"
+    },
+    {
+      "path": "base136/20260408_18z_a1/RAINNC_bands.png",
+      "sha256": "fff285784d60e095c91fb66f90a193dddc4f0576b153f10adece5990bc4749ce"
+    },
+    {
+      "path": "base136/20260408_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "46df991fb3261063c885761789af272c6799a141617853ab0329058abac2da42"
+    },
+    {
+      "path": "base136/20260408_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "6c648c42c77561ad72cba495f316609615e8e3f2614355e31edad8454155a0e3"
+    },
+    {
+      "path": "base136/20260408_18z_a1/RAINNC_summary.png",
+      "sha256": "3fa58071b3d22d978a6fc0c53a3d78f658794d2399c495931615a0de8efb2273"
+    },
+    {
+      "path": "base136/20260408_18z_a1/T2_bands.png",
+      "sha256": "85e31a885fe8fb414b72513a0e8b5b41b3d72b83e12a4cb6876318c3140977a7"
+    },
+    {
+      "path": "base136/20260408_18z_a1/T2_summary.png",
+      "sha256": "e7ac1ce5ce8bbeb636147c9155f69bca70197ec2f0c394f1a6342b55356fc69f"
+    },
+    {
+      "path": "base136/20260408_18z_a1/T_bands.png",
+      "sha256": "00b26af03852f9127ef5c9aa71e0699d1037bf7059ba71c11b975bde4e21f867"
+    },
+    {
+      "path": "base136/20260408_18z_a1/T_summary.png",
+      "sha256": "1fa0bf8c2cdf9c52d33f46c595749a59ba8b5306b27c27ec002178d90a95e6dc"
+    },
+    {
+      "path": "base136/20260408_18z_a1/U10_bands.png",
+      "sha256": "6f19eae6dea2bee4ae1970c52a66e9fa2920e62d35f1519d6e8f002b849c573e"
+    },
+    {
+      "path": "base136/20260408_18z_a1/U10_summary.png",
+      "sha256": "269a8ae8e3a77d6eefb6c68dd2afca9c2190955001efc30a24e58c86da8bbc19"
+    },
+    {
+      "path": "base136/20260408_18z_a1/U_bands.png",
+      "sha256": "a20ce1b3359867777df53e75ecb6886ee8fb2c01002794e245dcd17ed2bd5f28"
+    },
+    {
+      "path": "base136/20260408_18z_a1/U_summary.png",
+      "sha256": "5080cf6a11a0f8d3912db447edd94c05f6f6babf65e3bb5db3f42df6b2777394"
+    },
+    {
+      "path": "base136/20260408_18z_a1/V10_bands.png",
+      "sha256": "eb826ef8a3b28e93cdf10ec4c2c4d45ed8ddfbc56902a784c5b0fcddca70b204"
+    },
+    {
+      "path": "base136/20260408_18z_a1/V10_summary.png",
+      "sha256": "c480430d248ed322661cf45862329e6c61e4d5685633230689b04c06719a53aa"
+    },
+    {
+      "path": "base136/20260408_18z_a1/V_bands.png",
+      "sha256": "c2500be2b611daf14b8a4e18e0043fd5672a23a70a7dd558daca53861c09aafe"
+    },
+    {
+      "path": "base136/20260408_18z_a1/V_summary.png",
+      "sha256": "9024f5a1ce29971ae5119652b468e4279cbf5dbd2c0e8754af6f69d9758c0e89"
+    },
+    {
+      "path": "base136/20260408_18z_a1/W_bands.png",
+      "sha256": "e6958d7bb0b8d26a68ab926bae96c9bf8115ca6ebaf4c67762199802c031ee81"
+    },
+    {
+      "path": "base136/20260408_18z_a1/W_summary.png",
+      "sha256": "cab7a978fa13468ec2533025ce3a5c9876548f579108abe37c57543f575ec13b"
+    },
+    {
+      "path": "base136/20260408_18z_a1/extraction_done.json",
+      "sha256": "33935c7ec6f7ad3662a6dc27e17040dd7f4c165f007cae26c26a67c80d211371"
+    },
+    {
+      "path": "base136/20260408_18z_a1/heatmap.png",
+      "sha256": "0cb53c354980e7ef54ffd52ec749ddf14169d42ae9b6a336d4ee5f67cdd7c460"
+    },
+    {
+      "path": "base136/20260408_18z_a1/index.html",
+      "sha256": "6f4adabcb34e4cfa8cb35260f599400a31b294bd5f8322e6635322da15d2cbd9"
+    },
+    {
+      "path": "base136/20260408_18z_a1/metrics.json",
+      "sha256": "dc536a9255b44b9dd4efdeca8e993ed4d7629d880a2095633b768071f756a92d"
+    },
+    {
+      "path": "base136/20260115_18z_a1/PSFC_bands.png",
+      "sha256": "14ff7289c15aa6ba9dc24c0e8faea6ec1514160b87595f08002c74922274365c"
+    },
+    {
+      "path": "base136/20260115_18z_a1/PSFC_summary.png",
+      "sha256": "078359fb6b4a46c3ac8867739d38e842b742e97ca9895de9a89bc8e440f2e955"
+    },
+    {
+      "path": "base136/20260115_18z_a1/QVAPOR_bands.png",
+      "sha256": "9eb86bb88de5e615383e47102c8dba4eae9735b2ba6ad7c3faf41d4b9e2527b1"
+    },
+    {
+      "path": "base136/20260115_18z_a1/QVAPOR_summary.png",
+      "sha256": "433e00e3c30f2f189a12bd28201d83c624d86051d1bc3a325813633cf19adfbb"
+    },
+    {
+      "path": "base136/20260115_18z_a1/RAINNC_bands.png",
+      "sha256": "99339350f925d3316f319f415dbcd6b6bc88c7f275100378cda4d61044f6044b"
+    },
+    {
+      "path": "base136/20260115_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "be2ef533f5ef1ef42ad166e5e525d34b6cf613c741e5f0d4f706810375209e27"
+    },
+    {
+      "path": "base136/20260115_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "7f52b05704b3beabb3330999af8ee0dd9581773adec3c219deec43ff775c95d4"
+    },
+    {
+      "path": "base136/20260115_18z_a1/RAINNC_summary.png",
+      "sha256": "f53fc6931503f5e5173129960d8f7f5c65df8b3e6bfc4bd5163b8cfd85f95928"
+    },
+    {
+      "path": "base136/20260115_18z_a1/T2_bands.png",
+      "sha256": "9f45d8d58d4ecf8b98a2c948aba6faaa25d2ea962bb40af963ba4bce9cca6e3f"
+    },
+    {
+      "path": "base136/20260115_18z_a1/T2_summary.png",
+      "sha256": "2b4668ce684a16fa8f6b946c2dba62c42a6b5ab3bb8db8182cb72674d122fa0e"
+    },
+    {
+      "path": "base136/20260115_18z_a1/T_bands.png",
+      "sha256": "178e38bd0b3d70b0ee547ffd322380ee2d162c6fe92c1b4b22ec5f45e7127a41"
+    },
+    {
+      "path": "base136/20260115_18z_a1/T_summary.png",
+      "sha256": "7c05d37f77909b8bdff8ede011f70867d4967bd14c8bce32ff6fcd299b6fcbc6"
+    },
+    {
+      "path": "base136/20260115_18z_a1/U10_bands.png",
+      "sha256": "0d90cbac15ac23d2e8d68e68999c9674c661d85a00d1c881d3c1da0062c1ec53"
+    },
+    {
+      "path": "base136/20260115_18z_a1/U10_summary.png",
+      "sha256": "6218310d66ad27a1d01e4f59007538ed22cbbdea22564984cb70c10888024d70"
+    },
+    {
+      "path": "base136/20260115_18z_a1/U_bands.png",
+      "sha256": "0742a1f95c456b4f923a742276db0ef2c63c77ef0cea96f5001636912f89da5e"
+    },
+    {
+      "path": "base136/20260115_18z_a1/U_summary.png",
+      "sha256": "1c25b621ab95e3456771bafacd0a983a1c339c06ca5b8b99ac8f0f84b39d4359"
+    },
+    {
+      "path": "base136/20260115_18z_a1/V10_bands.png",
+      "sha256": "9a6f9bb64240fc5e0ceb88b1e62942417ba41b2e17990aba174d762884312887"
+    },
+    {
+      "path": "base136/20260115_18z_a1/V10_summary.png",
+      "sha256": "600222ed7e5b48ab8d6bf04710d559f2e52e0cc13e372c87c28664758fb2a605"
+    },
+    {
+      "path": "base136/20260115_18z_a1/V_bands.png",
+      "sha256": "d75eeb733a101fa7f07eecd73bc37d86909b9a4ade23d4e49d259fbb8d56e07b"
+    },
+    {
+      "path": "base136/20260115_18z_a1/V_summary.png",
+      "sha256": "d8c54825471f10aa89bde1071869702a4c50d0f135719b38fa17392672517897"
+    },
+    {
+      "path": "base136/20260115_18z_a1/W_bands.png",
+      "sha256": "32e47a987a8dfeac687e7df52020c9926567bf4d7785b56a46e1be0f28e43b60"
+    },
+    {
+      "path": "base136/20260115_18z_a1/W_summary.png",
+      "sha256": "778f871b9f2c4dc37e3c8d08e26cdc4cd8502a880f135c2cc8f3a9df79ca1d7d"
+    },
+    {
+      "path": "base136/20260115_18z_a1/extraction_done.json",
+      "sha256": "597b4e485f5f08bab60659f5229649ceed1d606cb99e851d561f19460a67c49c"
+    },
+    {
+      "path": "base136/20260115_18z_a1/heatmap.png",
+      "sha256": "580aea654c7596487aa3e80f846b9fd7fe42aed012ab715b8582aa20d8bc4746"
+    },
+    {
+      "path": "base136/20260115_18z_a1/index.html",
+      "sha256": "9a954eaefe3b55444dd321cb16a8572ebf09a5ca20eadc1056d11d7daec676c8"
+    },
+    {
+      "path": "base136/20260115_18z_a1/metrics.json",
+      "sha256": "3362a0c1d22afde1a307275b0d91990b466ed17c739a471c05abec13af18f66f"
+    },
+    {
+      "path": "base136/20260120_18z_a1/PSFC_bands.png",
+      "sha256": "b6be3740262d242b11769c233ac6309793f0e156d02496a71ce3104692f94c61"
+    },
+    {
+      "path": "base136/20260120_18z_a1/PSFC_summary.png",
+      "sha256": "62708bcbfc53e6407f68a6718538f298ca6b7d33b39f847b006ee009698eea3d"
+    },
+    {
+      "path": "base136/20260120_18z_a1/QVAPOR_bands.png",
+      "sha256": "d5a4e2501f96251a0278bd8fb75a6c1c01f6a36cccb0118a972804d1d79476af"
+    },
+    {
+      "path": "base136/20260120_18z_a1/QVAPOR_summary.png",
+      "sha256": "13d22aefbc2a509eaa9a4e5f662d69d1ece2d76497e5e2a007e4f1363f704311"
+    },
+    {
+      "path": "base136/20260120_18z_a1/RAINNC_bands.png",
+      "sha256": "0d5c13098d204c098c5db2f51c3812d04d9b52e42ee9d485676345c45f17ce06"
+    },
+    {
+      "path": "base136/20260120_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "6ba640fc37c020517fbb421521b5ced546314b9777db7a1092691ed4d7fe29b6"
+    },
+    {
+      "path": "base136/20260120_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "fd610230fed4f255e43399d6b2c3d0a24459055ce647ffdbee84b066605342c3"
+    },
+    {
+      "path": "base136/20260120_18z_a1/RAINNC_summary.png",
+      "sha256": "297d5873d056bb11e41fb4777f2f3b75a0a7c474a765599d67a0e409301cbe31"
+    },
+    {
+      "path": "base136/20260120_18z_a1/T2_bands.png",
+      "sha256": "b0314bf8651e087882258fb95a7a4539693cbf0632f857a306ed66ec36f48510"
+    },
+    {
+      "path": "base136/20260120_18z_a1/T2_summary.png",
+      "sha256": "48439c2bced338fc293f406e3518ab24acef10cef756a3375923c6a7a4cf89db"
+    },
+    {
+      "path": "base136/20260120_18z_a1/T_bands.png",
+      "sha256": "35ec3e6beff0696e4c3dbdc156d23006e3e1f9e6ddda91711b2380b9c0ac432a"
+    },
+    {
+      "path": "base136/20260120_18z_a1/T_summary.png",
+      "sha256": "a15114bab78062615bda23f2054dcd19732ff33bd94e07c30c0ef2a3688a0e98"
+    },
+    {
+      "path": "base136/20260120_18z_a1/U10_bands.png",
+      "sha256": "2a69c21983fec2b5c79ebc1aa7802c67a857f8fc74ad7371688d102b56f4d0ba"
+    },
+    {
+      "path": "base136/20260120_18z_a1/U10_summary.png",
+      "sha256": "04756e8b28d91a09ae6eba9382aab82b159887b5c677e22c0f731ec843c05890"
+    },
+    {
+      "path": "base136/20260120_18z_a1/U_bands.png",
+      "sha256": "f7c796b962be429cd3f5b6edd292cf911e6f9bb849cf5bf2589ec3cba51ff665"
+    },
+    {
+      "path": "base136/20260120_18z_a1/U_summary.png",
+      "sha256": "076c49e679cba2063cca1084c3a02552b654162bdc72ef5381e97a365eda4851"
+    },
+    {
+      "path": "base136/20260120_18z_a1/V10_bands.png",
+      "sha256": "bfe673d6f7550ddf91b3dd3d6a8357f20e85c639a8a72797b20273ace3f4595b"
+    },
+    {
+      "path": "base136/20260120_18z_a1/V10_summary.png",
+      "sha256": "d83e452a459c96cd7ede38a48a6fc45061d91d8a379b834e9d06afe845e8cf6a"
+    },
+    {
+      "path": "base136/20260120_18z_a1/V_bands.png",
+      "sha256": "a69a55812033f9eef454a9d551417bb7d59b070ddbc50c4ec8170fbb91da5739"
+    },
+    {
+      "path": "base136/20260120_18z_a1/V_summary.png",
+      "sha256": "e73b60e12322c0dc9f9d84fb80c1792db31c691afa30eedc4eb94a031b1d3867"
+    },
+    {
+      "path": "base136/20260120_18z_a1/W_bands.png",
+      "sha256": "6f05fe659f4ef4c1099c143ffb15d4641e7fa78619356030e90374e56b32c532"
+    },
+    {
+      "path": "base136/20260120_18z_a1/W_summary.png",
+      "sha256": "5bd4d666a077963f84fa3f1c1059c71eaa2d23fecbe2499f88316dfb91a95655"
+    },
+    {
+      "path": "base136/20260120_18z_a1/extraction_done.json",
+      "sha256": "2cdd24e6d898b6024a9443d2f55dbe6f3de35660203cc22f1fabc201895b9a8f"
+    },
+    {
+      "path": "base136/20260120_18z_a1/heatmap.png",
+      "sha256": "8ac8e5546ccef321dff3ecb5bd976fabef33abacf89d1ae33f4934b5d06c1ebb"
+    },
+    {
+      "path": "base136/20260120_18z_a1/index.html",
+      "sha256": "351e04638a3d4f5110f179c325f0699cd1956c1118db8c26d277fe7de3816bae"
+    },
+    {
+      "path": "base136/20260120_18z_a1/metrics.json",
+      "sha256": "59069478648599c42651d98ccd24ece6dcbbc167c7a6c49fed2b5d4ee7198d2c"
+    },
+    {
+      "path": "base136/20260502_18z_a1/PSFC_bands.png",
+      "sha256": "38c4a5b81aa7ac5812792a6bd5795cec7e4010b5f00b1eba7b9bfb6a19c493e2"
+    },
+    {
+      "path": "base136/20260502_18z_a1/PSFC_summary.png",
+      "sha256": "2574cc35fcb5ec71dc6993a55e2b43a324842c98a5e383fa087e4eae6d763b5c"
+    },
+    {
+      "path": "base136/20260502_18z_a1/QVAPOR_bands.png",
+      "sha256": "601433d70379695bb62789796fa448933f83061e8ba1cc094384c9e2825a5c2a"
+    },
+    {
+      "path": "base136/20260502_18z_a1/QVAPOR_summary.png",
+      "sha256": "68c82f3ab4ffa8bd0ebb682a506c4a7f9b1e6e8f90525a718f342530da8dd10c"
+    },
+    {
+      "path": "base136/20260502_18z_a1/RAINNC_bands.png",
+      "sha256": "5221248ec273d523f597a65f994a471ec3956da52ff49d392b653e097409e4bb"
+    },
+    {
+      "path": "base136/20260502_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "4545880962e79bbfb73753a55e0f2ffb8882453eea57d99b71105cdf943c9324"
+    },
+    {
+      "path": "base136/20260502_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "15049577ecea6b31ebc2fd3cd1d129e14f3a82304339b074a35437c2a02d8400"
+    },
+    {
+      "path": "base136/20260502_18z_a1/RAINNC_summary.png",
+      "sha256": "ec32dca9b5651048cbcae125856c0e9424b7a1471d6985bcccaa3db80246a79b"
+    },
+    {
+      "path": "base136/20260502_18z_a1/T2_bands.png",
+      "sha256": "e671f98ae788a798beed87806b421b168198762597f09cc8b0537753062fe35a"
+    },
+    {
+      "path": "base136/20260502_18z_a1/T2_summary.png",
+      "sha256": "2454fd13ff38c8c0f048e9e4cba3b0f88567778d8040f4c3af092ea72286b9d8"
+    },
+    {
+      "path": "base136/20260502_18z_a1/T_bands.png",
+      "sha256": "d20aae265c1ffb5ea9eb024a4967db665b80fdd12d74485c6e9cf8a5c6034362"
+    },
+    {
+      "path": "base136/20260502_18z_a1/T_summary.png",
+      "sha256": "a3ec83573fec9dd6d63c43c7debf3b819d7827a7884f3c212698ca17502fb8df"
+    },
+    {
+      "path": "base136/20260502_18z_a1/U10_bands.png",
+      "sha256": "cfa410a291de4e08fbcfaede196baa425d8623d9e2a433be223f9bcc6312a370"
+    },
+    {
+      "path": "base136/20260502_18z_a1/U10_summary.png",
+      "sha256": "32c9b165af89c6d29fb76c77823b09741fef5f05af76b47f8041acf4f9452fb8"
+    },
+    {
+      "path": "base136/20260502_18z_a1/U_bands.png",
+      "sha256": "21ee36ba1b6f2a860d0564677a18ef0b5f914441db3caeb2b2b63b442efd241d"
+    },
+    {
+      "path": "base136/20260502_18z_a1/U_summary.png",
+      "sha256": "640dcf5dd9a3a66fb88431a4761fb99d730fa030ab12027676c51102be62f546"
+    },
+    {
+      "path": "base136/20260502_18z_a1/V10_bands.png",
+      "sha256": "eda5aea904c4c16815f1b99cc193fb1e0a4b44ae908d70f692d343b218dbf887"
+    },
+    {
+      "path": "base136/20260502_18z_a1/V10_summary.png",
+      "sha256": "41d20ca22b3194714a1be209fd7f0af9f3b428c3b7dda55a2a17eefe887b8330"
+    },
+    {
+      "path": "base136/20260502_18z_a1/V_bands.png",
+      "sha256": "a624bcb4658c460d54f15f2d6fb62dd85ad30746f453accc720a3fa2e7306ff2"
+    },
+    {
+      "path": "base136/20260502_18z_a1/V_summary.png",
+      "sha256": "324cd9940146c590d5deb1b55e451ade38056ca4a4415a0b226e59fae61c0734"
+    },
+    {
+      "path": "base136/20260502_18z_a1/W_bands.png",
+      "sha256": "07f538a5e95923f6fb67651439653082ccee2df53432fde001dfbcf75ab44b74"
+    },
+    {
+      "path": "base136/20260502_18z_a1/W_summary.png",
+      "sha256": "59b2e434ba0615efb2e7608132b8e11becd9cff6544f2cd01dc18c0a711d9e3f"
+    },
+    {
+      "path": "base136/20260502_18z_a1/extraction_done.json",
+      "sha256": "a95b16709be1007fff55d1816456612b48b81ef6f5b9835c23380252373c1be3"
+    },
+    {
+      "path": "base136/20260502_18z_a1/heatmap.png",
+      "sha256": "5eb95d597b36870138913b90105295f63d9f752cf36d028dea70c9198fd28579"
+    },
+    {
+      "path": "base136/20260502_18z_a1/index.html",
+      "sha256": "5bf82acd23c5846489e3e4be66a77f15d3a1072476c807099e6bb1f0c1f57ec3"
+    },
+    {
+      "path": "base136/20260502_18z_a1/metrics.json",
+      "sha256": "f9b6ff2ee9239270dce21b0b16a4746cc7de3bb6c9a2b4cff0be0f2a15c7fb2d"
+    },
+    {
+      "path": "base136/20260601_18z_a1/PSFC_bands.png",
+      "sha256": "443940474a22fd9a9e898702abd0ea000979addd9fa956f38eec8620c8f602f9"
+    },
+    {
+      "path": "base136/20260601_18z_a1/PSFC_summary.png",
+      "sha256": "ffbf6d09c0a072f515dfd38b937508667aa7c0b6d4b29d745b1fc9bc3587c972"
+    },
+    {
+      "path": "base136/20260601_18z_a1/QVAPOR_bands.png",
+      "sha256": "574baeea6c42035bdf885b9e3e6658e0f33830a6137fc98be414cd3f9c9fa54b"
+    },
+    {
+      "path": "base136/20260601_18z_a1/QVAPOR_summary.png",
+      "sha256": "c2105f483d891aef5ce4f51b33315bcfdb96a80d84d1ff65dc86697ea3451f99"
+    },
+    {
+      "path": "base136/20260601_18z_a1/RAINNC_bands.png",
+      "sha256": "6f5a8142d861e700ddbe849dbd203eec4d35092709c0b7983639654a5a0119fb"
+    },
+    {
+      "path": "base136/20260601_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "3eba4ae95663502b9ae821afaa3ad39991ff61f9067ef42728840b86080932fe"
+    },
+    {
+      "path": "base136/20260601_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "38b7045ecd7ea30318b1d7e76ae4bd0fedafe0d3aac5e9aee0574441efa11bef"
+    },
+    {
+      "path": "base136/20260601_18z_a1/RAINNC_summary.png",
+      "sha256": "c9bab00aa5e494b8b9dcbb1be1cfac838fe0f12ff22ad899a7471ad1d1be5953"
+    },
+    {
+      "path": "base136/20260601_18z_a1/T2_bands.png",
+      "sha256": "3a426ed8a9889466d91f6265c390b8e4432fdcd9e893cdcd87a00f444ccc59c1"
+    },
+    {
+      "path": "base136/20260601_18z_a1/T2_summary.png",
+      "sha256": "15a46ca50e008aa260b4dcfb984de0bd8467d094ec7034f20e6b6b5e250166a4"
+    },
+    {
+      "path": "base136/20260601_18z_a1/T_bands.png",
+      "sha256": "3a984bc6fa3bf8b1bb9089ac73a8d890da7d3034a6dab3cb67dbc637ac6ba26b"
+    },
+    {
+      "path": "base136/20260601_18z_a1/T_summary.png",
+      "sha256": "0b50f61c18ede511f6720e229cc047f253915e94cba0f559a5f5cce974d81ca7"
+    },
+    {
+      "path": "base136/20260601_18z_a1/U10_bands.png",
+      "sha256": "035a171c91613859d6aa977e7364bb60dc8c785c72a9f881e12eee9c985f13dc"
+    },
+    {
+      "path": "base136/20260601_18z_a1/U10_summary.png",
+      "sha256": "677706d92fb1bb27cbfe053b89df5ff605a80e8d3b9a15129935c28114aaa0fd"
+    },
+    {
+      "path": "base136/20260601_18z_a1/U_bands.png",
+      "sha256": "24fc7c10d020f3d56276cc04a76d85d9a52afcd48f7064d9f16e5764e9406396"
+    },
+    {
+      "path": "base136/20260601_18z_a1/U_summary.png",
+      "sha256": "9bb1f9dec0748b172ecfddd13d265aef8c52ec92e733bc9bb387056de5f91919"
+    },
+    {
+      "path": "base136/20260601_18z_a1/V10_bands.png",
+      "sha256": "f0786eb5d829cac505b85685750a0c12ce531cf99f8260f7e101cabeb7004641"
+    },
+    {
+      "path": "base136/20260601_18z_a1/V10_summary.png",
+      "sha256": "eda5d5058b8183d128388ff86cebd2aa029f7280195ded00153f0c1080479c74"
+    },
+    {
+      "path": "base136/20260601_18z_a1/V_bands.png",
+      "sha256": "5c7d40acfca5cda59aa4ee8dd989a3859c60ce484493c2929bfcec2e1c5a10e4"
+    },
+    {
+      "path": "base136/20260601_18z_a1/V_summary.png",
+      "sha256": "13a15d73c4c704259042619a88e2a2bf8a501df768a5f6fd9324673516c60c25"
+    },
+    {
+      "path": "base136/20260601_18z_a1/W_bands.png",
+      "sha256": "435a7b47e3bb3287bdb601a64c6341aa8820fd2be700208ce2ff611afb866bce"
+    },
+    {
+      "path": "base136/20260601_18z_a1/W_summary.png",
+      "sha256": "aea0b0a51d764a56bb55417c042833da0ee1b9c75af59279843e193cca7fe963"
+    },
+    {
+      "path": "base136/20260601_18z_a1/extraction_done.json",
+      "sha256": "855d12b12c15bfa3483c5e45a16fd7f3f42ddbc9a3c9f21bb96f10b94a927750"
+    },
+    {
+      "path": "base136/20260601_18z_a1/heatmap.png",
+      "sha256": "9b12c6822c59a0b27c27fa41ed9f83c917f388d45f3c3bcf7f3f2b0a90f0993e"
+    },
+    {
+      "path": "base136/20260601_18z_a1/index.html",
+      "sha256": "e4a64cb739621f9c8bafed5e1cade8637afeb98f1dc2eabdfa3ee176f6597032"
+    },
+    {
+      "path": "base136/20260601_18z_a1/metrics.json",
+      "sha256": "a84c83c874b8ee8518eda3d0cbfa7beedb5b6ac9ab83246aa35de2ee007edd73"
+    },
+    {
+      "path": "base136/20260214_18z_a1/PSFC_bands.png",
+      "sha256": "5a99ea8bbcf1577363840c4547b01f963061207fc6822cb11a865ddec361a28d"
+    },
+    {
+      "path": "base136/20260214_18z_a1/PSFC_summary.png",
+      "sha256": "a7180cce17f0339465d5fa1c96ce352c71643ce474d4aebf5c74872215485368"
+    },
+    {
+      "path": "base136/20260214_18z_a1/QVAPOR_bands.png",
+      "sha256": "52a689f5e2510c6385ed89139a2132e3066b37eb7112c7c93cb232116dbc356b"
+    },
+    {
+      "path": "base136/20260214_18z_a1/QVAPOR_summary.png",
+      "sha256": "31f5eba896bf5d16b0bf610b4ff502654efeb19fd076d1529c88000d39bd318b"
+    },
+    {
+      "path": "base136/20260214_18z_a1/RAINNC_bands.png",
+      "sha256": "ec37c0862395a4b376db5700fc9c014769130f02cced22ad2ce47636ac1cebbc"
+    },
+    {
+      "path": "base136/20260214_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "03a79ec05d75e44240923bfa2ad2ad01110c2fd31d3e39322fe12b7449b9e859"
+    },
+    {
+      "path": "base136/20260214_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "1815677ad1b9a10b9e939aaee471279f986567b3cfb3586079c1f6e9a0e82565"
+    },
+    {
+      "path": "base136/20260214_18z_a1/RAINNC_summary.png",
+      "sha256": "d87676bbcef497a7bc24c780fd09ad4f7b0e83c6ec7dcc84034eca04bb8a84a3"
+    },
+    {
+      "path": "base136/20260214_18z_a1/T2_bands.png",
+      "sha256": "7a620191f33ff5d5cde6cb462b378970f58f04a32048facd40bea3119734f8cc"
+    },
+    {
+      "path": "base136/20260214_18z_a1/T2_summary.png",
+      "sha256": "cc025180920752968d930d8c3236dc52f88e28409fd8883a9cdaba585b316443"
+    },
+    {
+      "path": "base136/20260214_18z_a1/T_bands.png",
+      "sha256": "b17ad0bbef029dd8c9a8f1bbec84c4ced92e8a0c4bbc55ef3e37c35c04c4de6f"
+    },
+    {
+      "path": "base136/20260214_18z_a1/T_summary.png",
+      "sha256": "0f5007dcdeb5a57d5cb4844dc91cf55a0dcd19f983d7213867169c44d552341e"
+    },
+    {
+      "path": "base136/20260214_18z_a1/U10_bands.png",
+      "sha256": "60596f7ac22ee9c4af9fa600f25cb572535c5be62fb009de1990a874feb3b846"
+    },
+    {
+      "path": "base136/20260214_18z_a1/U10_summary.png",
+      "sha256": "fddb4ea7304c59bb18090c9b93519bfa906a0a983cccaaf6300314f64d291736"
+    },
+    {
+      "path": "base136/20260214_18z_a1/U_bands.png",
+      "sha256": "57c6b3d7ced5681df12a8df8a534d9c163f447d2237970185213e27ebc7efc0f"
+    },
+    {
+      "path": "base136/20260214_18z_a1/U_summary.png",
+      "sha256": "f19ae26aa9597115a27163147c607a135950e2cd1d29c529b5b676cb1f592f2d"
+    },
+    {
+      "path": "base136/20260214_18z_a1/V10_bands.png",
+      "sha256": "39a509c120f1256d88599d9c07f97db48fbd6e32444f009ffe53ef307e7a315f"
+    },
+    {
+      "path": "base136/20260214_18z_a1/V10_summary.png",
+      "sha256": "410a998ec90a1eb7f89a018193a0d3b17f2b043b56e80408ca0904b5cc22f37c"
+    },
+    {
+      "path": "base136/20260214_18z_a1/V_bands.png",
+      "sha256": "9d428579a02a5f997e1009209394d63c5e8e9df7bb6c892c128a7dc28e24ee9c"
+    },
+    {
+      "path": "base136/20260214_18z_a1/V_summary.png",
+      "sha256": "81f25901579bb0bad84ec2c42584fcfe808449e7b8b5635fc48baf4fe764be78"
+    },
+    {
+      "path": "base136/20260214_18z_a1/W_bands.png",
+      "sha256": "0abfaf5cfaea1e69702089238be207832d807da8c391b2f6e924913e210882c9"
+    },
+    {
+      "path": "base136/20260214_18z_a1/W_summary.png",
+      "sha256": "b2b93a077a81bb7211c6d5859042951cbf44be6374de6bd404431ca5cb432af2"
+    },
+    {
+      "path": "base136/20260214_18z_a1/extraction_done.json",
+      "sha256": "fecb2bfb13ff7a6f310bb5471fc26c14b96132c8d8e540fc495feddec4f33f79"
+    },
+    {
+      "path": "base136/20260214_18z_a1/heatmap.png",
+      "sha256": "2f5e2900d8b5e4be638ad81921a1bd9480d00fafa34e808c4257423d973236d4"
+    },
+    {
+      "path": "base136/20260214_18z_a1/index.html",
+      "sha256": "ac493bdfe4ad6c315d902269b942a6197f049b0ced16b68980604ee1e3976ce7"
+    },
+    {
+      "path": "base136/20260214_18z_a1/metrics.json",
+      "sha256": "be42d859db42b039787ddc269196e6cdc9d70ce756c5b729ef988fd069b853af"
+    },
+    {
+      "path": "base136/20260220_18z_a1/PSFC_bands.png",
+      "sha256": "aa52f4c89b6424ab78e5750458f67d2d48ff4ef34b566358d4ce0222f4ec08f9"
+    },
+    {
+      "path": "base136/20260220_18z_a1/PSFC_summary.png",
+      "sha256": "3919a238e9155edee869199b2bee2cddbf0abf8d56554ceb8fc9606154e4a667"
+    },
+    {
+      "path": "base136/20260220_18z_a1/QVAPOR_bands.png",
+      "sha256": "f0f4b9e287e6cfa5032bdf88f2efef5a7b40133904756074fe9af8a2fb88b325"
+    },
+    {
+      "path": "base136/20260220_18z_a1/QVAPOR_summary.png",
+      "sha256": "2f9cd1e9fcde8ffef0ffae31b09fcaaf1dbda18ecd959b30357668b8ca51fbb0"
+    },
+    {
+      "path": "base136/20260220_18z_a1/RAINNC_bands.png",
+      "sha256": "fb4a02cd2a5f5b77a6eebadebc2b3daf6a4abf6df7a50c95424b284e7418b6c0"
+    },
+    {
+      "path": "base136/20260220_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "f9f2060e0deed1405764edc67052dad8165fbbcec3951211ed436ca5c75257f9"
+    },
+    {
+      "path": "base136/20260220_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "002a2ee668400fd9f19c82baceb4b660ab9ecef9e54395a93b6edfb62f837ee5"
+    },
+    {
+      "path": "base136/20260220_18z_a1/RAINNC_summary.png",
+      "sha256": "30d4bb34d5b0f07024bc2ed20570f4aeab2a53845f0265ff2adf469862b08bcb"
+    },
+    {
+      "path": "base136/20260220_18z_a1/T2_bands.png",
+      "sha256": "39114a4e1678ae076387cd79bd40db3ce88de0c2e8efcca7ffec99eeb537ad18"
+    },
+    {
+      "path": "base136/20260220_18z_a1/T2_summary.png",
+      "sha256": "adc0d0c314d778b799d76bbee67938310e299c4390d6303f642590e09d45641a"
+    },
+    {
+      "path": "base136/20260220_18z_a1/T_bands.png",
+      "sha256": "71e9f5dd27c5e29b3604db41a145a6117dbc4610fb027e0485b03125d60a2894"
+    },
+    {
+      "path": "base136/20260220_18z_a1/T_summary.png",
+      "sha256": "d9cf7844665fcda122d9251aa6d8c7ed56f72baae0955913d4995a25840f613c"
+    },
+    {
+      "path": "base136/20260220_18z_a1/U10_bands.png",
+      "sha256": "54925328ab66513658328f41f4cf2f154d83b8ecb1faa9e6c070d3afa34ac189"
+    },
+    {
+      "path": "base136/20260220_18z_a1/U10_summary.png",
+      "sha256": "5980f1919d1239ad790258650a6177cccf573eba46f1c08086497a913e957e7e"
+    },
+    {
+      "path": "base136/20260220_18z_a1/U_bands.png",
+      "sha256": "938baa61dc3a835d952f62bf69728d89bb38a76d53909a40ceca6f207267c146"
+    },
+    {
+      "path": "base136/20260220_18z_a1/U_summary.png",
+      "sha256": "79790aa052e04ffb9f7fa52b979a4de88cc88075f4a8e2bf688a070c50270fda"
+    },
+    {
+      "path": "base136/20260220_18z_a1/V10_bands.png",
+      "sha256": "083ba0eae8058fd76308570ceddd16e5bef4b70842db47351a1ed9d57a89a852"
+    },
+    {
+      "path": "base136/20260220_18z_a1/V10_summary.png",
+      "sha256": "86bb178d9aa4b2a459d6e7ff3446289d101449005fa8c9c590ca8f63afe186df"
+    },
+    {
+      "path": "base136/20260220_18z_a1/V_bands.png",
+      "sha256": "14f8da46429b3b0b114d9b4cae3a26230294cde3b256119a1577395b8a0cea14"
+    },
+    {
+      "path": "base136/20260220_18z_a1/V_summary.png",
+      "sha256": "3b3bcd9dbb6094a24166259d178a86d6a7fce5325126ed794ee87573c74ff96e"
+    },
+    {
+      "path": "base136/20260220_18z_a1/W_bands.png",
+      "sha256": "50d2e27fc08e61aee742fec4a021e99f335e6ca0534cba57f8d0a96dd3d3b0c0"
+    },
+    {
+      "path": "base136/20260220_18z_a1/W_summary.png",
+      "sha256": "374c4b7092225293fba877c6324ed67153056c45817aac4239b0430fb35ed899"
+    },
+    {
+      "path": "base136/20260220_18z_a1/extraction_done.json",
+      "sha256": "a15089deef30d4329d9e39622f23e07320b624caaa6ed6189e858694a35a7a7d"
+    },
+    {
+      "path": "base136/20260220_18z_a1/heatmap.png",
+      "sha256": "76eef3b319b37d38c45d4a329c2f94e212f5f266b81ec8822fd3ca81ce69745c"
+    },
+    {
+      "path": "base136/20260220_18z_a1/index.html",
+      "sha256": "4a9795fb2bad5b956c9fdf619f85abe4870041bb5dbd83458bbeedf54b5b5ee9"
+    },
+    {
+      "path": "base136/20260220_18z_a1/metrics.json",
+      "sha256": "123b794215137dac5c97bcbb4d518df2bf4cca77a304acd61a002d3e9b1fa9b6"
+    },
+    {
+      "path": "base136/20260608_18z_a1/PSFC_bands.png",
+      "sha256": "16b6bb22456b41b062c781089301624cd332c31b9397c66c2157586842475789"
+    },
+    {
+      "path": "base136/20260608_18z_a1/PSFC_summary.png",
+      "sha256": "8ef268137c07b993795ebe2acbdecbbb34e42ef2105d5f2e53a12137173e63b6"
+    },
+    {
+      "path": "base136/20260608_18z_a1/QVAPOR_bands.png",
+      "sha256": "f71d88a31d7731a82c81f4f0c0f433d1e9b97bd076360ab9d9f346ffa57d212b"
+    },
+    {
+      "path": "base136/20260608_18z_a1/QVAPOR_summary.png",
+      "sha256": "2a554beb27ff0bd36795a65eac7e58f2616d1275d901279c152e83d867b85d50"
+    },
+    {
+      "path": "base136/20260608_18z_a1/RAINNC_bands.png",
+      "sha256": "4894c8be43233a9b447cbaab062750fbd73b13be96b573bc5a46714d3d85e194"
+    },
+    {
+      "path": "base136/20260608_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "0cc1b0a4d6872bdfb42a41cda0a76abe0b2a2cf072eb181b5e19bdc99f28538c"
+    },
+    {
+      "path": "base136/20260608_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "e930ee7eece694519910a8008a80124b87dad8b3b1bf2fd46afb3b56ac353805"
+    },
+    {
+      "path": "base136/20260608_18z_a1/RAINNC_summary.png",
+      "sha256": "fc0bd052ae7e66b152b083b5d02005cb98c7d929e9bd2befe997b2e4aaddf4dd"
+    },
+    {
+      "path": "base136/20260608_18z_a1/T2_bands.png",
+      "sha256": "ec9daa647d14bf73ae21dbbb47c88ef3aec01070a14b2ee0fe813623f2392134"
+    },
+    {
+      "path": "base136/20260608_18z_a1/T2_summary.png",
+      "sha256": "e165e630c337218998340383b2610ba10c92e5103f69c4b4415c418a18820bdb"
+    },
+    {
+      "path": "base136/20260608_18z_a1/T_bands.png",
+      "sha256": "ddd3f8acdd0908dc762921446ad93c41777fe951eb6f8eefa972697775afa95d"
+    },
+    {
+      "path": "base136/20260608_18z_a1/T_summary.png",
+      "sha256": "06be07227b1f27010ad7052ccd237bb4f670614c5997da2858d238996035eca1"
+    },
+    {
+      "path": "base136/20260608_18z_a1/U10_bands.png",
+      "sha256": "bfcbbe62cfea6109139572cee22470b70b76e9cc547f13b4a0acdc71e04c9920"
+    },
+    {
+      "path": "base136/20260608_18z_a1/U10_summary.png",
+      "sha256": "d6ffa37e30f8018da6b6b15d3dd14b2d534c2cc667aae1cb47b92e4f11fb8c61"
+    },
+    {
+      "path": "base136/20260608_18z_a1/U_bands.png",
+      "sha256": "401d168bb151fde82ca38daf52a16c0fdf2503fb38dda1df4e35f85d37da7aaf"
+    },
+    {
+      "path": "base136/20260608_18z_a1/U_summary.png",
+      "sha256": "81e16c1668b8a914d75327e6ece8d90b50b4d3ffd1644aca29041462bf138ddf"
+    },
+    {
+      "path": "base136/20260608_18z_a1/V10_bands.png",
+      "sha256": "f3e47860db71f9f7b0f4cb7a72c4ca753879be982981dfd21e9955daa85f096a"
+    },
+    {
+      "path": "base136/20260608_18z_a1/V10_summary.png",
+      "sha256": "353977f3ab6fa3649f0d92ededa2ce4896480035eca4193bc91febad553b7a36"
+    },
+    {
+      "path": "base136/20260608_18z_a1/V_bands.png",
+      "sha256": "c392b7af13b7ea2fe4ca845c69d21a7aa50231208e35dc8823a6cc480c28ce06"
+    },
+    {
+      "path": "base136/20260608_18z_a1/V_summary.png",
+      "sha256": "3c76544b1835702e07ff8c34e8acc4a9559f2448d26f58bed217d933a2d35bd5"
+    },
+    {
+      "path": "base136/20260608_18z_a1/W_bands.png",
+      "sha256": "cb6c8c7e499af188a6b0d57b504dd8c64ec039eb72374da5b88c00299d1d1069"
+    },
+    {
+      "path": "base136/20260608_18z_a1/W_summary.png",
+      "sha256": "725c2b6d45d90d8beb89f04d57767890e7fa3826c0f9bf968f15b79f3f53e44f"
+    },
+    {
+      "path": "base136/20260608_18z_a1/extraction_done.json",
+      "sha256": "01160b000979b7e24a6dafead31d3d0fc26c8b59329de36c2494d4077b11384b"
+    },
+    {
+      "path": "base136/20260608_18z_a1/heatmap.png",
+      "sha256": "d05bdd6649fe99af1ff9d6b2cd30b68b3ebc34d5931342f177cf893bca0619c2"
+    },
+    {
+      "path": "base136/20260608_18z_a1/index.html",
+      "sha256": "6c221d3725a532ea2b00e8f99d4fae8ddbc0624312c5ac76dddb16eaefcb139a"
+    },
+    {
+      "path": "base136/20260608_18z_a1/metrics.json",
+      "sha256": "504b81fde12f41f49c2049e8bfb90754ef089b1737da35ce3947bd52dcc699d0"
+    },
+    {
+      "path": "base136/20260614_18z_a1/PSFC_bands.png",
+      "sha256": "cd7591e9a49be6eb87ffc26c31514831fd57295280dc283727a5b9e57726c43e"
+    },
+    {
+      "path": "base136/20260614_18z_a1/PSFC_summary.png",
+      "sha256": "3291c690e2588677e4c129ef4331b5e7b0d15160a11881cd5622a23ee417578a"
+    },
+    {
+      "path": "base136/20260614_18z_a1/QVAPOR_bands.png",
+      "sha256": "b7667acf2bbab71425140c627a67d67eb3c80a7320a16fdd8a51b7a15f36c7e2"
+    },
+    {
+      "path": "base136/20260614_18z_a1/QVAPOR_summary.png",
+      "sha256": "d7eaaf891908e6cabeb9ce0c1e5d2a9cefbec9f6534a549631db68b1351a2f07"
+    },
+    {
+      "path": "base136/20260614_18z_a1/RAINNC_bands.png",
+      "sha256": "46bfb5062e6b8cf593b93a52e7a36eee57fe9474a05fbeb261003f5afbd20fc4"
+    },
+    {
+      "path": "base136/20260614_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "09c29d60404c1694d81bc771f139b3ce533fa23ed505a23d72cd23cfd64622e4"
+    },
+    {
+      "path": "base136/20260614_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "17438d11450c42def23d76f66ee0c646a7449d0e4289f3fe99534d9baab8091c"
+    },
+    {
+      "path": "base136/20260614_18z_a1/RAINNC_summary.png",
+      "sha256": "f0c9c919166eae86877dbda66026d14c58178df5d143838e5f4a7f78d24657d8"
+    },
+    {
+      "path": "base136/20260614_18z_a1/T2_bands.png",
+      "sha256": "d6ac1831bc40e13eab00a095ac1adea1edf8e4a23b95461772eb0f88743c1bb0"
+    },
+    {
+      "path": "base136/20260614_18z_a1/T2_summary.png",
+      "sha256": "d2f21fc8dfba4a4f8d2c862f3da89bfc06a013106adc587203cb4ce6737a5a04"
+    },
+    {
+      "path": "base136/20260614_18z_a1/T_bands.png",
+      "sha256": "8aea7dac2720a206fba524eff8897f76f4ca5d9c4f8dbea891e994af35a9a6ff"
+    },
+    {
+      "path": "base136/20260614_18z_a1/T_summary.png",
+      "sha256": "d34afee67925cc513d941e2b1f9a6ce4ceff3c9036700dd41fab00653ef1c685"
+    },
+    {
+      "path": "base136/20260614_18z_a1/U10_bands.png",
+      "sha256": "a429acbbd00f1455eea0e99963293427ee07c0eb47e4e3cd14f7defcab67335f"
+    },
+    {
+      "path": "base136/20260614_18z_a1/U10_summary.png",
+      "sha256": "fdb4ecab67d4099764f01d07ab5b9914db22a24137b765634e9ebea8b2387c04"
+    },
+    {
+      "path": "base136/20260614_18z_a1/U_bands.png",
+      "sha256": "56ec780d7f6b85e2eb7485d9a50c2ed70ecfd03dd8ae6b6aefbe58677fffc25f"
+    },
+    {
+      "path": "base136/20260614_18z_a1/U_summary.png",
+      "sha256": "5790e67cfbd0772e1edd835b5765c561c38966a36ad9834521530310413e5610"
+    },
+    {
+      "path": "base136/20260614_18z_a1/V10_bands.png",
+      "sha256": "bac1ccfa7a41a43e6aa6b4b9233c50a46394bdb233490f997944abb1e30a5f73"
+    },
+    {
+      "path": "base136/20260614_18z_a1/V10_summary.png",
+      "sha256": "66ea47f5a1a6be4c479b1968ee0461ce9d7a8e338bd400ace438e94faa35bf76"
+    },
+    {
+      "path": "base136/20260614_18z_a1/V_bands.png",
+      "sha256": "c50fda91d3b5253323c82acb14d6b6f1f5b4e5d72d5ca10b7c8069dd270cccb3"
+    },
+    {
+      "path": "base136/20260614_18z_a1/V_summary.png",
+      "sha256": "4e73e06c833594a6ed039c8f61e11e2b85eb1afe183b2536d36f6b9a834c4173"
+    },
+    {
+      "path": "base136/20260614_18z_a1/W_bands.png",
+      "sha256": "3f9a58810b526e0caad1ebc3cc895cfbe4ad867e46a2290d37d8890657e7d57c"
+    },
+    {
+      "path": "base136/20260614_18z_a1/W_summary.png",
+      "sha256": "e1c778c138d4944d2a4fdc5dd5277ba03a0d5cbefcd4b7aae92a033abe90ec75"
+    },
+    {
+      "path": "base136/20260614_18z_a1/extraction_done.json",
+      "sha256": "00733bf0425ef140ed11524dbfea79c59c10391b24d458253ac258f462d8da08"
+    },
+    {
+      "path": "base136/20260614_18z_a1/heatmap.png",
+      "sha256": "55c483d1c2ccbb23a08b992884b7c344007d215903be5cb00a43fdc320d97503"
+    },
+    {
+      "path": "base136/20260614_18z_a1/index.html",
+      "sha256": "5e87ec54dddb3e4d51e0d72f5fa504c70f2840b2524dd9aa662e9231a91598de"
+    },
+    {
+      "path": "base136/20260614_18z_a1/metrics.json",
+      "sha256": "ead271e26b16bb5204f58c1c98bf5d8a8196554fa69ccc57e85c58c08b54ff86"
+    },
+    {
+      "path": "base136/20260503_18z_a1/PSFC_bands.png",
+      "sha256": "eb9160b9444ef6f52542e0bfc8e2086ce4138cc90c624c5d43755e5dde93c9bb"
+    },
+    {
+      "path": "base136/20260503_18z_a1/PSFC_summary.png",
+      "sha256": "fa227ac35db1aa6863a31189906bdb8288080fbc77d532095ff9d8f9cfec098a"
+    },
+    {
+      "path": "base136/20260503_18z_a1/QVAPOR_bands.png",
+      "sha256": "add5f68a7155e0127bf662bd645b222352abd3a6d69774832053bfbdf0843e1d"
+    },
+    {
+      "path": "base136/20260503_18z_a1/QVAPOR_summary.png",
+      "sha256": "7a491623439c8310b2d02533c8216b1667ebe6ba5b810be86ceabd46cacc5e96"
+    },
+    {
+      "path": "base136/20260503_18z_a1/RAINNC_bands.png",
+      "sha256": "e0350ffbdb630d31c791f3d6968712b26ae60844c07d998c6d797cd4941ccded"
+    },
+    {
+      "path": "base136/20260503_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "f5befe753f9e6b7d40b0e177474d44887aff6e8187404dd17ee3b65ddac1bdcb"
+    },
+    {
+      "path": "base136/20260503_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "6c1e9669caaad9d8704c99874ac9c2a09f72a8d1720abee464544a4a57f9c06b"
+    },
+    {
+      "path": "base136/20260503_18z_a1/RAINNC_summary.png",
+      "sha256": "a927e2e0994ee3a1b0d9e335843043b3f7292c0b4023cb41977f25c8a6ef27fe"
+    },
+    {
+      "path": "base136/20260503_18z_a1/T2_bands.png",
+      "sha256": "d1900ab5c1bcf24a7876e45778e224d2bafc657c6edc6949bfb6c33395816306"
+    },
+    {
+      "path": "base136/20260503_18z_a1/T2_summary.png",
+      "sha256": "660a455f09d641289936cd6b151ac0b67bac427d4f7dc1ff2bf4ee6eef7bc37c"
+    },
+    {
+      "path": "base136/20260503_18z_a1/T_bands.png",
+      "sha256": "ee219a8253f36ad24679956b50d6f930b240169e0de316c68c91de760f3d5ade"
+    },
+    {
+      "path": "base136/20260503_18z_a1/T_summary.png",
+      "sha256": "f9a26afb79d1c04d5b647c3ae742acac93f8063d764700a365a60ecf64a5f998"
+    },
+    {
+      "path": "base136/20260503_18z_a1/U10_bands.png",
+      "sha256": "7d34ba44b46b537cd65a5dde04425517fe91e0cc48b2bdb0e772b893888c90ea"
+    },
+    {
+      "path": "base136/20260503_18z_a1/U10_summary.png",
+      "sha256": "509fc358ccdf8ff0f5b976d46c0c56eda1e483baa30e23156e6d4dcfd5654ae8"
+    },
+    {
+      "path": "base136/20260503_18z_a1/U_bands.png",
+      "sha256": "2a8c354f5e049257b555f5b0106a7faaf433c499aee6247cfd9818d039cd0424"
+    },
+    {
+      "path": "base136/20260503_18z_a1/U_summary.png",
+      "sha256": "33728d2c75f0490541cc70c879227fab9ff365a1cad966a0eb5e7997c15d5dd7"
+    },
+    {
+      "path": "base136/20260503_18z_a1/V10_bands.png",
+      "sha256": "d1dc0995e3361d52c93dffd425fb0957f569f8dfa5b6fc40e463678ed9b10e77"
+    },
+    {
+      "path": "base136/20260503_18z_a1/V10_summary.png",
+      "sha256": "40c6d32720c8099b661e96efb45c1c88163d4ac41a042ad386ad9db902d965a3"
+    },
+    {
+      "path": "base136/20260503_18z_a1/V_bands.png",
+      "sha256": "418e08f49fb229095c4d272ea22ae48b6327ee189ff14c75c27e51ca307016ba"
+    },
+    {
+      "path": "base136/20260503_18z_a1/V_summary.png",
+      "sha256": "6b886f59bbecac7a70de586b83e6d999fcd77f0006ff11bf1ca210a9cbf6b5c7"
+    },
+    {
+      "path": "base136/20260503_18z_a1/W_bands.png",
+      "sha256": "f5edf1b5bc47dd32a6c5253c7dcd1ce1850ffd5adaba5659c974444e41766849"
+    },
+    {
+      "path": "base136/20260503_18z_a1/W_summary.png",
+      "sha256": "ea8538e37d72e2f488a67f9bb2dd22ff450887c45250209dcee7d6e6cdb57bd7"
+    },
+    {
+      "path": "base136/20260503_18z_a1/extraction_done.json",
+      "sha256": "12636ce6c4a9c431197ff86c4d2d17a0e6090330dae77e7594842e6c9b800efb"
+    },
+    {
+      "path": "base136/20260503_18z_a1/heatmap.png",
+      "sha256": "317d53a71d0e23fd688e039ac5579fdba6e1555355ed39535c1557daee8d6461"
+    },
+    {
+      "path": "base136/20260503_18z_a1/index.html",
+      "sha256": "db03f9c2ec1959917524cb1b23f2738e32ba11f833d7d1c20308e928e298ac1a"
+    },
+    {
+      "path": "base136/20260503_18z_a1/metrics.json",
+      "sha256": "ce36a488175724868727fc4c7d7fab638e4c212967fd76a8c0f71909940c00ed"
+    },
+    {
+      "path": "base136/20260613_18z_a1/PSFC_bands.png",
+      "sha256": "46276618c0ed6ee80bdacf97d597bf70e7e81337c3390a72d80f84efac385500"
+    },
+    {
+      "path": "base136/20260613_18z_a1/PSFC_summary.png",
+      "sha256": "46a822f10c10ac12361281ba2149ee75d958fe8493d9e4d3f142988e711e2240"
+    },
+    {
+      "path": "base136/20260613_18z_a1/QVAPOR_bands.png",
+      "sha256": "6b7a81d079f728e932e55bcdd84aa096db676ebb8e815634130f10eeef288346"
+    },
+    {
+      "path": "base136/20260613_18z_a1/QVAPOR_summary.png",
+      "sha256": "6c667ce72f66988e2d52d5e383dafa276aa9cd204164d92f21cbdcaa5853fe2c"
+    },
+    {
+      "path": "base136/20260613_18z_a1/RAINNC_bands.png",
+      "sha256": "83f12372b4e4cf683bb67330c3d9a6e1aafa746b9657981154a1ce5c0edad002"
+    },
+    {
+      "path": "base136/20260613_18z_a1/RAINNC_hourly_bands.png",
+      "sha256": "de2d27ebff9b4a825881f3090fbab90fdcbec6835a939e53fb6e5351e20fef5d"
+    },
+    {
+      "path": "base136/20260613_18z_a1/RAINNC_hourly_summary.png",
+      "sha256": "89e07a124fe01ee4a84cacd47f5852c6ef1cea4069e48ec9b2d874ddf7ecda74"
+    },
+    {
+      "path": "base136/20260613_18z_a1/RAINNC_summary.png",
+      "sha256": "f2d7c6ba6c22a8783b374a5548759f05fd6575b3ef89171cff06f00af665170d"
+    },
+    {
+      "path": "base136/20260613_18z_a1/T2_bands.png",
+      "sha256": "31e3e85ebb5fe7300db11525f9f8fddd232488096adcd4e7397dba90fa6697f6"
+    },
+    {
+      "path": "base136/20260613_18z_a1/T2_summary.png",
+      "sha256": "eb0c8fc7a82c40c1c5b32c04cb08db38b7f637a5a8accf37ca7e85e88c162b8f"
+    },
+    {
+      "path": "base136/20260613_18z_a1/T_bands.png",
+      "sha256": "c75a34e7baf30152656961207f605a84cf34e59143a567ba3773a2f68c5460fd"
+    },
+    {
+      "path": "base136/20260613_18z_a1/T_summary.png",
+      "sha256": "fabf4846ffb97a0c860de62562bdff0e43a8ba9d3cb485fad713d8ff18135be4"
+    },
+    {
+      "path": "base136/20260613_18z_a1/U10_bands.png",
+      "sha256": "357592f673c0aa6aa1c124ce7c1eb0a85cc19d3aa6c624879b7db113bb7dc648"
+    },
+    {
+      "path": "base136/20260613_18z_a1/U10_summary.png",
+      "sha256": "55bebba153f3d64bcbba1b63b53ed764d721e85cadc1e3146a6f50f8cec735d3"
+    },
+    {
+      "path": "base136/20260613_18z_a1/U_bands.png",
+      "sha256": "1c1c6b3f3d708557c42f57801e78e9eee0ab622d3571ff4a446e38dc700a056b"
+    },
+    {
+      "path": "base136/20260613_18z_a1/U_summary.png",
+      "sha256": "43b6d26aaee43c571fcf7ef53d8c7985eede3cab70f809558203dbd8af9b04b6"
+    },
+    {
+      "path": "base136/20260613_18z_a1/V10_bands.png",
+      "sha256": "0c3550750bc1de123e72af06348fcb394a33008f2f27cd9982cbdaec1c9c25c3"
+    },
+    {
+      "path": "base136/20260613_18z_a1/V10_summary.png",
+      "sha256": "a8856b876ff81f6da7fa300c9b4c6c74161466ed94f81beee2be2f080ad2989d"
+    },
+    {
+      "path": "base136/20260613_18z_a1/V_bands.png",
+      "sha256": "277d5de2cbde107cff845ebf80ca64d7efd9fdfa1b2e3007f87e5c339a15ed4f"
+    },
+    {
+      "path": "base136/20260613_18z_a1/V_summary.png",
+      "sha256": "31303b8bbb603b6058e7415287aaf299d6ec70b4608d4103921d4e4776ed3633"
+    },
+    {
+      "path": "base136/20260613_18z_a1/W_bands.png",
+      "sha256": "5e4a8fe7da72f829b5b65a8c82a45557cb8bf4c03295f8aabf93010887067ec3"
+    },
+    {
+      "path": "base136/20260613_18z_a1/W_summary.png",
+      "sha256": "5f0a6810f227378b8ad21bb1891dd315089d5c756c6a6cc091a4b1f412bd36f9"
+    },
+    {
+      "path": "base136/20260613_18z_a1/extraction_done.json",
+      "sha256": "55d3903457bf807bfd1165b39521a1fba0eafd90ca20639131b9c79bf811be26"
+    },
+    {
+      "path": "base136/20260613_18z_a1/heatmap.png",
+      "sha256": "839d980f12d66480c5cf800bb999e27f3071c82fac310a0e4115c3d65a71f87b"
+    },
+    {
+      "path": "base136/20260613_18z_a1/index.html",
+      "sha256": "9645f2dafd78519af6a5eda0977157e231a1ed6d8e079f9e3615781879957377"
+    },
+    {
+      "path": "base136/20260613_18z_a1/metrics.json",
+      "sha256": "434fdf555b1e63feac3cdec24fec8046557631742201d0caf061586385faa626"
+    },
+    {
+      "path": "base136/summary/PSFC_cross_case.png",
+      "sha256": "ca1b03a33ecf2b04774867d52cb0f744159ccefba5f7144a8cfd55ddfd43834d"
+    },
+    {
+      "path": "base136/summary/QVAPOR_cross_case.png",
+      "sha256": "eb85fdb64f6399dd9f328bd992aaf9fd7d64451edefccba40230725266b4433f"
+    },
+    {
+      "path": "base136/summary/RAINNC_cross_case.png",
+      "sha256": "ca594e25b4abc9f4f8d39e7a9f369e1482cc8a9d708d3dff17572d2a65680ec1"
+    },
+    {
+      "path": "base136/summary/RAINNC_hourly_cross_case.png",
+      "sha256": "85a1e4a6fcbe0431c97643882adb21964b5c33cf68da7811120d8b3592f6490e"
+    },
+    {
+      "path": "base136/summary/T2_cross_case.png",
+      "sha256": "1a8e8f4f5c640c7bc7c7a1bbb559cf1d0e463dc95be18744f0aa6573a3890bde"
+    },
+    {
+      "path": "base136/summary/T_cross_case.png",
+      "sha256": "9fd9eefd18236be7a5b0872a0e829798dc5f72e65bf2cda74e1a7efd03408ea0"
+    },
+    {
+      "path": "base136/summary/U10_cross_case.png",
+      "sha256": "501775d18cba3f98e0f9455788bc9ec31663df6f3440c29e67249983f447ee7d"
+    },
+    {
+      "path": "base136/summary/U_cross_case.png",
+      "sha256": "ba1f747b94f7f474be3723009ec17ea0853c5a97391b2a45b7cdec4ffa493b2d"
+    },
+    {
+      "path": "base136/summary/V10_cross_case.png",
+      "sha256": "96559f75663960b7a08d76fdbcf0d8727841a485376f52064725d1f33845c73e"
+    },
+    {
+      "path": "base136/summary/V_cross_case.png",
+      "sha256": "77edd5966f54945c12d5d829a74f5484625ddb32db6a9518ae563ecf5eacf5b0"
+    },
+    {
+      "path": "base136/summary/W_cross_case.png",
+      "sha256": "da5f5c1b9ae555bd9898b0836658b3e9c8464eb7643476f86e2f032a700871ef"
+    },
+    {
+      "path": "base136/summary/d01_PSFC_all_cases.png",
+      "sha256": "b82d6d22422790169da8ba4110b05da77610e31bc250b45ce4f149db38ba6a30"
+    },
+    {
+      "path": "base136/summary/d01_QVAPOR_all_cases.png",
+      "sha256": "02d22e5d148c2632ff6238b425e9695ea864b255805483f902e57d8fc6dd0ec0"
+    },
+    {
+      "path": "base136/summary/d01_RAINNC_all_cases.png",
+      "sha256": "c63b7eb89f8b03d6e8d1631224c8690ec53f3e469b6c9d819372dd336a2e4115"
+    },
+    {
+      "path": "base136/summary/d01_RAINNC_hourly_all_cases.png",
+      "sha256": "dd02725dc09e25f17795f6dfdc29da2d7f87949dd03b12b171d9fe72fea5bda6"
+    },
+    {
+      "path": "base136/summary/d01_T2_all_cases.png",
+      "sha256": "34ee6780cd45bc38f889ad5815dbb437dbacf9be891890c2534920424f557e8c"
+    },
+    {
+      "path": "base136/summary/d01_T_all_cases.png",
+      "sha256": "08e52dfa4ce0f6da7af56639fc7519ade6bbf13693aebfd4e6b80048363b046f"
+    },
+    {
+      "path": "base136/summary/d01_U10_all_cases.png",
+      "sha256": "201afd2ccae43ad5aa4fc9e619164e1a2f513cb7833d80d9273f604d1a3e344f"
+    },
+    {
+      "path": "base136/summary/d01_U_all_cases.png",
+      "sha256": "30b2918c599a9952af0b678215ba3fa445d200fefbcfdb29e8577c704d9e4c83"
+    },
+    {
+      "path": "base136/summary/d01_V10_all_cases.png",
+      "sha256": "898fd58fec25c01e6d261f855ea4a31bb907ac81a359b0049fd251ebf7d85213"
+    },
+    {
+      "path": "base136/summary/d01_V_all_cases.png",
+      "sha256": "49b66d2b6aeb7f5878caa5dc75e7965acc28f8dc4537fb36359152485084f8b2"
+    },
+    {
+      "path": "base136/summary/d01_W_all_cases.png",
+      "sha256": "9a366bd6f8f082aefaabb31aea8f4812ad1831fe4214db0de6da23c1c1177ae2"
+    },
+    {
+      "path": "base136/summary/d01_all_cases.html",
+      "sha256": "4cc70dbac5022a405fe19745acd206ea4109f5d05fa0dace895459f7d4230f79"
+    },
+    {
+      "path": "base136/summary/d02_PSFC_all_cases.png",
+      "sha256": "58e5fa52996637adb66fc486ff82374d6069ab3b3f1fd85fdc3838e4cf6e82ef"
+    },
+    {
+      "path": "base136/summary/d02_QVAPOR_all_cases.png",
+      "sha256": "c0736e50863a6f3f03a2cc3e7d9a6ab3409f8d6be0c149c74947851fc26a4a81"
+    },
+    {
+      "path": "base136/summary/d02_RAINNC_all_cases.png",
+      "sha256": "0478062331c8e29f58212615c1b635a35c1eea3deb22b9531355d3d082bc558d"
+    },
+    {
+      "path": "base136/summary/d02_RAINNC_hourly_all_cases.png",
+      "sha256": "9da1d0b92ae5fc2228f94b2b3f3c5c1c53f66148544a3a765cb5d3de48f321a5"
+    },
+    {
+      "path": "base136/summary/d02_T2_all_cases.png",
+      "sha256": "f109df69fce21de2e174c1b7e778bb8e974f4d1c580d1220c999fdcd2da80775"
+    },
+    {
+      "path": "base136/summary/d02_T_all_cases.png",
+      "sha256": "55d0e4ff21694731e73cbf2258abf4899f67088488b217a86d1765db92e3c6d6"
+    },
+    {
+      "path": "base136/summary/d02_U10_all_cases.png",
+      "sha256": "f4d002c2fcd66bf3e717d09f75f6e0217dcb864a4d909a1a8ee9ea2c34a8b076"
+    },
+    {
+      "path": "base136/summary/d02_U_all_cases.png",
+      "sha256": "3983a19b1a02a21e50ee4eec87acb86931df9ca3cfacb095a23a534e0964d016"
+    },
+    {
+      "path": "base136/summary/d02_V10_all_cases.png",
+      "sha256": "5982445eeac4bfa2390e0182d1304448c67d19890cb4ed8d6517abab250fd209"
+    },
+    {
+      "path": "base136/summary/d02_V_all_cases.png",
+      "sha256": "8919721cd1c3fe4e033bf72b3761154198bfee2e614dac90f07f85b746392809"
+    },
+    {
+      "path": "base136/summary/d02_W_all_cases.png",
+      "sha256": "24018948c9730c9492047fd0c84e80f8bfd354b0ed6780e7ddb2ca9696855bb0"
+    },
+    {
+      "path": "base136/summary/d02_all_cases.html",
+      "sha256": "be6edff4b4cf5188136e3a680ef6fd96ea259d44a08157b63479e827625d1ea3"
+    },
+    {
+      "path": "base136/summary/d03_PSFC_all_cases.png",
+      "sha256": "947f9e729a03e0f7d816f05f8c00017930afea56f2007e620d776d3a381776d7"
+    },
+    {
+      "path": "base136/summary/d03_QVAPOR_all_cases.png",
+      "sha256": "dea8f562843946c1ef235fe5256414b02f8da66a66d33f077245e5d038c6d783"
+    },
+    {
+      "path": "base136/summary/d03_RAINNC_all_cases.png",
+      "sha256": "f9bc69b5bade0a649a3756e64c74a663cc6e8c0bc7c4998949fac0cef7e4540b"
+    },
+    {
+      "path": "base136/summary/d03_RAINNC_hourly_all_cases.png",
+      "sha256": "dc5fbd92d8817ee79bb24ec1916d7447d8818142d2bb7f8c8af767f733ee1333"
+    },
+    {
+      "path": "base136/summary/d03_T2_all_cases.png",
+      "sha256": "c3d20899842eaaca1329426a0853a02e19990508f593f1981cc367b36c37d660"
+    },
+    {
+      "path": "base136/summary/d03_T_all_cases.png",
+      "sha256": "dfec117d3c47874317a238330a7b7de4e04ac411db51e7236e2bdd812e8af7b9"
+    },
+    {
+      "path": "base136/summary/d03_U10_all_cases.png",
+      "sha256": "ecbbe66dd7180accaf6fe146fffae9ecc4f17f219b87dc22ba2c111a328744c8"
+    },
+    {
+      "path": "base136/summary/d03_U_all_cases.png",
+      "sha256": "c1c4c9bafa2a6faf830a62d4997124d0c06c62742f98725a40ebbff0e2833e41"
+    },
+    {
+      "path": "base136/summary/d03_V10_all_cases.png",
+      "sha256": "a99a1c6852a3011d18ea55c027d11eba74107dad42bf64f7c9c3c9f6d434f39f"
+    },
+    {
+      "path": "base136/summary/d03_V_all_cases.png",
+      "sha256": "2a788aa0567fa7ba910976143c2de11433562edf0662e03855867d1203779cf0"
+    },
+    {
+      "path": "base136/summary/d03_W_all_cases.png",
+      "sha256": "4dba60b578e41793ff502c1cf02104792f82f00e0eac63917a1d8bed7ecbebc9"
+    },
+    {
+      "path": "base136/summary/d03_all_cases.html",
+      "sha256": "131452a9d0c8ca6da10b84709c191a187e13452956fc20bffe573cc2ff7a1467"
+    },
+    {
+      "path": "base136/summary/index.html",
+      "sha256": "e9d9f1dea8b37010c1bc996c59569873a33a45e2fa0cd9706f4e05ac103b73f2"
+    },
+    {
+      "path": "base136/summary/summary.json",
+      "sha256": "ce3add8cdb09c73f4b82e31ddb1e9241003906508cc2c8570f52acab446a7422"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/GALLERY_AUDIT.json",
+      "sha256": "ce1537d61bd852db379aba07f5149cf75e273ee5c1dd8ba9cdbe00436ebb8ebe"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/PAIR_RULE_BINDING.json",
+      "sha256": "f9d8e4d8009ff5d6be3c6e628539be21cd9ec7d22001d3d0126606c61e2a030c"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/PSFC_bands.png",
+      "sha256": "efed5dfaf025a8407806515b7fa8eb3dfab06f41f6e573ea57c4b8122527f834"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/PSFC_summary.png",
+      "sha256": "9c29ee304080531397e87fa2230125b5572286a2f762b1b19559b51bffe65ef9"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/QVAPOR_bands.png",
+      "sha256": "589a1f9be4aa637a6c089850085c32c69da8cf63c9fa16f8fef934c26915b466"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/QVAPOR_summary.png",
+      "sha256": "dc499010a9be19006b4583b99541e1c2b1d27323fe617e3f79b8a5288348c9f0"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/RAINNC_bands.png",
+      "sha256": "b91d0ba532ee18897144809f7b22c5f71f29d2e1ea355c608309eb980b369235"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/RAINNC_hourly_bands.png",
+      "sha256": "9780de253da1498bf9b5bd57e1a7c6fcd34bde9835ca91156670d51f7661d907"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/RAINNC_hourly_summary.png",
+      "sha256": "83674cf355840d4a0fbfcf25a772f3cd97c8def5e2d0dc0257cf9c5dd059311e"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/RAINNC_summary.png",
+      "sha256": "614cc13aa539b6f160526a2905360856410200dfc3270868c2483157936f00e5"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/T2_bands.png",
+      "sha256": "660b0b834d9cad447dd2fd1425009c657ec65621140094dd49f41819a089416c"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/T2_summary.png",
+      "sha256": "6af5b1c873bec7ee98e2199955a41d99235d8878c208060c59400d7aaffd6a31"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/T_bands.png",
+      "sha256": "ccfd4d9616d0ddd31c1178c3812cc9dce97073007a480c2d4189ce0bcdad8131"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/T_summary.png",
+      "sha256": "80c1eeec1ee6a5b7187a3b0c8a0aa74002e33c167249260f21661880eecd155c"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/U10_bands.png",
+      "sha256": "4397d46582a352525c0c2460f734368cd89d634c1def5bf658964f4f0d3c94cf"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/U10_summary.png",
+      "sha256": "5ba6346f4ddd01a6c7cb13db71b530c73c3ffc5afaf5725be07d1713e6873c3a"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/U_bands.png",
+      "sha256": "5158d1d20537bd544c443483f4f9d07ed86a9086fe398272917b62dd9a2fe613"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/U_summary.png",
+      "sha256": "ae48a9388b6acef380dc11e5b4b021b1fce936a25751576d571e6745875e0235"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/V10_bands.png",
+      "sha256": "991633dc28196eaa36fda4ae5848080ab256b976dfa90d20363db2c811857caa"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/V10_summary.png",
+      "sha256": "397418f49fb9596ca2d8ebf8e724e058034e7d2e07d9db4fbd00ac5457a4b9b8"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/V_bands.png",
+      "sha256": "d015ee675580dc6a7d339eb8db62cb2d41757896be5336fe585e8fff0c13622d"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/V_summary.png",
+      "sha256": "f3a98ebbbc147d708478dd226afaef43866417be6f304defe48201e4dc369a05"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/W_bands.png",
+      "sha256": "6a02bc0505405c73174428a7b84d48e6f8c14dea0b8687f1ecd1dcb12520ed22"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/W_summary.png",
+      "sha256": "7bbdcc09c9961534e993aabd804bfef063293d6f1dcb14c7502fe0cd0c0c8ed2"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/extraction_done.json",
+      "sha256": "a6a361c1e97fdd02db60624ccc81aff580852f39161f1776f7b3bbb684f6e2d8"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/heatmap.png",
+      "sha256": "b4e2259389da5019ca687b8cb50d15cb378da6b2dfdd50632b9f3e6b8244cccf"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/index.html",
+      "sha256": "3d7225f247ef089a8eca82660e1d27583b7da477d8b7bd65e9d33bb75782fe72"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/member_integrity_scope.json",
+      "sha256": "91a6c1615dc8c5eb904f54314a897b31885d5c72869e2a450f1333f6d85a3ae0"
+    },
+    {
+      "path": "base136/0227_gpu_ic_context/metrics.json",
+      "sha256": "e5418f84985e93e5036008c47ae6bd2de9290cbcbceca130f6ca7d49d9a3deea"
+    },
+    {
+      "path": "w2/MON33W2/D6_BINDING_AUDIT.json",
+      "sha256": "e42b286aee21b376b694584f429aa0861717a4f8f99540f64c43c972f3f3d4e0"
+    },
+    {
+      "path": "w2/MON33W2/PSFC_bands.png",
+      "sha256": "b3c158a289da0e591c3fb47bc4cfe0d87d05e48cd3c6370284f8a7172367c30d"
+    },
+    {
+      "path": "w2/MON33W2/PSFC_summary.png",
+      "sha256": "2b1d4aac2228e36102df0b74045065c81ea0312bbff42c54ef432aa29f5e4dae"
+    },
+    {
+      "path": "w2/MON33W2/QVAPOR_bands.png",
+      "sha256": "f7bdf0d94916853513e02086d2b004ef9b850d0f69b321bb930c00bb48ad6aba"
+    },
+    {
+      "path": "w2/MON33W2/QVAPOR_summary.png",
+      "sha256": "4d64f54a7b6555fceb8ea5ce79b770ba4021047257e832d895ea7f455fa1d609"
+    },
+    {
+      "path": "w2/MON33W2/RAINNC_bands.png",
+      "sha256": "aecb62270aeb6ee85c7387b32be398d12350d7b99f4163b7df8358eca3f59566"
+    },
+    {
+      "path": "w2/MON33W2/RAINNC_hourly_bands.png",
+      "sha256": "ef00b93c43aa602b0c1e2d9cc4378ffb1b27fbe55a980bbff13a8a105d84d9df"
+    },
+    {
+      "path": "w2/MON33W2/RAINNC_hourly_summary.png",
+      "sha256": "0e09a9c7413aa55700ed505341bcf5fd3cff5c7673b4397782c0370a35d86d26"
+    },
+    {
+      "path": "w2/MON33W2/RAINNC_summary.png",
+      "sha256": "f79b7969049fb8b1ce976930b3cf75c2d2991ebc05654c94e59a9a23f5ace38c"
+    },
+    {
+      "path": "w2/MON33W2/T2_bands.png",
+      "sha256": "a3c2aaaf9bab24566e18ce360045f5ec84962cee60fefced10d56b90358d9e07"
+    },
+    {
+      "path": "w2/MON33W2/T2_summary.png",
+      "sha256": "1c683bbb03640221c2cc98f879440cc92c9450b4a4d9dae4d6587085c561d685"
+    },
+    {
+      "path": "w2/MON33W2/T_bands.png",
+      "sha256": "fc9e75fa0b91de79f6585514c8e8891114e828971857972bbf3ae05403bae202"
+    },
+    {
+      "path": "w2/MON33W2/T_summary.png",
+      "sha256": "a1e921ff2f9e1c5048bc49f349308f657c2047af8c259170ec632832ecd6197f"
+    },
+    {
+      "path": "w2/MON33W2/U10_bands.png",
+      "sha256": "49c67b0ad25b46fa6a73443b06307210467e984194bf2c7ca5df242eaae7b4b8"
+    },
+    {
+      "path": "w2/MON33W2/U10_summary.png",
+      "sha256": "3646bb07809fdbfc067861057e8ae547776693356d80d1d4913dd778a5774f15"
+    },
+    {
+      "path": "w2/MON33W2/U_bands.png",
+      "sha256": "5e21036e03837a32dc39a4f2e0dec73e5e866d3e5d38cb6c6746ae64008c1e61"
+    },
+    {
+      "path": "w2/MON33W2/U_summary.png",
+      "sha256": "8968cf75607e9e8685ec88e36a3c0845fc80539677beb920aec06a51ee8dfc14"
+    },
+    {
+      "path": "w2/MON33W2/V10_bands.png",
+      "sha256": "c26aa3535a9b27c42ba2d9f1a180cf4ae5848b79a9b05c65e7fb3aa46ca1949e"
+    },
+    {
+      "path": "w2/MON33W2/V10_summary.png",
+      "sha256": "1e5c0d3abd81edc20b5dcfff4853dbaba43a3c348e710997c76df04d6d074dc0"
+    },
+    {
+      "path": "w2/MON33W2/V_bands.png",
+      "sha256": "014942d1ca4aec9950d688eb7ebf64bf345215c337afc3ed3815bbb09cb4188d"
+    },
+    {
+      "path": "w2/MON33W2/V_summary.png",
+      "sha256": "5f8f431308db75b160cc1cf85f3400ba6baf977e2157af705995478df67bfdeb"
+    },
+    {
+      "path": "w2/MON33W2/W_bands.png",
+      "sha256": "20faabcb18813292b3b1151237fea469e20ffca90b8d71c3a9149255a01a7d0b"
+    },
+    {
+      "path": "w2/MON33W2/W_summary.png",
+      "sha256": "37d646367491c5168956e6cec46e4f01ac00b9fb2d8a5f271af145748257a853"
+    },
+    {
+      "path": "w2/MON33W2/extraction_done.json",
+      "sha256": "b0e3f4ffb46398742cef9e6b5b15d22f91d6816204ec6540d7cbb1ec253fa21b"
+    },
+    {
+      "path": "w2/MON33W2/heatmap.png",
+      "sha256": "031dda5f967889ddc3ba00c40ec0f38df145b9a641a32dbcbb7dac80232a964d"
+    },
+    {
+      "path": "w2/MON33W2/index.html",
+      "sha256": "bd24ae911c57d785862c9a5887d44f7b8a2218f94ff6922de3bf9a0201dab7a1"
+    },
+    {
+      "path": "w2/MON33W2/metrics.json",
+      "sha256": "1d6f2e40fbd7d0b915930800295262d65cb014e8ce1e18c5d73fe73295bca37d"
+    },
+    {
+      "path": "comparisons/V0227M/PSFC_bands.png",
+      "sha256": "67eab38b93359e81a83b27a6af7f13e78a4e3216b0a9ba419a5b8e4a1ec93830"
+    },
+    {
+      "path": "comparisons/V0227M/PSFC_summary.png",
+      "sha256": "48c9f73c11f42964f20784e4028262aef1f4e46e398d6918d8b4c2204061eeb9"
+    },
+    {
+      "path": "comparisons/V0227M/QVAPOR_bands.png",
+      "sha256": "4bc5c7075a035f0e783b48cca569e75e647b66a890a18765d741589440bd08ff"
+    },
+    {
+      "path": "comparisons/V0227M/QVAPOR_summary.png",
+      "sha256": "d7f4b5dfd87d5a86a34510444c94853c56abc49497ac1aa874f7bd28a5a1aea6"
+    },
+    {
+      "path": "comparisons/V0227M/RAINNC_bands.png",
+      "sha256": "98f65a503a658fd7b40e502a8469963acae868e48342e7ff08833116ceaf0292"
+    },
+    {
+      "path": "comparisons/V0227M/RAINNC_hourly_bands.png",
+      "sha256": "5cdb748f7a0f571c9b1cee77cacfc741822eac192faa127bb087eafb5de92d6e"
+    },
+    {
+      "path": "comparisons/V0227M/RAINNC_hourly_summary.png",
+      "sha256": "0ff4dba83931ac768e29109b6c21885bcdbfe0e1725a26df54e452c7ce906d19"
+    },
+    {
+      "path": "comparisons/V0227M/RAINNC_summary.png",
+      "sha256": "d2280133deedb34679625b9ff1b837839f205df2c263cba9282d061df5909a1d"
+    },
+    {
+      "path": "comparisons/V0227M/T2_bands.png",
+      "sha256": "4cbc59c2ca9d8f1224bab7aa5e778aa329917fbb68b8f3e73142a3dbd7f472b4"
+    },
+    {
+      "path": "comparisons/V0227M/T2_summary.png",
+      "sha256": "38a76d5d61148dc850f1dba1010f44d90199df436469e3535efdcb175a88b651"
+    },
+    {
+      "path": "comparisons/V0227M/T_bands.png",
+      "sha256": "8c56a976e773d831e2a2248ddaafb2c22cbccddf800e9fd196bafb49e301e10e"
+    },
+    {
+      "path": "comparisons/V0227M/T_summary.png",
+      "sha256": "f150bc33ab67734fef74ff76abc5fbbb7dd88422f40b8501a6e3f855079027c4"
+    },
+    {
+      "path": "comparisons/V0227M/U10_bands.png",
+      "sha256": "361eb47475b5c7ff347f607f56e3a819fb661e90404e862a93e7d7441060f7d8"
+    },
+    {
+      "path": "comparisons/V0227M/U10_summary.png",
+      "sha256": "7f03c12aa5bed279679719c47e25ab42af2206c80e4e5f9cbd548486cb930d62"
+    },
+    {
+      "path": "comparisons/V0227M/U_bands.png",
+      "sha256": "e1a541d835a467770d919d671ea27c3e91211f4d4db585d0139d06e1c346a619"
+    },
+    {
+      "path": "comparisons/V0227M/U_summary.png",
+      "sha256": "84565d62a6bbee2ab4b0faf36eee5673c4abe8415820273b1271ffa0518f9e73"
+    },
+    {
+      "path": "comparisons/V0227M/V10_bands.png",
+      "sha256": "c811e6e16f2003d46247cc6742e14f6036189cb4a93eafbf9cf3ec1ed37c1dbe"
+    },
+    {
+      "path": "comparisons/V0227M/V10_summary.png",
+      "sha256": "2b98363d834c2734300580d67a4c4fbec7a7e4ce7c58a88c74291c80bf27ae6c"
+    },
+    {
+      "path": "comparisons/V0227M/V_bands.png",
+      "sha256": "3b830a23c94bd72ea83c06f45101078bfc8bdc2929fa1ea8b48d4a776a36181c"
+    },
+    {
+      "path": "comparisons/V0227M/V_summary.png",
+      "sha256": "e4b0719c5b5c26c125af3c3612c3cf9ee8e2f70ec24bf1ef56533905beefef1b"
+    },
+    {
+      "path": "comparisons/V0227M/W_bands.png",
+      "sha256": "03ff566fe5cfcfa706adf5d6f8ef2af3e0902b2e5c8b5fef6271872996e76af1"
+    },
+    {
+      "path": "comparisons/V0227M/W_summary.png",
+      "sha256": "e7925039c72a8d3425492191e68c637dd292816e4418affcaf9ae3c6d6985bba"
+    },
+    {
+      "path": "comparisons/V0227M/extraction_done.json",
+      "sha256": "fb2a44e1a1844898303b5e45c65cd405367db8d2aaca53ddd1045bd8467f6b67"
+    },
+    {
+      "path": "comparisons/V0227M/heatmap.png",
+      "sha256": "0c6c833ce305a6233a083c6bc7c761a72073515b2fd4024694f88794fb697d2c"
+    },
+    {
+      "path": "comparisons/V0227M/index.html",
+      "sha256": "750dc1a128981fa48518572101e5e5eb8016fdb4d30ed9d16b3d021ed221d938"
+    },
+    {
+      "path": "comparisons/V0227M/metrics.json",
+      "sha256": "3482c86262010281bf5ff121ec4a14f5fba4d158edd25794e255d50134e7dc1c"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/PSFC_bands.png",
+      "sha256": "3a8a66363c4ff84cb5583d8faa785924d7b6025a6ed566c97246497e2add2b4b"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/PSFC_summary.png",
+      "sha256": "1465462eda5a277d4e866f628fe33b3efacb8d0045da8d31652ca76b024d01bc"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/QVAPOR_bands.png",
+      "sha256": "43ef2c0291002c301b294e5857ddae39cc81993c2c687f9e72067d1098260041"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/QVAPOR_summary.png",
+      "sha256": "647d580676ebc8c7ccf5c82ee719caf10e11fd121ae8dc18b6a176bcffa59bc6"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/RAINNC_bands.png",
+      "sha256": "0ce55422cd0596788a3cce47fcce755bff0a5fa0a107552b2e154c63671e4719"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/RAINNC_hourly_bands.png",
+      "sha256": "76cd5d27f951abc2ed39a62b120d776e0aeab11939bd26b83d878a04bcd06dcc"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/RAINNC_hourly_summary.png",
+      "sha256": "4ca0e082731edf345e0a54a27f4f94c833bef55655b9d38bc17d4e1f415ab559"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/RAINNC_summary.png",
+      "sha256": "8458cbbbae50658bf2e01b3d042dce94cba38aa37457692cff2fedfb1a48478b"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/T2_bands.png",
+      "sha256": "a2a344d1ad71582292d7abb4c49ac5779771ff66649434c33527747205797fd8"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/T2_summary.png",
+      "sha256": "5b6704f5edcc93eda7c36fa53ecec2a8cbc811ec3be03e6cc2ff260c2ee43494"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/T_bands.png",
+      "sha256": "9fe3c6ad72847a2d301b03f5e37c02f5df4ca5aa2315b5445b3a2bbd94534eec"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/T_summary.png",
+      "sha256": "0887cff54dde25be49c135c6b5443fcf3841d4dad8b4d72c00fb4076c2396c78"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/U10_bands.png",
+      "sha256": "68224fdf5b65e6dac59dc7ccfb0824fddfd32d30d7010aab033eaa36676e823e"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/U10_summary.png",
+      "sha256": "434c76ce583a436a2b39f07f61e3c37f03c91496390cb095895357d14cc77dc5"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/U_bands.png",
+      "sha256": "96fd13ae79b6ca557b5eabf1741c5e7744e8e0a8271a0401ac46f8ba78a7b3e1"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/U_summary.png",
+      "sha256": "c8c26dc0f105f74b416b85456e6d09fbb3e2461abd4d68b4e0888ebb41bce4aa"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/V10_bands.png",
+      "sha256": "5246d89c2d7286495363d3160e66a2c6fc4967472ee4ff265baafbde0999c5c9"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/V10_summary.png",
+      "sha256": "df5530c6a04500ab55cf6c6c53ac8b86daac18fe211521db1d7d00abe3081906"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/V_bands.png",
+      "sha256": "03582f162154f8cb1f636b14b5564c5cc0287c21630115d3fa8cddab78656565"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/V_summary.png",
+      "sha256": "8ff8effd6a071afe65c5d7a845b1399e583007c282f3685db3c6e457307cb506"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/W_bands.png",
+      "sha256": "f67a4b2d2bf36096e425a5329d72e70b13eb5c639b3b8f69f254d862b8634df6"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/W_summary.png",
+      "sha256": "f6bf78794b23ee0122e9a8f07816be1cb7a4afd38add022ecd06fd6330e26a9d"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/extraction_done.json",
+      "sha256": "fadb8e87519b45217bde95162abcb4de404d82415ec7d2bfa99ca00063453728"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/heatmap.png",
+      "sha256": "506257a3fd0405936ef3386cb4ab279d6a301c046feb048fe192d1cbf9f0dcc7"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/index.html",
+      "sha256": "4daac4f6d37a5fd11fbff2a3e7f758f834048dcb8bb59611e251b16736116f8a"
+    },
+    {
+      "path": "comparisons/Z0115_ZP/metrics.json",
+      "sha256": "8ccdd0b45f3b3013384616190c5a2f2b28b60368e156dc4988d7ccdaca792020"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/PSFC_bands.png",
+      "sha256": "c01b50dcc80025a1743225c2475d2421394357e7f6bed6eae3f2051c31633bdc"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/PSFC_summary.png",
+      "sha256": "c16d81b3e10d178a6da5d6e2298193e8ac50d263d4ba77fa17631a339a15d00d"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/QVAPOR_bands.png",
+      "sha256": "c8228c14931950791a25fb53897e68b1a30c3be4b00a49c0c2daee03b3f6c5e0"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/QVAPOR_summary.png",
+      "sha256": "d83a96f377c06ba9ea547d6d7f82b9261492b670623f29c7da8ac19cf6ae149f"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/RAINNC_bands.png",
+      "sha256": "7decba1c7d56d9eceda84a497ec293c39cbd055a87b130d86bb70e1b34340f4f"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/RAINNC_hourly_bands.png",
+      "sha256": "9af9642c6c1e71bb38d688e2d14e86d1da3a40f38bd4c24886e9ec7141335ffb"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/RAINNC_hourly_summary.png",
+      "sha256": "dada94e5b2f5c7a99bb777fe065b41792ad8645559933b9f907a8e4ce247ecaf"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/RAINNC_summary.png",
+      "sha256": "666e2a272e036f107db1459e7bd1fe2d0578436970936ef5c0a13b6ba9f4aa3d"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/T2_bands.png",
+      "sha256": "92d067ade62fc12c120e99fa4bd667a32c34c6804ef6313c232f9e32072bbe68"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/T2_summary.png",
+      "sha256": "c1400d2e561ceb8cd3104af5991af28eaea17cc3cb271b0cf4522b71595ca87a"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/T_bands.png",
+      "sha256": "1062e4ef663bd18c8009025ff62dac501bc7dbef3766b25dcdef630fa50ba684"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/T_summary.png",
+      "sha256": "c9ca826b929f8cd99cf240025e7042ea922477b442f7a2ce1400439218ee9237"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/U10_bands.png",
+      "sha256": "a1e7fb1bf60d18e78f01620dfed9cfd7b0049c9b00a335c412ae8b0125ab8978"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/U10_summary.png",
+      "sha256": "a9e04f92c73664e6ebd407e4ed879d6235ac7efb9d7f74069d0703501bab3248"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/U_bands.png",
+      "sha256": "cf16edd9b05d6b8692a64ad91e54580c425163da1018c808a1fee497a294a198"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/U_summary.png",
+      "sha256": "5c84f8dcb53346c6554e6133e5638151d5d63c525f56ef85fb6a3a6c3d89f45f"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/V10_bands.png",
+      "sha256": "2ae3a01b3ac58676d0d434f9a6f551f495f72e22559e2ee414a680f4d46df828"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/V10_summary.png",
+      "sha256": "03794d9c6e0bbd4fc5978810eb1d95f183c45a6e020a3590ec7b014bad895b18"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/V_bands.png",
+      "sha256": "f71eeb9984699fa99ad0fe18af2a54283a8923daa08b2e774b483f85808a6547"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/V_summary.png",
+      "sha256": "a64ef099b69189ec746f9c5999cae2f7dc50a431230d551680a2d1547a6cc799"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/W_bands.png",
+      "sha256": "3ee18c023e2c36cfffebf465591ab3971248b8e59d414bf861d698c8152d3fcb"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/W_summary.png",
+      "sha256": "7091728c1ac1dec3aa6423a609a858423510ef9378590a0d2bd0130347b50146"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/extraction_done.json",
+      "sha256": "6b84b36ad6db0d3624a432742d57b5377729fb87596fe9b93efcb746b01fb8de"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/heatmap.png",
+      "sha256": "9c5f04211aeb29b06a74d16a3892ccdda25a9b8374e9b09d7d5f6f1e93b62d96"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/index.html",
+      "sha256": "c46426251b59d555025074afbd41f0aa724808d6e155413b211c1eb2067d98a8"
+    },
+    {
+      "path": "comparisons/Z0115_ZR/metrics.json",
+      "sha256": "19acc4c8a08b109cb619e4105265e81905737a9fbc092b75967fc07e052174d2"
+    },
+    {
+      "path": "comparisons/Y0115_YN/PSFC_bands.png",
+      "sha256": "4317f094cc0e0b2d2411bacf6bc934cc8b72a3df1accb95ec986bb7c09dd2fa3"
+    },
+    {
+      "path": "comparisons/Y0115_YN/PSFC_summary.png",
+      "sha256": "8596a1a34b73785103150432d812b3856f6945561b17b8bb22cb17a8126532ae"
+    },
+    {
+      "path": "comparisons/Y0115_YN/QVAPOR_bands.png",
+      "sha256": "39af40b4c472becd2415957b8f6ae96ff64b03bd6db70656d6cd3566a5e51cd2"
+    },
+    {
+      "path": "comparisons/Y0115_YN/QVAPOR_summary.png",
+      "sha256": "b4b671dd5084bd67bc52bbc1b6840a1968edca6087d9a80843df5d8636fab2c2"
+    },
+    {
+      "path": "comparisons/Y0115_YN/RAINNC_bands.png",
+      "sha256": "d567b5947e9b8899281dff47a14d046f97056e9c8acd2f2af05a957487d0564f"
+    },
+    {
+      "path": "comparisons/Y0115_YN/RAINNC_hourly_bands.png",
+      "sha256": "a0cc40ac6ca267737173552ccffb9d803bd017b1cff0d8378e6c12f2fb0c978f"
+    },
+    {
+      "path": "comparisons/Y0115_YN/RAINNC_hourly_summary.png",
+      "sha256": "cb28619bc01e1861eafa0ead0961138d70fe90ca03e825145a465c8862e716ac"
+    },
+    {
+      "path": "comparisons/Y0115_YN/RAINNC_summary.png",
+      "sha256": "3778a5477442339f1a85f2ef30aeab8a39af847df24d0ac7180c762aea103a8a"
+    },
+    {
+      "path": "comparisons/Y0115_YN/T2_bands.png",
+      "sha256": "a8d5fa97899a9b11c02d7b5c85b5f83baa682d7577d80cf5741b7a81adeac940"
+    },
+    {
+      "path": "comparisons/Y0115_YN/T2_summary.png",
+      "sha256": "438ec89379ca8e15ac58a0391424f83145d2ac75a32cf7fb05b5de211f558755"
+    },
+    {
+      "path": "comparisons/Y0115_YN/T_bands.png",
+      "sha256": "c0ada39ff8de2479eb94f58d37c89b988d83533fd9ca7ce3a027e3c42f2d0549"
+    },
+    {
+      "path": "comparisons/Y0115_YN/T_summary.png",
+      "sha256": "b45bd3c9c96f338279536eaf7ec10235de77e64b2ea4305d37f745f930989ecd"
+    },
+    {
+      "path": "comparisons/Y0115_YN/U10_bands.png",
+      "sha256": "f44d9a508099c32216c802a25238f4d2ba12bfb2f801518dbb42952a6c551423"
+    },
+    {
+      "path": "comparisons/Y0115_YN/U10_summary.png",
+      "sha256": "f983c2e523b3911b50a827c9109ecc47f11010c21c96ccf36e3739444911e701"
+    },
+    {
+      "path": "comparisons/Y0115_YN/U_bands.png",
+      "sha256": "df99c3d75f1ba7bd9fd84c5e5b74edd974aaec9a18b04a3d1ca70810900aa331"
+    },
+    {
+      "path": "comparisons/Y0115_YN/U_summary.png",
+      "sha256": "cca1ae37fe1d15ef1cf9cacc6b963cc91b082ca661b26380cb8034378dfca754"
+    },
+    {
+      "path": "comparisons/Y0115_YN/V10_bands.png",
+      "sha256": "f8826cd3b8d01ae718857b6e90ddaedf2f8d197c88c1fb700bffc2b0c6a5d4ae"
+    },
+    {
+      "path": "comparisons/Y0115_YN/V10_summary.png",
+      "sha256": "527c3f35f4fe8275b1aac75675e93c87b63de882ea1caf9c51f8f75c601d0e58"
+    },
+    {
+      "path": "comparisons/Y0115_YN/V_bands.png",
+      "sha256": "334a0044c4e2c5e62a6dc6d56d734c42c7e81e0dcb55790b2378f3fdc30ae157"
+    },
+    {
+      "path": "comparisons/Y0115_YN/V_summary.png",
+      "sha256": "c85f5b91753119bf3cc1e55f171b3dd005e90ad23df01f90360599c73933799b"
+    },
+    {
+      "path": "comparisons/Y0115_YN/W_bands.png",
+      "sha256": "898ce90b07a3d8299367afbdfe132b4edb7b05189e3c70e3815f8af2cfda2131"
+    },
+    {
+      "path": "comparisons/Y0115_YN/W_summary.png",
+      "sha256": "119bce04fbb7bec9c1cdc1f4eaa337392237e56c7d2662ba86002377d235b540"
+    },
+    {
+      "path": "comparisons/Y0115_YN/extraction_done.json",
+      "sha256": "d0a2306e0f224c5bb6418abc45e76825859856a703c4924e2d87f61e67f0f873"
+    },
+    {
+      "path": "comparisons/Y0115_YN/heatmap.png",
+      "sha256": "e76292b84a239a30e4783353c41730295fe4afa9641705c26519d5a088f77593"
+    },
+    {
+      "path": "comparisons/Y0115_YN/index.html",
+      "sha256": "43acc3e13228c73943f6009c409177b9f58bc10282b44bfa141a31c6132b843c"
+    },
+    {
+      "path": "comparisons/Y0115_YN/metrics.json",
+      "sha256": "4947850350686e21aa428e2fb19473ec71ddcdc8c5631b7897fe07abdee1eb15"
+    },
+    {
+      "path": "comparisons/Y0115_YM/PSFC_bands.png",
+      "sha256": "97e6439110bd3bce1434e799cc698c5ed749b2efc5e0a06730a308853508212d"
+    },
+    {
+      "path": "comparisons/Y0115_YM/PSFC_summary.png",
+      "sha256": "9dec7a02913fe2b2cf31131e46a322a507014209d59f03efc1ff4e4cbea69c43"
+    },
+    {
+      "path": "comparisons/Y0115_YM/QVAPOR_bands.png",
+      "sha256": "decdb6439f24bcd28977534c1e9edf73f543ad8007151b85d26d8ea1dfc1ef33"
+    },
+    {
+      "path": "comparisons/Y0115_YM/QVAPOR_summary.png",
+      "sha256": "aaec2ee2252eaadd5b6b193954815d683e68c82736d50fa0e9cd0b3b80ac6f4f"
+    },
+    {
+      "path": "comparisons/Y0115_YM/RAINNC_bands.png",
+      "sha256": "0d6b6b24c7a2f3c50ab214da65a5c85d960f4326d97198bd682e059cf290ea5a"
+    },
+    {
+      "path": "comparisons/Y0115_YM/RAINNC_hourly_bands.png",
+      "sha256": "3e81dd3b1e5c97ceb6fe22d396756babb5ca2b71f227eca98a90133b06675b3d"
+    },
+    {
+      "path": "comparisons/Y0115_YM/RAINNC_hourly_summary.png",
+      "sha256": "fa9750fc1f2cb23865eec35379a89dbe03641dce19a0168ebce2d76ef3a343d7"
+    },
+    {
+      "path": "comparisons/Y0115_YM/RAINNC_summary.png",
+      "sha256": "2604bd978d7471a824762885a1fb86ad827c6a11191bdab5db91335f3dad07f4"
+    },
+    {
+      "path": "comparisons/Y0115_YM/T2_bands.png",
+      "sha256": "15dc43e75ad862120dc70855bdb9f78dc220b508da6f6249bebd3cf843924fac"
+    },
+    {
+      "path": "comparisons/Y0115_YM/T2_summary.png",
+      "sha256": "8466039403554299aafc09852fe5dfdd56d1620110448e3d6ad4448b88748ff2"
+    },
+    {
+      "path": "comparisons/Y0115_YM/T_bands.png",
+      "sha256": "4da914aa5166ad1375cef842cb201209cfd004d06f4fc652aa6971e74a7654af"
+    },
+    {
+      "path": "comparisons/Y0115_YM/T_summary.png",
+      "sha256": "c85f04895429281c5ff04d58f17b5d9e8573c52ef669c306aa2f60ee8eac9718"
+    },
+    {
+      "path": "comparisons/Y0115_YM/U10_bands.png",
+      "sha256": "6c463e6225ba5485c881d0a55075d75b8d5d854cceae35d49f42ec4df501ac2c"
+    },
+    {
+      "path": "comparisons/Y0115_YM/U10_summary.png",
+      "sha256": "e12b8022a1770183b5a378c71e81caec08fa06d36ce8a04d1705d572b42e1719"
+    },
+    {
+      "path": "comparisons/Y0115_YM/U_bands.png",
+      "sha256": "5c1f3a9d1549333a89ebfcb658341af602ba6fd06dfeeb5c1b1dbc5fe7703e6f"
+    },
+    {
+      "path": "comparisons/Y0115_YM/U_summary.png",
+      "sha256": "5060513a3c2ac6f55ebb256b52f52b887e72a7af217c70cedee9026629d304ac"
+    },
+    {
+      "path": "comparisons/Y0115_YM/V10_bands.png",
+      "sha256": "ee473c458d5b80c27479cf4fbf4880163f7da0111085dd7fab21afb9cab1e4f3"
+    },
+    {
+      "path": "comparisons/Y0115_YM/V10_summary.png",
+      "sha256": "5626db9173bcacf30bb940a05746dd9872b45e3b3f6ee0046d8bb8ac0894c024"
+    },
+    {
+      "path": "comparisons/Y0115_YM/V_bands.png",
+      "sha256": "300c420557461b9e7e723e7cdc60a64ea43b83bbb990e5de665e1686177463aa"
+    },
+    {
+      "path": "comparisons/Y0115_YM/V_summary.png",
+      "sha256": "358376b69c398c27c9d8b0caf9358ca62ffc06aa942f39a36a07fa1c0f036e31"
+    },
+    {
+      "path": "comparisons/Y0115_YM/W_bands.png",
+      "sha256": "6efa2f60a34519eeb7e2505e4d77605f0711585875d8e63d9fd9864e0f2feea3"
+    },
+    {
+      "path": "comparisons/Y0115_YM/W_summary.png",
+      "sha256": "8ff85ad940233cab6e32f34b4c2b1303698a68f569af6b6287d961621919f595"
+    },
+    {
+      "path": "comparisons/Y0115_YM/extraction_done.json",
+      "sha256": "699b89946b9cb3bf23899a930a2f3e912b94bd7bcfc167f4833a547a98e280aa"
+    },
+    {
+      "path": "comparisons/Y0115_YM/heatmap.png",
+      "sha256": "9aa833cd3ec22da957be3290cf01eca9caeb1cf9c10fc3cc7ba356fe1f7171be"
+    },
+    {
+      "path": "comparisons/Y0115_YM/index.html",
+      "sha256": "8c48e22b5fda2b7b468cc70ae91cda696f07f010a2b865955a11c317df3a7ec1"
+    },
+    {
+      "path": "comparisons/Y0115_YM/metrics.json",
+      "sha256": "b42a3e261983f2c2d18f020409bd97edd37d6f58405b20582b1816a51e966a23"
+    }
+  ],
+  "no_raw_logs_env_profiles": true,
+  "source_groups_never_mixed": true,
+  "W3_gates": "Final readers closed; raw FAILs retained; manager dispositions in final manifest",
+  "extra_forecast_runs": 0,
+  "final_v033_manifest": {
+    "path": "final_w3/PLOT_MANIFEST.json",
+    "sha256": "547c65c3a60a407888c2f60e91529e39d0bfe24eec28e79af2d9631847862419",
+    "png": 228,
+    "domain_hours": 1485
+  }
+}

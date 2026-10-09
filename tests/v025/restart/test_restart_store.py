@@ -30,7 +30,7 @@ from gpuwrf.runtime.restart_store import RestartStore
 @pytest.fixture
 def initialized():
     grid = GridSpec.canary_3km_template()
-    state = State(**{name: jnp.asarray(np.arange(np.prod(shape)).reshape(shape) / 991 + 1, dtype=DEFAULT_DTYPES.dtype_for(name)) for name, shape in _state_field_shapes(grid).items()})
+    state = State(**{name: jnp.asarray(np.arange(np.prod(shape)).reshape(shape) / 991 + 1, dtype=DEFAULT_DTYPES.dtype_for(name)) for name, shape in _state_field_shapes(grid).items()}).ensure_conditional_leaves(mp_physics=8)
     carry = initial_operational_carry(state)
     xy = jnp.full((grid.ny, grid.nx), 1.234e-4, dtype=jnp.float64)
     carry = carry.replace(
@@ -66,6 +66,37 @@ def test_all_carry_roundtrips_in_both_formats(initialized, tmp_path):
     write_wrfrst_carry(carry, grid, {}, path, valid_time="2026-07-25_18:09:54", run_start="2026-07-25_18:00:00", step_index=11)
     restored, _ = read_wrfrst_carry(path)
     exact(carry, restored)
+
+
+def test_mynn_surface_wspd_roundtrips_and_missing_leaf_fails_closed(initialized, tmp_path, monkeypatch):
+    grid, namelist, carry = initialized
+    monkeypatch.setenv("GPUWRF_MYNN_SFC_WSPD", "1")
+    wspd = jnp.full_like(carry.state.xland, 2.34567, dtype=jnp.float32)
+    carry = carry.replace(state=carry.state.replace(sfc_wspd=wspd))
+    from gpuwrf.runtime.operational_mode import _enforce_operational_precision, _PHYSICS_NON_DRY_REPLACE_FIELDS
+    assert "sfc_wspd" in _PHYSICS_NON_DRY_REPLACE_FIELDS
+    assert _enforce_operational_precision(carry.state, force_fp64=True).sfc_wspd.dtype == jnp.float32
+    path = tmp_path / "wspd.pkl"
+    write_restart(carry, namelist, grid, 11, path)
+    exact(carry, read_restart(path)[0])
+    with path.open("rb") as f: payload = pickle.load(f)
+    payload["carry"]["state_field_order"].remove("sfc_wspd")
+    del payload["carry"]["state_fields"]["sfc_wspd"]
+    with path.open("wb") as f: pickle.dump(payload, f)
+    with pytest.raises(ValueError, match="sfc_wspd.*E78"):
+        read_restart(path)
+    path = tmp_path / "wspd.nc"
+    write_wrfrst_carry(carry, grid, {}, path, valid_time="2026-07-25_18:09:54", run_start="2026-07-25_18:00:00", step_index=11)
+    exact(carry, read_wrfrst_carry(path)[0])
+    from netCDF4 import Dataset
+    with Dataset(path,"r+") as d:
+        order = json.loads(d.GPUWRF_STATE_FIELD_ORDER);order.remove("sfc_wspd")
+        d.GPUWRF_STATE_FIELD_ORDER = json.dumps(order)
+    with pytest.raises(ValueError, match="sfc_wspd.*E78"):
+        read_wrfrst_carry(path)
+    store = RestartStore(tmp_path/"wspd_store", 10**8, 2, 0)
+    generation,_=store.save({"d01":carry},{"d01":11},{"d01":54.},{})
+    exact(carry,store.read(generation)[0]["carries"]["d01"])
 
 
 def test_rotation_hash_and_synchronized_domain_set(initialized, tmp_path):

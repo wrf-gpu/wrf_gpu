@@ -1,0 +1,218 @@
+{
+ "main_off_prod": {
+  "revision": "4989783535ac787d2f9203249da521cfbc99dacd",
+  "julian_flag": "unset",
+  "case": "<DATA_ROOT>/wrf_gpu2/v025/s0_case_20260725",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "062bd029f56c5b87e44ad55cd64e5c641d49b570a7e3b0159e3d66211e74cb37",
+    "raw_lower_hlo_bytes": 17892741,
+    "lower_s": 119.32309922401328,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "618d77692663a353bd375af27656a7ac415c5c13a08374a72aa2e14885ef9bb0",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "74768e889b1fa58d38841360e7b1682413f0ec7b0d1e1304975b902fd7f4750f",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "d02": {
+    "raw_lower_hlo_sha256": "7cd8b3ab40a448cbe0ff9152e36afb5dbf1c3db8bc337d64b383c5ded11d88f6",
+    "raw_lower_hlo_bytes": 18311719,
+    "lower_s": 124.16846268199151,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "618d77692663a353bd375af27656a7ac415c5c13a08374a72aa2e14885ef9bb0",
+     "static_config": "563bd5c4cb2c355d188693fb035ff52fc4b6e321311d9295ca752c428f15ca5a",
+     "carry_aval": "1389ac9b88cc3bc8f6f125ab17331d9cae1843463016d1c2f6b35dedd173be34",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ },
+ "main_off_wn3": {
+  "revision": "4989783535ac787d2f9203249da521cfbc99dacd",
+  "julian_flag": "unset",
+  "case": "<USER_HOME>/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "fa713d7d12b5eb9a14f5fbed1f7f726d8fc603639190f40b405d126ce3cd99a4",
+    "raw_lower_hlo_bytes": 17897113,
+    "lower_s": 125.01868676999584,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "618d77692663a353bd375af27656a7ac415c5c13a08374a72aa2e14885ef9bb0",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "cb04f485b6d6b37782d87cd4925464da946c52930b28cfef1c29e05460367be2",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "fused/d02": {
+    "raw_lower_hlo_sha256": "3432fb9f3ab7728504c6192dafcf6f530aa62dc78e579773dfc570422b76316e",
+    "raw_lower_hlo_bytes": 37206210,
+    "lower_s": 396.8295705029741,
+    "components": {
+     "fn_identity": "b880de4bb3516649fe0046f1ee5053321a2e907b9bc66b9f2d13d6e62e38cc94",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "618d77692663a353bd375af27656a7ac415c5c13a08374a72aa2e14885ef9bb0",
+     "static_config": "cbc699b93a9f64f90b3fb41429b15f3eacd53c621a9580e060f42e4ad0c9c642",
+     "carry_aval": "520624ce096fa3913cddf14ada0fc71745009f10d1c7c121aa77790b1da00fea",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ },
+ "br_off_prod": {
+  "revision": "686c7961a6193f6b604157312a0fcd892099c9ac",
+  "julian_flag": "unset",
+  "case": "<DATA_ROOT>/wrf_gpu2/v025/s0_case_20260725",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "062bd029f56c5b87e44ad55cd64e5c641d49b570a7e3b0159e3d66211e74cb37",
+    "raw_lower_hlo_bytes": 17892741,
+    "lower_s": 153.43933420296526,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "74768e889b1fa58d38841360e7b1682413f0ec7b0d1e1304975b902fd7f4750f",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "d02": {
+    "raw_lower_hlo_sha256": "7cd8b3ab40a448cbe0ff9152e36afb5dbf1c3db8bc337d64b383c5ded11d88f6",
+    "raw_lower_hlo_bytes": 18311719,
+    "lower_s": 116.76452667900594,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "563bd5c4cb2c355d188693fb035ff52fc4b6e321311d9295ca752c428f15ca5a",
+     "carry_aval": "1389ac9b88cc3bc8f6f125ab17331d9cae1843463016d1c2f6b35dedd173be34",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ },
+ "br_off_wn3": {
+  "revision": "686c7961a6193f6b604157312a0fcd892099c9ac",
+  "julian_flag": "unset",
+  "case": "<USER_HOME>/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "fa713d7d12b5eb9a14f5fbed1f7f726d8fc603639190f40b405d126ce3cd99a4",
+    "raw_lower_hlo_bytes": 17897113,
+    "lower_s": 225.32233591994736,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "cb04f485b6d6b37782d87cd4925464da946c52930b28cfef1c29e05460367be2",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "fused/d02": {
+    "raw_lower_hlo_sha256": "3432fb9f3ab7728504c6192dafcf6f530aa62dc78e579773dfc570422b76316e",
+    "raw_lower_hlo_bytes": 37206210,
+    "lower_s": 194.73923598398687,
+    "components": {
+     "fn_identity": "b880de4bb3516649fe0046f1ee5053321a2e907b9bc66b9f2d13d6e62e38cc94",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "cbc699b93a9f64f90b3fb41429b15f3eacd53c621a9580e060f42e4ad0c9c642",
+     "carry_aval": "520624ce096fa3913cddf14ada0fc71745009f10d1c7c121aa77790b1da00fea",
+     "trace_env": "72571c89af43614bc8d723d4ae4fd2ae4b19b2818617a3e612a9b83779bddd72",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ },
+ "br_on_prod": {
+  "revision": "686c7961a6193f6b604157312a0fcd892099c9ac",
+  "julian_flag": "1",
+  "case": "<DATA_ROOT>/wrf_gpu2/v025/s0_case_20260725",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "e0238a839601daa64cdc93070dd8ad28fc1cf2e80c2d38901812d06a0c9f2060",
+    "raw_lower_hlo_bytes": 17894276,
+    "lower_s": 168.79335025302134,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "74768e889b1fa58d38841360e7b1682413f0ec7b0d1e1304975b902fd7f4750f",
+     "trace_env": "5d8566b286b38228f4d4681bb7dea8727688c1f82b0aa079b0df8e622de9e6b5",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "d02": {
+    "raw_lower_hlo_sha256": "780ba8c285e9a87395ed44acef59cb5e86cccb56e3f9a4cbad60ca96a11c46c0",
+    "raw_lower_hlo_bytes": 18313264,
+    "lower_s": 109.16120913199848,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "563bd5c4cb2c355d188693fb035ff52fc4b6e321311d9295ca752c428f15ca5a",
+     "carry_aval": "1389ac9b88cc3bc8f6f125ab17331d9cae1843463016d1c2f6b35dedd173be34",
+     "trace_env": "5d8566b286b38228f4d4681bb7dea8727688c1f82b0aa079b0df8e622de9e6b5",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ },
+ "br_on_wn3": {
+  "revision": "686c7961a6193f6b604157312a0fcd892099c9ac",
+  "julian_flag": "1",
+  "case": "<USER_HOME>/wrf_gpu2_lanes/wn3/cases/20260227_18z_a1",
+  "scope": "real per-tree initialized carries; virtual CUDA lower only; no native compile, execution or fidelity claim",
+  "programs": {
+   "d01": {
+    "raw_lower_hlo_sha256": "56760d425ea7288bf5e73df61ef3bd92e2d921274b8bb76ca013e59cab4ee1cb",
+    "raw_lower_hlo_bytes": 17898772,
+    "lower_s": 126.12589026900241,
+    "components": {
+     "fn_identity": "9b912077901373bc131c96a755e61e38cc9a1f3b24bd0a6647bb197963c1dcfd",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "5179905a07405bfca9904b6362a0195966c9dcd54746ddcc8c7c1346f5a56875",
+     "carry_aval": "cb04f485b6d6b37782d87cd4925464da946c52930b28cfef1c29e05460367be2",
+     "trace_env": "5d8566b286b38228f4d4681bb7dea8727688c1f82b0aa079b0df8e622de9e6b5",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   },
+   "fused/d02": {
+    "raw_lower_hlo_sha256": "9801c6daa568424f82100d79fc20e670c87dcc852bf916e051499ad739ec9548",
+    "raw_lower_hlo_bytes": 37209292,
+    "lower_s": 232.5372304660268,
+    "components": {
+     "fn_identity": "b880de4bb3516649fe0046f1ee5053321a2e907b9bc66b9f2d13d6e62e38cc94",
+     "program_config": "45df0d1fb939d5dc934ced4d8a094ee63ce30f7e298120db52d0fe0f0d9e105e",
+     "source_fingerprint": "826153260a237e244babf6864c33929da18266a4edab5648a5d2b5abd31e8a47",
+     "static_config": "cbc699b93a9f64f90b3fb41429b15f3eacd53c621a9580e060f42e4ad0c9c642",
+     "carry_aval": "520624ce096fa3913cddf14ada0fc71745009f10d1c7c121aa77790b1da00fea",
+     "trace_env": "5d8566b286b38228f4d4681bb7dea8727688c1f82b0aa079b0df8e622de9e6b5",
+     "module_constants": "0d9f3279be5de63669f7691e0d77853971d779f1deb4045180f8ac0000368580"
+    }
+   }
+  }
+ }
+}

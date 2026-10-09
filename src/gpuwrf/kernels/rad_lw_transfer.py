@@ -143,9 +143,9 @@ def lw_band_fluxes(state, tau, frac, cldf, taucld, sec, scale, valid,
     args += [pack(sec, ()), pack(plank, (nlay,)), pack(planklev, (nlay + 1,)),
              pack(plankbnd, ()), pack(state.surface_emissivity, ()),
              pack(cloud_layer, (nlay,), bool), jnp.asarray(valid, jnp.float32)]
-    from gpuwrf.physics.rrtmg_constants import LW_BPADE, LW_EXP_EPS
+    from gpuwrf.physics.rrtmg_constants import LW_BPADE, LW_EXP_EPS, rrtmg_constant
     # Runtime constants preserve expression association through Triton lowering.
-    args += [jnp.stack([jnp.float32(x) for x in (0, 1, .5, 6, .06, LW_BPADE, 10000, LW_EXP_EPS)]
+    args += [jnp.stack([jnp.float32(x) for x in (0, 1, .5, 6, .06, rrtmg_constant("LW_BPADE", tau.dtype, LW_BPADE), 10000, LW_EXP_EPS)]
                        + [jnp.asarray(scale, jnp.float32)] + [jnp.float32(0)] * 7)]
     flux_shape = jax.ShapeDtypeStruct((npad, nlay + 1, ng), jnp.float32)
     layer_shape = jax.ShapeDtypeStruct((npad, nlay, ng), jnp.float32)
@@ -273,8 +273,8 @@ def lw_band_flux_sums(state, tau, frac, packed_cloud, band, sec, scale, valid,
     args += [pack(sec, ()), pack(plank, (nlay,)), pack(planklev, (nlay + 1,)),
              pack(plankbnd, ()), pack(state.surface_emissivity, ()),
              pack(cloud_layer, (nlay,), bool), jnp.asarray(valid, jnp.float32)]
-    from gpuwrf.physics.rrtmg_constants import LW_BPADE, LW_EXP_EPS
-    args += [jnp.stack([jnp.float32(x) for x in (0, 1, .5, 6, .06, LW_BPADE, 10000, LW_EXP_EPS)]
+    from gpuwrf.physics.rrtmg_constants import LW_BPADE, LW_EXP_EPS, rrtmg_constant
+    args += [jnp.stack([jnp.float32(x) for x in (0, 1, .5, 6, .06, rrtmg_constant("LW_BPADE", tau.dtype, LW_BPADE), 10000, LW_EXP_EPS)]
                        + [jnp.asarray(scale, jnp.float32)] + [jnp.float32(0)] * 7), band_i, band_f]
     flux_shape = jax.ShapeDtypeStruct((npad, nlay + 1), jnp.float32)
     result = pl.pallas_call(lambda *r: _kernel_sums(*r, nlay=nlay, ng=ng),
@@ -284,3 +284,126 @@ def lw_band_flux_sums(state, tau, frac, packed_cloud, band, sec, scale, valid,
     if not with_clear_sky:
         return fields[:2]
     return fields
+
+
+def _kernel_sums_mp_re(tau, frac, mask, clw, ciw, csw, rliq, rice, rsnow, sec, plank, planklev, plankbnd,
+                 emiss, cloud, valid, scalars, band_i, band_f,
+                 down, up, clear_down, clear_up, *, nlay, ng):
+    """:func:`_kernel` with the WRF `cldprmc` cloud optics built per g-point from
+    the global McICA mask and in-cloud paths (taucmc = clw*liq + ciw*ice +
+    csw*snow where cloudy, module_ra_rrtmg_lw.F cldprmc), and g-summed fluxes
+    (the caller's band reduction) instead of per-g-point buffers (BP57)."""
+    rr = pl.program_id(0) * TX_SUMS + jnp.arange(TX_SUMS)
+    rows = rr[:, None]
+    points = jnp.arange(ng)[None, :]
+    s = tuple(scalars[i] for i in range(9))
+    zero, one = s[0], s[1]
+    scale = s[8] * valid[points]
+    secv = sec[rr][:, None]
+    offset, count = band_i[0], band_i[1]
+    in_band = points < count
+    gidx = jnp.minimum(offset + points, _NG_GLOBAL - 1)
+
+    def cloud_terms(k):
+        cloudy_g = mask[rows, k, gidx] & in_band
+        def coeff(slot, radius, ice_phase):
+            start, step, length = (5., 3., 46) if ice_phase else (2.5, 1., 58)
+            idx = jnp.clip(jnp.floor((radius - jnp.float32(start)) / jnp.float32(step)).astype(jnp.int32), 0, length - 2)
+            frac = (radius - (jnp.float32(start) + idx.astype(jnp.float32) * jnp.float32(step))) / jnp.float32(step)
+            return band_f[slot, idx] + frac * (band_f[slot, idx + 1] - band_f[slot, idx])
+        liq = coeff(0, rliq[rr, k], False)[:, None]
+        ice = coeff(1, rice[rr, k], True)[:, None]
+        snow = coeff(2, rsnow[rr, k], True)[:, None]
+        path = clw[rr, k][:, None] * liq + ciw[rr, k][:, None] * ice + csw[rr, k][:, None] * snow
+        return cloudy_g.astype(jnp.float32), jnp.where(cloudy_g, path, zero)
+
+    def terms(k):
+        b = plank[rr, k][:, None]
+        dn = planklev[rr, k][:, None] - b
+        du = planklev[rr, k + 1][:, None] - b
+        cloudy = cloud[rr, k][:, None]
+        cf, tc = cloud_terms(k)
+        values = _coefficients(tau[rows, k, points], frac[rows, k, points],
+            cf, tc, secv, b, dn, du, cloudy, s)
+        return values, cloudy, cf
+
+    gsum = lambda x: jnp.sum(x * scale, axis=1)  # noqa: E731
+    down[rr, nlay] = jnp.zeros((TX_SUMS,), jnp.float32)
+    clear_down[rr, nlay] = jnp.zeros((TX_SUMS,), jnp.float32)
+
+    def descend(i, carry):
+        rad, clr, seen = carry
+        k = nlay - 1 - i
+        (a, at, bd, bu, bdt, but, ef, ac, bdc, buc, _tfn), cloudy, cf = terms(k)
+        gas_src = bd * a
+        rad_cloud = rad - rad * (a + ef * (one - a)) + gas_src + cf * (bdt * at - gas_src)
+        rad_clear = rad + (bd - rad) * a
+        new_rad = jnp.where(cloudy, rad_cloud, rad_clear)
+        seen = seen | cloudy
+        new_clr = jnp.where(seen, clr + (bdc - clr) * ac, new_rad)
+        down[rr, k] = gsum(new_rad)
+        clear_down[rr, k] = gsum(new_clr)
+        return new_rad, new_clr, seen
+    zeros = jnp.zeros((TX_SUMS, ng), jnp.float32)
+    rd, cd, column_cloud = jax.lax.fori_loop(0, nlay, descend, (zeros, zeros, jnp.zeros((TX_SUMS, ng), bool)))
+    surface = frac[rows, 0, points] * plankbnd[rr][:, None]
+    reflect = one - emiss[rr][:, None]
+    ru = surface + reflect * rd
+    cu = surface + reflect * cd
+    up[rr, 0] = gsum(ru)
+    clear_up[rr, 0] = gsum(cu)
+
+    def ascend(k, carry):
+        rad, clr = carry
+        (a, at, bd, bu, bdt, but, ef, ac, bdc, buc, _), cloudy, cf = terms(k)
+        gas_src = bu * a
+        rad_cloud = rad - rad * (a + ef * (one - a)) + gas_src + cf * (but * at - gas_src)
+        rad_clear = rad + (bu - rad) * a
+        new_rad = jnp.where(cloudy, rad_cloud, rad_clear)
+        # WRF retains the FINAL downward iclddn throughout the upward sweep.
+        new_clr = jnp.where(column_cloud, clr + (buc - clr) * ac, new_rad)
+        up[rr, k + 1] = gsum(new_rad)
+        clear_up[rr, k + 1] = gsum(new_clr)
+        return new_rad, new_clr
+    jax.lax.fori_loop(0, nlay, ascend, (ru, cu))
+
+
+def lw_band_flux_sums_mp_re(state, tau, frac, packed_cloud, band, sec, scale, valid,
+                      plank, planklev, plankbnd, cloud_layer, with_clear_sky,
+                      *, gpoint_counts, cloud, interpret=False):
+    """Band transfer returning the g-summed ``(down, up, clear_down, clear_up)`` fluxes.
+
+    ``packed_cloud`` = :func:`pack_lw_cloud` of the McICA mask and in-cloud paths;
+    ``band`` may be traced.
+    """
+    leading, nlay, ng = tau.shape[:-2], tau.shape[-2], tau.shape[-1]
+    if ng & (ng - 1):
+        raise ValueError('Pallas g-point width must be a power of two')
+    ncol, npad, pack = _packer(leading)
+    counts = jnp.asarray(gpoint_counts, jnp.int32)
+    offsets = jnp.asarray([sum(gpoint_counts[:b]) for b in range(len(gpoint_counts))], jnp.int32)
+    band_i = jnp.stack([offsets[band], counts[band]])
+    band_f = jnp.stack([jnp.asarray(cloud.liquid, jnp.float32)[band], jnp.asarray(cloud.ice, jnp.float32)[band],
+                        jnp.asarray(cloud.snow, jnp.float32)[band]])
+    args = [pack(x, (nlay, ng)) for x in (tau, frac)] + list(packed_cloud)
+    args += [pack(sec, ()), pack(plank, (nlay,)), pack(planklev, (nlay + 1,)),
+             pack(plankbnd, ()), pack(state.surface_emissivity, ()),
+             pack(cloud_layer, (nlay,), bool), jnp.asarray(valid, jnp.float32)]
+    from gpuwrf.physics.rrtmg_constants import LW_BPADE, LW_EXP_EPS, rrtmg_constant
+    args += [jnp.stack([jnp.float32(x) for x in (0, 1, .5, 6, .06, rrtmg_constant("LW_BPADE", tau.dtype, LW_BPADE), 10000, LW_EXP_EPS)]
+                       + [jnp.asarray(scale, jnp.float32)] + [jnp.float32(0)] * 7), band_i, band_f]
+    flux_shape = jax.ShapeDtypeStruct((npad, nlay + 1), jnp.float32)
+    result = pl.pallas_call(lambda *r: _kernel_sums_mp_re(*r, nlay=nlay, ng=ng),
+        grid=(npad // TX_SUMS,), out_shape=[flux_shape] * 4, interpret=interpret,
+        name="rrtmg_lw_band_sums")(*args)
+    fields = tuple(x[:ncol].reshape(leading + (nlay + 1,)).astype(tau.dtype) for x in result)
+    if not with_clear_sky:
+        return fields[:2]
+    return fields
+
+
+def pack_lw_cloud_mp_re(cloudy_global, clw, ciw, csw, radii):
+    leading, nlay = cloudy_global.shape[:-2], cloudy_global.shape[-2]
+    _, _, pack = _packer(leading)
+    return pack_lw_cloud(cloudy_global, clw, ciw, csw) + tuple(
+        pack(v, (nlay,)) for v in (radii.liquid_um, radii.ice_um, radii.snow_um))

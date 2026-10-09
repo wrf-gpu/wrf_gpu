@@ -53,3 +53,32 @@ def pin(part, value):
             return value
     import jax
     return jax.tree.map(row_major, value)
+
+
+# e41-class (Swiss E41): on SMALL grids XLA's GPU fusion cost model (launch cost >> traffic) merges independent work
+# of different phases into one multi-output kInput fusion (Swiss 42x42: surface-layer psi lookups + Noah internals +
+# dycore curvature = HLO 755; RK stage k small_step_finish + stage k+1 PGF/Coriolis + advection = HLO 590; the
+# b6 tree already had five > 500 before any layout pin). An optimization barrier at the phase seams bounds every
+# fusion to one phase there. Grids above SMALL_GRID_COLUMNS (every WN/PROD/Monica domain: >= 8400 columns) trace
+# NOTHING new: the value is returned as is, so their programs stay byte-identical.
+SMALL_GRID_COLUMNS = 4096
+
+
+def small_grid_firewall(value, horizontal_shape):
+    """``value`` (any pytree) with all its jax.Array leaves behind ONE ``lax.optimization_barrier`` when
+    ``prod(horizontal_shape)`` (the domain's (ny, nx) or (ncol,)) is <= SMALL_GRID_COLUMNS, else ``value`` itself (same
+    object, no op traced). Non-array leaves (Python/NumPy static sentinels) pass through unchanged."""
+    columns = 1
+    for size in tuple(horizontal_shape):
+        columns *= int(size)
+    if columns > SMALL_GRID_COLUMNS:
+        return value
+    import jax
+    leaves, treedef = jax.tree_util.tree_flatten(value)
+    arrays = [i for i, leaf in enumerate(leaves) if isinstance(leaf, jax.Array)]
+    if not arrays:
+        return value
+    fenced = jax.lax.optimization_barrier(tuple(leaves[i] for i in arrays))
+    for i, leaf in zip(arrays, fenced):
+        leaves[i] = leaf
+    return jax.tree_util.tree_unflatten(treedef, leaves)

@@ -1,0 +1,169 @@
+{
+  "id": "W3P0227",
+  "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+  "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+  "original_cpu_reference": "original CPU-WRF R0227",
+  "hours": 72,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "scope": "Actual7a 0227IC-P vs original CPU R0227, IC difference included. Explicitbe0 nativeBYTE bridge; no execution relabel or best-of-N primary replacement; rawFAIL andfrozenannex remain distinct.",
+  "verdicts": {
+    "strict24": {
+      "status": "PASS",
+      "hours": 24,
+      "sha256": "adbfad9a5e10f49d436d18439384c392b50c2e16a4d8241652927d6c50577c5a",
+      "report": "d6_24h_strict_verdict.json",
+      "breaches": {
+        "d01": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d02": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d03": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        }
+      }
+    },
+    "full_D6": {
+      "status": "FAIL",
+      "hours": 72,
+      "sha256": "a44c5627ab6085c0767c8eaa312c67782b255567e8372ef3ab7c6b22b3a179e3",
+      "report": "d6_72h_verdict.json",
+      "breaches": "d03: RAINNC \u03c468\u201372 (5 frames, max 2.43 > 1.0); W \u03c469\u201369 (1 frames, max 0.323 > 0.3)"
+    },
+    "integrity": {
+      "supplied_disposition": "PASS",
+      "sha256": "e7c89c130fb8d9c3e3a8189a16d6ccb28bc7dd5df55eb617d9fe6e8f5075f1e6",
+      "report": "classes_all_72h.json"
+    },
+    "annex": {
+      "supplied_disposition": "PASS",
+      "sha256": "5ddf9b0e59f3eb544990707589c10aebf897e4d8eb5151d396d8d477130adbab",
+      "report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": false,
+  "elapsed_seconds": 116.64353194006253,
+  "receipt_sha256": "9e137900d961ecedebe74a31465d1ba134e1c77907d03ba06db5724557d744e6",
+  "compression_receipt_sha256": "3d4749b44653c87da9109d39d89f07b76580806265518210ccb3bc03df58be03",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "247287ffb634206c8123f6a910d736b9ffe49e6e3795eb1c6c32550d80992e7e"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "1273190f87b69a52e96a57417494623bf693dd8ba8854572c53b67ace1dd865f"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "ee94a142950e945cf1fa3fb2c21be918bf46d01f65f6adad4f529a6575e621bb"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "cea24ecb2e96e90fa5c0263a990ad6e6010824827d633324647865391051e482"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "99c2bcdcb02b47846c3ce88780b6ecb87d3a816159ddfe5551b728af922e8d52"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "388cb50824c401115b6a0f69b97bf0e9993d0b899b3d6cf0dccf2ad399aeb869"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "46d1315f31620357d003616062303ab438aa2e83a767b1f465cdced7c49cdd74"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "c072fab0251a3422432794ef1bd31b985d43b4df52abc515e249e289ba7447af"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "1979a97b60fe3d6b6626bd25bc42c927705f9ce4d900c76d01adabc5d3d63a37"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "e6269291ab70316ee8b65eb1d8510e5c71b7a240e4694378422f73b59628941c"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "f2936d130b21c879ad7cf2deae15dbb424f802c783296c466e0a818e9c730941"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "0dd3a1262775b0d0ddc4f5eae83f3958ffa42e786ca8906395d91adf17c57e42"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "36e32d153a49e591c864fc2f4829a4f7ec10eb099ff79f76e645c89a8edacbfd"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "4a03809cc229aa3c47c8492d827b30094cbf6017ff0816f216d52f034b934220"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "620573820a96643eddb18004a8a5c41227d445702d061a6adf62f575af632885"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "77fa4375cb3d1df38287b6de084d8d26def9cef548db358da594b6a056fa9c54"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "4db067005ac4895cef58383803e286424314de7abe396907ff016420cf8060d7"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "8ad3af9c978868c7e7a6b80309be72e2c47af50e88003da900537d3d69bf2c6a"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "937b53e8200176bf91a96fb1eef11f9334d9bf05a864294ea18c9381ea2b6e67"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "6086b2af525c94b00e04a2a71873e8133ef4a3a61507ea0000f0c6c26b7b32af"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "dde98e101ece1a1af92ca959d991e7ea5a16d31c367c529727ed46e7d2f7457c"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "52b8746f1c5e4371307e2b6e2b0f5d638b274f1df429dd21b70a411b9c7c6ad0"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "b790cb0e1588bd981bf8500c946d9bb8540a3bb8f7c486df0e451213450bc0ba"
+    },
+    {
+      "path": "index.html",
+      "sha256": "6a9f8c80b732cb9d4ac086a9c2a6f17800f6043e893bcc4410c119c9131d1068"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "25541778ddc76542f0ccc25190ce824a5c0902f88772932e0999cb0b7d63c8c0"
+    }
+  ],
+  "ready_part_reused": true
+}

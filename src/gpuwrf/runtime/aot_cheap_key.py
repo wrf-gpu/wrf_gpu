@@ -552,6 +552,13 @@ def source_fingerprint_hash() -> str:
 # flags any NEW import-time env-derived module constant in trace-reachable code
 # not listed here, so this registry cannot silently drift out of date.
 IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
+    ("gpuwrf.physics.rrtmg_mp_re", "_MP_RE"),
+    ("gpuwrf.physics.rrtmg_constants", "_RRTMG_REAL_CONSTANTS"),
+    ("gpuwrf.coupling.physics_couplers", "_SOLAR_JULIAN_WRF"),
+    ("gpuwrf.physics.surface_layer", "_MYNN_PSIQ_FLUX_WRF"),
+    ("gpuwrf.physics.surface_layer", "_MYNN_SFC_PBLH_WRF"),
+    ("gpuwrf.coupling.physics_couplers", "_PHY_PREP_REAL_CONST"),
+    ("gpuwrf.physics.mynn_sgs_cloud", "_DMP_KTOP_BOUND"),
     ("gpuwrf.coupling.boundary_apply", "NORMAL_BDY_RELAX_STRENGTH"),
     ("gpuwrf.coupling.boundary_apply", "_NATIVE_BOUNDARY_FP32"),
     ("gpuwrf.dynamics.core.rk_addtend_dry", "_NATIVE_RK_FP32"),
@@ -559,13 +566,18 @@ IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
     ("gpuwrf.dynamics.core.small_step_prep", "_NATIVE_RK_FP32"),
     ("gpuwrf.dynamics.explicit_diffusion", "_NATIVE_DIFFUSION_FP32"),
     ("gpuwrf.kernels.dyn_acoustic_fp32", "_EOS_PRUNE"),
+    ("gpuwrf.kernels.dyn_acoustic_fp32", "_NO_MU_FLOOR"),
     ("gpuwrf.kernels.rad_mcica", "_LEGACY_FP64"),
+    ("gpuwrf.kernels.rad_mcica", "_MAXRAND"),
     ("gpuwrf.physics.fp32.surface_layer_real", "_NATIVE_REAL"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_COLUMN_TILING"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_COLUMN_TILE_COLS"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_BOULAC_FP32"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_BOULAC_ONZ"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_PSIG_CLAMP"),
+    ("gpuwrf.physics.mynn_constants", "_MYNN_REAL_CONSTANTS"),
     ("gpuwrf.physics.mynn_pbl", "_MYNN_SGS_CLOUD"),
+    ("gpuwrf.physics.mynn_pbl", "_MYNN_ELB_MF"),
     ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILING"),
     ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILE_COLS"),
     ("gpuwrf.physics.rrtmg_lw", "_LW_COLUMN_TILE_COLS_EXPLICIT"),
@@ -581,7 +593,11 @@ IMPORT_TIME_ENV_CONSTANTS: tuple[tuple[str, str], ...] = (
     ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILING"),
     ("gpuwrf.physics.thompson_column", "_MP_COLUMN_TILE_COLS"),
     ("gpuwrf.runtime.operational_mode", "_CARRY_DONATE"),
+    ("gpuwrf.runtime.operational_mode", "_HISTORY_SWDOWN_HORIZONTAL"),
     ("gpuwrf.kernels.layout_pin", "PARTS"),
+    ("gpuwrf.dynamics.core.w_surface_reset", "ENABLED"),
+    ("gpuwrf.dynamics.core.acoustic", "_SPEC_W_WORK_COPY"),
+    ("gpuwrf.dynamics.core.advance_w", "W_DAMP_STAGE"),
 )
 
 def module_const_env_hash() -> str:

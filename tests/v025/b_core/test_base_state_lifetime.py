@@ -130,7 +130,7 @@ def test_nested_writer_passes_immutable_base_at_two_output_boundaries(monkeypatc
                 np.testing.assert_array_equal(np.asarray(ds[name][0]), np.asarray(value))
 
 
-def test_native_base_capture_preserves_terrain_theta_diffusion_reference(monkeypatch):
+def test_native_base_capture_preserves_terrain_theta_diffusion_reference(monkeypatch, cpu_pallas_interpret):
     """Consumer regression on real terrain; six-hour WRF fidelity is separate."""
     path = Path("<DATA_ROOT>/wrf_gpu2/v025/s0_case_20260725/wrfinput_d01")
     if not path.exists():

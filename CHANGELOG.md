@@ -7,6 +7,14 @@ WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.3] - 2026-10-09
+
+- Faster native fp32 Noah-MP radiation, corrected GPU compiler layouts and Thompson snow fall speeds matched to WRF.
+- Small-grid stability firewall: about +12% kernels/~8% ordinary-root time on ≤4096-column grids only; larger WN3/Monica programs unaffected by that delta.
+- Seven 72 h forecasts plus Swiss24 compared with original CPU-WRF at every paired hour; per-variable error bands, raw D6/integrity failures and scoped annexes published.
+- Disclosed near-threshold 0115 rain, late coastal wind and cirrus lifetime differences, trace0408 graupel and WRF-order transient negative moisture. 0115 station WS10 RMSE +1.8%; T2/RH2/WD improve.
+- `GPUWRF_LAYOUT_PIN` defaults to `ac_carry_cols_cum`. Dated v0.3.2 speed/energy measurements remain dated. [Release notes](release_notes/RELEASE_NOTES_v0.3.3.md) · [Technical validation](docs/release/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md).
+
 ## [0.3.2] - 2026-10-05
 
 - Stable nested layout pin and momentum fusion enabled; lazy dormant-scheme

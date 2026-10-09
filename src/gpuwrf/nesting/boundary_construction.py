@@ -174,10 +174,11 @@ def field_sides_3d(field: jax.Array, width: int, side_len: int) -> jax.Array:
     z, ny, nx = field.shape
     xw = min(int(width), nx)
     yw = min(int(width), ny)
-    w = jnp.moveaxis(field[:, :, :xw], 2, 0)                       # (xw, z, ny)
-    e = jnp.moveaxis(field[:, :, nx - xw:][:, :, ::-1], 2, 0)      # (xw, z, ny)
-    s = jnp.moveaxis(field[:, :yw, :], 1, 0)                       # (yw, z, nx)
-    n = jnp.moveaxis(field[:, ny - yw:, :][:, ::-1, :], 1, 0)      # (yw, z, nx)
+    # Fence completed compact stripes before side reversals/layout/packing, without a full-grid copy.
+    w = jnp.moveaxis(jax.lax.optimization_barrier(field[:, :, :xw]), 2, 0)  # (xw, z, ny)
+    e = jnp.moveaxis(jax.lax.optimization_barrier(field[:, :, nx - xw:])[:, :, ::-1], 2, 0)  # (xw, z, ny)
+    s = jnp.moveaxis(jax.lax.optimization_barrier(field[:, :yw, :]), 1, 0)  # (yw, z, nx)
+    n = jnp.moveaxis(jax.lax.optimization_barrier(field[:, ny - yw:, :])[:, ::-1, :], 1, 0)  # (yw, z, nx)
 
     def _pad(strip: jax.Array) -> jax.Array:  # (bw, z, tan) -> (width, z, side_len)
         bw, zz, tan = strip.shape
@@ -520,7 +521,7 @@ def build_child_boundary_package(
         parent_grid_ratio=parent_grid_ratio,
         _compiled_producers=_compiled_producers,
         _sint_kernel=(
-            bool(coupled_forcedown) and bool(_compiled_producers) and sint_kernel_enabled()
+            bool(coupled_forcedown) and sint_kernel_enabled()
         ),
     ))
 

@@ -1,0 +1,242 @@
+{
+  "id": "W3P_0115",
+  "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+  "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+  "original_cpu_reference": "original CPU-WRF R0115",
+  "hours": 72,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "scope": "Actual7a IC-P execution vs original CPU R0115; original CPU P0115 is absent and IC difference included. Releasebe0 uses explicit nativeBYTE bridge; rawFAILs/replica and Ownerledger decisions remain distinct.",
+  "verdicts": {
+    "strict24": {
+      "status": "FAIL",
+      "hours": 24,
+      "sha256": "d1bf21e579ab1321f42e708dd29e76e2251a78671464a7ed322d9aebdf5e5933",
+      "report": "d6_24h_strict_verdict.json",
+      "breaches": {
+        "d01": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d02": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d03": {
+          "status": "FAIL",
+          "pass": false,
+          "paired_frames": 25,
+          "frame_failures": [
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 19,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.0120554260032488
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 20,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.0860942639260613
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 21,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.1007671500605603
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 22,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.1172685959632989
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 23,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.13245755249869
+                }
+              ]
+            },
+            {
+              "kind": "frame_tolerance",
+              "field": "RAINNC",
+              "lead_h": 24,
+              "detail": [
+                {
+                  "limit": 1.0,
+                  "metric": "rmse",
+                  "value": 1.1330471056030438
+                }
+              ]
+            }
+          ],
+          "incomplete": []
+        }
+      }
+    },
+    "full_D6": {
+      "status": "FAIL",
+      "hours": 72,
+      "sha256": "3dff2b840a2bd4f58696891b5fcbc093bcd8cca4e16abd0d19a4de083a9888e4",
+      "report": "d6_72h_verdict.json",
+      "breaches": "d03: RAINNC \u03c419\u201372 (54 frames, max 1.22 > 1.0)"
+    },
+    "integrity": {
+      "supplied_disposition": "FAIL",
+      "sha256": "a86f6160af11d3e4b93340bdb46826733c5ece85b016718467fadf8b4927a29e",
+      "report": "classes_all_72h.json"
+    },
+    "annex": {
+      "supplied_disposition": "PASS",
+      "sha256": "86919e95ff59ad0633363c59f7e21cfc1e6284bac4ab57dcf207cd7f0a8e7348",
+      "report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": false,
+  "elapsed_seconds": 176.81430024292786,
+  "receipt_sha256": "13eee936a014d9ba834ccad473f5cd5651df6c6430c0c2d6b4ec14eb4702186e",
+  "compression_receipt_sha256": "c1b912921c9e417c047b9fedcf92e47ee71e74c53fcbbd6f62644961f6313b29",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "7bbc55d04e811507e9e5e4465717bb9b44b365f96bf9881cb0455a411d4ad64c"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "04877069f46f5c8789ad13e4157a23fee4b042fca4debe09b821fe0176a9e83e"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "0bc73a2a237623d79bf082f50998a0da390231bbfbfd287ed746bb9bfc39c498"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "68cf4f726002d39e656732617aa40fe1a16a8df7e04bebe17170e9b5f5ef78de"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "738a9452e9320d6be42fed5db498a0f2ac3621968bafda1b6591130ade1d81b4"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "73afe92f9bbe97e0527b6ff7339b123d235a5f198854b64dff374837ddf54ca3"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "4d78f4844096c43684bf6315a248b55aede0a468529d2c8bb9d38db055af2d64"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "b6a9f9ddfc86e2f0550caa83d003f0fa021c11e2ef54a5d564b32965cb7b2e65"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "193055d45adc5e0d1076491cf65bbf61a50ef0010206ea974bc986362d42c51b"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "15b59cc85d8102f5f550e89558cce5018925da9f6baa88f89ac964655d0784e6"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "f0c3efbea99ee84be5bf2413f53a845d50643d44b012c3119385e65d4d170794"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "30c78224f8ab4aa4a3bc0127208b2c0bace16a9ed3c1a0a06566229e34215ab7"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "29e09caf30aa7d0fb7db4d6a30d1e66595425a953dfac0ccf5c65c9ebd7e5aa1"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "a510c607b812c5e913cd08ee9d1a29dd619ffc63bd01df57b43a77f2b483b137"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "793fb6c598e62f3ee9475231ca5f44c6ec1292d2883e85aecfbf24c3cae33440"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "21aca0c9937c68d557643e0b0f57dfd45d6cfb5b386ed07ea0a9205a1e9f6430"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "bb1e734c501ddf66179bce7496c03dca44470b547096ae3ec2961937ebc7c9c7"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "cb55ceb810d87f68711c21e3aba7564aa827d66245443559d54c8aac955629ec"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "80900e52349c7ab2a3d94c511fedb54550e37835e2e5ca75cb676975e6ff50f3"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "3ff9d9da598107f6236e5f89a5c9475275695b0cf05d451899399196946f3c5d"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "d931f5f5516d9521534bccef0742a7b8d370eba75d5b2e05c11ed8670dbe54f0"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "9a0be79c295b3221924d4c7e8318a95c2f272c1a16268d6b8c07245c90d7abbd"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "8e20676a266a4813b2d759a6c63b5f016bd0290d68461c9d364b062b85c81faa"
+    },
+    {
+      "path": "index.html",
+      "sha256": "508a2f59075665c84ccec2050497eb899f9ba384feb81d7412abead13b98e2bb"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "5428e2748134089432cfe51dc22afc3627ff6c3df002208d826fae9c8676b732"
+    }
+  ],
+  "ready_part_reused": true
+}

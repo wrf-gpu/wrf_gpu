@@ -1,5 +1,12 @@
 # Validation against original CPU-WRF
 
+Archived pre-W2 **v0.3.3** results are in [V0.3.3.md](V0.3.3.md): 803 full-hour
+comparisons, strict 24 h D6, explicit 72 h floor/trace annexes, unchanged caps,
+manager judgements and BD92(c) residual. The new [band galleries](evidence/v033/final33v/index.html)
+retain every raw exceedance. R32-60 observational station DAMAGE holds publication; W2 fixes/reruns pending.
+
+## Earlier validation records
+
 Current v0.3.1 evidence and pending scopes are in [V0.3.1.md](V0.3.1.md).
 The measurements below remain the dated v0.3.0 record.
 

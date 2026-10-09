@@ -1,0 +1,92 @@
+{
+ "worktree": "<USER_HOME>/src/wrf_gpu2_wt/fid-q2",
+ "controls": {
+  "test_nested_carries_seed_a_held_real_o3rad": {
+   "status": "pass",
+   "s": 495.1
+  },
+  "test_root_refreshes_o3rad_only_at_its_radiation_calls": {
+   "status": "pass",
+   "s": 24.6
+  },
+  "test_forcedown_sets_child_o3rad_from_parent_and_child_radiates_with_it": {
+   "status": "pass",
+   "s": 81.5
+  },
+  "test_fused_cascade_forces_child_o3rad_like_the_eager_force": {
+   "status": "pass",
+   "s": 46.7
+  },
+  "test_override_reaches_both_rrtmg_column_states": {
+   "status": "pass",
+   "s": 15.8
+  }
+ },
+ "mutants": {
+  "seed_hunk_deleted": {
+   "test_nested_carries_seed_a_held_real_o3rad": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:139: d01",
+    "s": 0.0
+   },
+   "test_forcedown_sets_child_o3rad_from_parent_and_child_radiates_with_it": {
+    "status": "FAIL AttributeError at test_nest_o3_from_parent.py:170: 'NoneType' object has no attribute 'ndim'",
+    "s": 8.4
+   }
+  },
+  "eager_force_hunk_deleted": {
+   "test_forcedown_sets_child_o3rad_from_parent_and_child_radiates_with_it": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:171: ",
+    "s": 39.4
+   }
+  },
+  "fused_force_hunk_deleted": {
+   "test_fused_cascade_forces_child_o3rad_like_the_eager_force": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:212: ",
+    "s": 65.0
+   }
+  },
+  "child_runs_own_cam": {
+   "test_forcedown_sets_child_o3rad_from_parent_and_child_radiates_with_it": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:185: ",
+    "s": 77.3
+   }
+  },
+  "root_uses_held_field": {
+   "test_root_refreshes_o3rad_only_at_its_radiation_calls": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:154: ",
+    "s": 13.9
+   }
+  },
+  "root_does_not_store": {
+   "test_root_refreshes_o3rad_only_at_its_radiation_calls": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:154: ",
+    "s": 14.2
+   }
+  },
+  "root_refreshes_every_step": {
+   "test_root_refreshes_o3rad_only_at_its_radiation_calls": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:151: ",
+    "s": 16.3
+   }
+  },
+  "override_not_passed": {
+   "test_root_refreshes_o3rad_only_at_its_radiation_calls": {
+    "status": "FAIL KeyError at test_nest_o3_from_parent.py:155: 'ozone_vmr_override'",
+    "s": 16.9
+   },
+   "test_forcedown_sets_child_o3rad_from_parent_and_child_radiates_with_it": {
+    "status": "FAIL KeyError at test_nest_o3_from_parent.py:186: 'ozone_vmr_override'",
+    "s": 53.7
+   }
+  },
+  "override_ignored_in_column_inputs": {
+   "test_override_reaches_both_rrtmg_column_states": {
+    "status": "FAIL AssertionError at test_nest_o3_from_parent.py:227: ",
+    "s": 14.6
+   }
+  }
+ },
+ "load_s": 613.0,
+ "all_controls_pass": true,
+ "all_mutants_killed": true
+}

@@ -202,7 +202,7 @@ def _rhs_ph_fused(order, specified, non_hydrostatic, gw, top_lid, *arrays) -> bo
     """GPUWRF_DYN_GLUE_FUSED part 'rhsph': the PROD branch as one REAL stencil."""
     from gpuwrf.kernels.dyn_real_fp32 import glue_parts
     return ("rhsph" in glue_parts() and dyn_real_enabled() and int(order) >= 4 and bool(specified)
-            and bool(non_hydrostatic) and bool(gw) and bool(top_lid)
+            and bool(non_hydrostatic) and bool(gw)
             and all(a is not None and a.dtype == jnp.float32 for a in arrays))
 
 
@@ -268,7 +268,8 @@ def rhs_ph_wrf(
                      u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy):
         from gpuwrf.kernels.dyn_rhsph_fp32 import rhs_ph_fp32
         return rhs_ph_fp32(u, v, ww, ph, phb, w, mut, muu, muv, c1f, c2f, fnm, fnp, rdnw, msfty, msfux, msfvy,
-                           float(rdx), float(rdy), float(gravity), interpret=jax.default_backend() == "cpu")
+                           float(rdx), float(rdy), float(gravity), interpret=jax.default_backend() == "cpu",
+                           top_lid=bool(top_lid), cfn=cfn, cfn1=cfn1)
 
     nz = int(ph.shape[0]) - 1  # mass levels; faces 0..nz.
     g = float(gravity)

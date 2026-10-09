@@ -1,5 +1,7 @@
 # wrf_gpu
 
+[User guide and forecast instructions](https://wrf-gpu.github.io/wrf_gpu/)
+
 **WRF-compatible forecasts on one NVIDIA GPU.**
 
 `wrf_gpu` is a GPU rewrite of WRF v4's ARW dynamics and physics, validated against
@@ -9,11 +11,11 @@ forecasting: shorter turnaround, more independent forecasts per workstation,
 and less energy per forecast hour.
 
 This is an independent implementation, not WRF itself, and is not affiliated
-with or endorsed by UCAR/NCAR. The current release is **v0.3.2**. Its fast paths
-are enabled by default; the measurements below use that model rather than an
-experimental flag collection.
+with or endorsed by UCAR/NCAR. **v0.3.3** has completed its eight-arm validation with the disclosed deviations below. WRF-order physics corrections and fast paths
+are enabled by default. Its fresh 72-hour identity evidence is described below;
+the speed and energy figures retain their explicitly dated v0.3.2 receipts.
 
-## Speed and energy first
+## Speed and energy first — measured on v0.3.2
 
 On an **RTX 5090 (sm_120, CUDA 13)** with a **Ryzen 9 9950X host**, a cached
 two-domain Canary 9/3 km forecast completes 24 simulated hours at **3.305 seconds
@@ -25,8 +27,7 @@ window reaches **4.857 s/case-hour, 25.4×** [M].
 
 The GPU timings include start-up and output. The CPU reference clocks cover
 their main loops. These are ratios of explicitly stated clocks, not identical
-timing windows. Other NVIDIA GPUs and other hosts have not been tested on this
-release. The absolute Canary result was measured under host contention and is
+timing windows. Other NVIDIA GPUs and other hosts have not been tested in these measurements. The absolute Canary result was measured under host contention and is
 conservative; the accepted matched A/B ratio is **0.901, 9.9% less whole-run
 wall time** against v0.3.1 [M]. It is not a quiet-host absolute benchmark.
 Details and source hashes are in the [measurement report](docs/release/V0.3.2.md).
@@ -84,7 +85,7 @@ selections with a named reason.
 
 ## Scope and physics menu at a glance
 
-The v0.3.2 release validation uses **Thompson microphysics, RRTMG radiation, MYNN
+The v0.3.3 final validation uses **Thompson microphysics, RRTMG radiation, MYNN
 turbulence/surface layer and Noah-MP land physics**. Kain–Fritsch is used on
 the appropriate outer Canary/Tenerife domains; the Swiss examples disable
 cumulus. Those choices define the headline evidence, rather than every possible
@@ -133,9 +134,9 @@ python -m gpuwrf.cli run --input-dir examples/switzerland_d01 \
 The [bundled example](examples/switzerland_d01/README.md) is a small 3 km Alpine
 cutout initialized on 2023-01-15 00Z. Its input files ship with the repository.
 It selects Thompson/RRTMG/Noah-MP/MYNN, with cumulus off. The example page explains
-the expected files, its fresh v0.3.1 benchmark and original four-core CPU-WRF
-comparison, including its own strict-integrity findings. Its measured example results are
-explicitly v0.3.1; it has not been re-benchmarked on v0.3.2.
+the expected files and original four-core CPU-WRF comparison. The pre-W2
+69d8a9a7d run passes D6 and strict integrity on all 25 hourly frames; its
+benchmark states the timestamp precision and clocks. W2 Swiss was cancelled. The current b6 Swiss 24-hour D6 and all-frame integrity annex pass; the older benchmark measurements retain their pre-W2 label. The overall candidate remains held.
 
 **The first run compiles.** It can spend minutes before the first integration
 output; a new geometry is a new compilation workload. Later runs reuse cached
@@ -154,6 +155,11 @@ from the case. For operational setup, follow the [User's Guide](https://wrf-gpu.
 or [AI-assisted operator instructions](AI_OPERATOR.md). `python -m gpuwrf.cli
 run --help` lists the supported controls. The normal recipe uses the public CLI;
 no development lock or force override is required in a public installation.
+
+An approved [history cleanup](docs/release/HISTORY_CLEANUP.md) is not established in that historical record.
+After its verified push, use a fresh clone; affected commit/tag hashes change,
+and retained maps connect old receipts to the new hashes. Forecast source
+trees must remain unchanged by the cleanup.
 
 ## Several independent forecasts on one GPU
 
@@ -190,74 +196,105 @@ constants. Actual admission still checks CUDA/desktop use, host headroom and
 the resolved geometry. [Sweep receipts](docs/release/evidence/v032/sweep24_summary.json)
 retain the clocks, memory samples and decisions.
 
-## Agreement with WRF v4, checked on the same grid
+## v0.3.3 validation
 
-Fidelity comes from **original CPU-WRF**, not comparing the rewrite with itself.
-GPU and Fortran forecasts use matched inputs, paired by domain and valid time.
-Common numeric fields are checked against predeclared variable-specific limits.
-The release gate is the full **24-hour window**, including paired lead zero.
-Bounds are frozen before scoring.
+All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed.
 
-| Original CPU-WRF comparison [M] | Domains | Frames/domain | Frozen-bound failures |
-|---|---|---:|---:|
-| Canary 9/3 km | d01/d02 | 24-hour gate | 0 / 0 |
-| Tenerife 0227, 9/3/1 km | d01/d02/d03 | 25 | 0 / 0 / 0 |
-| Swiss 2025-02-18, 3/1 km (v0.3.1) | d01/d02 | 25 | 0 / 0 |
-| Swiss 2023-01-15, 3/1 km (v0.3.1) | d01/d02 | 25 | 0 / 0 |
+[All final identity plots](docs/release/evidence/v033/final_w3/index.html) show per-hour RMSE, bias and spatial bands against original CPU-WRF. Seven 72 h runs include six Tenerife primary/IC/replica arms and Storm Monica; the shipped Swiss case is 24 h.
 
-Worst hourly whole-domain RMSE through 24 hours gives a more useful impression
-than a pass label alone. The Canary case has T2 **0.066/0.059 K**, U10
-**0.073/0.141 m/s**, V10 **0.126/0.157 m/s** and PSFC **1.55/1.55 Pa** on
-d01/d02 ([VAL31b 24-hour scores](docs/release/evidence/v031/prod24_d6_selected.json), not the earlier six-hour window). Tenerife's v0.3.2 1 km domain has T2 **0.144 K**, U10/V10 **0.337/0.391 m/s**
-and PSFC **8.66 Pa**. Swiss January has T2 **0.255/0.441 K**, U10/V10 up to
-**0.487/0.498 m/s**, PSFC **3.93/7.14 Pa** and rainfall **0.310/0.416 mm**
-on d01/d02 [M]. These are RMSE values, not maximum single-cell errors.
+| Comparison | Forecast | Strict 24 h (raw) | Full-window D6 (raw) | Interpretation |
+|---|---:|---|---|---|
+| Tenerife 0115 primary | 72 h | FAIL | FAIL | 61 floor-limited rows; one real V10 miss. Rain and cirrus lifetime differences disclosed (L4/L6/L7). |
+| Tenerife 0227 primary | 72 h | PASS | FAIL | All eight breaches pass the frozen CPU-pair spread annex (L5). |
+| Tenerife 0408 primary | 72 h | PASS | PASS | D6 passes; trace graupel integrity miss disclosed (L1). |
+| 0227 IC member | 72 h | PASS | FAIL | All six breaches pass the frozen CPU-pair spread annex; integrity annex passes. |
+| 0115 IC member | 72 h | FAIL | FAIL | 54 floor-limited rows; strict rain FAIL retained. Integrity annex passes; IC difference included. |
+| 0115 same-IC replica | 72 h | PASS | FAIL | Eight floor-limited rows, two real V10 misses (h42/h44). Cirrus lifetime integrity FAIL disclosed; same-IC fresh-compile replica. |
+| Storm Monica | 72 h | PASS | PASS | D6 and all-frame integrity pass. |
+| Shipped Swiss | 24 h | PASS | PASS | D6 and all-frame integrity pass; 25 frames on one domain. |
 
-January's mean interior 10 m wind-speed bias is **−0.017/−0.028 m/s**. Its
-**direct RC3 strict output-integrity check passes all 25 frames in both domains**,
-with no degenerate fields, missing CPU variables or attribute gaps. The glacier
-writer control checks all 50 CPU frames, with zero violations [M]. The Swiss evidence is explicitly v0.3.1, not a new v0.3.2 run. The
-[current validation evidence](docs/release/V0.3.2.md) states which build was
-scored and which fields are proven unchanged by the writer-only final update.
+0227 stations classify CLEAR (raw DAMAGE retained). 0115 coastal wind-speed RMSE is about 1.8% higher; temperature, humidity and wind direction improve. The small persistent excess and late cirrus lifetime differences are disclosed, not renamed PASS. [Release notes](release_notes/RELEASE_NOTES_v0.3.3.md) and [technical appendix](docs/release/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md) give the numbers, unchanged limits, IC/replica qualifications and source bridge.
 
-The v0.3.2 two-domain Canary output is **bitwise versus v0.3.1** on all 48
-24-hour history files. Three-nest Tenerife keeps d01 bitwise; children d02/d03
-differ at round-off level and remain within the frozen D6 limits. On d03,
-worst PSFC RMSE is **8.66 Pa versus v0.3.1's 4.49 Pa**, below the **120 Pa**
-limit. It is not an all-nest bitwise claim; actual new error values, raw
-differences and registered integrity classes stay published.
+Whole-run speed/energy figures above remain dated v0.3.2 measurements; no new throughput benchmark is inferred from this science wave.
 
-Whole-forecast agreement is tolerance-based. Component checks use pristine WRF
-savepoints and real columns for snow/water coupling and boundary logic. GPU
-restart/byte controls establish regression identity, not independent physics
-validation; undefined WRF history values are not physical predictions.
+## Historical W2 candidate: source-dated 72-hour record
+
+Three Tenerife cases have new 72-hour histories on the reviewed W2
+configuration: **657 paired hourly domain-frames**, all 73 hours on each
+of three domains [M]. The candidate source tree is `fb50726fee1e`; source
+and resolved-control proofs retain the actual executed hashes. The 24-hour
+D6 gate stays strict. This is validation in progress, not release acceptance.
+
+| Historical W2 comparison [M] | Domains | Frames/domain | Recorded reading |
+|---|---|---:|---|
+| Tenerife 0227, W2bR | d01/d02/d03 | 73 | Seven raw d03 rows; all floor-limited under A3; strict 24 h passes |
+| Validation day 0408, W0408 | d01/d02/d03 | 73 | Raw D6 clean; all-frame trace exceptions disclosed |
+| Validation day 0115, W0115 | d01/d02/d03 | 73 | 89 raw d03 breaches; 57 floor-limited, **32 wind rows fail the annex** |
+| Storm Monica / bundled Swiss | d01/d02 / d01 | Source-dated | Monica W2 diagnostic has E41 HARD FAIL; W2 Swiss was cancelled; current b6 results are separate above |
+
+[All retained identity galleries](docs/release/evidence/v033/index.html), including the [W2 per-variable line/band plots](docs/release/evidence/v033/w2/index.html)
+show hourly RMSE, signed bias, spatial |GPU−CPU| p25–p75/p5–p95 and frozen
+limits, plus equal-case mean ± one sample SD. All native cells are used,
+with no masks. Where available, IC-pair RMSE provides empirical predictability
+context; one pair is not a confidence interval or a gate waiver.
+
+![W2 three-case T2 RMSE: all hourly leads, equal-case mean and one sample SD; frozen D6 limits above the plotted range](docs/release/evidence/v033/w2/summary/T2_cross_case.png)
+
+W0115's outstanding d03 wind rows are U10 h38–52 and V10 h37–58
+(17 of those V10 hours fail the annex). The raw wind maxima are 2.38/3.04 m/s.
+Its 54 accumulated-rain breaches are floor-limited; that does not excuse the
+wind rows. Independent station scoring confirms systematic 0115 wind
+speed damage in A/B/C (the late B′ scope is CLEAR), while 0227's fresh replicate does not reproduce the
+afternoon wind-speed candidate. The Y0 rerun is byte-identical through its
+copied autotune pin and supplies no independent realization. Distinct ZR/ZP
+checks classify PROPERTY, IC-R-specific; W0115's recorded FAIL is retained. [Exact rules and limits](docs/release/V0.3.3.md)
+keep the source scopes and raw failures visible.
+
+![W0115 U10: hourly RMSE, signed bias and spatial error bands on all three domains; raw d03 exceedances remain visible, with older-source GPU IC spread shown as context](docs/release/evidence/v033/w2/W0115/U10_bands.png)
+
+Two 0227 checks now establish **no regression vs FINAL** under frozen
+`GATES_FROZEN a791805a250f`: A7 uses FINAL V0227/V0227M as the problem-day
+base/pair after the RC twin inputs were deleted (260/260 PASS, 204 cells
+below FINAL). A8 uses FINAL's printed F1'' limits after N0/X_PLUME were
+deleted, conservatively counting the half-last-digit rounding band as
+NOT ok (8/8, 4/4, 8/8 PASS). FINAL itself passed against the original RC
+references. The [exact reference chain](docs/release/V0.3.3.md#w2-reference-chain-a7a8)
+preserves that scope; direct fidelity evidence remains original CPU-WRF.
+
+R32-65's 0227 pair is **8/8 CLEAR** under its frozen rule [M], with a
+qualification: B/T2 has gate-A DAMAGE on IC R (+0.0148 K versus S 0.0109),
+while same-IC P is −0.0038 K. It is NOT REPLICATED, so the pair-rule result
+is CLEAR, a disclosed one-realization class. There is one realization per
+IC; both are slightly better than FINAL on the same IC.
+
+The [pre-W2 69d8a9a7d record](docs/release/evidence/v033/final33v/index.html)
+retains its 803 paired hours and Swiss 25-frame comparison. Those historical
+passes were not transferred to W2; that historical candidate was held.
 
 ## Honest limitations and what is not claimed
 
-Strict integrity is a second check alongside the numerical limits. Raw findings
-on other cases remain visible: **R2** negligible ice/snow traces, **R4** canopy-water
-onset/decay timing and **R5** canopy-ice/ground-snow threshold timing. Registered
-exceptions retain the original field/frame reports; they do not become an
-unqualified clean-output claim. The glacier runtime limitation also remains,
-despite corrected initialization and writer conventions.
+All-hour integrity retains its raw reports. A pre-registered trace annex explains
+13 new rows; two disclosed manager judgements accept three canopy-ice and two
+boundary-graupel rows above their unchanged caps. One canopy cell is reproduced
+by the CPU IC twin; the other is a GPU-only placement departure. These are
+**recorded exceptions**, not an unqualified clean-output claim.
 
-Longer-lead evidence is explicitly dated. The six-case 72-hour Tenerife and
-162-hour Canary studies were run on **v0.3.0**, not repeated on v0.3.2. Canary
-stayed within its limits in that older study. Two Tenerife 1 km cases exceeded
-the 24-hour-designed bounds: 0227 U10 from h44–72, reaching about 3.7 m/s,
-RAINNC at h67–72 and W at h69–70; 0120 U10 at h58, 1.58 m/s. The other four
-twins and d01/d02 were clean over 72 hours. Their
-[exact frame failures](docs/release/VALIDATION.md) stay published. Without a
-perturbed CPU ensemble, those comparisons do not establish a predictability
-limit or absolve every error as chaos.
+W2 adds eight reviewed defaults, including urban soil coefficients, MYNN
+predictor floors and horizontal SWDOWN history. Their original-WRF source
+bindings are in the [fix inventory](docs/release/V033_W2_FIXES.md).
 
-The release does not claim every physics pairing validated, station skill equal
-to CPU-WRF in every environment, a measured H100/B200/B300 forecast, a new
-multi-day throughput result, whole-system energy savings, or an optimal GPU
-implementation in every geometry. Station verification is a separate ALISIOS
-activity. CPU tests exercise supporting behavior, while real GPU runs establish
-GPU timing and execution. See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for the carried
-limitations and [methods](docs/release/METHODS.md) for the clock definitions.
+BD92(c) remains a **known residual**, with binding d01 diagnostic maximum
+0.0136 K; the non-binding late 0227 d03 departure is disclosed separately.
+Night clear-sky cooling aloft is a v0.3.4 investigation. Dedicated glacier
+runtime, universal physics pairing parity, MPI/multi-GPU domain decomposition,
+whole-machine energy savings and data-centre GPU measurements are not claimed.
+
+Earlier six-case 72-hour Tenerife and 162-hour Canary studies remain dated
+v0.3.0 evidence, including their [raw frame failures](docs/release/VALIDATION.md).
+They are not relabelled as new v0.3.3 runs. The detailed
+[floor, integrity and residual disclosures](docs/release/V0.3.3.md) distinguish
+accepted release rules from raw clean results. Original CPU-WRF is the fidelity
+reference; comparisons with older GPU releases establish regression only.
 
 ## How it works — and where the time goes
 
@@ -365,35 +402,45 @@ record the model, reserves, timestep and source hashes. The v0.3.1 shorter-run
 [scenarios](docs/release/SCALING_METHOD.md) remain a conservative, differently
 scoped reference; no multi-GPU forecast or data-centre run is claimed.
 
+## v0.3.3 W2 fixes — under validation
+
+The next frozen release tree will include the reviewed W2 subset: urban soil
+parameter overrides, horizontal SWDOWN history on slopes, MYNN predictor
+stability floors, exposed-area canopy water capacity, and the land-only
+post-Noah Q2 cap. The [cause → WRF source → key inventory](docs/release/V033_W2_FIXES.md)
+records their scope; they are not declared validated defaults yet.
+
+The old RC's k0 warm PBL error masked an urban cold soil term. Removing the
+warm compensator exposes that older surface error; W2 repairs the soil
+parameters instead of restoring a compensating bias. The perturbed-IC
+repeat reproduces B/T2 and B/RH2*, but **A/WD10 is NOT REPLICATED** and is
+kept as a disclosed roadmap item. The original DAMAGE reading is retained.
+Current numbers/plots above are explicitly **pre-W2 69d8a9a7d evidence**;
+they will be regenerated from the new frozen validation source.
+
 ## What's new, and what comes next
 
-v0.3.2 enables a stable nested-domain layout pin and the measured momentum
-fusion, and reduces startup through lazy dormant-scheme initialization and
-path-independent Pallas cache configuration. Relocating the measured install
-reuses auxiliary programs instead of recompiling them. The final two-domain
-identity and three-nest Tier-P results above govern the composed release, not
-an assumption that component gains simply multiply.
+v0.3.3 restores WRF's MYNN plume geometry, cloud/mass-flux floors, condensation
+carry and per-column convergence, plus surface density and TKE/length budgets.
+D1/D2/D3 restore held KF, PBL water/moist-theta and radiation tendency coupling
+through RK. WRF constants, boundary re-pinning, Julian timing and restart/import
+corrections compose with those changes; the validated set is default on.
+[Release notes](release_notes/RELEASE_NOTES_v0.3.3.md) give the exact source,
+original-WRF gates and remaining limitations.
 
-The v0.3.1 open-top, per-record boundary, single edge-wind, snow/water and writer
-corrections remain in the model. No new physics compromise is exchanged for
-speed. [Release notes](release_notes/RELEASE_NOTES_v0.3.2.md) give the final
-source, matched timing, cache checks and honest limitations.
-
-The next performance work targets measured residuals: nested-domain layout
-variation and opportunities to reduce working memory and launch overhead.
-The new release pin passed its registered device and identity gates; layout
-and buffer-lifetime opportunities still need their own measurements. EOS metadata pruning
-remains off by default because removing copies did not produce a measured
-standalone wall/VRAM gain. These are research directions, not booked speedups.
-Further physics/options, glacier runtime support and longer independent
-validation need their own gates; multi-GPU execution is a longer-term direction.
+The next work includes the measured BD92(c) clear-night residual, broader
+independent station/case verification, glacier runtime, and measured memory
+and launch-overhead opportunities. These are research directions, not booked
+speedups. Existing v0.3.2 ensemble/giant-domain scenarios remain [I] with their
+original assumptions; v0.3.3 has not re-benchmarked those data-centre scenarios.
 
 | Version | Short history |
 |---|---|
+| v0.3.3 candidate | WRF-order MYNN and D1/D2/D3 plus W2 corrections; 72 h band evidence; current 0115 rain/station and 0408 rain/graupel failures; release held |
 | v0.3.2 | Matched whole-run −9.9%; N=4 24 h throughput 22.4× CPU; stable layout, startup/cache and momentum work |
-| v0.3.1 | WRF-order/snow/writer corrections; 3.604 s/hour quiet Canary and six-hour N=4 15.9× throughput, preserved as historical results |
-| v0.3.0 | fp32 hot kernels became the default; six 24-hour Tenerife gates, longer-lead studies and a parallel sweep, preserved as historical results |
-| v0.23.4 and earlier | Earlier implementation, capability/oracle work and different performance characteristics; not the current precision or speed baseline |
+| v0.3.1 | WRF-order/snow/writer corrections; historical performance and validation |
+| v0.3.0 | fp32 hot kernels became default; historical six-case gates and long-lead studies |
+| v0.23.4 and earlier | Earlier capability/oracle work; different precision and performance baseline |
 
 ## Get involved and read further
 
@@ -413,3 +460,6 @@ upstream terms: AER's RRTMG/RRTM code and data may not be sold; NCAR MMM physics
 translations carry NCAR's BSD 3-Clause notice; WRF-derived material carries the
 UCAR public-domain notice. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 wrf_gpu is not affiliated with UCAR/NCAR; WRF® is a registered trademark of UCAR.
+
+
+W2 qualification update (2026-10-07 10:18Z, source471): the distinct ZR realization leaves two REAL V10 rows at h42/h44; ZP has zero REAL rows. Frozen Z class is PROPERTY, IC-R-specific, and the original W0115 FAIL is retained. R32-67 v3 confirms SYSTEMATIC station WS10 damage in A/B/C (13 CLEAR, 3 SYSTEMATIC, 0 OPEN); B′ remains CLEAR. Earlier OPEN statements above are dated readings, superseded by this result. W3 must apply the affected original-CPU and station gates on its final source; no W2 waiver or inherited clearance.

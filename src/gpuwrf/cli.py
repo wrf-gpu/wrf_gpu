@@ -804,11 +804,16 @@ def _cmd_run(args: argparse.Namespace) -> int:
     try:
         from gpuwrf.io.namelist_check import (
             UnsupportedSchemeError,
+            apply_cldovrlp,
             collect_namelist_warnings,
             validate_operational_namelist,
         )
 
         validate_operational_namelist(namelist)
+        # WRF icld = cldovrlp: pin the McICA overlap flag before radiation is imported.
+        _overlap_note = apply_cldovrlp(namelist)
+        if _overlap_note:
+            print(f"gpuwrf: {_overlap_note}", file=sys.stderr)
     except UnsupportedSchemeError as exc:
         return _fail(str(exc))
     except Exception as exc:  # parsing / IO problems should also fail cleanly

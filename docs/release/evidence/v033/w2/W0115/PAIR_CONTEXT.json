@@ -1,0 +1,39 @@
+{
+  "raw_metrics_sha256": "e56965d603a2b7c50f494739642785b52bc1ff1b488e106767570f6dbc4b356e",
+  "source": "136c6e51c",
+  "available_fields": [
+    "T2",
+    "PSFC",
+    "U10",
+    "V10",
+    "RAINNC",
+    "RAINNC_hourly",
+    "W"
+  ],
+  "excluded_truncated_fields": [
+    "T",
+    "U",
+    "V",
+    "QVAPOR"
+  ],
+  "files": {
+    "d01": {
+      "base_sha256": "74fc9ba6328ee2e75550535f9e63498924b72cd6a1dd631fc56355dbf0b284fb",
+      "member_sha256": "200f4d6b678f8e24653c34231a784e8c7c6d7d67642a3ca8697b22bdea63156b"
+    },
+    "d02": {
+      "base_sha256": "1d4ff2d9782e3fffcffb8ef11f412c299315f334b7d7e341582ff20eb2187385",
+      "member_sha256": "1c149403ff74f8eac928875df8f88c0266f800cd9ae7454116c1eaf6604a3d37"
+    },
+    "d03": {
+      "base_sha256": "bb1e5472c2fba7a2d9f58732f0a0fd95f214fe40aedb8d2ec5eba7df14323493",
+      "member_sha256": "80ab30db483e4e326e0b08091b9c6fe3cb59e01cbe5356f07a2c589450f7c205"
+    }
+  },
+  "rows": 1530,
+  "blue_metrics_unchanged": true,
+  "mask": "none",
+  "forecast_gate_claim": false,
+  "baseline_value_checks": 21681,
+  "raw_metrics_sha256_before_caption_annotation": "cbcc376dddea55c9a436141739879f82212b89327b192ba1d48c70c59f73819f"
+}

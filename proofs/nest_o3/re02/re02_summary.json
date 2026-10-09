@@ -1,0 +1,47 @@
+{
+ "arm1_bitwise_equals_RE01_A": true,
+ "o3_rel_diff_max_by_level_band": {
+  "k0-9": 0.10406450927257538,
+  "k10-29": 0.06859728693962097,
+  "k30-43": 0.0036991480737924576
+ },
+ "o3_abs_diff_max_vmr": 4.034831135868444e-09,
+ "glw": {
+  "max_abs": 0.050933837890625,
+  "max_bound_ratio": 0.0029895342790564115
+ },
+ "olr": {
+  "max_abs": 0.04150390625,
+  "max_bound_ratio": 0.0029138200234069735
+ },
+ "swdnb": {
+  "max_abs": 0.0323486328125,
+  "max_bound_ratio": 0.001167452923058647
+ },
+ "swupt": {
+  "max_abs": 0.0445556640625,
+  "max_bound_ratio": 0.0013916992290129253
+ },
+ "lwdn": {
+  "max_abs": 0.070343017578125,
+  "max_bound_ratio": 0.005541158842922496
+ },
+ "swdn": {
+  "max_abs": 0.05279541015625,
+  "max_bound_ratio": 0.0014151510682832646
+ },
+ "hlw": {
+  "max_abs_K_per_day": 0.07373727858066559,
+  "at_level": 2,
+  "max_bound_ratio": 0.005158630890495375
+ },
+ "hsw": {
+  "max_abs_K_per_day": 0.007606577128171921,
+  "at_level": 42,
+  "max_bound_ratio": 0.0008656135654951839
+ },
+ "d02_hlw_max_K_per_day": 0.07373727858066559,
+ "d02_hsw_max_K_per_day": 0.0072356779128313065,
+ "d03_hlw_max_K_per_day": 0.03705471754074097,
+ "d03_hsw_max_K_per_day": 0.007606577128171921
+}

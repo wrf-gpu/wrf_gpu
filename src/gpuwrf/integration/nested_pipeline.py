@@ -501,6 +501,7 @@ def _make_namelist(
     radt_minutes: float = 30.0,
     cudt_minutes: float = 0.0,
     top_lid: bool = False,
+    use_mp_re: int = 1,
 ) -> OperationalNamelist:
     """Per-domain operational namelist (mirrors the v0.11.0 nesting proof config).
 
@@ -554,6 +555,7 @@ def _make_namelist(
         slope_rad=int(slope_rad),
         radiation_static=radiation_static,
         time_utc=run_start,
+        use_mp_re=int(use_mp_re),
         gwd_opt=int(gwd_opt),
         gwdo_statics=gwdo_statics,
         # WRF folds RTHRATEN/RTHBLTEN and the QV contribution to moist theta
@@ -908,6 +910,7 @@ def _load_domains(
             run_start=run_start,
             radiation_static=radiation_static,
             cu_physics=_domain_cu_physics(run, name),
+            use_mp_re=_domain_physics_int(run, "use_mp_re", name, 1),
             time_step_sound=_domain_int(run, "dynamics", "time_step_sound", name, 0),
             top_lid=_domain_top_lid(run, name),
             radt_minutes=_domain_float(run, "physics", "radt", name, 30.0),
@@ -981,6 +984,13 @@ def _load_domains(
                 carry = carry.replace(history_diagnostics=seed_history_diagnostics(carry.state))
         from gpuwrf.kernels.dyn_carry_fp32 import real_carry
         carry = real_carry(carry)  # GPUWRF_CARRY_REAL_ALL: post-seed held radiation as REAL
+        from gpuwrf.nesting.nest_o3 import nest_o3_from_parent_enabled  # noqa: PLC0415
+        import jax.numpy as jnp  # noqa: PLC0415
+
+        if len(names) > 1 and carry.radiation_diagnostics is not None and nest_o3_from_parent_enabled():
+            # WRF o3rad (REAL): the root refreshes it at its radiation calls, every nest receives the parent's
+            # field at each force-down before its own first step (nesting/nest_o3.py).
+            carry = carry.replace(o3rad=jnp.zeros(carry.state.theta.shape, jnp.float32))
         # v0.17 nested compile-CHURN fix.  `_advance_chunk` RETURNS device-committed
         # leaves; if the FIRST nested advance for a domain receives this HOST/
         # uncommitted seed while the SECOND receives the prior chunk's COMMITTED
@@ -1114,6 +1124,7 @@ def _namelist_homogeneous_signature(namelist: Any) -> tuple[Any, ...]:
         "sf_surface_physics",
         "ra_sw_physics",
         "ra_lw_physics",
+        "use_mp_re",
         "use_noahmp",
         "gwd_opt",
         "rad_rk_tendf",
@@ -1736,7 +1747,12 @@ def _batched_force(edge, parent: Any, child: Any, *, batch_size: int) -> Any:
             in_axes=(0, 0),
             out_axes=0,
         )(child_state, parent.state)
-    return child.replace(state=forced_state)
+    from gpuwrf.nesting.nest_o3 import force_child_carry_o3rad  # noqa: PLC0415
+
+    return force_child_carry_o3rad(
+        child.replace(state=forced_state), parent, edge.weights,
+        parent_grid_ratio=int(edge.parent_grid_ratio), batched=int(batch_size) > 1,
+    )
 
 
 def run_batched_operational_domain_tree(
@@ -1875,8 +1891,8 @@ def _noahmp_surface_diagnostics_from_held_radiation(
         _requested_m9_output_names,
     )
     from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
-        _NoahMPClock,
         _NoahMPRadiation,
+        _noahmp_clock,
         _noahmp_params,
         _psfc_from_state,
         build_clock_base,
@@ -1900,7 +1916,7 @@ def _noahmp_surface_diagnostics_from_held_radiation(
     if not lw_enabled:
         lwdn = jnp.zeros_like(lwdn)
 
-    clock = _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
+    clock = _noahmp_clock(clock_namelist, clock_base, lead_seconds, output_time=True)
     ep, rp = _noahmp_params(clock_namelist)
     hfx, lh, tsk, t2 = overlay_noahmp_land_diagnostics(
         state,
@@ -2699,6 +2715,19 @@ class _PerDomainWrfoutWriter:
                 if value.shape != (grid.ny, grid.nx) or not np.all(np.isfinite(value)):
                     raise ValueError(f"{path}:{field} is not a finite initialized surface field")
                 fields[field] = value
+            # Pre-solve history: TH2 is the real.exe value, not T2/Exner recomputed
+            # by the writer. UST's missing-input seed is physics_init.F:1174.
+            for field, default in (("TH2", None), ("UST", 1.e-4)):
+                if field in initial.variables:
+                    variable = initial.variables[field]
+                    value = np.asarray(np.ma.filled(
+                        variable[0] if variable.dimensions and variable.dimensions[0] == "Time" else variable[:], np.nan))
+                    if value.shape != (grid.ny, grid.nx) or not np.all(np.isfinite(value)):
+                        raise ValueError(f"{path}:{field} is not a finite initialized surface field")
+                    fields[field] = value
+                elif default is not None:
+                    fields[field] = np.full((grid.ny, grid.nx), default, dtype=np.float32)
+            fields["COSZEN"] = np.zeros((grid.ny, grid.nx), dtype=np.float32)
             for field in ("QKE", "CLDFRA", "QC_BL", "CLDFRA_BL", "DTAUX3D", "DTAUY3D"):
                 nz = getattr(grid, "nz", None)
                 if nz is None:

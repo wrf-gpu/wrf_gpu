@@ -45,7 +45,10 @@ FAST_PATH_DEFAULTS: dict[str, str] = {
     "GPUWRF_BOUNDARY_FP32": "1",
     "GPUWRF_SPEC_RING_SELECT": "1",
     "GPUWRF_DYN_GLUE_FUSED": "momuvn_rhsph_uvn_pin",  # b-diff #15 rhs_ph stencil + nested-only fused u/v, pinned; BD82 + nested-only u/v momentum advection
-    "GPUWRF_LAYOUT_PIN": "1",  # b-core v0.3.2 P2: nested-only row-major layout pins, bitwise 0/343, d02 transposes 441 -> 223
+    # b-core v0.3.2 P2 row-major layout pins (d02 transposes 441 -> 223), now ALSO on the root step (no "nested"
+    # scope; e41-class): unpinned root programs carry the land/surface family x-major and XLA merges its
+    # transposes into > 500-instr surface fusions (E41 HLO500, Monica STACK 392); pinned programs are clean.
+    "GPUWRF_LAYOUT_PIN": "ac_carry_cols_cum",
     # land surface / surface layer / GWDO
     "GPUWRF_NOAHMP_NATIVE_REAL": "1",
     "GPUWRF_NOAHMP_ITERATION_BARRIER": "1",
@@ -88,6 +91,60 @@ FAST_PATH_DEFAULTS: dict[str, str] = {
     "GPUWRF_HISTORY_INSTEP_DIAG": "1",
     # dispatch: donate the carry into the advance executable (D13: wrfout 6/6 bytes OFF==ON, restart exact)
     "GPUWRF_CARRY_DONATE": "1",
+    # v0.3.3 FINAL RC (manager 2026-10-06T07:12:53Z): the merged WRF-fidelity fixes (each merged flag-OFF after its critic).
+    # GPUWRF_MYNN_PLUME_CLOUD_BASE (BP91) was OFF until the WRF-faithful MYNN closure set existed; it is ON in the v0.3.3 DELTA
+    # below together with SHSM_FLOORS/TKEPROD_UP/ELH_BUDGET/RHOSFC_WRF/CONDENSATION_WRF (MYNNSET72 72 h guard PASS, manager 01:03:20Z).
+    "GPUWRF_RRTMG_MAXRAND": "1",  # RE01 McICA cldovrlp=2 maximum-random (integrate)
+    "GPUWRF_RRTMG_MP_RE": "1",  # RE01 Thompson radii into RRTMG (b-column)
+    "GPUWRF_MYNN_SGS_MIXING_RATIO": "1",  # BP86
+    "GPUWRF_MYNN_SCALE_AWARE": "1",  # BP87
+    "GPUWRF_W_SURFACE_RESET": "1",  # b-core LL01 set_w_surface
+    "GPUWRF_MYNN_SFC_WSPD": "1",  # BP90
+    "GPUWRF_SPEC_W_WORK_COPY": "1",  # B44 residual
+    "GPUWRF_MYNN_FLTV_WRF": "1",  # BD91
+    "GPUWRF_MYNN_DHEAT": "1",  # BP92 early-seed root cause (MYNN heating restore)
+    "GPUWRF_MYNN_PSIQ_FLUX_WRF": "1",  # BP95 MYNN-SL flux-loop PSIQ form
+    "GPUWRF_W_DAMP_STAGE": "1",  # BD85 WRF w_damp once per RK stage (b-core)
+    "GPUWRF_ACOUSTIC_NO_MU_FLOOR": "1",  # ledger row 7: drop the non-WRF dry-mass floor (b-core)
+    "GPUWRF_NOAHMP_JULIAN_ADVANCE": "1",  # Noah-MP phenology clock = WRF grid%julian at each LSM call (b-thompson)
+    "GPUWRF_NEST_O3_FROM_PARENT": "1",  # nest ozone from the post-step parent (WRF interp_fcn SINT, fid-q2)
+    "GPUWRF_ROOT_SCALAR_BDY_RK1": "1",  # BD92 root lateral moist/scalar BC in the RK1 sc_tend (WRF solve_em, b-diff)
+    "GPUWRF_THOMPSON_MIXED_PHASE_WRF": "1",  # mixed-phase (1)-(6) + B55 + early exits (b-thompson; cost disclosed)
+    "GPUWRF_MYNN_DMP_KTOP_BOUND": "1",  # BP98 WRF F6602 KTOP bound in the DMP shallow-cu SGS overwrite (b-phys)
+    "GPUWRF_MYNN_ELB_MF": "1",  # BP99 WRF mym_length CASE1 elb_mf (b-phys)
+    "GPUWRF_MYNN_PHY_EXNER": "1",  # BP96 WRF pi_phy (P+PB) into every MYNN column consumer (b-phys)
+    "GPUWRF_MYNN_PSIG_CLAMP": "1",  # BP100 WRF SCALE_AWARE Psig_bl/Psig_shcu clamp to [0,1] (b-phys)
+    "GPUWRF_MYNN_QNI_MIXING": "1",  # BP101 WRF MYNN mixes Thompson qni (bl_mynn_cloudmix/mixscalars default 1, b-phys)
+    # v0.3.3 release DELTA (manager 2026-10-06T08:53:26Z, validated at wave end):
+    "GPUWRF_MYNN_SFC_PBLH_WRF": "1",  # BP102 WRF SF_mynn gust uses the supplied PBLH unfloored (b-phys)
+    "GPUWRF_KF_REAL_CONSTANTS": "1",  # BD94-B4 WRF REAL ALIQ/GDRY in the native KF column (b-column)
+    "GPUWRF_WRITER_RVOVRD_REAL": "1",  # BD94-B5 WRF REAL RVOVRD in the wrfout writer diagnostics (cadence-out)
+    "GPUWRF_PHY_PREP_REAL_CONST": "1",  # BP103 WRF REAL(r_v)/REAL(r_d) in the native PHY_PREP consumers (b-phys)
+    "GPUWRF_THOMPSON_WRF_CONSTANTS": "1",  # BD94 WRF REAL Thompson constants (AM_R/AM_I/D0I + WGAMMA products) on the native REAL path (b-thompson)
+    "GPUWRF_MYNN_REAL_CONSTANTS": "1",  # BD94-A/B1 13 WRF REAL MYNN/SL/Noah PARAMETER values (P608, EP1, CP, R_D, ...; b-phys)
+    "GPUWRF_SOLAR_JULIAN_WRF": "1",  # X5/BP106 WRF fractional 0-based grid%julian for declination/EoT at the radiation call (b-phys)
+    "GPUWRF_NEST_SCALAR_SPEC_FINAL": "1",  # BD95 WRF spec_bdy_final re-pins every nest moist/scalar spec zone each step (b-diff)
+    "GPUWRF_RRTMG_REAL_CONSTANTS": "1",  # BP105 WRF REAL RRTMG constants (BPADE, grav 9.8066, heatfac) + model g 9.81 cloud mass (b-phys)
+    "GPUWRF_KF_PHYD_WRF": "1",  # 0227 NAMED BUG: KF gets WRF P_HYD (+ independent REAL pi, no-trigger NCA kept) like KF_ETA_CPS (b-column)
+    "GPUWRF_PHYS_TEND_RK_WRF": "1",  # D2/D3 WRF physics->RK coupling of PBL moist tendencies + held radiation rate (b-diff, main 150628ddf)
+    "GPUWRF_KF_TEND_RK_WRF": "1",  # D1 KF coupled tendencies through RK, held-rate lifetime (b-column, main 0a7a4a72c)
+    "GPUWRF_MYNN_PLUME_CLOUD_BASE": "1",  # BP91 WRF DMP plume cloud-base geometry (b-phys; with the closure set below)
+    "GPUWRF_MYNN_SHSM_FLOORS": "1",  # BP113 WRF mym_turbulence Sm/Sh + MF floors (b-phys)
+    "GPUWRF_MYNN_TKEPROD_UP": "1",  # BP113 WRF TKEprod_up from DMP_mf with el_prev (b-phys)
+    "GPUWRF_MYNN_ELH_BUDGET": "1",  # BP113 WRF elh in pdq/pdt (b-phys)
+    "GPUWRF_MYNN_RHOSFC_WRF": "1",  # BP113 WRF surface density from actual PSFC (b-phys)
+    "GPUWRF_MYNN_CONDENSATION_WRF": "1",  # BP113 WRF condensation_edmf QC carry + early exit (b-phys 758466507)
+    # v0.3.3 W2 fix wave (station DAMAGE R32-60 -> W2; manager 2026-10-07T06:31:32Z: ONE W2 defaults commit LAST, 8 keys ON):
+    "GPUWRF_NOAH_URBAN_SOIL_PARAMS": "1",  # W2 WRF hard-coded URBAN soil SMCMAX/SMCREF/SMCWLT/SMCDRY/CSOIL before FRZX (b-thompson 477fbe93c)
+    "GPUWRF_LAND_Q2_CAP_POSTLSM": "1",  # W2 WRF land Q2 cap after the Noah-MP overwrite, entry QV (b-phys b4b36bcc6)
+    "GPUWRF_HISTORY_SWDOWN_HORIZONTAL": "1",  # W2 WRF horizontal SWDOWN history on slopes (mass-sol 4f00d82d3)
+    "GPUWRF_MYNN_PREDICT_SAW_FLOOR": "1",  # W2 WRF mym_predict plume diffusion floors (b-phys 33d059a3e)
+    "GPUWRF_NOAH_CANWATER_ELAI": "1",  # W2 WRF CANWATER capacities from PHENOLOGY ELAI/ESAI/FVEG (b-thompson cce6dab19)
+    "GPUWRF_MYNN_SOURCE_PARITY2": "1",  # W2 WRF REAL DMP GTR + MEAN floor face extent (b-phys 778aeee64)
+    "GPUWRF_MYNN_SFC_PSI_REAL": "1",  # W2 WRF REAL psi tables + stable-heat reciprocal in MYNN-SL (b-phys 36fe022a0)
+    "GPUWRF_NOAH_QSFC_WRF": "1",  # W2 WRF grid%QSFC = BARE_FLUX QSFC on land (b-thompson 3814b53fc)
+    # v0.3.3 W3: original WRF REAL reftra_sw PIFM + conservative SSA (approved 5ab322a76).
+    "GPUWRF_RRTMG_SW_REFTRA_WRF": "1",
     # run-mode values the flag file pins (kept identical for cheap-key parity)
     "GPUWRF_CENSUS": "0",
     "JAX_ENABLE_X64": "true",

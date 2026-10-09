@@ -9,6 +9,8 @@ integrated forecast.
 
 from __future__ import annotations
 
+import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
@@ -266,6 +268,11 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         "ra_lw=14 (RRTMG-K) and 24 (fast RRTMG) are compiled-out of standard WRF "
         "(configure.wrf BUILD_RRTMK=0 / BUILD_RRTMG_FAST=0) and cannot run even in unmodified WRF.",
     ),
+    "use_mp_re": SupportedOption(
+        key="use_mp_re", supported_values=frozenset({0, 1}),
+        implemented="1=Thompson held radii with GPUWRF_RRTMG_MP_RE=1; 0=disable the candidate radius path",
+        action="Use use_mp_re=1 (WRF default) with mp_physics=8 for the MP_RE candidate.",
+    ),
     # Runtime/dynamics controls exposed by OperationalNamelist.
     "rk_order": SupportedOption(
         key="rk_order",
@@ -409,7 +416,7 @@ def validate_namelist(config: Any) -> None:
     config_obj = _coerce_config(config)
     oos_failures = _out_of_scope_failures(config_obj)
     control_failures = _recognized_control_failures(config_obj)
-    extra_failures = oos_failures + control_failures
+    extra_failures = oos_failures + control_failures + _cldovrlp_failures(config_obj)
     try:
         validate_supported_namelist(config_obj)
     except UnsupportedNamelistOption as exc:
@@ -457,6 +464,27 @@ def validate_operational_namelist(config: Any) -> None:
     """
 
     config_obj = _coerce_config(config)
+    # The native CLI does not bind dfi_opt to the programmatic forward-DFI
+    # helpers. Refuse a requested filter instead of running unfiltered work.
+    dfi = _lookup(config_obj, "dfi_opt")
+    if dfi is not None:
+        location, raw = dfi
+        failures = [
+            UnsupportedSelection(
+                key="dfi_opt",
+                location=location,
+                value=_normalize_value(value),
+                supported_values=(0,),
+                implemented="0=disabled; digital filter initialization is not operationally wired",
+                action="Set dfi_opt=0 for an unfiltered forecast, or use CPU-WRF for DFI.",
+                outcome="recognized_control_not_wired",
+                wrf_scheme="digital filter initialization (DFI)",
+            )
+            for value in _domain_values(raw)
+            if _normalize_value(value) != 0
+        ]
+        if failures:
+            raise UnsupportedSchemeError(failures)
     # First: the existing full support + out-of-scope check (unchanged behavior).
     validate_namelist(config_obj)
     # Then: the operational-only strictness -- reject reference-only selections.
@@ -504,6 +532,13 @@ def collect_namelist_warnings(config: Any) -> list[str]:
             domain = f" (domain {idx + 1})" if multi else ""
             # ``support.reason`` carries the catalog's approximation note.
             warnings.append(f"{location}{domain}: {support.reason}")
+    if _rrtmg_selected(config_obj) and not _rrtmg_maxrand_resolved():
+        location, values = _cldovrlp_values(config_obj)
+        if 2 in values:
+            warnings.append(
+                f"{location}: cldovrlp=2 (WRF maximum-random McICA overlap) runs RANDOM overlap "
+                "(cldovrlp=1) unless GPUWRF_RRTMG_MAXRAND=1"
+            )
     return warnings
 
 
@@ -657,6 +692,84 @@ def _recognized_control_failures(config: Any) -> list[UnsupportedSelection]:
                 )
             )
     return failures
+
+
+_CLDOVRLP_DEFAULT = 2  # Registry.EM_COMMON cldovrlp (namelist physics, scalar)
+
+
+def _rrtmg_maxrand_resolved() -> bool:
+    """GPUWRF_RRTMG_MAXRAND as the traced McICA resolved it (env if not yet imported)."""
+    module = sys.modules.get("gpuwrf.kernels.rad_mcica")
+    if module is not None and hasattr(module, "_MAXRAND"):
+        return bool(module._MAXRAND)
+    return os.environ.get("GPUWRF_RRTMG_MAXRAND", "0") == "1"
+
+
+def _rrtmg_selected(config: Any) -> bool:
+    """RRTMG LW or SW on any domain; absent radiation keys mean the port's RRTMG default."""
+    found = [f for f in (_lookup(config, "ra_lw_physics"), _lookup(config, "ra_sw_physics")) if f is not None]
+    if not found:
+        return True
+    return any(_normalize_value(v) == 4 for _, raw in found for v in _domain_values(raw))
+
+
+def _cldovrlp_values(config: Any) -> tuple[str, list[Any]]:
+    found = _lookup(config, "cldovrlp")
+    if found is None:
+        return "physics.cldovrlp (WRF default)", [_CLDOVRLP_DEFAULT]
+    location, raw = found
+    return location, [_normalize_value(v) for v in _domain_values(raw)]
+
+
+def _cldovrlp_failures(config: Any) -> list[UnsupportedSelection]:
+    """RRTMG McICA cloud overlap: WRF cldovrlp 1 (random) or 2 (maximum-random) only.
+
+    WRF icld = cldovrlp (module_ra_rrtmg_lw.F:12164, _sw.F:10762; a single
+    &physics value). The port runs icld=1, or icld=2 under GPUWRF_RRTMG_MAXRAND=1
+    (see :func:`apply_cldovrlp`); 0/3/4/5 fail closed instead of a silent overlap.
+    """
+
+    if not _rrtmg_selected(config):
+        return []
+    location, values = _cldovrlp_values(config)
+    if all(value in (1, 2) for value in values) and len(set(values)) == 1:
+        return []
+    return [
+        UnsupportedSelection(
+            key="cldovrlp",
+            location=location,
+            value=values[0] if len(values) == 1 else tuple(values),
+            supported_values=(1, 2),
+            implemented="one cldovrlp: 1=random or 2=maximum-random (GPUWRF_RRTMG_MAXRAND=1) McICA overlap",
+            action="Use cldovrlp=2 (WRF default; with GPUWRF_RRTMG_MAXRAND=1) or cldovrlp=1.",
+            outcome="recognized_control_not_wired",
+            wrf_scheme="RRTMG McICA cloud overlap",
+        )
+    ]
+
+
+def apply_cldovrlp(config: Any) -> str | None:
+    """Make the traced McICA overlap follow the namelist (WRF icld = cldovrlp), pre-JAX.
+
+    GPUWRF_RRTMG_MAXRAND=1 implements cldovrlp=2; a cldovrlp=1 namelist pins it to
+    0 for this process, i.e. today's random-overlap path bitwise. Call after the
+    validators and before ``gpuwrf.kernels.rad_mcica`` is imported; raises if that
+    module already resolved maximum-random. Returns a note when it pinned the flag.
+    """
+
+    config_obj = _coerce_config(config)
+    if not _rrtmg_selected(config_obj) or _cldovrlp_values(config_obj)[1] != [1]:
+        return None
+    if os.environ.get("GPUWRF_RRTMG_MAXRAND", "0") != "1":
+        return None
+    module = sys.modules.get("gpuwrf.kernels.rad_mcica")
+    if module is not None and getattr(module, "_MAXRAND", False):
+        raise RuntimeError(
+            "cldovrlp=1 but gpuwrf.kernels.rad_mcica already resolved GPUWRF_RRTMG_MAXRAND=1 "
+            "(maximum-random); set GPUWRF_RRTMG_MAXRAND=0 before importing the radiation code"
+        )
+    os.environ["GPUWRF_RRTMG_MAXRAND"] = "0"
+    return "cldovrlp=1: GPUWRF_RRTMG_MAXRAND pinned to 0 (WRF random McICA overlap)"
 
 
 def _classify_rejection(key: str, value: Any) -> tuple[str, str | None]:

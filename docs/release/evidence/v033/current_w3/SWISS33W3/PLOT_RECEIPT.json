@@ -1,0 +1,18 @@
+{
+  "arm": "SWISS33W3",
+  "rc": 0,
+  "start_utc": "2026-10-08T02:01:12.759691+00:00",
+  "end_utc": "2026-10-08T02:01:17.031408+00:00",
+  "execution_revision": "b6b69175d916fdeff5833fc71c425d0ef5069514",
+  "original_cpu_reference": "original CPU-WRF RD11 Swiss",
+  "expected_domains": [
+    "d01"
+  ],
+  "hours": 24,
+  "domain_hours": 25,
+  "png_count": 23,
+  "forecast_validation_reruns": 0,
+  "new_plot_data_read_only": true,
+  "pair_context": null,
+  "receipt_sha256": "ca4e6861017ea0b54bd3e33056acd15c3c78be28cd3da08b1c5315eb50b91651"
+}

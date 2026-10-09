@@ -12,6 +12,7 @@ from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.noahmp_state import NoahMPLandState
 from gpuwrf.contracts.precision import (
     DEFAULT_DTYPES, MYNN_DIAGNOSTIC_LEAVES, GWDO_DIAGNOSTIC_LEAVES, SURFACE_LAYER_CARRY_LEAVES,
+    STATE_FIELD_ORDER, MP_RE_DIAGNOSTIC_LEAVES,
 )
 from gpuwrf.contracts.state import SCALAR_BOUNDARY_OPTIONAL_LEAVES, State, _state_field_shapes
 from gpuwrf.coupling.noahclassic_surface_hook import NoahClassicLandState, NoahClassicRadiation
@@ -64,11 +65,13 @@ def _state(grid: GridSpec, *, mp_physics: int = 8) -> State:
             field: _pattern(shape, DEFAULT_DTYPES.dtype_for(field), index)
             for index, (field, shape) in enumerate(_state_field_shapes(grid, mp_physics=mp_physics).items(), start=1)
         }
-    )
+    ).ensure_conditional_leaves(mp_physics=mp_physics)
 
-    assert len(State.__slots__) == 84
-    assert State.__slots__[71:] == (SURFACE_LAYER_CARRY_LEAVES
-                                  + REQUIRED_MYNN_LEAVES + OPTIONAL_GWDO_LEAVES)
+    assert len(State.__slots__) == len(STATE_FIELD_ORDER)
+    assert set(State.__slots__) == set(STATE_FIELD_ORDER)
+    assert State.__slots__[71:] == (SURFACE_LAYER_CARRY_LEAVES[:5]
+                                  + REQUIRED_MYNN_LEAVES + OPTIONAL_GWDO_LEAVES
+                                  + SURFACE_LAYER_CARRY_LEAVES[5:] + MP_RE_DIAGNOSTIC_LEAVES)
     for name in REQUIRED_MYNN_LEAVES:
         value = getattr(state, name)
         shape = (grid.nz, grid.ny, grid.nx) if name == "el_pbl" else (grid.ny, grid.nx)

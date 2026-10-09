@@ -1,0 +1,22 @@
+{
+  "receipt_sha256": "0236c3adfa8aa224733e7ffbf05c6954f5979f620d0a38ce32d1147a18c58077",
+  "compression_receipt_sha256": "16bfcaa037617d239b4bf5c15a7860fa59ec4cde16192c2c03e54d7ff78c8168",
+  "src_gpuwrf_tree": "9371f511e70ca92c95e80ba822dbb83d62d2d130",
+  "status": "EXTRACTION_DONE",
+  "revision": "cf873d2152906e429a34e48ab5d850716c2bcb3d",
+  "case": "W3R",
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "domain_hours": 219,
+  "numeric_rows": 2406,
+  "raw_operands_full_finite": true,
+  "mask": "none",
+  "cpu_peak_rss_kb": 407744,
+  "generated_utc": "2026-10-08T01:57:08.342342+00:00",
+  "cache": "NONE",
+  "rendered": false,
+  "forecast_release_claim": false
+}

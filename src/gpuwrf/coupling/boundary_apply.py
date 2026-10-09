@@ -251,6 +251,7 @@ def apply_lateral_boundaries(
     *,
     dry_spec_only: bool = False,
     positivity_floor: bool = True,
+    root_scalar_rk1: tuple[tuple[str, ...], tuple[str, ...]] | None = None,
 ) -> State:
     """Apply the WRF specified outer zone + relaxation-zone nudging in-place.
 
@@ -275,10 +276,18 @@ def apply_lateral_boundaries(
     rk_update_scalar, solve_em.F:2346-2380) and has no positivity clamp there;
     this port's ``max(., 0)`` acts on the FULL field, interior included, so it
     is a non-WRF repair.  The default keeps the released floor byte-identical.
+
+    ``root_scalar_rk1=(relaxed, flow_dep)`` (B43, GPUWRF_ROOT_SCALAR_BDY_RK1 on a
+    specified root): the RK stages already applied WRF's relax/spec ``sc_tend``
+    and per-stage ``flow_dep_bdy``, so the relaxed species only get WRF's
+    ``spec_bdy_final`` spec-zone pin and the flow_dep species are left as is.
     """
 
     def _floor(value):
         return jnp.maximum(value, 0.0) if positivity_floor else value
+
+    if root_scalar_rk1 is not None and not dry_spec_only:
+        raise ValueError("root_scalar_rk1 (B43) requires the specified-cadence dry_spec_only pass")
 
     if _NATIVE_BOUNDARY_FP32:
         # Storage dtypes are preserved: only boundary strips are rounded to
@@ -315,11 +324,11 @@ def apply_lateral_boundaries(
             getattr(config, "nested_frozen_wrf_boundary_bundle", False)
         ) and not bool(config.force_geopotential)
         if nested_frozen:
-            # Pristine WRF has no end-of-step dry value overwrite.  The acoustic
-            # spec pins and frozen RK1 relax tendencies already own U/V/W/T/PH/MU.
-            # Moist/scalar spec+relax is likewise consumed inside rk_update_scalar;
-            # there is no post-step value nudge or positivity clamp in WRF.
-            return state
+            # WRF spec_bdy_final (solve_em.F:4626-4800) re-pins the nest spec zone of
+            # u/v/w/t/ph/mu and of every moist/scalar species after each step; the port
+            # keeps the in-loop/RK1 forms only.  BD95: GPUWRF_NEST_SCALAR_SPEC_FINAL pins
+            # the represented moist/scalar species (BD96 tracks the dry fields).
+            return _nest_scalar_spec_final_or_state(state, lead_seconds, metrics, config)
         _spec3 = (
             (lambda field, leaf: _apply_3d_spec_only_wrf_owned(field, leaf, lead_seconds, config))
             if nested_frozen
@@ -331,14 +340,18 @@ def apply_lateral_boundaries(
         # inside the acoustic loop owns the specified w ring.
         w = _spec3(state.w, state.w_bdy) if nested_frozen else state.w
         theta = _spec3(state.theta, state.theta_bdy)
-        qv = _floor(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config))
-        qc = _apply_optional_scalar("qc")
-        qr = _apply_optional_scalar("qr")
-        qi = _apply_optional_scalar("qi")
-        qs = _apply_optional_scalar("qs")
-        qg = _apply_optional_scalar("qg")
-        Ni = _apply_optional_scalar("Ni")
-        Nr = _apply_optional_scalar("Nr")
+        if root_scalar_rk1 is not None:
+            qv, qc, qr, qi, qs, qg, Ni, Nr = _root_scalar_rk1_end_of_step(
+                state, lead_seconds, metrics, config, root_scalar_rk1, _floor, _apply_optional_scalar)
+        else:
+            qv = _floor(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config))
+            qc = _apply_optional_scalar("qc")
+            qr = _apply_optional_scalar("qr")
+            qi = _apply_optional_scalar("qi")
+            qs = _apply_optional_scalar("qs")
+            qg = _apply_optional_scalar("qg")
+            Ni = _apply_optional_scalar("Ni")
+            Nr = _apply_optional_scalar("Nr")
         mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
         if _NATIVE_BOUNDARY_FP32:
             # Ring-0 totals are the REAL sum of the base and perturbation
@@ -464,6 +477,27 @@ def apply_lateral_boundaries(
         mu_total=mub + mu_perturbation,
         mu_perturbation=mu_perturbation,
     )
+
+
+def _root_scalar_rk1_end_of_step(state, lead_seconds, metrics, config, split, floor, legacy):
+    """End-of-step root moist/scalar values under B43 (spec_bdy_final pin / flow_dep left as is)."""
+
+    if metrics is None:
+        raise ValueError("GPUWRF_ROOT_SCALAR_BDY_RK1 end-of-step pin needs the dycore metrics")
+    relaxed, flow = split
+    final = root_scalar_spec_final(state, lead_seconds, metrics, config, relaxed)
+    out = []
+    for name in ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr"):
+        field = getattr(state, name)
+        if name in relaxed:
+            out.append(floor(getattr(final, name)))
+        elif name in flow:
+            out.append(floor(field))
+        elif name == "qv":
+            raise ValueError("GPUWRF_ROOT_SCALAR_BDY_RK1: qv must be a relaxed root species")
+        else:
+            out.append(legacy(name))
+    return tuple(out)
 
 
 def _spec_ring_total(total, base_leaf, pert_leaf, lead_seconds, config: BoundaryConfig):
@@ -1679,6 +1713,141 @@ def nested_scalar_boundary_tendencies(
     return tuple(tendencies)
 
 
+# ---------------------------------------------------------------------------
+# B43: specified-ROOT moist/scalar lateral forcing in WRF's RK cadence.
+# ---------------------------------------------------------------------------
+#
+# Pristine solve_em.F on a specified root (have_bcs_moist/have_bcs_scalar,
+# Registry default .false.):
+#   * QV (and every species whose have_bcs is .true.): relax_bdy_scalar +
+#     spec_bdy_scalar at rk_step 1 into moist_tend (:2345-2380), resident for all
+#     three rk_update_scalar calls; spec_bdy_final re-pins the spec zone after
+#     microphysics (:4714-4733, coupled value / (c1h*muts+c2h)).
+#   * the other moist species / scalars: flow_dep_bdy after EVERY stage's
+#     rk_update_scalar (:2426-2438, :2995-3015), no final pin.
+# GPUWRF_ROOT_SCALAR_BDY_RK1 (default off) selects this cadence in place of the
+# released end-of-step value pass (relax + spec + flow_dep after microphysics).
+
+_ROOT_RK1_SCALAR_SPECIES = NESTED_BOUNDARY_SCALAR_SPECIES
+
+
+def root_scalar_bdy_rk1_enabled() -> bool:
+    return os.environ.get("GPUWRF_ROOT_SCALAR_BDY_RK1", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def root_scalar_rk1_split(config: BoundaryConfig, species) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """``(relaxed, flow_dep)`` root species, solve_em.F:2346-2347/:2426 and :2893-2895/:2995."""
+
+    relaxed: list[str] = []
+    flow: list[str] = []
+    for name in species:
+        if name not in _ROOT_RK1_SCALAR_SPECIES:
+            # QNWFA/QNIFA/QNBCA, ntu3m, ... have their own WRF boundary branches.
+            raise NotImplementedError(
+                f"GPUWRF_ROOT_SCALAR_BDY_RK1 covers {_ROOT_RK1_SCALAR_SPECIES}; {name!r} is not represented")
+        have = config.have_bcs_scalar if name in ("Ni", "Nr") else config.have_bcs_moist
+        if have is None:
+            raise ValueError("GPUWRF_ROOT_SCALAR_BDY_RK1 needs the root's explicit have_bcs_moist/have_bcs_scalar")
+        (relaxed if (name == "qv" or bool(have)) else flow).append(name)
+    return tuple(relaxed), tuple(flow)
+
+
+def _root_coupled_scalar_records(leaf, reference: State, metrics: DycoreMetrics):
+    """REAL coupled wrfbdy records from the decoupled root leaf.
+
+    The wrfbdy loader divided record k by that record's own mass
+    ``c1h*(MUB+MU_B(k))+c2h`` (d02_replay real_em couple); multiplying by the
+    same mass restores QVAPOR_BXS(k) up to the leaf's storage rounding.
+    """
+
+    if reference.mu_bdy is None or reference.mub_bdy is None:
+        raise ValueError("GPUWRF_ROOT_SCALAR_BDY_RK1 needs the root mu_bdy/mub_bdy record leaves")
+    dtype = leaf.dtype
+    mu = reference.mu_bdy.astype(dtype) + reference.mub_bdy.astype(dtype)  # (time, side, width, 1, len)
+    c1 = metrics.c1h.astype(dtype)[None, None, None, :, None]
+    c2 = metrics.c2h.astype(dtype)[None, None, None, :, None]
+    nz = int(leaf.shape[3])
+    return (leaf * (c1[..., :nz, :] * mu + c2[..., :nz, :])).astype(jnp.float32)
+
+
+def _root_record_value_rate_real4(records, lead_seconds, cadence_s):
+    """WRF REAL ``bxs + dtbc*btxs`` and ``btxs`` for the active root interval.
+
+    real.exe stuff_bdytend writes btxs = (new - old)/interval in REAL; solve_em
+    advances dtbc by dt before the step (:378) and med_latbound_in resets it
+    at a record time, so a step ending on a record still uses the old interval
+    (``ceil(lead/cadence) - 1``, the same bracket as the nest records).
+    """
+
+    nrec = int(records.shape[0])
+    if nrec < 2:
+        return records[0], jnp.zeros_like(records[0])
+    lead = jnp.asarray(lead_seconds).astype(jnp.float32)
+    cadence = jnp.float32(cadence_s)
+    lower = jnp.clip(jnp.ceil(lead / cadence).astype(jnp.int32) - 1, 0, nrec - 2)
+    value = jnp.take(records, lower, axis=0)
+    difference = jax.lax.optimization_barrier(jnp.take(records, lower + 1, axis=0) - value)
+    rate = difference / cadence
+    dtbc = jnp.clip(lead - lower.astype(jnp.float32) * cadence, jnp.float32(0.0), cadence)
+    increment = jax.lax.optimization_barrier(dtbc * rate)
+    return value + increment, rate
+
+
+def root_scalar_boundary_tendencies(
+    reference: State,
+    lead_seconds,
+    metrics: DycoreMetrics,
+    dt_full: float,
+    config: BoundaryConfig,
+    species,
+) -> dict[str, jax.Array]:
+    """RK1 ``relax_bdy_scalar`` + ``spec_bdy_scalar`` coupled ``sc_tend`` per relaxed root species.
+
+    ``reference`` is the step-start state: WRF passes the time-t scalar and the
+    stage-entry ``grid%mut`` (module_em rk_step_prep; advance_mu_t updates only
+    ``muts``).  Relax rows hold the relax_bdytend tendency, spec rows the
+    record rate, every other cell zero.
+    """
+
+    cadence = float(config.update_cadence_s)
+    out: dict[str, jax.Array] = {}
+    for name in species:
+        field = getattr(reference, name)
+        leaf = getattr(reference, f"{name}_bdy", None)
+        if leaf is None:
+            raise ValueError(f"GPUWRF_ROOT_SCALAR_BDY_RK1: root species {name!r} needs a wrfbdy leaf")
+        value, rate = _root_record_value_rate_real4(
+            _root_coupled_scalar_records(leaf, reference, metrics), lead_seconds, cadence)
+        out[name] = _ring_relax_spec_real4(field, value, rate, reference.mu_total, metrics, float(dt_full), config)
+    return out
+
+
+def root_scalar_spec_final(state: State, lead_seconds, metrics: DycoreMetrics, config: BoundaryConfig, species) -> State:
+    """WRF ``spec_bdy_final(moist, muts, ..., 't')`` for the relaxed root species.
+
+    Spec-zone value = REAL ``(bxs + dtbc*btxs) / (c1h*muts + c2h)`` with the
+    end-of-step dry mass; Y sides own the corners (module_bc.F spec_bdy_final
+    loop limits).  Relax-zone and interior cells are untouched.
+    """
+
+    cadence = float(config.update_cadence_s)
+    nz, ny, nx = (int(n) for n in state.qv.shape)
+    spec = int(config.spec_zone)
+    y = jnp.arange(ny)[:, None]
+    x = jnp.arange(nx)[None, :]
+    spec_mask = jnp.minimum(jnp.minimum(y, ny - 1 - y), jnp.minimum(x, nx - 1 - x)) < spec
+    mass = (metrics.c1h.astype(jnp.float32)[:, None, None] * state.mu_total.astype(jnp.float32)[None, :, :]
+            + metrics.c2h.astype(jnp.float32)[:, None, None])
+    updates = {}
+    for name in species:
+        field = getattr(state, name)
+        value, _rate = _root_record_value_rate_real4(
+            _root_coupled_scalar_records(getattr(state, f"{name}_bdy"), state, metrics), lead_seconds, cadence)
+        target = _full_ring_target_from_leaf(value, nz, ny, nx, jnp.float32)
+        updates[name] = jnp.where(spec_mask[None], (target / mass).astype(field.dtype), field)
+    return state.replace(**updates)
+
+
 def nested_ph_relax_tendency(ph_perturbation, ph_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float, config: BoundaryConfig):
     """Relaxation-zone ``ph_tend`` contribution for the nested boundary (WRF-faithful).
 
@@ -2265,3 +2434,61 @@ __all__ = [
     "tangential_bdy_work_target_u",
     "tangential_bdy_work_target_v",
 ]
+
+
+# ---------------------------------------------------------------------------
+# BD95: nested moist/scalar spec_bdy_final (WRF solve_em.F:4714-4733).
+# ---------------------------------------------------------------------------
+#
+# Pristine solve_em.F ends every step on a nested domain with spec_bdy_final for
+# every moist species (IF im == P_QV .OR. config_flags%nested) and every scalar
+# (IF config_flags%nested): the spec zone becomes (bdy + dtbc*bdy_tend)/(c1h*muts
+# + c2h) (share/module_bc.F:2066-2216), so the ring has no memory of earlier
+# steps.  Without it the live-nest ring integrates rk_update_scalar residues and
+# keeps them (subnormal "dust", negative qc/qr/Nr; BD95).
+
+
+def nest_scalar_spec_final_enabled() -> bool:
+    return os.environ.get("GPUWRF_NEST_SCALAR_SPEC_FINAL", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def nested_scalar_spec_final(state: State, lead_seconds, metrics: DycoreMetrics | None, config: BoundaryConfig) -> State:
+    """WRF ``spec_bdy_final(moist|scalar, muts, c1h, c2h, msfty, ..., 't')`` on a live nest.
+
+    Value = REAL ``bdy + dtbc*bdy_tend`` from the coupled two-record force-down
+    package with the same ``dtbc`` (package endpoint) the RK1 ``sc_tend`` uses,
+    divided by REAL ``c1h*muts + c2h`` with the end-of-step dry mass, on the spec
+    zone only (Y sides own the corners).  Relax zone and interior are untouched.
+    """
+
+    from gpuwrf.kernels.dyn_ring_relax_fp32 import ring_spec_final
+
+    if metrics is None:
+        raise ValueError("GPUWRF_NEST_SCALAR_SPEC_FINAL needs the dycore metrics")
+    spec = int(config.spec_zone)
+    names = tuple(
+        name for name in NESTED_BOUNDARY_SCALAR_SPECIES
+        if getattr(state, name, None) is not None and getattr(state, f"{name}_bdy", None) is not None
+    )
+    if spec <= 0 or not names:
+        return state
+    cadence = float(config.update_cadence_s)
+    values = jnp.stack([
+        _scalar_record_value_rate_real4(getattr(state, f"{name}_bdy"), lead_seconds, cadence)[0][:, :spec]
+        for name in names
+    ])
+    pinned = ring_spec_final(values, state.mu_total, metrics.c1h, metrics.c2h, spec=spec)
+    ny, nx = (int(n) for n in state.mu_total.shape[-2:])
+    y = jnp.arange(ny)[:, None]
+    x = jnp.arange(nx)[None, :]
+    spec_mask = (jnp.minimum(jnp.minimum(y, ny - 1 - y), jnp.minimum(x, nx - 1 - x)) < spec)[None]
+    return state.replace(**{
+        name: jnp.where(spec_mask, pinned[index].astype(getattr(state, name).dtype), getattr(state, name))
+        for index, name in enumerate(names)
+    })
+
+
+def _nest_scalar_spec_final_or_state(state: State, lead_seconds, metrics, config: BoundaryConfig) -> State:
+    if not nest_scalar_spec_final_enabled():
+        return state
+    return nested_scalar_spec_final(state, lead_seconds, metrics, config)

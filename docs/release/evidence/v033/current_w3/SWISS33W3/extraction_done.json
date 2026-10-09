@@ -1,0 +1,20 @@
+{
+  "receipt_sha256": "ca4e6861017ea0b54bd3e33056acd15c3c78be28cd3da08b1c5315eb50b91651",
+  "compression_receipt_sha256": "af89995dc1192fd8cec09155466be0e6973211467c21f2fbea4329cfec4dc761",
+  "src_gpuwrf_tree": "e7b639e8d1df037fa1fb9da9ae0a9a6fda520e6d",
+  "status": "EXTRACTION_DONE",
+  "revision": "b6b69175d916fdeff5833fc71c425d0ef5069514",
+  "case": "SWISS33W3",
+  "domains": [
+    "d01"
+  ],
+  "domain_hours": 25,
+  "numeric_rows": 274,
+  "raw_operands_full_finite": true,
+  "mask": "none",
+  "cpu_peak_rss_kb": 133596,
+  "generated_utc": "2026-10-08T02:01:14.925577+00:00",
+  "cache": "NONE",
+  "rendered": false,
+  "forecast_release_claim": false
+}

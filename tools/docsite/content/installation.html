@@ -16,57 +16,14 @@ before a run.</p>
   <code>jax.devices()</code> lists your GPU.</p>
 </div>
 
-<h2 id="gpu-and-vram">GPU &amp; VRAM sizing</h2>
-
-<p>The reference machine is a single <strong>RTX&nbsp;5090 (32&nbsp;GiB)</strong>
-workstation; the numbers below are <span class="pill op">Measured</span> on it. Peak
-VRAM is <em>transient working memory</em> (largest during the radiation transient and
-the cold start), not the persistent fp64 model state — so it scales with grid size
-and physics, not with forecast length.</p>
-
-<div class="table-scroll">
-<table>
-<thead><tr><th>Case</th><th>Peak VRAM</th><th>Notes</th></tr></thead>
-<tbody>
-<tr><td>d01 9&nbsp;km single domain</td><td>≈&nbsp;4.7&nbsp;GiB</td><td>Bundled-class single-domain forecast.</td></tr>
-<tr><td>1&nbsp;km single domain</td><td>18.25&nbsp;GiB</td><td>Fits one RTX&nbsp;5090 bit-identically (chunked BouLac cold start).</td></tr>
-<tr><td>1&nbsp;km all-island nested (9/3/1; d03 520×280×45, ~145k columns)</td><td>~18.1&nbsp;GiB</td><td>Fits the reference card; earlier releases OOMed near 31.8/32&nbsp;GiB.</td></tr>
-<tr><td>Switzerland d01, 72&nbsp;h identity gate</td><td>22.9&nbsp;GiB</td><td>Retained 72&nbsp;h validation run.</td></tr>
-<tr><td>Canary L2 d02, nested 72&nbsp;h identity gate</td><td>29.8&nbsp;GiB</td><td>Retained 72&nbsp;h nested validation run.</td></tr>
-</tbody>
-</table>
-</div>
-
-<p>As a rule of thumb, a 3&nbsp;km d02 fp64 case wants <strong>≥&nbsp;26&nbsp;GiB
-free VRAM</strong>. Nested runs (<code>--max-dom&nbsp;&gt;&nbsp;1</code>) additionally
-run a launch-time VRAM preflight and fail closed unless the card has at least
-<code>max(24&nbsp;GiB, 0.50&nbsp;×&nbsp;total&nbsp;VRAM)</code> free — see
-<a href="running.html#vram-preflight">the VRAM preflight</a>.</p>
-
-<div class="admon honest">
-  <div class="admon-title">High resident host RAM (~36 GB)</div>
-  <p>A run currently holds about <strong>36&nbsp;GB of host (CPU) RAM resident</strong>,
-  even when VRAM use is only ~9.6&nbsp;GB, because the Noah-MP / physics constant
-  tables are baked into the compiled executable rather than passed as runtime
-  arguments. This is <strong>precision-independent</strong> and does <strong>not</strong>
-  affect correctness, single-run stability, or results — but it limits running two
-  instances on a 64&nbsp;GB box and reduces large-grid / pod-density headroom. It is
-  root-caused; the tables-as-runtime-args fix is deferred.</p>
-</div>
-
-<h3 id="other-resources">Other resources</h3>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Resource</th><th>What to expect</th></tr></thead>
-<tbody>
-<tr><td>Toolchain</td><td>CUDA&nbsp;13 and a JAX CUDA build that sees the GPU.</td></tr>
-<tr><td>Scratch</td><td>A <strong>real, non-tmpfs</strong> NVMe scratch directory with a few GiB free. Set it with <code>--scratch-dir</code> / <code>$GPUWRF_SCRATCH</code>. Do <strong>not</strong> use a RAM disk (<code>/tmp</code> tmpfs).</td></tr>
-<tr><td>Runtime data tables</td><td>The vendored <code>data/fixtures/</code> tables (~147&nbsp;MiB: Thompson&nbsp;+&nbsp;RRTMG) are loaded at import. Some selected physics also reads small WRF runtime tables from <code>GPUWRF_WRF_ROOT</code>.</td></tr>
-<tr><td>First-run compile</td><td>A one-time cold JIT compile (no output during compile), then a fast warm start from the persistent on-disk cache. See <a href="performance.html">Performance</a>.</td></tr>
-</tbody>
-</table>
-</div>
-
+<h2 id="gpu-and-vram">GPU and host memory</h2>
+<p>The measured reference is RTX 5090 (sm_120, CUDA 13) with Ryzen 9 9950X.
+Other recent NVIDIA hardware is untested. Capacity depends on geometry, physics,
+source, allocator and compilation phase. Use a verified case-sized plan and observed
+host/GPU peaks, not a universal 26 GiB GPU or 36 GB host rule.</p>
+<p>Free-VRAM precedence is explicit GiB override, then C-auto pool budget plus
+outside-pool headroom, then conservative cold fallback. Explicit allocator settings
+win. See <a href="running.html#vram-preflight">memory admission</a>.</p>
 <h2 id="install">Full install</h2>
 
 <p>Use an isolated environment. <strong>Python&nbsp;3.11</strong> is the reference

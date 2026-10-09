@@ -1,0 +1,2 @@
+MON33W3: registry verdict PASS; NEW items 0
+ANNEX PASS (all NEW items explained)

@@ -1,0 +1,145 @@
+{
+  "id": "SWISS24",
+  "executed_revision": "be0dd543c9f7f6d619a8b504348b11267ffe913f",
+  "package_tree": "33f3976306269d8eeeee9b7f534180ca0aebfb41",
+  "original_cpu_reference": "original CPU-WRF RD11 Swiss",
+  "hours": 24,
+  "domains": [
+    "d01"
+  ],
+  "domain_hours": 25,
+  "scope": "Actualbe0 shippedSwiss24 against original CPU-WRF RD11. One unchanged raw24h report supplies both full-window andstrict24 reading; no annex or synthetic sidecar. Field limits/source/IC remain unchanged.",
+  "verdicts": {
+    "strict24": {
+      "status": "PASS",
+      "hours": 24,
+      "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+      "report": "d6_24h_verdict.json",
+      "breaches": ""
+    },
+    "full_D6": {
+      "status": "PASS",
+      "hours": 24,
+      "sha256": "b81c6e17553b13cb368cef83c7c2ef61d31fd41732af78bf90f9b2c1b49d73f0",
+      "report": "d6_24h_verdict.json",
+      "breaches": ""
+    },
+    "integrity": {
+      "supplied_disposition": "PASS",
+      "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+      "report": "classes_all_24h.json"
+    },
+    "annex": {
+      "supplied_disposition": "SEE FROZEN ANNEX",
+      "sha256": "a767e827b6e3e3a4f51fc119ba612136fb62c89cbf89aa6ebf9c2f7ec2ba518f",
+      "report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": false,
+  "elapsed_seconds": 7.467312709079124,
+  "receipt_sha256": "1c03a2d92a26c83d6d685b07683e07785503ad3149362e37f4ef4cdae7f8d6c6",
+  "compression_receipt_sha256": "54d00cd0cb5c9ac172d6033de10466814fddcf0bfef1995feb021ca6f4a53e84",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "512961d9337ed429a6c6d84401226bab0fd3b6d4fe43574f13c7e75abe5b3f24"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "da9c0a3891fcb584ae39d4ec2a9c3cc601cf0b3f350d21e5902e65882a861bc7"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "2e8414433abd6f6b1a33508e171e67e841ff8d5fbbb6e6238569179c03ac0486"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "44b6235aa2bf2d6685a7f5c3e922ac8574f4df23514c3d20323d836188583e21"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "232add2e85d70d08383a7c20708bf611f17a1c948c0c330bf3ded407b8b1cbb6"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "d7176011ce0ee1bf4f7ba80c23a6a57264e5bc23eaf28bfd0244d9a963b1649f"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "2763134442f39c0f5ee68a81e4042dc0f07e5566f7329cdfd16485824604440f"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "d519e27da9e795f617ef47f4b893a25c91789d8e6ac09fb73faca9852a61db56"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "90fd6f25035cc685cba84aa37900f1fcff8c96ec7fffec40ed85655d8c0c623a"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "53674b93089c8021f4a645e054bc69f0255c599ef830c6a0f215a56b3b52194b"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "9a1541026334dfe1f58c0511552b7737b2a3aa0ad3280a7e5153695a4926b4cf"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "aad75853431eebfc0355be67ec0520892deb4e32ad8e1be82a1d21ae5ab0a6d6"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "78c1c5d569e45556786b47bbe4e64dc500c9ed6be7a7393906d3fb1148b9c715"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "1f8003d1f0db0a70ce441e9c535e07c03ad60c7d68c6ff5643c0bca7b7e3bfd8"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "bdf238677d9503d506383777bccd583f3fd91e542a7247279f3416c49c5f2457"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "cf033735b4cb01ed6524838fc91b8317cb5b68488f11cc921dd2d6f0e7c4d1aa"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "5ff8cc7890d0bbd2f10453ab00fcdeb91e14089d8f63f8270eaf8224fdfee2fd"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "4547b1df3d3653819c6d24acee6bb67a6e4f22cd13b6eb5ba9b95fd9af933678"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "6caa807123453599fe12cccee5b10b8ccb3d6bed25d9b12121f22d26a0306bbb"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "e6bb69c1b424cd7320cd8a6360b7b330bca490880f42a119a7b0ef7b40cabf83"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "fad28477bcfdf42d2c8141b8e7bce2dc64447ef0c5a96e5702f9e7ad094a115a"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "34003768ef0ccacfdf8f34c74d2b35b94e1004a6498db3f587beafb4b271a995"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "7f6ca0f8ec7f8f7f87224bc4494f8fb8166ecb0dd36cdf2b69099db76169fb0f"
+    },
+    {
+      "path": "index.html",
+      "sha256": "62b1804310b1b3a1ae9709a59da4e4e3097a771df2076927f6e0a97a833d65fe"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "e6fb327fe8fb8c3da25131c059b663ee204048377898e703f1b25fa7b3227c05"
+    }
+  ],
+  "ready_part_reused": true
+}

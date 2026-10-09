@@ -1,0 +1,136 @@
+{
+  "UTC": "2026-10-09T06:39:30.780239+00:00",
+  "source": "7a0c93ff4d19b1892067711d884739d246432344",
+  "case": "W3R",
+  "raw_D6_status": "FAIL",
+  "raw_D6_ref": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/SCIENCE_ATTEMPT02_W3R_0408_ACTUAL_20261009/results/W3R/d6_72h_verdict.json",
+    "sha256": "fce4115e1ff5fd84bb2915cd9d9d352b81e41dca6a29a93e21f17063ba0542d8"
+  },
+  "C_reference": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/MO13/medano/d6floor/cpupair_P_vs_R.json",
+    "sha256": "fcd8b975ca1178248bdc34fd9a33904a99843874b5bcc21337e8f721cdfe2380"
+  },
+  "rule_source": "<USER_HOME>/wrf_gpu2_lanes/mass-opus/MO13/final33v/floor_annex.py",
+  "rule": "frame_tolerance/RMSE ONLY: C>limit OR C/X>=0.75; other/unavailable REAL",
+  "strict24_annex": false,
+  "paired_frames_per_domain": {
+    "d01": 73,
+    "d02": 73,
+    "d03": 73
+  },
+  "rows": [
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 67,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 1.0995531008835915,
+      "limit": 1.0,
+      "C": 0.8905983272943488,
+      "C_over_X": 0.8099639085903825,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 68,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 1.2914179049827224,
+      "limit": 1.0,
+      "C": 1.0742462797105208,
+      "C_over_X": 0.8318347419264664,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 69,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 1.8031846859198797,
+      "limit": 1.0,
+      "C": 1.5094115483094688,
+      "C_over_X": 0.8370809491094668,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 70,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 2.26966432563423,
+      "limit": 1.0,
+      "C": 1.9865712642639377,
+      "C_over_X": 0.875270956073566,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 71,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 2.4306623420684974,
+      "limit": 1.0,
+      "C": 2.098835538985548,
+      "C_over_X": 0.8634829703246382,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "RAINNC",
+      "lead_h": 72,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 2.464927193654234,
+      "limit": 1.0,
+      "C": 2.1118578851610086,
+      "C_over_X": 0.8567627841494974,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "V10",
+      "lead_h": 69,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 1.518559865836334,
+      "limit": 1.5,
+      "C": 1.449591943189186,
+      "C_over_X": 0.9545833363578561,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    },
+    {
+      "domain": "d03",
+      "field": "W",
+      "lead_h": 69,
+      "kind": "frame_tolerance",
+      "metric": "rmse",
+      "X": 0.33041334555967417,
+      "limit": 0.3,
+      "C": 0.32996136664189546,
+      "C_over_X": 0.9986320803204449,
+      "classification": "FLOOR-LIMITED",
+      "C_scope": "whole original CPU P0227-R field at same domain/lead; retained frozen comparator"
+    }
+  ],
+  "totals": {
+    "FLOOR": 8,
+    "REAL": 0
+  },
+  "recomputed_comparisons": 0,
+  "new_model_or_oracle": false,
+  "release_PASS": false,
+  "D6_plus_A3_status": "PASS"
+}

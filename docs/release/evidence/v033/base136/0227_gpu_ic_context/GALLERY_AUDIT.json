@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "domain_hours": 219,
+  "numeric_rows": 2406,
+  "png_count": 23,
+  "baseline_metric_parity": 14436,
+  "frozen_rule_metric_parity": 1460,
+  "base_json_sha256": "d026449fca9ad570a07c2ab620b15f460356d71d239ebf2d5f08578a05de93f6",
+  "base_bytes_preserved": true,
+  "renderer_commit": "a0e1e679c710d69d4481ce12a08ce73a1b796cfb",
+  "renderer_sha256": "b082bd0fd0e8ac3fc05fc477aee556b37cdab86ee3b12630308d1761457b4e95",
+  "extractor_sha256": "9e596e52ff3b6603862e7c31b0108ad5f2d8dcf8b47d850b2aa3faab87cca21a",
+  "local_links": "PASS",
+  "forecast_gate_claim": false,
+  "station_hold": true,
+  "R2": {
+    "d02": {
+      "EXPLAINED": 0,
+      "OPEN": 0
+    },
+    "d03": {
+      "EXPLAINED": 7,
+      "OPEN": 13
+    }
+  },
+  "member_integrity_sampled_degeneracy_frames": 3,
+  "missing_and_headers_frames": 73,
+  "cache": "MPL exactremoved",
+  "checked_utc": "2026-10-06T21:08:11.076341+00:00",
+  "member_QGRAUP_class": "documented tail34e1d8ec6 permanager21:08:31; no new finding",
+  "final_integrity_scope": "ALL73degeneracy frames/domain; separately hashed wn3 tool copy with 2case sampled-frame parity"
+}

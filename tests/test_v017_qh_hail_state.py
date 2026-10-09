@@ -49,6 +49,9 @@ GWDO_HISTORY_LEAVES = getattr(precision_contract, "GWDO_DIAGNOSTIC_LEAVES", ())
 assert GWDO_HISTORY_LEAVES in ((), ("dtaux3d", "dtauy3d", "dusfcg", "dvsfcg"))
 
 
+MP_RE_HISTORY_LEAVES = getattr(precision_contract, "MP_RE_DIAGNOSTIC_LEAVES", ())
+
+
 def _full_state(grid: GridSpec) -> State:
     """Build a fully-populated State with distinct per-field patterns on CPU."""
 
@@ -64,8 +67,9 @@ def test_hail_leaves_appended_at_end_append_only() -> None:
     # five REAL surface leaves, then declared MYNN and optional GWDO outputs.
     expected_tail = (HAIL_LEAVES + ("nwfa", "nifa", "hail_acc")
                      + SCALAR_BOUNDARY_OPTIONAL_LEAVES
-                     + SURFACE_LAYER_CARRY_LEAVES + MYNN_HISTORY_LEAVES + GWDO_HISTORY_LEAVES)
-    assert len(State.__slots__) == 76 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES)
+                     + tuple(n for n in SURFACE_LAYER_CARRY_LEAVES if n != "sfc_wspd")
+                     + MYNN_HISTORY_LEAVES + GWDO_HISTORY_LEAVES + ("sfc_wspd",) + MP_RE_HISTORY_LEAVES)
+    assert len(State.__slots__) == 77 + len(MYNN_HISTORY_LEAVES) + len(GWDO_HISTORY_LEAVES) + len(MP_RE_HISTORY_LEAVES)
     assert State.__slots__[57:] == expected_tail
     assert STATE_FIELD_ORDER[57:] == expected_tail
     assert State.__slots__[56] == "cldfra_bl"
@@ -91,8 +95,8 @@ def test_hail_leaves_absent_by_default_and_materialized_for_hail_mp() -> None:
         for k, v in shapes.items()
     }
     state = State(**fields)
-    assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES and name not in GWDO_HISTORY_LEAVES)
-    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) - len(GWDO_HISTORY_LEAVES) == 62 + len(MYNN_HISTORY_LEAVES)
+    assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES and name not in GWDO_HISTORY_LEAVES and name not in MP_RE_HISTORY_LEAVES)
+    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) - len(GWDO_HISTORY_LEAVES) - len(MP_RE_HISTORY_LEAVES) == 62 + len(MYNN_HISTORY_LEAVES)
     for leaf in CONDITIONAL_STATE_LEAVES + GWDO_HISTORY_LEAVES:
         assert getattr(state, leaf) is None, leaf
 

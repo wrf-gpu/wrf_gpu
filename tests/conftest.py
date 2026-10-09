@@ -61,6 +61,30 @@ if os.environ.get("JAX_PLATFORMS") == "cpu":
 
 import pytest
 
+
+@pytest.fixture
+def cpu_pallas_interpret(monkeypatch):
+    """Run the selected native kernels on CPU without changing their equations."""
+    import jax
+    from jax.experimental import pallas as pl
+    from gpuwrf.contracts import state as state_contract
+
+    assert jax.devices()[0].platform == "cpu"
+    original = pl.pallas_call
+
+    def interpreted(*args, **kwargs):
+        return original(*args, **{**kwargs, "interpret": True})
+
+    jax.clear_caches()
+    monkeypatch.setattr(pl, "pallas_call", interpreted)
+    # State/Tendencies constructors retain their production GPU guard; this
+    # explicitly selected CPU validation fixture owns the placement override.
+    monkeypatch.setattr(state_contract, "_gpu_device", lambda: jax.devices("cpu")[0])
+    try:
+        yield
+    finally:
+        jax.clear_caches()
+
 # The exact substrings emitted by gpuwrf.contracts.state._gpu_device() when no
 # JAX GPU backend is visible. These markers are produced ONLY by that guard.
 _GPU_REQUIRED_MARKERS = (

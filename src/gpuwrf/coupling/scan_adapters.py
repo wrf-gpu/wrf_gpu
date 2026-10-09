@@ -64,6 +64,8 @@ for KF) function, allocates nothing at import, and writes at the live State dtyp
 
 from __future__ import annotations
 
+import os
+
 import jax
 import jax.numpy as jnp
 
@@ -85,6 +87,7 @@ from gpuwrf.coupling.physics_couplers import (
     _v_mass,
     _w_mass,
     _wrf_phy_prep_rho_from_state,
+    _wrf_hydrostatic_pressure_profiles_from_state,
 )
 from gpuwrf.physics.microphysics_goddard import goddard_physics_tendency
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
@@ -667,8 +670,21 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None,
     else:
         rho = _rho_from_state(state) * (1.0 + jnp.asarray(state.qv, real))
     theta_dry = _dry_theta_view(state)   # P0: KF works on WRF phy_prep dry theta / t_phy
-    T = _temperature_from_theta(theta_dry, state.p)
-    interface_z = state.ph.astype(real) / GRAVITY_M_S2
+    phyd_wrf = real == jnp.float32 and os.environ.get("GPUWRF_KF_PHYD_WRF", "0") == "1"
+    if phyd_wrf:
+        if getattr(grid, "metrics", None) is None:
+            raise ValueError("KF_PHYD_WRF requires WRF hybrid-pressure metrics")
+        # first_rk_step_part1.F:1380 passes P_HYD and the independent PI_PHY.
+        # This is the same c1/c2, moisture and DNW producer as phy_prep:4946-4968.
+        p_kf, _p8w, _psfc = _wrf_hydrostatic_pressure_profiles_from_state(
+            state, grid.metrics, output_dtype=real)
+        pi_phy = (jnp.asarray(state.p, real) / jnp.asarray(1.e5, real)) ** jnp.asarray(2. / 7., real)
+        T = jnp.asarray(theta_dry, real) * pi_phy
+        interface_z = state.ph.astype(real) / jnp.asarray(9.81, real)
+    else:
+        p_kf, pi_phy = state.p, None
+        T = _temperature_from_theta(theta_dry, state.p)
+        interface_z = state.ph.astype(real) / GRAVITY_M_S2
     dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
     w_mass = _w_mass(state)
 
@@ -679,7 +695,8 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None,
 
     T_c = _cols(T)
     qv_c = _cols(state.qv)
-    p_c = _cols(state.p)
+    p_c = _cols(p_kf)
+    pi_c = _cols(pi_phy) if pi_phy is not None else None
     dz_c = _cols(dz_full)
     rho_c = _cols(rho)
     u_c = _cols(_u_mass(state))
@@ -688,10 +705,10 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None,
     w0avg_c = _cols(jnp.asarray(w0avg, real))
     nca_c = jnp.asarray(nca, real).reshape(ny * nx)
 
-    def _one(T0, QV0, P0, DZQ, RHOE, w0a, U0, V0, w_col, nca0):
+    def _one(T0, QV0, P0, DZQ, RHOE, w0a, U0, V0, w_col, nca0, pi0):
         res = step_kf_column(
             T0, QV0, P0, DZQ, RHOE, w0a, U0, V0, float(dt), dx,
-            w=w_col, nca=nca0, stepcu=stepcu, cudt=cudt,
+            w=w_col, nca=nca0, stepcu=stepcu, cudt=cudt, pi_phy=pi0,
         )
         st = res.tendency.state_tendencies
         cc = res.carry.cumulus
@@ -703,7 +720,7 @@ def kf_adapter(state: State, dt: float, w0avg, nca, *, grid=None,
         )
 
     (rth, rqv, rqc, rqr, rqi, rqs, raincv, pratec, w0avg_next_c, nca_next_c) = jax.vmap(_one)(
-        T_c, qv_c, p_c, dz_c, rho_c, w0avg_c, u_c, v_c, w_c, nca_c
+        T_c, qv_c, p_c, dz_c, rho_c, w0avg_c, u_c, v_c, w_c, nca_c, pi_c
     )
 
     def _back(field2d):  # (ncol, nz) -> (nz, ny, nx)

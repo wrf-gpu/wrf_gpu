@@ -32,8 +32,10 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
+import jax
 import jax.numpy as jnp
-from gpuwrf.physics.noahmp.precision import real_tree, real_scalar
+from jax import lax
+from gpuwrf.physics.noahmp.precision import native_real_enabled, real_tree, real_scalar
 
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology, NoahMPRadInputs
@@ -135,8 +137,8 @@ def snow_age(dt, tg, sneqvo, sneqv, tauss, p: "TwoStreamParams"):
     return tauss_new, fage
 
 
-def snowalb_class(qsnow, dt, albold, p: "TwoStreamParams"):
-    """SNOWALB_CLASS (:3226-3275, opt_alb=2). Returns (alb, albsnd, albsni)."""
+def _snowalb_class_value(qsnow, dt, albold, p):
+    """The unchanged scalar CLASS albedo statements, without band packaging."""
     swemx = _scalar(p.swemx, _SWEMX_DEF)
     alb = 0.55 + (albold - 0.55) * jnp.exp(real_scalar(-0.01 * dt / 3600.0))  # WRF REAL EXP
     alb = jnp.where(
@@ -144,6 +146,12 @@ def snowalb_class(qsnow, dt, albold, p: "TwoStreamParams"):
         alb + jnp.minimum(qsnow, swemx / dt) * (0.84 - alb) / (swemx / dt),
         alb,
     )
+    return alb
+
+
+def snowalb_class(qsnow, dt, albold, p: "TwoStreamParams"):
+    """SNOWALB_CLASS (:3226-3275, opt_alb=2). Returns (alb, albsnd, albsni)."""
+    alb = _snowalb_class_value(qsnow, dt, albold, p)
     albsn = jnp.stack([alb, alb], axis=0)  # vis, nir identical for CLASS
     return alb, albsn, albsn
 
@@ -256,13 +264,15 @@ def twostream(ib, ic, cosz, vai, fwet, tveg, albgr_d, albgr_i, rho, tau, fveg, p
     return fab, fre, ftd, fti, gdir, frev, freg
 
 
-def radiation_twostream(
+def _radiation_twostream_impl(
     land_state: NoahMPLandState,
     forcing: NoahMPForcing,
     static: NoahMPStatic,
     phen: NoahMPPhenology,
     params: TwoStreamParams,
     dt: float,
+    *,
+    _tile_bands=False,
 ):
     """RADIATION (:2684-2806). Returns (NoahMPRadInputs, extras dict).
 
@@ -284,8 +294,12 @@ def radiation_twostream(
     qsnow = forcing.prcpsnow
 
     swdown = jnp.where(cosz <= 0.0, 0.0, forcing.soldn)
-    solad = jnp.stack([swdown * 0.7 * 0.5, swdown * 0.7 * 0.5], axis=0)
-    solai = jnp.stack([swdown * 0.3 * 0.5, swdown * 0.3 * 0.5], axis=0)
+    if _tile_bands:
+        solad = (swdown * 0.7 * 0.5, swdown * 0.7 * 0.5)
+        solai = (swdown * 0.3 * 0.5, swdown * 0.3 * 0.5)
+    else:
+        solad = jnp.stack([swdown * 0.7 * 0.5, swdown * 0.7 * 0.5], axis=0)
+        solai = jnp.stack([swdown * 0.3 * 0.5, swdown * 0.3 * 0.5], axis=0)
 
     vai = elai + esai
     fsno = jnp.where(snowh > 0.0, _fsno(snowh, sneqv, params), 0.0)
@@ -297,16 +311,29 @@ def radiation_twostream(
     day = cosz > 0.0
 
     tauss_new, _fage = snow_age(dt, tg, sneqvo, sneqv, land_state.tauss, params)
-    alb_new, albsnd, albsni = snowalb_class(qsnow, dt, land_state.albold, params)
+    if _tile_bands:
+        alb_new = _snowalb_class_value(qsnow, dt, land_state.albold, params)
+        albsnd = (alb_new, alb_new)
+        albsni = (alb_new, alb_new)
+    else:
+        alb_new, albsnd, albsni = snowalb_class(qsnow, dt, land_state.albold, params)
     # ALBOLD = ALB only when COSZ>0 (:2944-2945); otherwise carry old value.
     albold_new = jnp.where(day, alb_new, land_state.albold)
 
     wl = elai / jnp.maximum(vai, MPE)
     ws = esai / jnp.maximum(vai, MPE)
-    rho = jnp.maximum(params.rhol * wl[None, ...] + params.rhos * ws[None, ...], MPE)
-    tau = jnp.maximum(params.taul * wl[None, ...] + params.taus * ws[None, ...], MPE)
+    if _tile_bands:
+        rho = tuple(jnp.maximum(params.rhol[ib] * wl + params.rhos[ib] * ws, MPE) for ib in range(2))
+        tau = tuple(jnp.maximum(params.taul[ib] * wl + params.taus[ib] * ws, MPE) for ib in range(2))
+        inc = jnp.maximum(0.11 - 0.40 * smc1, 0.0)
+        albsod = tuple(jnp.minimum(params.albsat[ib] + inc, params.albdry[ib]) for ib in range(2))
+        albgrd = tuple(albsod[ib] * (1.0 - fsno) + albsnd[ib] * fsno for ib in range(2))
+        albgri = tuple(albsod[ib] * (1.0 - fsno) + albsni[ib] * fsno for ib in range(2))
+    else:
+        rho = jnp.maximum(params.rhol * wl[None, ...] + params.rhos * ws[None, ...], MPE)
+        tau = jnp.maximum(params.taul * wl[None, ...] + params.taus * ws[None, ...], MPE)
 
-    albgrd, albgri = groundalb(smc1, fsno, albsnd, albsni, params)
+        albgrd, albgri = groundalb(smc1, fsno, albsnd, albsni, params)
 
     fabd, albd, ftdd, ftid = [], [], [], []
     fabi, albi, ftii = [], [], []
@@ -332,13 +359,13 @@ def radiation_twostream(
     # the cosz>0 block and keeps the zero-initialized ALBD/FABD/... arrays).
     def _day0(arr):
         return jnp.where(day, arr, 0.0)
-    fabd = jnp.stack([_day0(a) for a in fabd], 0)
-    albd = jnp.stack([_day0(a) for a in albd], 0)
-    ftdd = jnp.stack([_day0(a) for a in ftdd], 0)
-    ftid = jnp.stack([_day0(a) for a in ftid], 0)
-    fabi = jnp.stack([_day0(a) for a in fabi], 0)
-    albi = jnp.stack([_day0(a) for a in albi], 0)
-    ftii = jnp.stack([_day0(a) for a in ftii], 0)
+    fabd = tuple(_day0(a) for a in fabd) if _tile_bands else jnp.stack([_day0(a) for a in fabd], 0)
+    albd = tuple(_day0(a) for a in albd) if _tile_bands else jnp.stack([_day0(a) for a in albd], 0)
+    ftdd = tuple(_day0(a) for a in ftdd) if _tile_bands else jnp.stack([_day0(a) for a in ftdd], 0)
+    ftid = tuple(_day0(a) for a in ftid) if _tile_bands else jnp.stack([_day0(a) for a in ftid], 0)
+    fabi = tuple(_day0(a) for a in fabi) if _tile_bands else jnp.stack([_day0(a) for a in fabi], 0)
+    albi = tuple(_day0(a) for a in albi) if _tile_bands else jnp.stack([_day0(a) for a in albi], 0)
+    ftii = tuple(_day0(a) for a in ftii) if _tile_bands else jnp.stack([_day0(a) for a in ftii], 0)
 
     ext = gdir_vis / jnp.maximum(cosz, MPE) * jnp.sqrt(jnp.maximum(1.0 - rho[0] - tau[0], 0.0))
     fsun = (1.0 - jnp.exp(-jnp.minimum(ext * vai, 40.0))) / jnp.maximum(ext * vai, MPE)
@@ -406,6 +433,24 @@ def radiation_twostream(
         "vai": vai,
     }
     return rad, extras
+
+
+def radiation_twostream(
+    land_state: NoahMPLandState,
+    forcing: NoahMPForcing,
+    static: NoahMPStatic,
+    phen: NoahMPPhenology,
+    params: TwoStreamParams,
+    dt: float,
+):
+    """Completed RADIATION phase, retaining the WRF REAL/legacy interfaces."""
+    if native_real_enabled() and jax.default_backend() == "gpu":
+        from gpuwrf.kernels.phys_noahmp_radiation import radiation_native
+        result = radiation_native(*real_tree((land_state, forcing, static, phen, params)), dt)
+    else:
+        result = _radiation_twostream_impl(land_state, forcing, static, phen, params, dt)
+    # Export the completed radiation phase before the canopy and history consumers.
+    return lax.optimization_barrier(result)
 
 
 __all__ = [

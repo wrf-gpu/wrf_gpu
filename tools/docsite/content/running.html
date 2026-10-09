@@ -29,6 +29,11 @@ your build. Every flag:</p>
 <tr><td><code>--score</code></td><td>off</td><td>Also score against AEMET station observations (needs <code>GPUWRF_AEMET_ROOT</code>; not part of the README runnability gate).</td></tr>
 <tr><td><code>--feedback</code></td><td>off</td><td>Nested runs only: enable <strong>two-way</strong> nesting. Default off (one-way).</td></tr>
 <tr><td><code>--force-gpu-run</code></td><td>off</td><td>Nested runs only: bypass the GPU lock / free-VRAM preflight. Also available as <code>GPUWRF_FORCE_GPU_RUN=1</code>.</td></tr>
+<tr><td><code>--emit-initial-history</code></td><td>off, nested</td><td>Emit initialized lead zero before stepping; native single-root emits it automatically.</td></tr>
+<tr><td><code>--[no-]aot-prefetch</code></td><td>ON</td><td>Nested cached-executable loading at initialization; OFF loads on first dispatch.</td></tr>
+<tr><td><code>--checkpoint-dir / --checkpoint-interval-steps</code></td><td>unset / 0</td><td>Nested verified restart; positive cadence in root steps.</td></tr>
+<tr><td><code>--checkpoint-max-bytes / --checkpoint-max-generations</code></td><td>8 GiB / 2</td><td>Retained checkpoint limit; at least two generations.</td></tr>
+<tr><td><code>--checkpoint-reserve-bytes / --resume-checkpoint</code></td><td>10 GiB / unset</td><td>Filesystem reserve / authenticated generation; resume the same output stream.</td></tr>
 </tbody>
 </table>
 </div>
@@ -114,32 +119,14 @@ skill equivalence is untested, so it is off by default.</p>
 observations. It requires <code>GPUWRF_AEMET_ROOT</code> and is not part of the
 README runnability gate — leave it off for a plain forecast.</p>
 
-<h2 id="vram-preflight">VRAM preflight &amp; <code>--force-gpu-run</code></h2>
-
-<p>For nested runs (<code>--max-dom&nbsp;&gt;&nbsp;1</code>) the CLI runs a fast,
-CPU-side <strong>VRAM-headroom preflight before the (multi-minute) compile</strong>
-and <strong>fails closed with exit&nbsp;75</strong> instead of OOMing tens of minutes
-in. The default free-VRAM threshold is card-relative:
-<code>max(24&nbsp;GiB, GPUWRF_MIN_FREE_VRAM_FRACTION&nbsp;×&nbsp;total&nbsp;VRAM)</code>
-with <code>GPUWRF_MIN_FREE_VRAM_FRACTION=0.50</code>. Tune it with:</p>
-
-<div class="table-scroll">
-<table>
-<thead><tr><th>Knob</th><th>Effect</th></tr></thead>
-<tbody>
-<tr><td><code>GPUWRF_MIN_FREE_VRAM_FRACTION</code></td><td>Card-relative threshold (default <code>0.50</code>).</td></tr>
-<tr><td><code>GPUWRF_MIN_FREE_VRAM_GIB</code></td><td>Explicit GiB threshold override.</td></tr>
-<tr><td><code>--force-gpu-run</code> / <code>GPUWRF_FORCE_GPU_RUN=1</code></td><td>Deliberate operator override — bypass the lock/preflight entirely.</td></tr>
-</tbody>
-</table>
-</div>
-
-<div class="admon warn">
-  <div class="admon-title">Prefer thresholds over the bypass</div>
-  <p>The preflight exists to stop co-resident JAX/GPU jobs from shrinking the RRTMG
-  radiation-transient headroom at launch. Prefer the threshold knobs for tuning;
-  reserve <code>--force-gpu-run</code> for a deliberate operator override.</p>
-</div>
+<h2 id="vram-preflight">Memory admission and C-auto precedence</h2>
+<p>Nested preflight checks explicit <code>GPUWRF_MIN_FREE_VRAM_GIB</code> first, a verified
+geometry/settings C-auto plan second, and the conservative cold fallback
+<code>max(24 GiB, 0.50 × total VRAM)</code> last. A reserved pool needs outside-pool
+headroom; an unreserved pool also needs its budget. Explicit allocator settings win.
+Inspect measured host RSS and GPU allocation. Public runs use the CLI directly; the
+development lock proof is enforced where its infrastructure exists. Do not default to
+<code>--force-gpu-run</code> or guess a universal memory requirement.</p>
 
 <h2 id="examples">Example invocations</h2>
 

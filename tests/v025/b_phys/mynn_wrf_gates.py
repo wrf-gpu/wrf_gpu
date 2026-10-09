@@ -17,8 +17,10 @@ def inputs(root, period, domain, *, selected=True, dtype=None, source_forcing=Fa
             a=np.asarray(f[key])
             if selected and a.ndim:a=a[idx]
             return jnp.asarray(a,dtype=dtype)
-        state=P.MynnPBLColumnState(**{n:value('state_'+n) for n in P.MynnPBLColumnState.__slots__})
-        flux=SurfaceFluxes(**{n:value('flux_'+n) for n in SurfaceFluxes._fields})
+        state=P.MynnPBLColumnState(**{
+            n: None if n in ('exner', 'ni') and 'state_'+n not in f else value('state_'+n)
+            for n in P.MynnPBLColumnState.__slots__})
+        flux=SurfaceFluxes(**{n:value('flux_'+n) for n in SurfaceFluxes._fields if 'flux_'+n in f})
         if source_forcing:
             # Reproduce the oracle caller's REAL hfx/qfx round trip and the
             # pristine MYNN driver F:865-876. real_state's FLTV is a dry-flux

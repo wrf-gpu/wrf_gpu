@@ -1,0 +1,2503 @@
+{
+ "ncol": 186,
+ "nz": 44,
+ "categories": {
+  "clear": 27,
+  "ice": 18,
+  "liq_land": 30,
+  "liq_thick": 30,
+  "liq_thin_ocean": 27,
+  "mixed": 18,
+  "sgs_only": 18,
+  "snow": 18
+ },
+ "sanity": {
+  "solcon_range": [
+   1395.65673828125,
+   1396.358642578125
+  ],
+  "coszen_range": [
+   -0.9197813272476196,
+   0.8011194467544556
+  ],
+  "coszen_vs_hist_max_abs": 0.11050286889076233,
+  "o3_vmr_range": [
+   3.0965598085686e-08,
+   2.3039804091240512e-06
+  ],
+  "re_cloud_um_range_where_qc": [
+   2.509999990463257,
+   15.835139274597168
+  ],
+  "re_ice_um_range_where_qi": [
+   12.260878562927246,
+   112.18651580810547
+  ],
+  "re_snow_um_range_where_qs": [
+   29.16145896911621,
+   160.9600372314453
+  ],
+  "clear_cols_A_eq_B_eq_C_glw": true,
+  "cloudy_levels_with_cldfra0": 90,
+  "cldfra_levels_with_re_bg_liquid_fallback": 684,
+  "finite": true
+ },
+ "arms": {
+  "B_minus_A": {
+   "clear": {
+    "glw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "olr": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "gsw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddir": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddif": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hlw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "n_quantities_outside_frozen_bounds": 0,
+    "n_columns_outside_frozen_bounds": 0,
+    "n_columns": 27
+   },
+   "ice": {
+    "glw": {
+     "max_abs": 9.244171142578125,
+     "mean": 2.36795891655816,
+     "max_bound_ratio": 0.6301746241088555
+    },
+    "olr": {
+     "max_abs": 22.726150512695312,
+     "mean": -7.957737392849392,
+     "max_bound_ratio": 2.069529807500981
+    },
+    "lwupt": {
+     "max_abs": 22.726150512695312,
+     "mean": -7.957737392849392,
+     "max_bound_ratio": 2.069529807500981
+    },
+    "lwdnb": {
+     "max_abs": 9.244171142578125,
+     "mean": 2.36795891655816,
+     "max_bound_ratio": 0.6301746241088555
+    },
+    "lwupb": {
+     "max_abs": 0.1552734375,
+     "mean": 0.04691908094618055,
+     "max_bound_ratio": 0.008025713831879278
+    },
+    "gsw": {
+     "max_abs": 18.88747787475586,
+     "mean": -3.36649407280816,
+     "max_bound_ratio": 3.957401994686898
+    },
+    "swdnb": {
+     "max_abs": 20.529869079589844,
+     "mean": -3.8178189595540366,
+     "max_bound_ratio": 4.0248672383176896
+    },
+    "swupt": {
+     "max_abs": 15.734825134277344,
+     "mean": 2.877688937717014,
+     "max_bound_ratio": 2.222197799249521
+    },
+    "swupb": {
+     "max_abs": 2.1525001525878906,
+     "mean": -0.4513249662187364,
+     "max_bound_ratio": 1.2366829186044475
+    },
+    "swddir": {
+     "max_abs": 0.06574578143772669,
+     "mean": -0.005897634842154564,
+     "max_bound_ratio": 0.06552932197831926
+    },
+    "swddif": {
+     "max_abs": 20.529823303222656,
+     "mean": -3.8119214375813804,
+     "max_bound_ratio": 4.024860069931754
+    },
+    "hlw": {
+     "max_abs_K_per_day": 8.174897194840014,
+     "max_bound_ratio": 0.9007001264996378
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.5785116993356496,
+     "max_bound_ratio": 0.18121013446804626
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 7,
+    "n_columns": 18
+   },
+   "liq_land": {
+    "glw": {
+     "max_abs": 4.2647705078125,
+     "mean": 0.27753092447916666,
+     "max_bound_ratio": 0.2443999903113036
+    },
+    "olr": {
+     "max_abs": 21.45538330078125,
+     "mean": -4.020175170898438,
+     "max_bound_ratio": 2.025602949316157
+    },
+    "lwupt": {
+     "max_abs": 21.45538330078125,
+     "mean": -4.020175170898438,
+     "max_bound_ratio": 2.025602949316157
+    },
+    "lwdnb": {
+     "max_abs": 4.2647705078125,
+     "mean": 0.27753092447916666,
+     "max_bound_ratio": 0.2443999903113036
+    },
+    "lwupb": {
+     "max_abs": 0.127899169921875,
+     "mean": 0.006494140625,
+     "max_bound_ratio": 0.006394280879505795
+    },
+    "gsw": {
+     "max_abs": 66.793701171875,
+     "mean": -6.819402647018433,
+     "max_bound_ratio": 7.54451289766505
+    },
+    "swdnb": {
+     "max_abs": 79.25262451171875,
+     "mean": -8.128352133433024,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "swupt": {
+     "max_abs": 66.8817138671875,
+     "mean": 7.272619756062825,
+     "max_bound_ratio": 2.318956334071002
+    },
+    "swupb": {
+     "max_abs": 12.458904266357422,
+     "mean": -1.3089469790458679,
+     "max_bound_ratio": 4.783495829397359
+    },
+    "swddir": {
+     "max_abs": 2.443634033203125,
+     "mean": 0.0994714505241662,
+     "max_bound_ratio": 0.11302313852804839
+    },
+    "swddif": {
+     "max_abs": 79.24423217773438,
+     "mean": -8.227823416392008,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.439103954471648,
+     "max_bound_ratio": 0.7319378721987815
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.916113590821624,
+     "max_bound_ratio": 0.4113818117922878
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 14,
+    "n_columns": 30
+   },
+   "liq_thick": {
+    "glw": {
+     "max_abs": 0.2467041015625,
+     "mean": -0.04816080729166667,
+     "max_bound_ratio": 0.012107139498089874
+    },
+    "olr": {
+     "max_abs": 20.93780517578125,
+     "mean": -3.782794189453125,
+     "max_bound_ratio": 2.025602949316157
+    },
+    "lwupt": {
+     "max_abs": 20.93780517578125,
+     "mean": -3.782794189453125,
+     "max_bound_ratio": 2.025602949316157
+    },
+    "lwdnb": {
+     "max_abs": 0.2467041015625,
+     "mean": -0.04816080729166667,
+     "max_bound_ratio": 0.012107139498089874
+    },
+    "lwupb": {
+     "max_abs": 0.004974365234375,
+     "mean": -0.0010274251302083333,
+     "max_bound_ratio": 0.00022907126568690213
+    },
+    "gsw": {
+     "max_abs": 73.576171875,
+     "mean": -6.8610957304636635,
+     "max_bound_ratio": 7.54451289766505
+    },
+    "swdnb": {
+     "max_abs": 79.97412109375,
+     "mean": -9.248014545440673,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "swupt": {
+     "max_abs": 71.94427490234375,
+     "mean": 6.98884391784668,
+     "max_bound_ratio": 2.5559705032371522
+    },
+    "swupb": {
+     "max_abs": 12.591251373291016,
+     "mean": -2.3869205196698506,
+     "max_bound_ratio": 4.783495829397359
+    },
+    "swddir": {
+     "max_abs": 0.000316619873046875,
+     "mean": 1.0037034301969987e-06,
+     "max_bound_ratio": 0.00021086893467454521
+    },
+    "swddif": {
+     "max_abs": 79.97402954101562,
+     "mean": -9.24801607131958,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.439103954471648,
+     "max_bound_ratio": 0.7319378721987815
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.916113590821624,
+     "max_bound_ratio": 0.4113818117922878
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 21,
+    "n_columns": 30
+   },
+   "liq_thin_ocean": {
+    "glw": {
+     "max_abs": 5.3565673828125,
+     "mean": -1.2086825900607638,
+     "max_bound_ratio": 0.2843509301702065
+    },
+    "olr": {
+     "max_abs": 1.397796630859375,
+     "mean": 0.3292609320746528,
+     "max_bound_ratio": 0.1027133958087382
+    },
+    "lwupt": {
+     "max_abs": 1.397796630859375,
+     "mean": 0.3292609320746528,
+     "max_bound_ratio": 0.1027133958087382
+    },
+    "lwdnb": {
+     "max_abs": 5.3565673828125,
+     "mean": -1.2086825900607638,
+     "max_bound_ratio": 0.2843509301702065
+    },
+    "lwupb": {
+     "max_abs": 0.10711669921875,
+     "mean": -0.02416766131365741,
+     "max_bound_ratio": 0.0049776593854334965
+    },
+    "gsw": {
+     "max_abs": 106.12054443359375,
+     "mean": 27.788226940013743,
+     "max_bound_ratio": 4.268174575191389
+    },
+    "swdnb": {
+     "max_abs": 115.34844970703125,
+     "mean": 30.204600016276043,
+     "max_bound_ratio": 4.282332586058053
+    },
+    "swupt": {
+     "max_abs": 102.05027770996094,
+     "mean": -26.528782314724392,
+     "max_bound_ratio": 7.0849869994932
+    },
+    "swupb": {
+     "max_abs": 9.227859497070312,
+     "mean": 2.4163684844970703,
+     "max_bound_ratio": 2.976666180149031
+    },
+    "swddir": {
+     "max_abs": 28.146484375,
+     "mean": 2.9647290265118635,
+     "max_bound_ratio": 1.6178943992994474
+    },
+    "swddif": {
+     "max_abs": 111.60894775390625,
+     "mean": 27.23987042462384,
+     "max_bound_ratio": 6.802796757501327
+    },
+    "hlw": {
+     "max_abs_K_per_day": 1.9595850259065628,
+     "max_bound_ratio": 0.20128510809582628
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.6492750262841582,
+     "max_bound_ratio": 0.17965508808702682
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 12,
+    "n_columns": 27
+   },
+   "mixed": {
+    "glw": {
+     "max_abs": 3.2344970703125,
+     "mean": 0.19004991319444445,
+     "max_bound_ratio": 0.17766362807909372
+    },
+    "olr": {
+     "max_abs": 21.770843505859375,
+     "mean": -11.117743598090279,
+     "max_bound_ratio": 2.0283313351270866
+    },
+    "lwupt": {
+     "max_abs": 21.770843505859375,
+     "mean": -11.117743598090279,
+     "max_bound_ratio": 2.0283313351270866
+    },
+    "lwdnb": {
+     "max_abs": 3.2344970703125,
+     "mean": 0.19004991319444445,
+     "max_bound_ratio": 0.17766362807909372
+    },
+    "lwupb": {
+     "max_abs": 0.064697265625,
+     "mean": 0.003902859157986111,
+     "max_bound_ratio": 0.002980994542741099
+    },
+    "gsw": {
+     "max_abs": 9.696048736572266,
+     "mean": -0.6111436684926351,
+     "max_bound_ratio": 3.9244664354827097
+    },
+    "swdnb": {
+     "max_abs": 10.5391845703125,
+     "mean": -0.7880590756734213,
+     "max_bound_ratio": 4.339414531085315
+    },
+    "swupt": {
+     "max_abs": 7.673004150390625,
+     "mean": 0.5101937188042535,
+     "max_bound_ratio": 0.9592911246980473
+    },
+    "swupb": {
+     "max_abs": 1.5455809831619263,
+     "mean": -0.17691532108518812,
+     "max_bound_ratio": 1.3206446080845806
+    },
+    "swddir": {
+     "max_abs": 0.004828503064345568,
+     "mean": -0.0003137992621115397,
+     "max_bound_ratio": 0.004827238805596232
+    },
+    "swddif": {
+     "max_abs": 10.538810729980469,
+     "mean": -0.7877452108595107,
+     "max_bound_ratio": 4.339414531085315
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.439103954471648,
+     "max_bound_ratio": 0.7319378721987815
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.3939518568804488,
+     "max_bound_ratio": 0.1601162078784947
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 11,
+    "n_columns": 18
+   },
+   "sgs_only": {
+    "glw": {
+     "max_abs": 9.226776123046875,
+     "mean": 1.0390065511067708,
+     "max_bound_ratio": 0.6208815716193771
+    },
+    "olr": {
+     "max_abs": 19.718643188476562,
+     "mean": -6.690633138020833,
+     "max_bound_ratio": 1.855682286668429
+    },
+    "lwupt": {
+     "max_abs": 19.718643188476562,
+     "mean": -6.690633138020833,
+     "max_bound_ratio": 1.855682286668429
+    },
+    "lwdnb": {
+     "max_abs": 9.226776123046875,
+     "mean": 1.0390065511067708,
+     "max_bound_ratio": 0.6208815716193771
+    },
+    "lwupb": {
+     "max_abs": 0.210662841796875,
+     "mean": 0.022186279296875,
+     "max_bound_ratio": 0.009912674976914582
+    },
+    "gsw": {
+     "max_abs": 15.1220703125,
+     "mean": 0.518961164686415,
+     "max_bound_ratio": 1.8090578367343209
+    },
+    "swdnb": {
+     "max_abs": 16.43707275390625,
+     "mean": 0.46056175231933594,
+     "max_bound_ratio": 1.8827150804532489
+    },
+    "swupt": {
+     "max_abs": 13.982894897460938,
+     "mean": -0.42924859788682723,
+     "max_bound_ratio": 2.005502215119122
+    },
+    "swupb": {
+     "max_abs": 2.2521591186523438,
+     "mean": -0.05839962429470486,
+     "max_bound_ratio": 1.1268969168187013
+    },
+    "swddir": {
+     "max_abs": 5.569467544555664,
+     "mean": 0.23969045838440353,
+     "max_bound_ratio": 2.1539746203948957
+    },
+    "swddif": {
+     "max_abs": 13.36639404296875,
+     "mean": 0.22087118360731336,
+     "max_bound_ratio": 1.8809279299766082
+    },
+    "hlw": {
+     "max_abs_K_per_day": 5.084537900984287,
+     "max_bound_ratio": 0.576115638655142
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.8764051424805075,
+     "max_bound_ratio": 0.10055175941950968
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 9,
+    "n_columns": 18
+   },
+   "snow": {
+    "glw": {
+     "max_abs": 9.94384765625,
+     "mean": 2.219972398546007,
+     "max_bound_ratio": 0.6542009634125101
+    },
+    "olr": {
+     "max_abs": 23.583145141601562,
+     "mean": -12.786768595377604,
+     "max_bound_ratio": 2.2033311029799556
+    },
+    "lwupt": {
+     "max_abs": 23.583145141601562,
+     "mean": -12.786768595377604,
+     "max_bound_ratio": 2.2033311029799556
+    },
+    "lwdnb": {
+     "max_abs": 9.94384765625,
+     "mean": 2.219972398546007,
+     "max_bound_ratio": 0.6542009634125101
+    },
+    "lwupb": {
+     "max_abs": 0.219879150390625,
+     "mean": 0.04735989040798611,
+     "max_bound_ratio": 0.01138231187155381
+    },
+    "gsw": {
+     "max_abs": 20.68567657470703,
+     "mean": -3.1674796210394964,
+     "max_bound_ratio": 4.312438684869176
+    },
+    "swdnb": {
+     "max_abs": 22.48443603515625,
+     "mean": -3.4429132673475475,
+     "max_bound_ratio": 4.385582050048446
+    },
+    "swupt": {
+     "max_abs": 17.64110565185547,
+     "mean": 2.7115080091688366,
+     "max_bound_ratio": 2.481795509830105
+    },
+    "swupb": {
+     "max_abs": 1.798755168914795,
+     "mean": -0.27543320920732284,
+     "max_bound_ratio": 1.3522930092759686
+    },
+    "swddir": {
+     "max_abs": 0.8241407051682472,
+     "mean": -0.06034927941126189,
+     "max_bound_ratio": 0.7888560226453952
+    },
+    "swddif": {
+     "max_abs": 22.48438262939453,
+     "mean": -3.382563485039605,
+     "max_bound_ratio": 4.385573917448935
+    },
+    "hlw": {
+     "max_abs_K_per_day": 8.753874013200402,
+     "max_bound_ratio": 0.996366570696244
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.6005399695131928,
+     "max_bound_ratio": 0.1837326350284569
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 9,
+    "n_columns": 18
+   },
+   "ALL": {
+    "glw": {
+     "max_abs": 9.94384765625,
+     "mean": 0.4244755570606519,
+     "max_bound_ratio": 0.6542009634125101
+    },
+    "olr": {
+     "max_abs": 23.583145141601562,
+     "mean": -4.941671638078587,
+     "max_bound_ratio": 2.2033311029799556
+    },
+    "lwupt": {
+     "max_abs": 23.583145141601562,
+     "mean": -4.941671638078587,
+     "max_bound_ratio": 2.2033311029799556
+    },
+    "lwdnb": {
+     "max_abs": 9.94384765625,
+     "mean": 0.4244755570606519,
+     "max_bound_ratio": 0.6542009634125101
+    },
+    "lwupb": {
+     "max_abs": 0.219879150390625,
+     "mean": 0.0090220461609543,
+     "max_bound_ratio": 0.01138231187155381
+    },
+    "gsw": {
+     "max_abs": 106.12054443359375,
+     "mean": 1.186001959667411,
+     "max_bound_ratio": 7.54451289766505
+    },
+    "swdnb": {
+     "max_abs": 115.34844970703125,
+     "mean": 0.8475541299389254,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "swupt": {
+     "max_abs": 102.05027770996094,
+     "mean": -1.0019927691387873,
+     "max_bound_ratio": 7.0849869994932
+    },
+    "swupb": {
+     "max_abs": 12.591251373291016,
+     "mean": -0.338448344379343,
+     "max_bound_ratio": 4.783495829397359
+    },
+    "swddir": {
+     "max_abs": 28.146484375,
+     "mean": 0.4631623266144515,
+     "max_bound_ratio": 2.1539746203948957
+    },
+    "swddif": {
+     "max_abs": 111.60894775390625,
+     "mean": 0.38439169750418717,
+     "max_bound_ratio": 7.731366580801056
+    },
+    "hlw": {
+     "max_abs_K_per_day": 8.753874013200402,
+     "max_bound_ratio": 0.996366570696244
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.916113590821624,
+     "max_bound_ratio": 0.4113818117922878
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 83,
+    "n_columns": 186
+   }
+  },
+  "C_minus_A": {
+   "clear": {
+    "glw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "olr": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "gsw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddir": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddif": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hlw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "n_quantities_outside_frozen_bounds": 0,
+    "n_columns_outside_frozen_bounds": 0,
+    "n_columns": 27
+   },
+   "ice": {
+    "glw": {
+     "max_abs": 7.64349365234375,
+     "mean": 3.9493306477864585,
+     "max_bound_ratio": 0.5187410654112534
+    },
+    "olr": {
+     "max_abs": 16.481918334960938,
+     "mean": -10.710168626573351,
+     "max_bound_ratio": 1.553806508040073
+    },
+    "lwupt": {
+     "max_abs": 16.481918334960938,
+     "mean": -10.710168626573351,
+     "max_bound_ratio": 1.553806508040073
+    },
+    "lwdnb": {
+     "max_abs": 7.64349365234375,
+     "mean": 3.9493306477864585,
+     "max_bound_ratio": 0.5187410654112534
+    },
+    "lwupb": {
+     "max_abs": 0.187286376953125,
+     "mean": 0.0856136745876736,
+     "max_bound_ratio": 0.009712826676293501
+    },
+    "gsw": {
+     "max_abs": 11.525943756103516,
+     "mean": -3.0300896962483725,
+     "max_bound_ratio": 2.9758169076626153
+    },
+    "swdnb": {
+     "max_abs": 14.496829986572266,
+     "mean": -3.5342303382025824,
+     "max_bound_ratio": 3.1452272541995256
+    },
+    "swupt": {
+     "max_abs": 11.730598449707031,
+     "mean": 2.927432590060764,
+     "max_bound_ratio": 1.6566888946246958
+    },
+    "swupb": {
+     "max_abs": 3.0132217407226562,
+     "mean": -0.5041403240627713,
+     "max_bound_ratio": 1.7216687347522732
+    },
+    "swddir": {
+     "max_abs": 0.0636327660176903,
+     "mean": -0.005724004597812824,
+     "max_bound_ratio": 0.06342326338753546
+    },
+    "swddif": {
+     "max_abs": 14.496829986572266,
+     "mean": -3.528506596883138,
+     "max_bound_ratio": 3.1452272541995256
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.390436319634318,
+     "max_bound_ratio": 0.7000183273330245
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.1228070070501417,
+     "max_bound_ratio": 0.12945424861407265
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 11,
+    "n_columns": 18
+   },
+   "liq_land": {
+    "glw": {
+     "max_abs": 3.932708740234375,
+     "mean": 0.0242462158203125,
+     "max_bound_ratio": 0.2253706210568077
+    },
+    "olr": {
+     "max_abs": 15.57421875,
+     "mean": -3.1458826700846356,
+     "max_bound_ratio": 1.465570567284845
+    },
+    "lwupt": {
+     "max_abs": 15.57421875,
+     "mean": -3.1458826700846356,
+     "max_bound_ratio": 1.465570567284845
+    },
+    "lwdnb": {
+     "max_abs": 3.932708740234375,
+     "mean": 0.0242462158203125,
+     "max_bound_ratio": 0.2253706210568077
+    },
+    "lwupb": {
+     "max_abs": 0.117889404296875,
+     "mean": 0.0010630289713541667,
+     "max_bound_ratio": 0.005893845630525146
+    },
+    "gsw": {
+     "max_abs": 59.59991455078125,
+     "mean": 5.785521602630615,
+     "max_bound_ratio": 4.790185411334062
+    },
+    "swdnb": {
+     "max_abs": 71.52825927734375,
+     "mean": 7.187919330596924,
+     "max_bound_ratio": 4.908822524841095
+    },
+    "swupt": {
+     "max_abs": 56.68817138671875,
+     "mean": -5.336507670084635,
+     "max_bound_ratio": 3.4287983115518377
+    },
+    "swupb": {
+     "max_abs": 12.981674194335938,
+     "mean": 1.4023962100346883,
+     "max_bound_ratio": 2.9452820531557102
+    },
+    "swddir": {
+     "max_abs": 3.9317550659179688,
+     "mean": 0.3276862702254819,
+     "max_bound_ratio": 0.5875159236249706
+    },
+    "swddif": {
+     "max_abs": 70.8623046875,
+     "mean": 6.860232512156169,
+     "max_bound_ratio": 5.3308471523267595
+    },
+    "hlw": {
+     "max_abs_K_per_day": 4.39269645139575,
+     "max_bound_ratio": 0.4341103624433655
+    },
+    "hsw": {
+     "max_abs_K_per_day": 2.483282145112753,
+     "max_bound_ratio": 0.25161834208431255
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 16,
+    "n_columns": 30
+   },
+   "liq_thick": {
+    "glw": {
+     "max_abs": 0.11187744140625,
+     "mean": -0.0306396484375,
+     "max_bound_ratio": 0.005537653513732543
+    },
+    "olr": {
+     "max_abs": 17.0657958984375,
+     "mean": -3.4568359375,
+     "max_bound_ratio": 1.6033879157837996
+    },
+    "lwupt": {
+     "max_abs": 17.0657958984375,
+     "mean": -3.4568359375,
+     "max_bound_ratio": 1.6033879157837996
+    },
+    "lwdnb": {
+     "max_abs": 0.11187744140625,
+     "mean": -0.0306396484375,
+     "max_bound_ratio": 0.005537653513732543
+    },
+    "lwupb": {
+     "max_abs": 0.002197265625,
+     "mean": -0.0006174723307291667,
+     "max_bound_ratio": 0.00010555181278274965
+    },
+    "gsw": {
+     "max_abs": 32.6951904296875,
+     "mean": -5.165132808685303,
+     "max_bound_ratio": 4.790185411334062
+    },
+    "swdnb": {
+     "max_abs": 39.600196838378906,
+     "mean": -6.099991639455159,
+     "max_bound_ratio": 4.908822524841095
+    },
+    "swupt": {
+     "max_abs": 32.38165283203125,
+     "mean": 4.973904291788737,
+     "max_bound_ratio": 0.9087488796745885
+    },
+    "swupb": {
+     "max_abs": 6.905010223388672,
+     "mean": -0.9348611116409302,
+     "max_bound_ratio": 2.9452820531557102
+    },
+    "swddir": {
+     "max_abs": 0.000247955322265625,
+     "mean": -8.399126117092371e-06,
+     "max_bound_ratio": 6.234918391872583e-05
+    },
+    "swddif": {
+     "max_abs": 39.600196838378906,
+     "mean": -6.099983501434326,
+     "max_bound_ratio": 4.908822524841095
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.119399517774582,
+     "max_bound_ratio": 0.6334072628164565
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.75426197424531,
+     "max_bound_ratio": 0.3916669092485635
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 10,
+    "n_columns": 30
+   },
+   "liq_thin_ocean": {
+    "glw": {
+     "max_abs": 2.215606689453125,
+     "mean": -0.4005296495225694,
+     "max_bound_ratio": 0.11761446800031428
+    },
+    "olr": {
+     "max_abs": 0.42279052734375,
+     "mean": 0.03866407606336805,
+     "max_bound_ratio": 0.02954764210711756
+    },
+    "lwupt": {
+     "max_abs": 0.42279052734375,
+     "mean": 0.03866407606336805,
+     "max_bound_ratio": 0.02954764210711756
+    },
+    "lwdnb": {
+     "max_abs": 2.215606689453125,
+     "mean": -0.4005296495225694,
+     "max_bound_ratio": 0.11761446800031428
+    },
+    "lwupb": {
+     "max_abs": 0.044281005859375,
+     "mean": -0.008018211082175927,
+     "max_bound_ratio": 0.0020577161732945877
+    },
+    "gsw": {
+     "max_abs": 81.74603271484375,
+     "mean": 15.883769282588252,
+     "max_bound_ratio": 2.633680223039292
+    },
+    "swdnb": {
+     "max_abs": 88.85443115234375,
+     "mean": 17.264971980342157,
+     "max_bound_ratio": 2.6404873849654162
+    },
+    "swupt": {
+     "max_abs": 78.89703369140625,
+     "mean": -15.10145738389757,
+     "max_bound_ratio": 5.477539802399076
+    },
+    "swupb": {
+     "max_abs": 7.108348846435547,
+     "mean": 1.381199872052228,
+     "max_bound_ratio": 1.967947796569429
+    },
+    "swddir": {
+     "max_abs": 8.803314208984375,
+     "mean": 0.8604787190755209,
+     "max_bound_ratio": 0.5060252841608772
+    },
+    "swddif": {
+     "max_abs": 80.05111694335938,
+     "mean": 16.4044926961263,
+     "max_bound_ratio": 4.927800048763062
+    },
+    "hlw": {
+     "max_abs_K_per_day": 0.8134536445140839,
+     "max_bound_ratio": 0.08355651967243014
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.9861210593953729,
+     "max_bound_ratio": 0.1074179036041647
+    },
+    "n_quantities_outside_frozen_bounds": 5,
+    "n_columns_outside_frozen_bounds": 12,
+    "n_columns": 27
+   },
+   "mixed": {
+    "glw": {
+     "max_abs": 3.402679443359375,
+     "mean": 0.22651163736979166,
+     "max_bound_ratio": 0.1869015064647967
+    },
+    "olr": {
+     "max_abs": 17.667388916015625,
+     "mean": -9.16796875,
+     "max_bound_ratio": 1.6454720739790942
+    },
+    "lwupt": {
+     "max_abs": 17.667388916015625,
+     "mean": -9.16796875,
+     "max_bound_ratio": 1.6454720739790942
+    },
+    "lwdnb": {
+     "max_abs": 3.402679443359375,
+     "mean": 0.22651163736979166,
+     "max_bound_ratio": 0.1869015064647967
+    },
+    "lwupb": {
+     "max_abs": 0.06805419921875,
+     "mean": 0.0045013427734375,
+     "max_bound_ratio": 0.0031356687878833257
+    },
+    "gsw": {
+     "max_abs": 11.362968444824219,
+     "mean": -1.0374837981330023,
+     "max_bound_ratio": 2.544282808031
+    },
+    "swdnb": {
+     "max_abs": 12.351058959960938,
+     "mean": -1.1665741072760687,
+     "max_bound_ratio": 2.8132990858702893
+    },
+    "swupt": {
+     "max_abs": 8.112411499023438,
+     "mean": 1.0377926296657987,
+     "max_bound_ratio": 1.1576840570233242
+    },
+    "swupb": {
+     "max_abs": 0.9963812828063965,
+     "mean": -0.12908979256947836,
+     "max_bound_ratio": 0.8513727737790143
+    },
+    "swddir": {
+     "max_abs": 0.004402306163683534,
+     "mean": -0.00029101203127544924,
+     "max_bound_ratio": 0.004401153497109541
+    },
+    "swddif": {
+     "max_abs": 12.350685119628906,
+     "mean": -1.166283130645752,
+     "max_bound_ratio": 2.8132990858702893
+    },
+    "hlw": {
+     "max_abs_K_per_day": 5.511313397437334,
+     "max_bound_ratio": 0.6158688697493488
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.3444474985590205,
+     "max_bound_ratio": 0.1544298923226447
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 9,
+    "n_columns": 18
+   },
+   "sgs_only": {
+    "glw": {
+     "max_abs": 6.061676025390625,
+     "mean": 0.9868655734592013,
+     "max_bound_ratio": 0.4078979360831415
+    },
+    "olr": {
+     "max_abs": 15.708648681640625,
+     "mean": -5.176790873209636,
+     "max_bound_ratio": 1.3940554628098696
+    },
+    "lwupt": {
+     "max_abs": 15.708648681640625,
+     "mean": -5.176790873209636,
+     "max_bound_ratio": 1.3940554628098696
+    },
+    "lwdnb": {
+     "max_abs": 6.061676025390625,
+     "mean": 0.9868655734592013,
+     "max_bound_ratio": 0.4078979360831415
+    },
+    "lwupb": {
+     "max_abs": 0.138397216796875,
+     "mean": 0.020974053276909724,
+     "max_bound_ratio": 0.00651223830512931
+    },
+    "gsw": {
+     "max_abs": 17.34033203125,
+     "mean": 0.5852781931559244,
+     "max_bound_ratio": 1.011971284379213
+    },
+    "swdnb": {
+     "max_abs": 22.1414794921875,
+     "mean": 0.8558025360107422,
+     "max_bound_ratio": 1.0531738452082644
+    },
+    "swupt": {
+     "max_abs": 17.266937255859375,
+     "mean": -0.44982295566134983,
+     "max_bound_ratio": 1.4899625815882311
+    },
+    "swupb": {
+     "max_abs": 4.801177978515625,
+     "mean": 0.27052439583672416,
+     "max_bound_ratio": 0.6303734116537412
+    },
+    "swddir": {
+     "max_abs": 5.927337646484375,
+     "mean": 0.007509486243280763,
+     "max_bound_ratio": 1.618337374180343
+    },
+    "swddif": {
+     "max_abs": 22.1370849609375,
+     "mean": 0.8482933044433594,
+     "max_bound_ratio": 3.0127314305270247
+    },
+    "hlw": {
+     "max_abs_K_per_day": 4.689264949411154,
+     "max_bound_ratio": 0.46238579494710036
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.0197723051533103,
+     "max_bound_ratio": 0.1170005680252328
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 8,
+    "n_columns": 18
+   },
+   "snow": {
+    "glw": {
+     "max_abs": 12.310150146484375,
+     "mean": 2.4876878526475696,
+     "max_bound_ratio": 0.8098788682186807
+    },
+    "olr": {
+     "max_abs": 18.31298828125,
+     "mean": -11.619571261935764,
+     "max_bound_ratio": 1.7109497662975997
+    },
+    "lwupt": {
+     "max_abs": 18.31298828125,
+     "mean": -11.619571261935764,
+     "max_bound_ratio": 1.7109497662975997
+    },
+    "lwdnb": {
+     "max_abs": 12.310150146484375,
+     "mean": 2.4876878526475696,
+     "max_bound_ratio": 0.8098788682186807
+    },
+    "lwupb": {
+     "max_abs": 0.272186279296875,
+     "mean": 0.053443060980902776,
+     "max_bound_ratio": 0.014090054071115672
+    },
+    "gsw": {
+     "max_abs": 14.921058654785156,
+     "mean": -2.839739269680447,
+     "max_bound_ratio": 3.104701788876221
+    },
+    "swdnb": {
+     "max_abs": 16.218544006347656,
+     "mean": -3.08667352464464,
+     "max_bound_ratio": 3.1572578156833417
+    },
+    "swupt": {
+     "max_abs": 12.995491027832031,
+     "mean": 2.693262736002604,
+     "max_bound_ratio": 1.8282386556377046
+    },
+    "swupb": {
+     "max_abs": 1.2974834442138672,
+     "mean": -0.24693391058180067,
+     "max_bound_ratio": 0.9748531649408978
+    },
+    "swddir": {
+     "max_abs": 0.7900892123579979,
+     "mean": -0.05805045233277154,
+     "max_bound_ratio": 0.7562624072409142
+    },
+    "swddif": {
+     "max_abs": 16.218490600585938,
+     "mean": -3.0286227332221136,
+     "max_bound_ratio": 3.157249060417686
+    },
+    "hlw": {
+     "max_abs_K_per_day": 7.019874919205904,
+     "max_bound_ratio": 0.7990026689233365
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.5201953414361924,
+     "max_bound_ratio": 0.17446052106735543
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 10,
+    "n_columns": 18
+   },
+   "ALL": {
+    "glw": {
+     "max_abs": 12.310150146484375,
+     "mean": 0.6811882757371471,
+     "max_bound_ratio": 0.8098788682186807
+    },
+    "olr": {
+     "max_abs": 18.31298828125,
+     "mean": -4.6084872009933635,
+     "max_bound_ratio": 1.7109497662975997
+    },
+    "lwupt": {
+     "max_abs": 18.31298828125,
+     "mean": -4.6084872009933635,
+     "max_bound_ratio": 1.7109497662975997
+    },
+    "lwdnb": {
+     "max_abs": 12.310150146484375,
+     "mean": 0.6811882757371471,
+     "max_bound_ratio": 0.8098788682186807
+    },
+    "lwupb": {
+     "max_abs": 0.272186279296875,
+     "mean": 0.014830394457745295,
+     "max_bound_ratio": 0.014090054071115672
+    },
+    "gsw": {
+     "max_abs": 81.74603271484375,
+     "mean": 1.793961355763097,
+     "max_bound_ratio": 4.790185411334062
+    },
+    "swdnb": {
+     "max_abs": 88.85443115234375,
+     "mean": 2.010870518222932,
+     "max_bound_ratio": 4.908822524841095
+    },
+    "swupt": {
+     "max_abs": 78.89703369140625,
+     "mean": -1.6497929070585517,
+     "max_bound_ratio": 5.477539802399076
+    },
+    "swupb": {
+     "max_abs": 12.981674194335938,
+     "mean": 0.2169082587765109,
+     "max_bound_ratio": 2.9452820531557102
+    },
+    "swddir": {
+     "max_abs": 8.803314208984375,
+     "mean": 0.17228631107035264,
+     "max_bound_ratio": 1.618337374180343
+    },
+    "swddif": {
+     "max_abs": 80.05111694335938,
+     "mean": 1.8385840231372463,
+     "max_bound_ratio": 5.3308471523267595
+    },
+    "hlw": {
+     "max_abs_K_per_day": 7.019874919205904,
+     "max_bound_ratio": 0.7990026689233365
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.75426197424531,
+     "max_bound_ratio": 0.3916669092485635
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 76,
+    "n_columns": 186
+   }
+  },
+  "D_minus_A": {
+   "clear": {
+    "glw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "olr": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "gsw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddir": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddif": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hlw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "n_quantities_outside_frozen_bounds": 0,
+    "n_columns_outside_frozen_bounds": 0,
+    "n_columns": 27
+   },
+   "ice": {
+    "glw": {
+     "max_abs": 9.244110107421875,
+     "mean": 3.9663153754340277,
+     "max_bound_ratio": 0.6301704633457049
+    },
+    "olr": {
+     "max_abs": 17.5382080078125,
+     "mean": -10.706899854871962,
+     "max_bound_ratio": 1.6237011110867032
+    },
+    "lwupt": {
+     "max_abs": 17.5382080078125,
+     "mean": -10.706899854871962,
+     "max_bound_ratio": 1.6237011110867032
+    },
+    "lwdnb": {
+     "max_abs": 9.244110107421875,
+     "mean": 3.9663153754340277,
+     "max_bound_ratio": 0.6301704633457049
+    },
+    "lwupb": {
+     "max_abs": 0.176971435546875,
+     "mean": 0.08526780870225695,
+     "max_bound_ratio": 0.008727928173621202
+    },
+    "gsw": {
+     "max_abs": 11.531761169433594,
+     "mean": -3.041172875298394,
+     "max_bound_ratio": 2.9758169076626153
+    },
+    "swdnb": {
+     "max_abs": 14.496829986572266,
+     "mean": -3.544315973917643,
+     "max_bound_ratio": 3.1452272541995256
+    },
+    "swupt": {
+     "max_abs": 11.729454040527344,
+     "mean": 2.9385545518663196,
+     "max_bound_ratio": 1.6565272720112354
+    },
+    "swupb": {
+     "max_abs": 3.0132217407226562,
+     "mean": -0.5031429926554362,
+     "max_bound_ratio": 1.7216687347522732
+    },
+    "swddir": {
+     "max_abs": 0.06490708433557302,
+     "mean": -0.005838468941525918,
+     "max_bound_ratio": 0.06469338617761138
+    },
+    "swddif": {
+     "max_abs": 14.496829986572266,
+     "mean": -3.53847779168023,
+     "max_bound_ratio": 3.1452272541995256
+    },
+    "hlw": {
+     "max_abs_K_per_day": 6.390436319634318,
+     "max_bound_ratio": 0.6963678081358244
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.1228070070501417,
+     "max_bound_ratio": 0.12945424861407265
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 11,
+    "n_columns": 18
+   },
+   "liq_land": {
+    "glw": {
+     "max_abs": 33.74420166015625,
+     "mean": 6.933704630533854,
+     "max_bound_ratio": 2.01893865355582
+    },
+    "olr": {
+     "max_abs": 16.021484375,
+     "mean": -4.343472290039062,
+     "max_bound_ratio": 1.5076593131975902
+    },
+    "lwupt": {
+     "max_abs": 16.021484375,
+     "mean": -4.343472290039062,
+     "max_bound_ratio": 1.5076593131975902
+    },
+    "lwdnb": {
+     "max_abs": 33.74420166015625,
+     "mean": 6.933704630533854,
+     "max_bound_ratio": 2.01893865355582
+    },
+    "lwupb": {
+     "max_abs": 0.787139892578125,
+     "mean": 0.145819091796875,
+     "max_bound_ratio": 0.03673798642704244
+    },
+    "gsw": {
+     "max_abs": 105.51480102539062,
+     "mean": -6.1756589889526365,
+     "max_bound_ratio": 9.07392582765973
+    },
+    "swdnb": {
+     "max_abs": 127.30989074707031,
+     "mean": -7.591548315684,
+     "max_bound_ratio": 9.476083719319801
+    },
+    "swupt": {
+     "max_abs": 96.01971435546875,
+     "mean": 6.050891749064127,
+     "max_bound_ratio": 9.284294318666
+    },
+    "swupb": {
+     "max_abs": 21.79507827758789,
+     "mean": -1.415889032681783,
+     "max_bound_ratio": 5.998173175933729
+    },
+    "swddir": {
+     "max_abs": 292.93222427368164,
+     "mean": -30.248592578735703,
+     "max_bound_ratio": 16.020558149067686
+    },
+    "swddif": {
+     "max_abs": 329.2625427246094,
+     "mean": 22.65704418818156,
+     "max_bound_ratio": 22.82220739419403
+    },
+    "hlw": {
+     "max_abs_K_per_day": 25.882493262179196,
+     "max_bound_ratio": 2.532974211316364
+    },
+    "hsw": {
+     "max_abs_K_per_day": 9.655736200511456,
+     "max_bound_ratio": 1.0174687297713014
+    },
+    "n_quantities_outside_frozen_bounds": 12,
+    "n_columns_outside_frozen_bounds": 22,
+    "n_columns": 30
+   },
+   "liq_thick": {
+    "glw": {
+     "max_abs": 10.65985107421875,
+     "mean": 0.9705810546875,
+     "max_bound_ratio": 0.5535524895258659
+    },
+    "olr": {
+     "max_abs": 16.531204223632812,
+     "mean": -3.608287556966146,
+     "max_bound_ratio": 1.5312728482175881
+    },
+    "lwupt": {
+     "max_abs": 16.531204223632812,
+     "mean": -3.608287556966146,
+     "max_bound_ratio": 1.5312728482175881
+    },
+    "lwdnb": {
+     "max_abs": 10.65985107421875,
+     "mean": 0.9705810546875,
+     "max_bound_ratio": 0.5535524895258659
+    },
+    "lwupb": {
+     "max_abs": 0.178802490234375,
+     "mean": 0.0192840576171875,
+     "max_bound_ratio": 0.008590436742847717
+    },
+    "gsw": {
+     "max_abs": 59.20649719238281,
+     "mean": -9.241360600789388,
+     "max_bound_ratio": 4.759829037154438
+    },
+    "swdnb": {
+     "max_abs": 71.83889770507812,
+     "mean": -10.943093967437743,
+     "max_bound_ratio": 4.8777150310045565
+    },
+    "swupt": {
+     "max_abs": 55.0748291015625,
+     "mean": 8.757881673177083,
+     "max_bound_ratio": 7.709808569665606
+    },
+    "swupb": {
+     "max_abs": 12.632389068603516,
+     "mean": -1.7017348368962606,
+     "max_bound_ratio": 3.4605966753555046
+    },
+    "swddir": {
+     "max_abs": 69.29824066161599,
+     "mean": -8.294594611158855,
+     "max_bound_ratio": 15.520628435269774
+    },
+    "swddif": {
+     "max_abs": 40.40325927734375,
+     "mean": -2.6484988848368327,
+     "max_bound_ratio": 4.8777150310045565
+    },
+    "hlw": {
+     "max_abs_K_per_day": 16.723993979394436,
+     "max_bound_ratio": 1.527267852773247
+    },
+    "hsw": {
+     "max_abs_K_per_day": 7.871494721621275,
+     "max_bound_ratio": 0.7975785012902081
+    },
+    "n_quantities_outside_frozen_bounds": 9,
+    "n_columns_outside_frozen_bounds": 14,
+    "n_columns": 30
+   },
+   "liq_thin_ocean": {
+    "glw": {
+     "max_abs": 32.1826171875,
+     "mean": 4.079466643156828,
+     "max_bound_ratio": 1.8144093065901117
+    },
+    "olr": {
+     "max_abs": 5.82855224609375,
+     "mean": -0.6513847068504051,
+     "max_bound_ratio": 0.397561136551499
+    },
+    "lwupt": {
+     "max_abs": 5.82855224609375,
+     "mean": -0.6513847068504051,
+     "max_bound_ratio": 0.397561136551499
+    },
+    "lwdnb": {
+     "max_abs": 32.1826171875,
+     "mean": 4.079466643156828,
+     "max_bound_ratio": 1.8144093065901117
+    },
+    "lwupb": {
+     "max_abs": 0.64361572265625,
+     "mean": 0.08159270109953703,
+     "max_bound_ratio": 0.029825524921814058
+    },
+    "gsw": {
+     "max_abs": 81.74603271484375,
+     "mean": 4.076255233199508,
+     "max_bound_ratio": 2.7470523383648167
+    },
+    "swdnb": {
+     "max_abs": 88.85443115234375,
+     "mean": 4.430720293963397,
+     "max_bound_ratio": 2.755511980512718
+    },
+    "swupt": {
+     "max_abs": 78.89703369140625,
+     "mean": -4.927570484302662,
+     "max_bound_ratio": 5.477539802399076
+    },
+    "swupb": {
+     "max_abs": 7.108348846435547,
+     "mean": 0.35445935637862597,
+     "max_bound_ratio": 1.967947796569429
+    },
+    "swddir": {
+     "max_abs": 260.4250793457031,
+     "mean": -39.88226318359375,
+     "max_bound_ratio": 13.935101126235924
+    },
+    "swddif": {
+     "max_abs": 206.3887939453125,
+     "mean": 44.31298347755715,
+     "max_bound_ratio": 21.50752170328103
+    },
+    "hlw": {
+     "max_abs_K_per_day": 7.6733943074941635,
+     "max_bound_ratio": 0.8384173897063043
+    },
+    "hsw": {
+     "max_abs_K_per_day": 2.0896386355161667,
+     "max_bound_ratio": 0.23774162072460597
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 12,
+    "n_columns": 27
+   },
+   "mixed": {
+    "glw": {
+     "max_abs": 11.69256591796875,
+     "mean": 1.8550008138020833,
+     "max_bound_ratio": 0.6355150263089474
+    },
+    "olr": {
+     "max_abs": 17.769577026367188,
+     "mean": -9.5531005859375,
+     "max_bound_ratio": 1.6549894782019539
+    },
+    "lwupt": {
+     "max_abs": 17.769577026367188,
+     "mean": -9.5531005859375,
+     "max_bound_ratio": 1.6549894782019539
+    },
+    "lwdnb": {
+     "max_abs": 11.69256591796875,
+     "mean": 1.8550008138020833,
+     "max_bound_ratio": 0.6355150263089474
+    },
+    "lwupb": {
+     "max_abs": 0.293609619140625,
+     "mean": 0.040374755859375,
+     "max_bound_ratio": 0.014933808350856486
+    },
+    "gsw": {
+     "max_abs": 17.780155181884766,
+     "mean": -1.722924656338162,
+     "max_bound_ratio": 3.859810605185439
+    },
+    "swdnb": {
+     "max_abs": 19.32625961303711,
+     "mean": -1.9724424680074055,
+     "max_bound_ratio": 3.9280286971561806
+    },
+    "swupt": {
+     "max_abs": 13.898788452148438,
+     "mean": 1.6780912611219618,
+     "max_bound_ratio": 1.9834306734722562
+    },
+    "swupb": {
+     "max_abs": 1.5461010932922363,
+     "mean": -0.24951746728685167,
+     "max_bound_ratio": 1.1769888216319666
+    },
+    "swddir": {
+     "max_abs": 0.00523802032653031,
+     "mean": -0.0003375282258761207,
+     "max_bound_ratio": 0.0052366488428761074
+    },
+    "swddif": {
+     "max_abs": 19.325885772705078,
+     "mean": -1.9721050792270236,
+     "max_bound_ratio": 3.9279676375780905
+    },
+    "hlw": {
+     "max_abs_K_per_day": 10.588776553049684,
+     "max_bound_ratio": 1.1132613762955388
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.3481800648150966,
+     "max_bound_ratio": 0.15485863335242145
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 12,
+    "n_columns": 18
+   },
+   "sgs_only": {
+    "glw": {
+     "max_abs": 43.67462158203125,
+     "mean": 7.648156060112847,
+     "max_bound_ratio": 2.455768016724474
+    },
+    "olr": {
+     "max_abs": 17.057205200195312,
+     "mean": -6.77762688530816,
+     "max_bound_ratio": 1.5314487953199416
+    },
+    "lwupt": {
+     "max_abs": 17.057205200195312,
+     "mean": -6.77762688530816,
+     "max_bound_ratio": 1.5314487953199416
+    },
+    "lwdnb": {
+     "max_abs": 43.67462158203125,
+     "mean": 7.648156060112847,
+     "max_bound_ratio": 2.455768016724474
+    },
+    "lwupb": {
+     "max_abs": 1.024566650390625,
+     "mean": 0.1642337375217014,
+     "max_bound_ratio": 0.045044310745770935
+    },
+    "gsw": {
+     "max_abs": 186.83270263671875,
+     "mean": -8.985914654201931,
+     "max_bound_ratio": 7.5160510584300635
+    },
+    "swdnb": {
+     "max_abs": 232.70938110351562,
+     "mean": -10.76274914211697,
+     "max_bound_ratio": 7.576135962721706
+    },
+    "swupt": {
+     "max_abs": 179.22653198242188,
+     "mean": 8.772449705335829,
+     "max_bound_ratio": 9.126125606046255
+    },
+    "swupb": {
+     "max_abs": 45.87666320800781,
+     "mean": -1.7768325805664062,
+     "max_bound_ratio": 6.689240962568748
+    },
+    "swddir": {
+     "max_abs": 425.83943939208984,
+     "mean": -45.306279577273045,
+     "max_bound_ratio": 17.313793890276912
+    },
+    "swddif": {
+     "max_abs": 193.13006591796875,
+     "mean": 34.543530993991425,
+     "max_bound_ratio": 27.122272713051846
+    },
+    "hlw": {
+     "max_abs_K_per_day": 17.240881640464067,
+     "max_bound_ratio": 1.700040165978659
+    },
+    "hsw": {
+     "max_abs_K_per_day": 4.000953328795731,
+     "max_bound_ratio": 0.4364988366778464
+    },
+    "n_quantities_outside_frozen_bounds": 11,
+    "n_columns_outside_frozen_bounds": 12,
+    "n_columns": 18
+   },
+   "snow": {
+    "glw": {
+     "max_abs": 18.29791259765625,
+     "mean": 4.00984361436632,
+     "max_bound_ratio": 0.9732389559512249
+    },
+    "olr": {
+     "max_abs": 19.485397338867188,
+     "mean": -11.79665798611111,
+     "max_bound_ratio": 1.8118019853000848
+    },
+    "lwupt": {
+     "max_abs": 19.485397338867188,
+     "mean": -11.79665798611111,
+     "max_bound_ratio": 1.8118019853000848
+    },
+    "lwdnb": {
+     "max_abs": 18.29791259765625,
+     "mean": 4.00984361436632,
+     "max_bound_ratio": 0.9732389559512249
+    },
+    "lwupb": {
+     "max_abs": 0.365936279296875,
+     "mean": 0.083465576171875,
+     "max_bound_ratio": 0.016710968874548787
+    },
+    "gsw": {
+     "max_abs": 14.942123413085938,
+     "mean": -3.418601777818468,
+     "max_bound_ratio": 3.109084842002127
+    },
+    "swdnb": {
+     "max_abs": 16.241439819335938,
+     "mean": -3.715871387057834,
+     "max_bound_ratio": 3.1617149349213807
+    },
+    "swupt": {
+     "max_abs": 15.801902770996094,
+     "mean": 3.2660789489746094,
+     "max_bound_ratio": 2.2899018200643515
+    },
+    "swupb": {
+     "max_abs": 1.2993154525756836,
+     "mean": -0.2972697416941325,
+     "max_bound_ratio": 0.9762296288624063
+    },
+    "swddir": {
+     "max_abs": 0.7974385917186737,
+     "mean": -0.058825911475562015,
+     "max_bound_ratio": 0.7632971309659016
+    },
+    "swddif": {
+     "max_abs": 16.24138641357422,
+     "mean": -3.657044940524631,
+     "max_bound_ratio": 3.1617061819726437
+    },
+    "hlw": {
+     "max_abs_K_per_day": 8.444026065990329,
+     "max_bound_ratio": 0.9051508447912723
+    },
+    "hsw": {
+     "max_abs_K_per_day": 1.5208635886665434,
+     "max_bound_ratio": 0.17453721039591152
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 10,
+    "n_columns": 18
+   },
+   "ALL": {
+    "glw": {
+     "max_abs": 43.67462158203125,
+     "mean": 3.5586121261760755,
+     "max_bound_ratio": 2.455768016724474
+    },
+    "olr": {
+     "max_abs": 19.485397338867188,
+     "mean": -5.1352543984690024,
+     "max_bound_ratio": 1.8118019853000848
+    },
+    "lwupt": {
+     "max_abs": 19.485397338867188,
+     "mean": -5.1352543984690024,
+     "max_bound_ratio": 1.8118019853000848
+    },
+    "lwdnb": {
+     "max_abs": 43.67462158203125,
+     "mean": 3.5586121261760755,
+     "max_bound_ratio": 2.455768016724474
+    },
+    "lwupb": {
+     "max_abs": 1.024566650390625,
+     "mean": 0.07460350118657594,
+     "max_bound_ratio": 0.045044310745770935
+    },
+    "gsw": {
+     "max_abs": 186.83270263671875,
+     "mean": -3.556380364202684,
+     "max_bound_ratio": 9.07392582765973
+    },
+    "swdnb": {
+     "max_abs": 232.70938110351562,
+     "mean": -4.2813260324539675,
+     "max_bound_ratio": 9.476083719319801
+    },
+    "swupt": {
+     "max_abs": 179.22653198242188,
+     "mean": 3.2850104301206526,
+     "max_bound_ratio": 9.284294318666
+    },
+    "swupb": {
+     "max_abs": 45.87666320800781,
+     "mean": -0.7249464706708026,
+     "max_bound_ratio": 6.689240962568748
+    },
+    "swddir": {
+     "max_abs": 425.83943939208984,
+     "mean": -16.396773055915894,
+     "max_bound_ratio": 17.313793890276912
+    },
+    "swddif": {
+     "max_abs": 329.2625427246094,
+     "mean": 12.115447152045466,
+     "max_bound_ratio": 27.122272713051846
+    },
+    "hlw": {
+     "max_abs_K_per_day": 25.882493262179196,
+     "max_bound_ratio": 2.532974211316364
+    },
+    "hsw": {
+     "max_abs_K_per_day": 9.655736200511456,
+     "max_bound_ratio": 1.0174687297713014
+    },
+    "n_quantities_outside_frozen_bounds": 12,
+    "n_columns_outside_frozen_bounds": 93,
+    "n_columns": 186
+   }
+  },
+  "E_minus_A": {
+   "clear": {
+    "glw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "olr": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "lwupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "gsw": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swdnb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupt": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swupb": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddir": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "swddif": {
+     "max_abs": 0.0,
+     "mean": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hlw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.0,
+     "max_bound_ratio": 0.0
+    },
+    "n_quantities_outside_frozen_bounds": 0,
+    "n_columns_outside_frozen_bounds": 0,
+    "n_columns": 27
+   },
+   "ice": {
+    "glw": {
+     "max_abs": 1.31256103515625,
+     "mean": 0.022243923611111112,
+     "max_bound_ratio": 0.08947721155223405
+    },
+    "olr": {
+     "max_abs": 1.981719970703125,
+     "mean": -0.014975653754340278,
+     "max_bound_ratio": 0.17250828372445828
+    },
+    "lwupt": {
+     "max_abs": 1.981719970703125,
+     "mean": -0.014975653754340278,
+     "max_bound_ratio": 0.17250828372445828
+    },
+    "lwdnb": {
+     "max_abs": 1.31256103515625,
+     "mean": 0.022243923611111112,
+     "max_bound_ratio": 0.08947721155223405
+    },
+    "lwupb": {
+     "max_abs": 0.029541015625,
+     "mean": 2.712673611111111e-05,
+     "max_bound_ratio": 0.0015320215451608457
+    },
+    "gsw": {
+     "max_abs": 0.4734344482421875,
+     "mean": -0.013966454399956597,
+     "max_bound_ratio": 0.08740475801957388
+    },
+    "swdnb": {
+     "max_abs": 0.5146026611328125,
+     "mean": -0.013825310601128472,
+     "max_bound_ratio": 0.08871503343649223
+    },
+    "swupt": {
+     "max_abs": 0.44974517822265625,
+     "mean": 0.015555487738715278,
+     "max_bound_ratio": 0.07018805956430037
+    },
+    "swupb": {
+     "max_abs": 0.041168212890625,
+     "mean": 0.00014122327168782553,
+     "max_bound_ratio": 0.029744743719193716
+    },
+    "swddir": {
+     "max_abs": 0.024026528000831604,
+     "mean": -0.0023180442183148545,
+     "max_bound_ratio": 0.023947423773172164
+    },
+    "swddif": {
+     "max_abs": 0.49057769775390625,
+     "mean": -0.011507246229383681,
+     "max_bound_ratio": 0.08462143223560557
+    },
+    "hlw": {
+     "max_abs_K_per_day": 1.0586211690679193,
+     "max_bound_ratio": 0.11661941059673163
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.03807106586464215,
+     "max_bound_ratio": 0.004402096047712912
+    },
+    "n_quantities_outside_frozen_bounds": 0,
+    "n_columns_outside_frozen_bounds": 0,
+    "n_columns": 18
+   },
+   "liq_land": {
+    "glw": {
+     "max_abs": 38.163299560546875,
+     "mean": 7.356453450520833,
+     "max_bound_ratio": 2.2833363019221937
+    },
+    "olr": {
+     "max_abs": 7.8055419921875,
+     "mean": -1.2680460611979167,
+     "max_bound_ratio": 0.5410799873790595
+    },
+    "lwupt": {
+     "max_abs": 7.8055419921875,
+     "mean": -1.2680460611979167,
+     "max_bound_ratio": 0.5410799873790595
+    },
+    "lwdnb": {
+     "max_abs": 38.163299560546875,
+     "mean": 7.356453450520833,
+     "max_bound_ratio": 2.2833363019221937
+    },
+    "lwupb": {
+     "max_abs": 0.796905517578125,
+     "mean": 0.15353291829427082,
+     "max_bound_ratio": 0.03719377503855152
+    },
+    "gsw": {
+     "max_abs": 132.4878387451172,
+     "mean": -15.556593449910482,
+     "max_bound_ratio": 10.048734825235416
+    },
+    "swdnb": {
+     "max_abs": 159.85446166992188,
+     "mean": -19.199432182312012,
+     "max_bound_ratio": 10.494097331637628
+    },
+    "swupt": {
+     "max_abs": 127.5782470703125,
+     "mean": 15.01441307067871,
+     "max_bound_ratio": 10.353582764725603
+    },
+    "swupb": {
+     "max_abs": 31.704429626464844,
+     "mean": -3.642837953567505,
+     "max_bound_ratio": 6.952043746551957
+    },
+    "swddir": {
+     "max_abs": 312.8011817932129,
+     "mean": -32.6751742718348,
+     "max_bound_ratio": 17.10719786612938
+    },
+    "swddif": {
+     "max_abs": 269.7023620605469,
+     "mean": 13.475741132100422,
+     "max_bound_ratio": 18.69390666401412
+    },
+    "hlw": {
+     "max_abs_K_per_day": 26.17500072810799,
+     "max_bound_ratio": 2.561600273740489
+    },
+    "hsw": {
+     "max_abs_K_per_day": 10.570136667229235,
+     "max_bound_ratio": 1.113823255418382
+    },
+    "n_quantities_outside_frozen_bounds": 10,
+    "n_columns_outside_frozen_bounds": 15,
+    "n_columns": 30
+   },
+   "liq_thick": {
+    "glw": {
+     "max_abs": 10.725555419921875,
+     "mean": 1.0047749837239583,
+     "max_bound_ratio": 0.5569644325148817
+    },
+    "olr": {
+     "max_abs": 1.5701904296875,
+     "mean": -0.1275141398111979,
+     "max_bound_ratio": 0.10990117715712192
+    },
+    "lwupt": {
+     "max_abs": 1.5701904296875,
+     "mean": -0.1275141398111979,
+     "max_bound_ratio": 0.10990117715712192
+    },
+    "lwdnb": {
+     "max_abs": 10.725555419921875,
+     "mean": 1.0047749837239583,
+     "max_bound_ratio": 0.5569644325148817
+    },
+    "lwupb": {
+     "max_abs": 0.17987060546875,
+     "mean": 0.019974772135416666,
+     "max_bound_ratio": 0.008641753569268553
+    },
+    "gsw": {
+     "max_abs": 46.68621826171875,
+     "mean": -3.9691628138224284,
+     "max_bound_ratio": 3.4783680309571463
+    },
+    "swdnb": {
+     "max_abs": 56.64726257324219,
+     "mean": -4.712032636006673,
+     "max_bound_ratio": 3.5245440251975366
+    },
+    "swupt": {
+     "max_abs": 45.5513916015625,
+     "mean": 3.666766611735026,
+     "max_bound_ratio": 7.8737953036139965
+    },
+    "swupb": {
+     "max_abs": 9.961036682128906,
+     "mean": -0.7428714036941528,
+     "max_bound_ratio": 2.728789482184642
+    },
+    "swddir": {
+     "max_abs": 69.29824066155615,
+     "mean": -8.294597561124663,
+     "max_bound_ratio": 15.520628435256372
+    },
+    "swddif": {
+     "max_abs": 52.391021728515625,
+     "mean": 3.582565498352051,
+     "max_bound_ratio": 3.0499743947682716
+    },
+    "hlw": {
+     "max_abs_K_per_day": 16.912456043064594,
+     "max_bound_ratio": 1.544478577177081
+    },
+    "hsw": {
+     "max_abs_K_per_day": 5.643132235854864,
+     "max_bound_ratio": 0.594316334233569
+    },
+    "n_quantities_outside_frozen_bounds": 7,
+    "n_columns_outside_frozen_bounds": 8,
+    "n_columns": 30
+   },
+   "liq_thin_ocean": {
+    "glw": {
+     "max_abs": 32.016693115234375,
+     "mean": 4.61890552662037,
+     "max_bound_ratio": 1.8050547479116767
+    },
+    "olr": {
+     "max_abs": 5.796112060546875,
+     "mean": -0.7067532009548612,
+     "max_bound_ratio": 0.395348416052236
+    },
+    "lwupt": {
+     "max_abs": 5.796112060546875,
+     "mean": -0.7067532009548612,
+     "max_bound_ratio": 0.395348416052236
+    },
+    "lwdnb": {
+     "max_abs": 32.016693115234375,
+     "mean": 4.61890552662037,
+     "max_bound_ratio": 1.8050547479116767
+    },
+    "lwupb": {
+     "max_abs": 0.64031982421875,
+     "mean": 0.09237444842303241,
+     "max_bound_ratio": 0.029672791081531653
+    },
+    "gsw": {
+     "max_abs": 94.34832763671875,
+     "mean": -12.616400259512442,
+     "max_bound_ratio": 3.4838444752946196
+    },
+    "swdnb": {
+     "max_abs": 102.55255126953125,
+     "mean": -13.713478088378906,
+     "max_bound_ratio": 3.4945730012690253
+    },
+    "swupt": {
+     "max_abs": 80.52276611328125,
+     "mean": 10.964484320746529,
+     "max_bound_ratio": 6.0792929821222605
+    },
+    "swupb": {
+     "max_abs": 8.204212188720703,
+     "mean": -1.0970780407940899,
+     "max_bound_ratio": 2.4831750128675254
+    },
+    "swddir": {
+     "max_abs": 259.90211486816406,
+     "mean": -40.80509482489692,
+     "max_bound_ratio": 13.873211933818322
+    },
+    "swddif": {
+     "max_abs": 157.34954833984375,
+     "mean": 27.09161560623734,
+     "max_bound_ratio": 19.228105688331226
+    },
+    "hlw": {
+     "max_abs_K_per_day": 7.925798138603568,
+     "max_bound_ratio": 0.8659957667257077
+    },
+    "hsw": {
+     "max_abs_K_per_day": 2.148902986664325,
+     "max_bound_ratio": 0.24448422332281788
+    },
+    "n_quantities_outside_frozen_bounds": 8,
+    "n_columns_outside_frozen_bounds": 6,
+    "n_columns": 27
+   },
+   "mixed": {
+    "glw": {
+     "max_abs": 12.68292236328125,
+     "mean": 1.7813720703125,
+     "max_bound_ratio": 0.6893429377198028
+    },
+    "olr": {
+     "max_abs": 3.2843170166015625,
+     "mean": -0.4290991889105903,
+     "max_bound_ratio": 0.3041966262229586
+    },
+    "lwupt": {
+     "max_abs": 3.2843170166015625,
+     "mean": -0.4290991889105903,
+     "max_bound_ratio": 0.3041966262229586
+    },
+    "lwdnb": {
+     "max_abs": 12.68292236328125,
+     "mean": 1.7813720703125,
+     "max_bound_ratio": 0.6893429377198028
+    },
+    "lwupb": {
+     "max_abs": 0.318450927734375,
+     "mean": 0.03923204210069445,
+     "max_bound_ratio": 0.016197306947426195
+    },
+    "gsw": {
+     "max_abs": 8.838062286376953,
+     "mean": -0.9225870768229166,
+     "max_bound_ratio": 2.5981063007221845
+    },
+    "swdnb": {
+     "max_abs": 9.606590270996094,
+     "mean": -1.0848224427964952,
+     "max_bound_ratio": 2.8163686851912835
+    },
+    "swupt": {
+     "max_abs": 8.059585571289062,
+     "mean": 0.8757875230577257,
+     "max_bound_ratio": 1.1501455175467563
+    },
+    "swupb": {
+     "max_abs": 2.121410369873047,
+     "mean": -0.16223527325524223,
+     "max_bound_ratio": 1.385322072778016
+    },
+    "swddir": {
+     "max_abs": 0.005238020326942162,
+     "mean": -0.0002993505978439393,
+     "max_bound_ratio": 0.005236648843287852
+    },
+    "swddif": {
+     "max_abs": 9.606498718261719,
+     "mean": -1.0845232009887695,
+     "max_bound_ratio": 2.815042938064288
+    },
+    "hlw": {
+     "max_abs_K_per_day": 10.33217841759324,
+     "max_bound_ratio": 1.0862836804303033
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.4314222664106637,
+     "max_bound_ratio": 0.04962164852679891
+    },
+    "n_quantities_outside_frozen_bounds": 6,
+    "n_columns_outside_frozen_bounds": 3,
+    "n_columns": 18
+   },
+   "sgs_only": {
+    "glw": {
+     "max_abs": 43.93450927734375,
+     "mean": 6.770094129774305,
+     "max_bound_ratio": 2.4703811688702793
+    },
+    "olr": {
+     "max_abs": 12.49700927734375,
+     "mean": -1.5750647650824652,
+     "max_bound_ratio": 0.848616471782863
+    },
+    "lwupt": {
+     "max_abs": 12.49700927734375,
+     "mean": -1.5750647650824652,
+     "max_bound_ratio": 0.848616471782863
+    },
+    "lwdnb": {
+     "max_abs": 43.93450927734375,
+     "mean": 6.770094129774305,
+     "max_bound_ratio": 2.4703811688702793
+    },
+    "lwupb": {
+     "max_abs": 1.030670166015625,
+     "mean": 0.14550950792100695,
+     "max_bound_ratio": 0.045312647270631806
+    },
+    "gsw": {
+     "max_abs": 226.74853515625,
+     "mean": -11.386391321818033,
+     "max_bound_ratio": 9.12181616819184
+    },
+    "swdnb": {
+     "max_abs": 282.426513671875,
+     "mean": -13.915545781453451,
+     "max_bound_ratio": 9.194737474308381
+    },
+    "swupt": {
+     "max_abs": 220.50717163085938,
+     "mean": 11.019465976291233,
+     "max_bound_ratio": 11.228115185170191
+    },
+    "swupb": {
+     "max_abs": 55.677974700927734,
+     "mean": -2.529152446322971,
+     "max_bound_ratio": 8.118362649733905
+    },
+    "swddir": {
+     "max_abs": 432.0791473388672,
+     "mean": -44.9166897450298,
+     "max_bound_ratio": 17.56748814057991
+    },
+    "swddif": {
+     "max_abs": 149.65264892578125,
+     "mean": 31.001145044962566,
+     "max_bound_ratio": 21.016509972712665
+    },
+    "hlw": {
+     "max_abs_K_per_day": 15.197203075513244,
+     "max_bound_ratio": 1.498522881699425
+    },
+    "hsw": {
+     "max_abs_K_per_day": 3.994370810687542,
+     "max_bound_ratio": 0.435780692460578
+    },
+    "n_quantities_outside_frozen_bounds": 9,
+    "n_columns_outside_frozen_bounds": 8,
+    "n_columns": 18
+   },
+   "snow": {
+    "glw": {
+     "max_abs": 17.0989990234375,
+     "mean": 1.6897854275173612,
+     "max_bound_ratio": 0.9094705130197692
+    },
+    "olr": {
+     "max_abs": 1.5785369873046875,
+     "mean": -0.16611141628689235,
+     "max_bound_ratio": 0.1387366198238967
+    },
+    "lwupt": {
+     "max_abs": 1.5785369873046875,
+     "mean": -0.16611141628689235,
+     "max_bound_ratio": 0.1387366198238967
+    },
+    "lwdnb": {
+     "max_abs": 17.0989990234375,
+     "mean": 1.6897854275173612,
+     "max_bound_ratio": 0.9094705130197692
+    },
+    "lwupb": {
+     "max_abs": 0.34197998046875,
+     "mean": 0.03338283962673611,
+     "max_bound_ratio": 0.015616972496722017
+    },
+    "gsw": {
+     "max_abs": 9.868560791015625,
+     "mean": -0.6675788031684028,
+     "max_bound_ratio": 2.0981599420914008
+    },
+    "swdnb": {
+     "max_abs": 10.726699829101562,
+     "mean": -0.7256295945909288,
+     "max_bound_ratio": 2.1344653831970875
+    },
+    "swupt": {
+     "max_abs": 10.212684631347656,
+     "mean": 0.672981686062283,
+     "max_bound_ratio": 1.4799512099258447
+    },
+    "swupb": {
+     "max_abs": 0.8581357002258301,
+     "mean": -0.058050314585367836,
+     "max_bound_ratio": 0.6491006980721308
+    },
+    "swddir": {
+     "max_abs": 0.10197728872299194,
+     "mean": -0.008525371962807386,
+     "max_bound_ratio": 0.1010346815911589
+    },
+    "swddif": {
+     "max_abs": 10.624717712402344,
+     "mean": -0.7171037462022569,
+     "max_bound_ratio": 2.1181045301954344
+    },
+    "hlw": {
+     "max_abs_K_per_day": 8.570450521074235,
+     "max_bound_ratio": 0.9381021010715431
+    },
+    "hsw": {
+     "max_abs_K_per_day": 0.1610658917343244,
+     "max_bound_ratio": 0.01853262411825336
+    },
+    "n_quantities_outside_frozen_bounds": 4,
+    "n_columns_outside_frozen_bounds": 1,
+    "n_columns": 18
+   },
+   "ALL": {
+    "glw": {
+     "max_abs": 43.93450927734375,
+     "mean": 3.012313022408434,
+     "max_bound_ratio": 2.4703811688702793
+    },
+    "olr": {
+     "max_abs": 12.49700927734375,
+     "mean": -0.5391594671433971,
+     "max_bound_ratio": 0.848616471782863
+    },
+    "lwupt": {
+     "max_abs": 12.49700927734375,
+     "mean": -0.5391594671433971,
+     "max_bound_ratio": 0.848616471782863
+    },
+    "lwdnb": {
+     "max_abs": 43.93450927734375,
+     "mean": 3.012313022408434,
+     "max_bound_ratio": 2.4703811688702793
+    },
+    "lwupb": {
+     "max_abs": 1.030670166015625,
+     "mean": 0.06250574255502352,
+     "max_bound_ratio": 0.045312647270631806
+    },
+    "gsw": {
+     "max_abs": 226.74853515625,
+     "mean": -6.237875917906402,
+     "max_bound_ratio": 10.048734825235416
+    },
+    "swdnb": {
+     "max_abs": 282.426513671875,
+     "mean": -7.370562737987887,
+     "max_bound_ratio": 10.494097331637628
+    },
+    "swupt": {
+     "max_abs": 220.50717163085938,
+     "mean": 5.822498383060578,
+     "max_bound_ratio": 11.228115185170191
+    },
+    "swupb": {
+     "max_abs": 55.677974700927734,
+     "mean": -1.132686722663141,
+     "max_bound_ratio": 8.118362649733905
+    },
+    "swddir": {
+     "max_abs": 432.0791473388672,
+     "mean": -16.879202690718056,
+     "max_bound_ratio": 17.56748814057991
+    },
+    "swddif": {
+     "max_abs": 269.7023620605469,
+     "mean": 9.508639868869576,
+     "max_bound_ratio": 21.016509972712665
+    },
+    "hlw": {
+     "max_abs_K_per_day": 26.17500072810799,
+     "max_bound_ratio": 2.561600273740489
+    },
+    "hsw": {
+     "max_abs_K_per_day": 10.570136667229235,
+     "max_bound_ratio": 1.113823255418382
+    },
+    "n_quantities_outside_frozen_bounds": 10,
+    "n_columns_outside_frozen_bounds": 41,
+    "n_columns": 186
+   }
+  }
+ }
+}

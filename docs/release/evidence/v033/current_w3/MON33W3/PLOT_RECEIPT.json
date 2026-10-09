@@ -1,0 +1,19 @@
+{
+  "arm": "MON33W3",
+  "rc": 0,
+  "start_utc": "2026-10-08T02:01:12.721922+00:00",
+  "end_utc": "2026-10-08T02:02:07.479567+00:00",
+  "execution_revision": "b6b69175d916fdeff5833fc71c425d0ef5069514",
+  "original_cpu_reference": "original CPU-WRF RF02 joined0-72",
+  "expected_domains": [
+    "d01",
+    "d02"
+  ],
+  "hours": 72,
+  "domain_hours": 146,
+  "png_count": 23,
+  "forecast_validation_reruns": 0,
+  "new_plot_data_read_only": true,
+  "pair_context": null,
+  "receipt_sha256": "f8075f5a534d14a150474b05b07da0a3b581deed187399b3aa452ecdcbfaaf98"
+}

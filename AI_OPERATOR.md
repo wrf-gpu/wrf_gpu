@@ -1,416 +1,166 @@
 # AI Operator Runbook for wrf_gpu
 
-This playbook is for an AI assistant helping an end user run a forecast with
-`wrf_gpu`. It is not the internal development protocol for changing the port.
-If the user says "here is my input, get it running", follow this runbook.
+Help the user run an existing WRF case with the public CLI. This is the
+operator runbook; development lanes follow their separate agent kernel.
 
-This runbook describes the **v0.23.4 candidate**. Do not present it
-as the current published release or recommend deployment ahead of its actual
-publication: two-domain configurations are measured unaffected, but its
-production-faithful maxdom3 canary is 51.67% slower than v0.23.3. That
-regression was investigated exhaustively (every quick-fix candidate falsified
-or rejected with evidence) and hardware-measured as occupancy/latency-bound,
-not bandwidth-bound — understood, but not fixed, and shipping as a known
-limitation rather than an open question.
-The candidate's accepted correctness envelope
-includes one-way live nesting through nine domains on the sealed all-physics
-fixture: 27/27 outputs landed, all 177,497,511 numeric values were finite, and
-all 9 domains × 102 fields passed the frozen WRF comparison gates. This is a
-fixture-backed capability statement, not universal WRF-scheme coverage or a new
-speed claim. The current published release remains v0.23.3 until v0.23.4 is
-actually tagged and published.
+**Version:** v0.3.3. Eight final comparisons are closed; accepted deviations and raw failures are disclosed in the release evidence.
+The live published guide was v0.3.2 at 2026-10-07 10:15Z, confirmed by direct
+HTTP and a cache-busted fetch. Use the installed release and its matching
+README/guide/evidence. W2 and earlier plots retain their source labels;
+their source labels remain historical. See [final identity plots](docs/release/evidence/v033/final_w3/index.html), [validation](docs/release/V0.3.3.md),
+[all retained identity galleries](docs/release/evidence/v033/index.html),
+[known issues](KNOWN_ISSUES.md) and [history cleanup](docs/release/HISTORY_CLEANUP.md).
 
-Communication contract:
+Explain each material action and the expected wait. During compilation or
+integration, report progress and name any blocker. Use original CPU-WRF or
+pristine WRF as fidelity truth; older GPU output is regression evidence.
 
-- Narrate each material step before running it.
-- Give time estimates before any long wait.
-- Never run silently for minutes. Tell the user whether the process is
-  installing, checking the GPU, compiling, integrating, or blocked.
-- Be clear about what the run proves and what remains an open research gate.
+## Understand the case
 
-## Step 0 - Understand the Request
+Find `namelist.input`, prepared `wrfinput_d0*` and `wrfbdy_d01`. Raw GRIB or
+`met_em` requires upstream WPS/real preprocessing; the CLI does not perform
+that chain. Standalone native initialization needs no CPU history. A directory
+with at least two CPU `wrfout` files can select the compatibility replay path;
+keep that mode explicit in the run report.
 
-Ask for or detect:
+Resolve the duration and domain count with the user. Multiple fixed nests
+use `--domains-from-namelist`; `--max-dom N` is the explicit alternative,
+and those flags are mutually exclusive. Single-domain mode defaults to d01.
+An explicit `--hours` wins over the namelist duration. Use a fresh output
+directory and disk-backed scratch; preserve existing outputs and physics
+choices. Unsupported choices fail with a named reason; do not silently
+substitute a scheme or bypass preflight.
 
-- The case directory.
-- Whether it contains `namelist.input` plus directly usable prepared
-  `wrfinput_<domain>` files and `wrfbdy_d01`. Raw `met_em` alone is not a run
-  input for the current CLI; it must first pass through the upstream WPS /
-  `real.exe` preprocessing chain outside `wrf_gpu`.
-- The intended forecast length in hours.
-- The desired output directory.
-- The domain to run for single-domain mode, such as `d01` or `d02`.
-- Whether the user wants a live-nested run. A namelist `max_dom > 1` does not
-  auto-run nested; nested mode requires `--max-dom N`.
-- A real disk-backed scratch directory. Do not use `/tmp` when it is tmpfs.
+DFI admission is fail-closed: `dfi_opt=0` or omission preserves an unfiltered
+forecast; any nonzero requested DFI is refused by the CLI before operational
+model initialization. Programmatic forward-filter helpers are not the full
+WRF operational DFI workflow, which remains future work. Admission-only change
+`68704c1eb` does not replace the numerical source of existing forecast receipts.
 
-Recognize the input mode:
+## Install and check the GPU
 
-- Standalone native init: `wrfinput_<domain>` plus `wrfbdy_d01`, with no CPU
-  `wrfout` required. This does not need `real.exe` or CPU-WRF.
-- Replay: two or more CPU `wrfout` files.
-
-If the user has only raw forcing data and no usable case directory, stop and
-explain what case inputs are missing before attempting a run.
-
-## Step 1 - Environment
-
-Create an isolated Python 3.11 environment and install the CUDA JAX build:
+Python 3.11 is the reference interpreter; the package requires Python ≥3.10.
+The measured platform is RTX 5090, sm_120, CUDA 13, on a Ryzen 9 9950X host.
+Other recent NVIDIA hardware is untested in these release measurements.
 
 ```bash
 python3.11 -m venv .venv
 . .venv/bin/activate
-pip install --upgrade "jax[cuda13]"
+pip install "jax[cuda13]==0.10.*"
 pip install -e .
+export GPUWRF_WRF_ROOT=/path/to/WRF
 python -c "import jax; print(jax.devices())"
 ```
 
-For a package install that uses the repo GPU extra, use
-`pip install -e ".[cuda]"` after installing the CUDA JAX wheel.
+The WRF root supplies `run/` runtime tables for the selected physics,
+including Noah-MP, RRTMG and Thompson. Check the source/table provenance.
+JAX must report a CUDA device for a GPU run. CPU imports alone are not a GPU
+execution check. The public recipe uses the CLI directly. On a development
+host that has the shared lock infrastructure, its lock proof is required;
+public installations do not need that development lock. Do not default to
+`--force-gpu-run`.
 
-Expected result: `jax.devices()` lists a CUDA device. CPU import can work
-without a GPU, but GPU execution needs both the CUDA `jaxlib` and a compatible
-NVIDIA driver.
-
-Optional environment variables:
-
-- `GPUWRF_JAX_CACHE_DIR`: persistent JIT cache directory. The standard
-  `JAX_COMPILATION_CACHE_DIR` is also honored as an alias.
-- `GPUWRF_TMPDIR` or `GPUWRF_SCRATCH`: scratch location. Use disk-backed
-  storage, never tmpfs.
-
-## Step 2 - GPU and Driver Check
-
-Run:
+## Run the bundled Alpine case
 
 ```bash
-nvidia-smi
-python -c "import jax; print(jax.devices())"
+python -m gpuwrf.cli run --input-dir examples/switzerland_d01 \
+  --output-dir runs/switzerland --domain d01 --hours 24 \
+  --scratch-dir runs/switzerland_scratch
 ```
 
-Confirm that `nvidia-smi` sees an NVIDIA GPU and that JAX lists a CUDA device.
-If `nvidia-smi` fails, fix the driver or machine assignment first. If
-`nvidia-smi` works but JAX lists only CPU, the CUDA JAX wheel or driver stack is
-not ready for GPU execution.
+The bundled 42×42×44, 3 km case initializes at 2023-01-15 00Z and uses
+Thompson/RRTMG/Noah-MP/MYNN with cumulus disabled. The
+[example page](examples/switzerland_d01/README.md) identifies the measured
+source, CPU reference and any pending rerun. A one-hour smoke test checks
+the toolchain; it does not replace the 24-hour identity evidence.
 
-## Step 3 - Smoke Test the Bundled Switzerland Case
+The first geometry/source run compiles and may spend minutes before stepping.
+Later runs reuse compatible executables. A changed source, geometry or target
+fingerprint can require compilation; copied cache files do not override a
+compatibility refusal. Say whether the process is compiling or integrating.
+Use `python -m gpuwrf.cli run --help` for the current controls.
 
-Prove the local toolchain before touching the user's data. This bundled real GFS
-case needs only `GPUWRF_WRF_ROOT`:
+## Native controls and history
+
+- Native single-root and live-nested runs bind per-domain `radt`, `cudt`,
+  `topo_shading`, `slope_rad`, `moist_adv_opt` and `scalar_adv_opt`.
+  Inspect the effective-control payload; source binding is not a blanket
+  fidelity verdict for every option combination.
+- `time_step_sound` is honored. When zero/omitted, native runs derive WRF's
+  automatic count from timestep and grid spacing (4 on the tracked grid).
+  The compatibility CPU-history replay driver has a separate historical
+  default of 10; do not apply that number to native forecasts.
+- Full WRF history is the default. `GPUWRF_FULL_WRFOUT_VARIABLES=0` selects
+  the reduced stream; the canonical variable takes precedence over the
+  `GPUWRF_FULL_WRFOUT` alias. `GPUWRF_TRAINING_OUTPUT_SUBSET=1` selects the
+  training subset. Counts depend on the actual file/schema; neither 104 nor
+  375 is a universal active-physics count.
+- Native single-root history emits initialized lead zero automatically.
+  Nested lead zero is opt-in with `--emit-initial-history`.
+  Nested `--aot-prefetch` defaults ON; `--no-aot-prefetch` loads at first
+  dispatch. Prefetch affects readiness, not a guarantee of a cache hit.
+
+## SST forcing: sst_update and wrflowinp
+
+Native runs support ice-free `sst_update=1` using per-domain `wrflowinp`,
+`io_form_auxinput4=2` and a positive auxiliary interval. Records start at
+the run start and increase on that interval. Nonzero SEAICE and SST skin/lake
+coupling are refused. Preserve requested SST forcing; do not advise turning
+it off merely to get through setup. `sst_update=0` reads no auxiliary SST file.
+
+## Memory admission: C-auto before cold fallback
+
+Free-VRAM threshold precedence is explicit `GPUWRF_MIN_FREE_VRAM_GIB`, then
+the verified geometry/settings C-auto plan, then the conservative fallback
+`max(24 GiB, 0.50 × total VRAM)` (fraction is configurable). An initialized
+reserved pool requires outside-pool headroom; a not-yet-reserved pool also
+needs its budget. Explicit allocator settings take precedence over auto
+configuration. Inspect measured VRAM and host RSS; there is no universal
+26 GiB GPU or 36 GB host requirement. Cold compile needs more host memory
+than a warmed forecast. Explain a refusal rather than bypassing it.
+
+For independent cases:
 
 ```bash
-export GPUWRF_WRF_ROOT=/path/to/pristine/WRF-v4
-python -m gpuwrf.cli run --input-dir examples/switzerland_d01 --output-dir runs/switzerland_d01 \
-  --domain d01 --hours 1 --scratch-dir /fast/nvme/scratch
+scripts/run_parallel_cases.sh --out-root runs/batch CASE_A CASE_B -- \
+  --domains-from-namelist --hours 24
 ```
 
-Then verify that a `wrfout` file exists and can be inspected:
+The launcher admits work against both GPU and host budgets, and queues the
+rest. A throughput result is distinct from individual-case latency.
+
+## Verified nested checkpoint and resume
+
+Checkpoint/resume currently requires the live nested driver (`max_dom > 1`).
+Cadence is in root-domain steps, not seconds. Retention defaults to 8 GiB,
+at least two generations, with 10 GiB filesystem reserve. Resume authenticates
+the generation and continues the same output stream; preserve its inputs,
+namelist and provenance. A generic WRF-style history file is not a checkpoint.
 
 ```bash
-ncdump -h runs/switzerland_d01/wrfout_d01_*
+python -m gpuwrf.cli run --input-dir CASE --output-dir runs/case \
+  --domains-from-namelist --hours 24 --checkpoint-dir runs/checkpoints \
+  --checkpoint-interval-steps 200
+python -m gpuwrf.cli run --input-dir CASE --output-dir runs/case \
+  --domains-from-namelist --hours 24 --resume-checkpoint VERIFIED_GENERATION
 ```
 
-Tell the user what is happening:
+Check the actual installed release's restart evidence before making a
+cross-version or original-CPU-WRF restart compatibility claim.
 
-- The command checks the namelist before expensive compute.
-- The first run pays a one-time cold compile with no output before integration.
-  For a single-domain case, expect about 1/2-2 minutes. It is compiling, not
-  hung.
-- Later same-geometry runs should hit the persistent warm cache and start in
-  seconds via the AOT cheap-key warm-start.
+## Report the result
 
-## Step 4 - Prepare the User's Case
+Retain resolved controls, source/input hashes, timestamps, exit status and
+file inventory. Inspect NetCDF dimensions/variables and finite values.
+Header compatibility alone does not prove numerical fidelity. All native
+cells enter the declared D6 statistics; an RMSE limit does not bound each
+individual cell. The 24-hour D6 window remains strict; a separately frozen
+72-hour floor annex retains raw failures and classifies them explicitly.
 
-Set the required WRF table root:
-
-```bash
-export GPUWRF_WRF_ROOT=/path/to/pristine/WRF-v4
-```
-
-`GPUWRF_WRF_ROOT` must point to a pristine WRF v4 source/run tree. It is needed
-for Noah-MP and RRTM/RRTMG lookup tables, plus Thompson
-`CCN_ACTIVATE.BIN`. Without it, table-loading schemes fail closed with a named
-error.
-
-`GPUWRF_CANAIRY_ROOT` points to the validation-case corpus. It is only for the
-bundled validation cases, not ordinary user cases.
-
-Use the CLI's fail-closed namelist behavior. Unsupported or unsafe choices stop
-with a named reason before the run. Do not silently substitute schemes or edit
-the user's physics choices unless the user approves a specific change.
-
-Choose the run shape:
-
-- Single domain: pass `--domain d01` or another domain. When omitted, the
-  single-domain default is root domain `d01`.
-- Live nested: pass `--max-dom N`. Values greater than 1 run `d01..dN`.
-
-Remember: a namelist `max_dom > 1` does not auto-run nested; the operator must
-pass `--max-dom N`.
-
-## Step 5 - Run and Narrate
-
-Single-domain template:
-
-```bash
-python -m gpuwrf.cli run \
-  --input-dir /path/to/case \
-  --output-dir runs/my_forecast \
-  --namelist /path/to/case/namelist.input \
-  --domain d01 \
-  --hours 24 \
-  --scratch-dir /fast/nvme/scratch
-```
-
-Live-nested template:
-
-```bash
-python -m gpuwrf.cli run \
-  --input-dir /path/to/case \
-  --output-dir runs/my_nested_forecast \
-  --namelist /path/to/case/namelist.input \
-  --max-dom 3 \
-  --hours 24 \
-  --scratch-dir /fast/nvme/scratch
-```
-
-CLI flags and defaults to know:
-
-| Flag | Default / requirement |
-| --- | --- |
-| `--input-dir` | required |
-| `--output-dir` | required |
-| `--namelist` | `<input-dir>/namelist.input` |
-| `--domain` | omitted → `d01` (root domain) for single-domain; explicit wins |
-| `--max-dom` | `1`; values greater than 1 run live nested `d01..dN` |
-| `--domains-from-namelist` | run all domains the namelist declares (`max_dom`) |
-| `--hours` | omitted → read from namelist `&time_control` (`run_days`/`run_hours`/…), else 1; explicit wins |
-| `--dry-run` | validate + resolve + print the effective plan, then exit without compiling |
-| `--scratch-dir` | `<output-dir>/.scratch`; never `/tmp` tmpfs |
-| `--proof-dir` | optional |
-| `--compare-cpu-dir` | optional CPU reference comparison input |
-| `--score` | optional; requires `GPUWRF_AEMET_ROOT` |
-| `--feedback` | optional two-way nesting; nested only |
-| `--force-gpu-run` | optional override |
-
-WRF-parity note (v0.23.1): when `--hours` or `--domain` are omitted they are resolved
-from `namelist.input` (forecast length from `&time_control`; root domain `d01`) and the
-resolved value is printed — an explicit flag always overrides. Use
-`gpuwrf namelist-support` to print which schemes are operational / reference-only /
-fail-closed without touching the GPU, and `--dry-run` to preview the effective plan
-before any compile.
-
-Narrate expected timing before the long wait:
-
-- Cold compile is one-time and produces no output before integration. It is
-  compiling, not hung.
-- Single-domain cold compile: about 1/2-2 minutes.
-- Ordinary nested cold compile is geometry-dependent and can take 8-12 minutes.
-- A large nine-domain fused nest is a separate, much larger compile; allow tens
-  of minutes to well over an hour. Do not promise the ordinary-nest range.
-- Later runs with the same geometry should hit the persistent warm cache and
-  start in seconds.
-
-Runtime ETA framing:
-
-- Do not use one generic nested throughput number across topologies. The v0.23.4
-  accepted all-physics nine-domain stress case used 5,744.407 s of warm model
-  wall for one forecast hour; that is a correctness-stress workload, not a
-  performance claim. Use the release canary or the user's observed progress for
-  an ETA on a different case.
-- Estimate total integration time as:
-  `forecast hours * estimated seconds per forecast-hour`.
-- Once progress is visible, refine the estimate from observed throughput.
-- Many same-geometry cases can be batched with `GPUWRF_BATCH_ENSEMBLE=B` to fill
-  a small-grid GPU.
-- **As of v0.23.4: disclose a domain-count-dependent
-  performance caveat before running.** Single-domain and 2-domain (`d01`+`d02`)
-  cases are fully validated with no measured performance regression versus
-  v0.23.3. **3-domain (`--max-dom 3`) and 9-domain (`--max-dom 9`) cases that
-  activate `d03` are a real, measured ~51.67% slower wall-clock than v0.23.3**
-  (hardware-measured as occupancy/latency-bound, not bandwidth-bound; the
-  investigation is closed, and this ships as a known, understood limitation,
-  not an open question). Tell
-  the user this before starting a 3+/9-domain run so their time estimate is
-  honest — do not silently use the pre-v0.23.4 674 s/forecast-hour figure for a
-  `d03`-activating case without this caveat. Correctness is unaffected either
-  way (nine-nest replay is fully GREEN); this is a wall-clock-only caveat.
-
-Hardware and optimization choices:
-
-- The measured reference is an RTX 5090 with 32 GiB VRAM. The accepted v0.23.4
-  nine-domain stress fixture peaks at 16,624 MiB VRAM and 35,773,432 kB host
-  RSS. Do not transfer those numbers to a different grid/physics mix without a
-  preflight.
-- H100/B200/GB300 scale-out behavior is not release-benchmarked. Describe it as
-  prospective and measure the user's system; never promise a speedup from the
-  card name alone.
-- Keep `cuda_async`, the default allocator, for an exclusive/locked production
-  run. Use `platform` only as an explicit diagnostic fallback; it is slower and
-  is not the release performance path.
-- Keep the version-keyed AOT/JIT cache enabled. A warm executable is the normal
-  path; deleting the cache trades disk space for a large cold-compile bill.
-- For many small, identical-geometry forecasts, propose
-  `GPUWRF_BATCH_ENSEMBLE=B` after checking aggregate VRAM. Do not batch different
-  forecast dates; that case is not supported.
-- Keep the shipped RRTMG column tiling unless a measured, separately validated
-  experiment says otherwise. Do not alter `time_step`, acoustic substeps,
-  precision, or physics merely to meet an ETA; those are scientific changes,
-  not generic performance knobs.
-- Before compute, run `gpuwrf namelist-support` and `--dry-run`. Refuse or
-  clearly flag unsupported schemes, terrain beyond the validated ~6000 m
-  envelope, a projected VRAM overrun, or deep nesting the user did not
-  explicitly request.
-
-Safety rails to explain:
-
-- The default-on finite guard aborts on the first non-finite prognostic and
-  reports `{domain, field, level, step, sim-time, index}`.
-- For `--max-dom > 1`, a CPU-side VRAM preflight runs before the long compile and
-  fails closed with exit 75 if there is not enough headroom.
-  - On a normal machine that is the only check. Run `python -m gpuwrf.cli run …` directly; no lock wrapper is needed.
-  - The GPU-lock proof (`scripts/with_gpu_lock.sh`) is enforced only on hosts with the shared dev lock
-    (`/tmp/wrf_gpu2_gpu.lock` exists) or with `GPUWRF_REQUIRE_GPU_LOCK=1`.
-  - A first run of a new geometry (no memory plan yet) needs max(24 GiB, 50 % of the card) free.
-    On a smaller card set `GPUWRF_MIN_FREE_VRAM_GIB`.
-- Terrain above about 6000 m can diverge and is expected to fail closed with 0
-  bad frames.
-- The nested pipeline currently uses a fixed 30-minute radiation target rather
-  than arbitrary namelist `radt`. Tell the user before a nested run when their
-  requested cadence differs; do not silently claim it was honored.
-- Nested `topo_shading=1` and `slope_rad=1` are currently accepted but bind to
-  disabled values in the nested runtime. Report that terrain-radiation gap; do
-  not describe those effects as active.
-- The accepted nested path honors `moist_adv_opt`/`scalar_adv_opt`, but the
-  single-domain daily pipeline currently drops requested values and runs `0/0`.
-  Report the effective behavior; do not claim the requested limiter was active.
-- When `time_step_sound` is omitted, the current runtime selects 10 acoustic
-  substeps where pristine WRF derives 4 on the tracked fixture. A four-substep
-  discriminator did not close the terminal gate and residual dry-mass behavior
-  remains open. Keep the shipped default and disclose the mismatch rather than
-  silently changing the acoustic control.
-- v0.23.4 fixes the demonstrated late-Ni ordering defect, but the Thompson
-  `NSED_MAX=16` static sedimentation-substep cap and widespread exact-zero
-  carried Ni remain separate fidelity debt. Flag this before long or strongly
-  ice-sedimentation-sensitive claims; do not alter the cap, clamp Ni, or claim
-  the broader class is WRF-exact.
-- Two AOT cheap-key fragmentation cases can miss an otherwise reusable warm
-  executable when fused-phase shape or terrain-staging provenance differs.
-  Preserve the versioned cache and a stable staging namespace. A safe JIT/AOT
-  rebuild is expected on a miss; report the compile delay rather than treating
-  it as a numerical failure or promising a warm hit.
-
-### Several cases on one GPU
-
-When the user has several nested cases (e.g. a nightly set of dates), run them
-concurrently with one launcher:
-
-```bash
-scripts/run_parallel_cases.sh --out-root runs/batch_01 \
-  /data/case_a /data/case_b /data/case_c \
-  -- --domains-from-namelist --hours 24
-```
-
-On a host with the shared dev GPU lock, wrap the whole batch once:
-`scripts/with_gpu_lock.sh --label batch -- scripts/run_parallel_cases.sh …`.
-
-- One `gpuwrf run` process per case. `--input-dir` and `--output-dir` (`<out-root>/<case>/wrfout`) are set per case.
-- After `--` you may give these case options, spelled out exactly (abbreviations are refused):
-  - `--domains-from-namelist`, `--max-dom`, `--domain`, `--hours`
-  - `--emit-initial-history`, `--[no-]aot-prefetch`, `--feedback`, `--score`, `--force-gpu-run`
-- Refused with a reason:
-  - per-case paths: namelist, scratch, proof and compare-cpu dirs;
-  - checkpoint and resume options (run such a case alone with the CLI);
-  - `--dry-run` (use the launcher's own).
-- If the launcher fails, it stops every case it started and every helper, writes the receipts, and reports the original error.
-  Use a fresh `--out-root` per batch: history files are never overwritten.
-- Admission is first-in-first-out. A case starts while the summed per-case need fits the free
-  VRAM at launch and the summed host need fits `MemAvailable` minus 8 GB.
-  - **Per-case VRAM** comes from the CLI's own C-auto memory plan: the pool plus at least 1 GiB outside it.
-    The plan is recorded by one successful run of that geometry and settings.
-    The first case of a new geometry therefore runs alone, and the rest then run in parallel.
-  - **Host need** is 1.1× the measured peak RSS, or 16 GB before anything was measured.
-  - Run `--dry-run` first to print the admission plan.
-  - `--max-parallel K` caps concurrency. `--pool-gib P` pins a fixed pool instead; single-domain cases need it.
-- Same-geometry cases share the warm cache, so no case recompiles. On an RTX 5090,
-  WN3 Tenerife 3-nest cases need about 6.2 GiB each. Aggregate throughput stops
-  growing at about 3 concurrent cases (host dispatch), so a larger batch mostly queues.
-- Receipts:
-  - `<out-root>/<case>/receipt.json`: rc, wall time, peak RSS, sizing, per-frame write times, finite check.
-  - `<out-root>/parallel_run.json`: batch wall time and wall seconds per case-hour.
-  - `gpu_dmon.log`: power, utilisation and memory.
-- `--compress` deflates finished history frames losslessly in the background
-  (`nccopy -d1 -s`, every value verified; about 4.7× smaller). Do not combine it
-  with `--checkpoint-dir`.
-- Stopping:
-  - A host-RAM watchdog stops all cases below 6 GB `MemAvailable`.
-  - TERM or Ctrl-C stops all cases: TERM first, KILL after 60 s.
-
-## Step 6 - Deliver and Verify
-
-Show the user where the output landed:
-
-```bash
-ls runs/my_forecast/wrfout_*
-ncdump -h runs/my_forecast/wrfout_*
-```
-
-Explain the output:
-
-- The files are WRF-compatible `wrfout` NetCDF files.
-- The focused output set is about 104 variables.
-- The opt-in `GPUWRF_TRAINING_OUTPUT_SUBSET` writes a smaller training subset of
-  about 39 core variables plus coordinates; retained variables are bit-identical.
-
-State what was verified:
-
-- The smoke test verifies install, GPU visibility, table roots, compile,
-  integration, and NetCDF output on the bundled case.
-- The user-case run verifies that this case ran under the selected supported
-  configuration.
-- v0.23.4 closes the specific one-hour nine-nest fixture and a specific 24-hour
-  SP2 chain gate. A successful user run does not close broad seasonal or
-  configuration-independent 24-72 h forecast-skill equivalence against CPU-WRF.
-
-## Troubleshooting
-
-| Symptom | Likely cause | Action |
-| --- | --- | --- |
-| Noah-MP, RRTM/RRTMG, or Thompson table error | `GPUWRF_WRF_ROOT` is missing or wrong | Set `GPUWRF_WRF_ROOT` to a pristine WRF v4 source/run tree and rerun. |
-| Namelist rejected before compile | Unsupported or unsafe option | Read the named reason, report it to the user, and ask before changing physics. |
-| Nested run exits 75 before compile | CPU-side VRAM preflight failed (or, on a dev-lock host, the GPU lock is not held) | Free GPU memory, reduce the case, set `GPUWRF_MIN_FREE_VRAM_GIB` on a smaller card, run through `scripts/with_gpu_lock.sh` on a dev-lock host, or use `--force-gpu-run` only as an explicit operator override. |
-| Scratch fills memory | Scratch path is tmpfs | Use `--scratch-dir` or `GPUWRF_TMPDIR`/`GPUWRF_SCRATCH` on real disk. |
-| First run looks hung | Cold JAX compile with no output | Tell the user the expected compile range and wait. Later runs should use the warm cache. |
-| `jax.devices()` lists only CPU | CPU JAX install or CUDA driver/JAX mismatch | Install `jax[cuda13]` and confirm the driver with `nvidia-smi`. |
-| Terrain above about 6000 m fails | Known steep-terrain stability ceiling | Treat it as a fail-closed envelope, not a result to patch around. |
-| Nested radiation cadence differs from the namelist | Fixed 30-minute nested cadence limitation | Disclose the mismatch; do not edit the namelist or claim arbitrary `radt` was honored. |
-| Nested terrain/slope radiation requested | `topo_shading`/`slope_rad` bind disabled on the current nested runtime | Disclose the limitation; do not silently substitute another result. |
-| Daily single-domain run requests moist/scalar advection | That pipeline currently drops `moist_adv_opt`/`scalar_adv_opt` and runs `0/0` | Disclose the effective behavior; do not claim the requested limiter ran. |
-| Omitted `time_step_sound` must match WRF exactly | Runtime selects 10 acoustic substeps where WRF derives 4 on the tracked fixture; residual dry-mass behavior is open | Keep the shipped setting, disclose the mismatch, and do not tune it as an operational workaround. |
-| Long/ice-heavy run needs exact Thompson sedimentation parity | `NSED_MAX=16` and exact-zero carried Ni remain open after the late-Ni fix | Disclose the fidelity boundary; do not change the cap or sanitize Ni as an operational workaround. |
-| Expected nested AOT warm hit recompiles | Known cheap-key fragmentation from fused-phase shape or terrain-staging provenance | Keep the versioned cache/staging namespace stable, allow the safe rebuild, and report the extra compile wall. |
-
-## Honesty Rules to Relay
-
-- Default precision is fp64. v0.23.4 intentionally changes physics results
-  relative to v0.23.3 through correctness fixes, so old ice-sensitive golden
-  trajectories require revalidation/rebaselining rather than a byte-identity
-  assumption.
-- Broad seasonal/configuration-independent 24-72 h forecast-skill equivalence
-  versus CPU-WRF remains open. This is a research artifact, not a universally
-  validated operational WRF replacement.
-- `wrf_gpu` is WRF-compatible. It is not WRF and is not affiliated with
-  UCAR/NCAR.
-- Opt-in features are opt-in. Do not present `--feedback`, `--score`,
-  `GPUWRF_BATCH_ENSEMBLE`, `GPUWRF_TRAINING_OUTPUT_SUBSET`, or
-  `--force-gpu-run` as defaults.
-- No masking or clamps on results. If the finite guard aborts, report the named
-  failure instead of hiding it.
-- If running v0.23.4: 2-domain configurations are
-  fully validated (correctness and performance, measured no regression);
-  3-domain/9-domain configurations that use `d03` are correct but a measured
-  ~51.67% slower than v0.23.3 — measured, root-caused (occupancy/latency-bound),
-  and understood, but not fixed. Relay this before,
-  not after, a 3+/9-domain run.
-- For deeper human-facing context, point users to `README.md` and the project
-  docs.
+Current-source comparisons use original CPU-WRF. A single IC pair is empirical
+spread, not a confidence interval. Keep primary/replicate identities and
+member-level station qualifications alongside aggregate classifications.
+Report every residual and exception with its source and evidence; do not
+call an unsupported scheme, opt-out configuration or old-source gallery
+validated on a new release. Speed/energy results retain their measured source
+and clocks; forecasts under a new numerical source need their affected gates.

@@ -104,3 +104,54 @@ def ring_relax_tendency(field, value, rate, fcx, gcx, *, spec, relax, mass=None)
         out_shape=jax.ShapeDtypeStruct(field.shape, jnp.float32),
         grid=((nx+31)//32, ny, nz), interpret=_interpret(),
         compiler_params=pt.CompilerParams(num_warps=1), name='boundary_ring_relax_real')(*arrays)
+
+
+def _ring_spec_final(value, mu, c1, c2, out, *, nz, ny, nx, spec, interpret):
+    """WRF spec_bdy_final for mass-point scalars ('t'): bfield/(c1h*muts+c2h) on the spec zone (BD95).
+
+    ``value`` is the stacked REAL coupled boundary value ``bdy + dtbc*bdy_tend``
+    ``(species, side, width, z, side_len)``; ownership is the Fortran trim (Y sides
+    own the corners, share/module_bc.F:2066-2216), every other cell writes zero.
+    """
+    block = 32
+    i32 = jnp.int32
+    x = pl.program_id(0)*block+jnp.arange(block, dtype=i32)
+    y = jnp.broadcast_to(pl.program_id(1).astype(i32), (block,))
+    sk = pl.program_id(2).astype(i32)
+    s, k = jnp.broadcast_to(sk//nz, (block,)), jnp.broadcast_to(sk % nz, (block,))
+    valid = x < nx
+    dx, dy = jnp.minimum(x, nx-1-x), jnp.minimum(y, ny-1-y)
+    y_own = (dy < spec) & (x >= dy) & (x < nx-dy)
+    x_own = (dx < spec) & (y >= dx+1) & (y < ny-dx-1)
+    b = jnp.where(y_own, dy, dx)
+    lane = valid & (y_own | x_own)
+    side = jnp.where(y_own, jnp.where(y < ny//2, i32(2), i32(3)), jnp.where(x < nx//2, i32(0), i32(1)))
+    pt.store(out.at[s, k, y, x], jnp.zeros_like(x, dtype=jnp.float32), mask=valid)
+
+    @pl.when(jnp.max(lane.astype(jnp.int32)) > 0)
+    def spec_tile():
+        rn = partial(_rn, interpret=interpret)
+
+        def real(ref, idx):
+            return pt.load(ref.at[idx], mask=lane).astype(jnp.float32)
+
+        # xmu = c1(k)*mu(i,j)+c2(k); field = xmsf*bfield/xmu with xmsf = 1 ('t'), each op REAL.
+        mass = rn('add', rn('mul', real(c1, (k,)), real(mu, (y, x))), real(c2, (k,)))
+        tang = jnp.where(side < 2, y, x)
+        pt.store(out.at[s, k, y, x], rn('div', real(value, (s, side, b, k, tang)), mass), mask=lane)
+
+
+def ring_spec_final(values, mu, c1, c2, *, spec):
+    """Stacked WRF ``spec_bdy_final`` scalar values (REAL) on the spec zone, zero elsewhere (one kernel).
+
+    ``values`` ``(species, side, width>=spec, z, side_len)`` are coupled REAL boundary values
+    at the step's ``dtbc``; ``mu`` is the end-of-step dry mass ``muts``. Storage-dtype
+    operands are rounded to REAL at load.
+    """
+    n_species, _, _, nz, _ = values.shape
+    ny, nx = mu.shape
+    arrays = [jnp.asarray(values, jnp.float32), jnp.asarray(mu), jnp.asarray(c1), jnp.asarray(c2)]
+    return pl.pallas_call(partial(_ring_spec_final, nz=nz, ny=ny, nx=nx, spec=int(spec), interpret=_interpret()),
+        out_shape=jax.ShapeDtypeStruct((n_species, nz, ny, nx), jnp.float32),
+        grid=((nx+31)//32, ny, n_species*nz), interpret=_interpret(),
+        compiler_params=pt.CompilerParams(num_warps=1), name='boundary_spec_final_real')(*arrays)

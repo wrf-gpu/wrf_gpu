@@ -1,0 +1,33 @@
+{
+ "stamp": "2026-02-28_12:00:00",
+ "case": "wg_20260227_18z_a1 (START 2026-02-28_00Z)",
+ "edges": {
+  "d01->d02": {
+   "namelist_i_j_parent_start": [
+    16,
+    16
+   ],
+   "crop_1based_i0_j0": [
+    10,
+    10
+   ],
+   "full_res_max_ulp": 4.0,
+   "full_res_bitwise_frac": 0.8490494108471637,
+   "n_sampled_cells": 5487
+  },
+  "d02->d03": {
+   "namelist_i_j_parent_start": [
+    92,
+    36
+   ],
+   "crop_1based_i0_j0": [
+    86,
+    30
+   ],
+   "full_res_max_ulp": 4.0,
+   "full_res_bitwise_frac": 0.8757408434827789,
+   "n_sampled_cells": 3424
+  }
+ },
+ "sha256": "18105327238bf3c314f42b03bd67e3e5b3dd05574fd11fa2ec0df6b62822d6ff"
+}

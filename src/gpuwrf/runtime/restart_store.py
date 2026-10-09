@@ -64,6 +64,7 @@ def nested_identity(config, bundles, run_start):
         for path in sorted(Path(config.input_dir).glob(pattern)):
             if path.is_file():
                 inputs[path.name] = _hash_file(path)
+    from gpuwrf.physics.rrtmg_mp_re import mp_re_config
     return {
         "source_sha256": source_hash.hexdigest(), "inputs": inputs,
         "input_dir": str(Path(config.input_dir).resolve()),
@@ -71,6 +72,7 @@ def nested_identity(config, bundles, run_start):
         "run_start": run_start.isoformat(), "hours": config.hours,
         "feedback": config.feedback, "emit_initial_history": config.emit_initial_history,
         "namelists": {name: canonical_digest(bundle.namelist) for name, bundle in bundles.items()},
+        "mp_re_config": {name: mp_re_config(bundle.namelist) for name, bundle in bundles.items()},
         "aot_environment": version_fingerprint_hash(), "trace_environment": global_trace_env_hash(),
     }
 
@@ -236,13 +238,13 @@ def _validate_snapshot(snapshot, manifest) -> None:
                                   _validate_state_field_order, _validate_radiation_diagnostics_schema,
                                   _validate_gwdo_diagnostics_schema)
     expected = tuple(f.name for f in fields(OperationalCarry))
-    for payload in snapshot["carries"].values():
+    for name, payload in snapshot["carries"].items():
         _validate_radiation_diagnostics_schema(payload)
         _validate_gwdo_diagnostics_schema(payload)
         if tuple(payload.get("carry_field_order", ())) != expected:
             raise ValueError("restart carry schema differs from executable")
         order = tuple(payload["state_field_order"])
-        _validate_state_field_order(order)
+        _validate_state_field_order(order, namelist=manifest["identity"].get("mp_re_config", {}).get(name))
         if set(payload["state_fields"]) != set(order):
             raise ValueError("restart State schema differs from receipt")
         if tuple(payload["scratch_field_order"]) != _CARRY_SCRATCH_FIELDS or set(payload["scratch_fields"]) != set(_CARRY_SCRATCH_FIELDS):

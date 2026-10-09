@@ -1429,8 +1429,266 @@ _IMPORT_TIME_ENV_NOT_HLO = {
 
 # Import-time env-reading calls whose effect is keyed elsewhere.
 _IMPORT_TIME_ENV_SIDE_EFFECTS = {
-    "configure_jax_x64": "resolved jax_enable_x64 is in program_config_hash",
+    "gpuwrf._x64_config.configure_jax_x64": "resolved jax_enable_x64 is in program_config_hash",
 }
+
+
+def _import_time_env_offenders(trees, covered=frozenset(), relpaths=None):
+    """Scope helper names to their defining module, including import aliases.
+
+    Bare-name closure analysis confuses unrelated ``np.zeros``/builder methods
+    with env helpers. Keep qualified call identities instead. Configuration
+    side effects exempt only that call, never its arguments or containing branch.
+    """
+    import ast
+    import importlib.util
+
+    relpaths = relpaths or {m: m.replace(".", "/") + ".py" for m in trees}
+    bindings = {}
+    definitions = {}
+    classes = set()
+    def collect_definitions(body, module, scope=""):
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                args = node.args.posonlyargs + node.args.args
+                static = any(isinstance(d, ast.Name) and d.id == "staticmethod" for d in node.decorator_list)
+                receiver = (args[0].arg, module + "." + scope.rstrip(".")) if scope and args and not static else None
+                definitions[module + "." + scope + node.name] = (module, node, receiver)
+            elif isinstance(node, ast.ClassDef):
+                classes.add(module + "." + scope + node.name)
+                collect_definitions(node.body, module, scope + node.name + ".")
+    for module, tree in trees.items():
+        aliases = {}
+        package = module if relpaths[module].endswith("/__init__.py") else module.rpartition(".")[0]
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    aliases.setdefault(alias.asname or alias.name.split(".")[0], set()).add(alias.name if alias.asname else alias.name.split(".")[0])
+            elif isinstance(node, ast.ImportFrom):
+                target = node.module or ""
+                if node.level:
+                    target = importlib.util.resolve_name("." * node.level + target, package)
+                for alias in node.names:
+                    aliases.setdefault(alias.asname or alias.name, set()).add(target + "." + alias.name)
+        bindings[module] = aliases
+        collect_definitions(tree.body, module)
+
+    def target(expr, module, receiver=None):
+        if isinstance(expr, ast.Name):
+            if receiver and expr.id == receiver[0]:
+                return {receiver[1]}
+            own = module + "." + expr.id
+            candidates = set(bindings[module].get(expr.id, ()))
+            if own in definitions or own in classes or not candidates:
+                candidates.add(own)
+            return candidates
+        if isinstance(expr, ast.Attribute):
+            base = target(expr.value, module, receiver)
+            return {name + "." + expr.attr for name in base}
+        if isinstance(expr, ast.Call):
+            return target(expr.func, module, receiver) & classes
+        return set()
+
+    def reads(node, module, helpers, receiver=None):
+        for child in ast.walk(node):
+            if isinstance(child, ast.Call):
+                # ast.walk still visits args: configure_jax_x64(env_read())
+                # cannot hide an additional determinant in its arguments.
+                candidates = target(child.func, module, receiver)
+                if candidates and candidates <= set(_IMPORT_TIME_ENV_SIDE_EFFECTS):
+                    continue
+                if _reads_env(ast.Call(func=child.func, args=[], keywords=[])):
+                    return True
+                if candidates & helpers:
+                    return True
+            elif isinstance(child, (ast.Subscript, ast.Compare)) and _reads_env(child):
+                return True
+        return False
+
+    helpers = frozenset()
+    while True:
+        grown = helpers | {name for name, (module, node, receiver) in definitions.items() if reads(node, module, helpers, receiver)}
+        if grown == helpers:
+            break
+        helpers = frozenset(grown)
+
+    def main_guard(test):
+        return (isinstance(test, ast.Compare) and len(test.ops) == 1
+                and isinstance(test.ops[0], ast.Eq) and len(test.comparators) == 1
+                and ((isinstance(test.left, ast.Name) and test.left.id == "__name__"
+                      and isinstance(test.comparators[0], ast.Constant) and test.comparators[0].value == "__main__")
+                     or (isinstance(test.comparators[0], ast.Name) and test.comparators[0].id == "__name__"
+                         and isinstance(test.left, ast.Constant) and test.left.value == "__main__")))
+
+    offenders = []
+    def scan(node, module, scope=""):
+        rel = relpaths[module]
+        if isinstance(node, ast.If) and main_guard(node.test):
+            # Only this exact branch is unreachable while importing. Its else
+            # branch is reachable and must still be scanned.
+            for child in node.orelse:
+                scan(child, module, scope)
+            return
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            parts = [d for d in node.args.defaults + node.args.kw_defaults if d is not None]
+            parts += [ast.Call(func=d, args=[], keywords=[]) if isinstance(d, (ast.Name, ast.Attribute)) else d
+                      for d in node.decorator_list]
+        elif isinstance(node, ast.ClassDef):
+            parts = node.bases + [kw.value for kw in node.keywords]
+            parts += [ast.Call(func=d, args=[], keywords=[]) if isinstance(d, (ast.Name, ast.Attribute)) else d
+                      for d in node.decorator_list]
+            for child in node.body:
+                scan(child, module, scope + node.name + ".")
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            if node.value is not None and reads(node.value, module, helpers):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for assignment in targets:
+                    for name in ast.walk(assignment):
+                        if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Store):
+                            ident = f"{rel}::{scope}{name.id}"
+                            if ident not in covered and ident not in _IMPORT_TIME_ENV_NOT_HLO:
+                                offenders.append(ident)
+            return
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            return
+        else:
+            parts = [node]
+        for part in parts:
+            if reads(part, module, helpers):
+                offenders.append(f"{rel}::<{type(node).__name__}@{node.lineno}>")
+
+    for module, tree in trees.items():
+        for node in tree.body:
+            scan(node, module)
+    return sorted(set(offenders))
+
+
+@pytest.mark.parametrize("statement", [
+    "X = os.environ.get('GPUWRF_PROBE')",
+    "X: str = os.environ['GPUWRF_PROBE']",
+    "X, Y = os.getenv('GPUWRF_PROBE'), 1",
+    "consume(os.getenv('GPUWRF_PROBE'))",
+    "if os.getenv('GPUWRF_PROBE'):\n    pass",
+    "def f(x=os.getenv('GPUWRF_PROBE')):\n    pass",
+    "async def f(*, x=os.getenv('GPUWRF_PROBE')):\n    pass",
+    "@decorate(os.getenv('GPUWRF_PROBE'))\ndef f():\n    pass",
+    "class C:\n    X = os.getenv('GPUWRF_PROBE')",
+    "class C:\n    def f(self, x=os.getenv('GPUWRF_PROBE')):\n        pass",
+    "class C:\n    @decorate(os.getenv('GPUWRF_PROBE'))\n    def f(self):\n        pass",
+    "@decorate(os.getenv('GPUWRF_PROBE'))\nclass C:\n    pass",
+    "class C(base(os.getenv('GPUWRF_PROBE'))):\n    pass",
+    "class C(metaclass=meta(os.getenv('GPUWRF_PROBE'))):\n    pass",
+    "if __name__ == '__main__':\n    pass\nelse:\n    X = os.getenv('GPUWRF_PROBE')",
+    "if __name__ != '__main__':\n    X = os.getenv('GPUWRF_PROBE')",
+    "if os.getenv('GPUWRF_PROBE'):\n    configure_jax_x64()",
+    "configure_jax_x64(os.getenv('GPUWRF_PROBE'))",
+])
+def test_import_env_scanner_rejects_each_import_position(statement):
+    import ast
+    source = "import os\nfrom gpuwrf._x64_config import configure_jax_x64\n" + statement
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source)})
+
+
+@pytest.mark.parametrize("caller", [
+    "from .env_source import read as alias\nX = alias()",
+    "from . import env_source as e\nX = e.read()",
+    "import gpuwrf.env_source as e\nX = e.read()",
+    "from .env_source import read\ndef twice():\n    return read()\nX = twice()",
+])
+def test_import_env_scanner_follows_scoped_helpers_and_aliases(caller):
+    import ast
+    trees = {"gpuwrf.env_source": ast.parse("import os\ndef read():\n    return os.getenv('GPUWRF_PROBE')"),
+             "gpuwrf.probe": ast.parse(caller)}
+    assert _import_time_env_offenders(trees) == ["gpuwrf/probe.py::X"]
+
+
+@pytest.mark.parametrize("constructor", ["_build_tables", "_build_constants"])
+def test_import_env_scanner_does_not_mix_unrelated_helper_names(constructor):
+    import ast
+    trees = {"gpuwrf.env_source": ast.parse("import os\ndef zeros():\n    return os.getenv('GPUWRF_PROBE')"),
+             "gpuwrf.probe": ast.parse(f"import numpy as np\ndef {constructor}():\n    return np.zeros(2)\nX = {constructor}()")}
+    assert _import_time_env_offenders(trees) == []
+    trees["gpuwrf.probe"] = ast.parse(f"from .env_source import zeros\ndef {constructor}():\n    return zeros()\nX = {constructor}()")
+    assert _import_time_env_offenders(trees) == ["gpuwrf/probe.py::X"]
+
+
+@pytest.mark.parametrize("guard", ["__name__ == '__main__'", "'__main__' == __name__"])
+def test_import_env_scanner_excludes_only_cli_guard_body(guard):
+    import ast
+    source = f"import os\ndef main():\n    return os.getenv('GPUWRF_PROBE')\nif {guard}:\n    main()"
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source)}) == []
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source + "\nelse:\n    X = main()")})
+
+
+@pytest.mark.parametrize("declaration", ["def f():\n    pass", "class C:\n    pass"])
+def test_import_env_scanner_tracks_bare_decorators(declaration):
+    import ast
+    source = "import os\ndef deco(obj):\n    os.getenv('GPUWRF_PROBE')\n    return obj\n@deco\n" + declaration
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source)})
+
+
+@pytest.mark.parametrize("caller", [
+    "from .env_source import C\nX = C().read_env()",
+    "from .env_source import C as Config\nX = Config().read_env()",
+])
+def test_import_env_scanner_resolves_inline_instance_helpers(caller):
+    import ast
+    trees = {"gpuwrf.env_source": ast.parse("import os\nclass C:\n    def read_env(self):\n        return os.getenv('GPUWRF_PROBE')"),
+             "gpuwrf.probe": ast.parse(caller)}
+    assert _import_time_env_offenders(trees) == ["gpuwrf/probe.py::X"]
+
+
+def test_import_env_scanner_exempts_exact_configuration_call_only():
+    import ast
+    trees = {"gpuwrf._x64_config": ast.parse("import os\ndef configure_jax_x64():\n    return os.getenv('JAX_ENABLE_X64')"),
+             "gpuwrf.probe": ast.parse("from ._x64_config import configure_jax_x64 as config\nconfig()")}
+    assert _import_time_env_offenders(trees) == []
+    trees["gpuwrf.probe"] = ast.parse("import os\nfrom ._x64_config import configure_jax_x64 as config\nif os.getenv('GPUWRF_PROBE'):\n    config()")
+    assert _import_time_env_offenders(trees)
+    trees["gpuwrf.probe"] = ast.parse("import os\ndef configure_jax_x64():\n    return os.getenv('GPUWRF_PROBE')\nX = configure_jax_x64()")
+    assert _import_time_env_offenders(trees) == ["gpuwrf/probe.py::X"]
+
+
+@pytest.mark.parametrize("rebind", [
+    "def configure_jax_x64():\n    return os.getenv('GPUWRF_PROBE')",
+    "from .env_source import read as configure_jax_x64",
+])
+def test_import_env_scanner_does_not_exempt_rebound_configuration_name(rebind):
+    import ast
+    trees = {"gpuwrf.env_source": ast.parse("import os\ndef read():\n    return os.getenv('GPUWRF_PROBE')"),
+             "gpuwrf.probe": ast.parse("import os\nfrom ._x64_config import configure_jax_x64\n" + rebind + "\nX = configure_jax_x64()")}
+    assert _import_time_env_offenders(trees) == ["gpuwrf/probe.py::X"]
+
+
+def test_import_env_scanner_respects_registered_bindings_and_runtime_reads():
+    import ast
+    tree = ast.parse("import os\nX = os.getenv('GPUWRF_PROBE')\ndef runtime():\n    return os.getenv('GPUWRF_TRACE_ONLY')")
+    assert _import_time_env_offenders({"gpuwrf.probe": tree}, {"gpuwrf/probe.py::X"}) == []
+
+
+@pytest.mark.parametrize("source, expected", [
+    ("import os\nX = os.getenv('GPUWRF_KEYED')\nclass C:\n    X = os.getenv('GPUWRF_UNKEYED')",
+     "gpuwrf/probe.py::C.X"),
+    ("import os\nX = os.getenv('GPUWRF_KEYED')\nclass C:\n    X: str = os.getenv('GPUWRF_UNKEYED')",
+     "gpuwrf/probe.py::C.X"),
+    ("import os\nX = os.getenv('GPUWRF_KEYED')\nclass C:\n    class Inner:\n        X = os.getenv('GPUWRF_UNKEYED')",
+     "gpuwrf/probe.py::C.Inner.X"),
+    ("import os\nclass C:\n    def read_env(self):\n        return os.getenv('GPUWRF_UNKEYED')\n    def twice(self):\n        return self.read_env()\nX = C().twice()",
+     "gpuwrf/probe.py::X"),
+    ("import os\nclass C:\n    @classmethod\n    def read_env(cls):\n        return os.getenv('GPUWRF_UNKEYED')\n    @classmethod\n    def twice(cls):\n        return cls.read_env()\nX = C.twice()",
+     "gpuwrf/probe.py::X"),
+])
+def test_import_env_scanner_retains_five_old_positive_class_regressions(source, expected):
+    import ast
+    covered = {"gpuwrf/probe.py::X"} if "GPUWRF_KEYED" in source else set()
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source)}, covered) == [expected]
+
+
+def test_import_env_scanner_class_bindings_and_runtime_methods_stay_distinct():
+    import ast
+    source = "import os\nX = os.getenv('GPUWRF_KEYED')\nclass C:\n    X = os.getenv('GPUWRF_CLASS_KEYED')\n    def runtime(self):\n        return os.getenv('GPUWRF_TRACE_ONLY')"
+    covered = {"gpuwrf/probe.py::X", "gpuwrf/probe.py::C.X"}
+    assert _import_time_env_offenders({"gpuwrf.probe": ast.parse(source)}, covered) == []
 
 
 def test_no_uncovered_import_time_env_constants():
@@ -1457,45 +1715,14 @@ def test_no_uncovered_import_time_env_constants():
         f"{m.replace('.', '/')}.py::{a}" for (m, a) in ck.IMPORT_TIME_ENV_CONSTANTS
     }
     trees = {py: ast.parse(py.read_text(), filename=str(py)) for py in files}
-    nodes = [n for t in trees.values() for n in ast.walk(t)]
-    defs = [n for n in nodes if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    aliases = [a for n in nodes if isinstance(n, ast.ImportFrom) for a in n.names if a.asname]
-    helpers: frozenset[str] = frozenset()
-    while True:  # fixpoint: env helpers, helpers of helpers, and their import aliases
-        grown = helpers | {f.name for f in defs if _reads_env(f, helpers)}
-        grown |= {a.asname for a in aliases if a.name in grown}
-        if grown == helpers:
-            break
-        helpers = frozenset(grown)
-    offenders: list[str] = []
+    modules = {}
+    relpaths = {}
     for py, tree in trees.items():
         rel = py.relative_to(src_root).as_posix()
-        for node in tree.body:  # MODULE-LEVEL statements only (import-time)
-            # Other import-time env reads: bare statements/branches, class bodies,
-            # def-time default arguments. Each must be an allowlisted side effect.
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                parts = [d for d in node.args.defaults + node.args.kw_defaults if d is not None]
-            elif isinstance(node, ast.ClassDef):
-                parts = [b for b in node.body if not isinstance(b, (ast.FunctionDef, ast.AsyncFunctionDef))]
-            elif not isinstance(node, (ast.Assign, ast.AnnAssign, ast.Import, ast.ImportFrom)):
-                parts = [node]
-            else:
-                parts = []
-            for part in parts:
-                calls = {getattr(c.func, "id", getattr(c.func, "attr", None))
-                         for c in ast.walk(part) if isinstance(c, ast.Call)}
-                if _reads_env(part, helpers) and not calls & set(_IMPORT_TIME_ENV_SIDE_EFFECTS):
-                    offenders.append(f"{rel}::<{type(node).__name__}@{node.lineno}>")
-            if not isinstance(node, (ast.Assign, ast.AnnAssign)) or node.value is None:
-                continue
-            if not _reads_env(node.value, helpers):
-                continue
-            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            for t in targets:
-                if isinstance(t, ast.Name):
-                    ident = f"{py.relative_to(src_root).as_posix()}::{t.id}"
-                    if ident not in covered and ident not in _IMPORT_TIME_ENV_NOT_HLO:
-                        offenders.append(ident)
+        module = rel[:-3].replace("/", ".").removesuffix(".__init__")
+        modules[module] = tree
+        relpaths[module] = rel
+    offenders = _import_time_env_offenders(modules, covered, relpaths)
     assert not offenders, (
         "UNCOVERED import-time env-derived module constants in trace-reachable code "
         "(add each to aot_cheap_key.IMPORT_TIME_ENV_CONSTANTS so the cheap_key hashes "

@@ -1,0 +1,16 @@
+{
+  "case": "20260613_18z_a1",
+  "status": "EXTRACTION_DONE",
+  "domain_hours": 219,
+  "raw_full_array_finite": true,
+  "rendered": false,
+  "source": "2ead6af93 = main a51b739a6",
+  "tool_sha256": "9e596e52ff3b6603862e7c31b0108ad5f2d8dcf8b47d850b2aa3faab87cca21a",
+  "launcher_sha256": "302649d0467eda18c4c3d0aacd4f6e4d85b027843ccfb5a4270752da3a8b2f24",
+  "metrics": "<USER_HOME>/wrf_gpu2_lanes/release-docs/V033_plots/rc33g_b4/20260613_18z_a1/metrics.json",
+  "gpu_actual_tree": "136c6e51c",
+  "gpu_resolved_directory": "<DATA_ROOT>/wrf_gpu2/scratch/wn3/rc33g_b4/b1/20260613_18z_a1/wrfout",
+  "scorer_parity": "unchecked: reconcile only after all three complete frozen D6 reports",
+  "cache": "none",
+  "work": "73 hourly frames x 3 domains, 11 native-grid fields, no mask, CPU24/25/28/29 nice19 JAXcpu"
+}

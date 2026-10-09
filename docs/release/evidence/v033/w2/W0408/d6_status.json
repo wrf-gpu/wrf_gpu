@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "verdict": "PASS",
+  "domains": {
+    "d01": "PASS",
+    "d02": "PASS",
+    "d03": "PASS"
+  },
+  "breach_frames": {
+    "d01": [],
+    "d02": [],
+    "d03": []
+  },
+  "note": "Raw D6 verdict; registered predictability/integrity classifications are separate."
+}

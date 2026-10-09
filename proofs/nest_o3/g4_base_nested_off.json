@@ -1,0 +1,33 @@
+{
+ "src": "<USER_HOME>/wrf_gpu2_lanes/fid-q2/RE03/base_export",
+ "mode": "nested_off",
+ "gpuwrf": "<USER_HOME>/wrf_gpu2_lanes/fid-q2/RE03/base_export/src/gpuwrf/runtime/operational_mode.py",
+ "o3rad_present": {
+  "d01": false,
+  "d02": false
+ },
+ "refresh_d01": {
+  "sha": "ed0545094e7524529916294283743cc4a26d9c2a691f3946f646a4d08f11ae16",
+  "eqns": 2
+ },
+ "d01_carry_leaves": {
+  "n": 167,
+  "sha": "8679be638a3a42f1904c9835cc1437a46569a1551335bf1199d465f0e3940092"
+ },
+ "refresh_d02": {
+  "sha": "8a1edaea304b4882bc32948ed252dae6b2052bcf90df0728e3fec87d9d23c11f",
+  "eqns": 2
+ },
+ "d02_carry_leaves": {
+  "n": 154,
+  "sha": "4d2686b2db13b68396f53a5a5f1b18b679b0892b09d3676f22f88ba2039d04a5"
+ },
+ "force_d01_d02_outputs": {
+  "n": 154,
+  "sha": "cd46e007036db222cf48b6953ea3c05d7c7d807d348fee643dc1038ca886dcb6"
+ },
+ "fused_force_d01_d02_outputs": {
+  "n": 321,
+  "sha": "cdd45fff4c9cd6aa249d815114b93f14761178aaba5db1b879035117d80f13dd"
+ }
+}

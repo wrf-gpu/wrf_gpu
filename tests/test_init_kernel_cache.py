@@ -87,7 +87,7 @@ def _native_columns():
     return [(solve_rrtmg_sw_column,sw),(solve_rrtmg_lw_column,lw)]
 
 
-def test_real_column_metadata_keys_match_hlo_identity(monkeypatch):
+def test_real_column_metadata_keys_match_hlo_identity(monkeypatch, cpu_pallas_interpret):
     from gpuwrf.integration import init_kernels as ik
     from gpuwrf.physics.wrf_clwrf_ghg import clwrf_ssp245_gases_for_time
     from datetime import datetime, timezone

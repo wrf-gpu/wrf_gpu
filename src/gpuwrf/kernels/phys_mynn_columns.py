@@ -10,7 +10,7 @@ import jax
 import jax.numpy as jnp
 from gpuwrf.physics import mynn_pbl as P
 
-def _native_edmf_arrays(state, flux, fltv, pblh, dt, dx):
+def _native_edmf_arrays(state, flux, fltv, pblh, dt, dx, *, qc_bl=None, cldfra_bl=None):
     """Build the MYNN-EDMF mass-flux solver arrays from the column state.
 
     Calls the WRF-faithful :func:`mynn_edmf.dmp_mf_columns` (verified against the
@@ -32,8 +32,8 @@ def _native_edmf_arrays(state, flux, fltv, pblh, dt, dx):
     sqv, sqc, sqi, sqw = P._specific_moisture_components(state)
     theta = state.theta
     thl = P._liquid_potential_temperature(state)
-    thv = theta * (1.0 + P.P608 * sqv)
-    exner = (state.p / 100000.0) ** (287.0 / (3.5 * 287.0))
+    thv = theta * (1.0 + P.mynn_constant("P608", state.theta.dtype) * sqv)
+    exner = (state.p / 100000.0) ** (287.0 / (3.5 * 287.0)) if state.exner is None else state.exner
 
     # kinematic surface fluxes (already in flux struct)
     flqv = flux.qv_flux
@@ -54,6 +54,9 @@ def _native_edmf_arrays(state, flux, fltv, pblh, dt, dx):
         2.0 * state.tke, state.p, exner, state.rho, state.dz, zw,
         ust=flux.ustar, flt=flt, fltv=fltv, flq=flq, flqv=flqv,
         pblh=pblh, ts=ts, dx=dx, xland=xland, dt=dt,
+        psig_shcu=P._edmf_scale_aware_psig(dx, pblh),
+        **P._edmf_cloud_base_kwargs(state, pblh, qc_bl, cldfra_bl),
+        **P._ni_plume_kwargs(state),
         interpret=jax.default_backend() == "cpu",
     )
 
@@ -82,7 +85,7 @@ def _advance_native(state: P.MynnPBLColumnState, dt: float, debug: bool,
         # DMP_mf (bitwise-identical to the previous turb["pblh"] EDMF input).
         pblh0 = P._get_pblh(state, qke, flux.xland)
         sqv, sqc, sqi, sqw = P._specific_moisture_components(state)
-        exner = P._exner_from_pressure(state.p)
+        exner = P._column_exner(state)
         qc_bl, qi_bl, cldfra_bl = P.mym_condensation_cloudpdf2(
             theta=state.theta,
             p=state.p,
@@ -96,7 +99,8 @@ def _advance_native(state: P.MynnPBLColumnState, dt: float, debug: bool,
             pblh=pblh0,
         )
         if edmf:
-            mf = _native_edmf_arrays(state, flux, fltv, pblh0, dt, dx)
+            mf = _native_edmf_arrays(state, flux, fltv, pblh0, dt, dx,
+                **P._edmf_fresh_cloud_kwargs(qc_bl, cldfra_bl))
             qc_bl, cldfra_bl = P.dmp_shallow_cu_overwrite(
                 qc_bl=qc_bl,
                 cldfra_bl=cldfra_bl,
@@ -116,8 +120,15 @@ def _advance_native(state: P.MynnPBLColumnState, dt: float, debug: bool,
         # The freshly diagnosed SGS cloud enters the buoyancy (thlv) used by
         # mym_level2/mym_turbulence below (the WRF thlv1 rebuild).
         state = state.replace(qc_bl=qc_bl, qi_bl=qi_bl, cldfra_bl=cldfra_bl)
-    turb = P._mym_turbulence(state, qke, fltv, flux.ustar, dx, flux.xland)
-    qke_new, _qwt, qdiss, _pdk = P._mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
+    if P._MYNN_ELB_MF and edmf and mf is None:
+        mf = _native_edmf_arrays(
+            state, flux, fltv, P._get_pblh(state, qke, flux.xland), dt, dx
+        )
+    turb = P._mym_turbulence(state, qke, fltv, flux.ustar, dx, flux.xland,
+                             **P._mynn_length_mf_kwargs(state, mf),
+                             **P._mynn_wrf_turbulence_kwargs(state, mf))
+    qke_new, _qwt, qdiss, _pdk = P._mym_predict_qke(state, qke, turb, dt, flux.ustar, flux,
+                                               **P._mym_predict_mf_kwargs(mf))
     if sgs_cloud:
         qsq_new = P._mym_predict_qsq(
             state, state.qsq, turb, dt, s_aw=mf["s_aw"] if mf is not None else None
@@ -126,7 +137,10 @@ def _advance_native(state: P.MynnPBLColumnState, dt: float, debug: bool,
         qsq_new = state.qsq
     if edmf and mf is None:
         mf = _native_edmf_arrays(state, flux, fltv, turb["pblh"], dt, dx)
-    u, v, theta, qv, qc, qi = P._apply_mean_tendencies_with_clouds(state, turb, dt, flux, wind, rhosfc, mf=mf)
+    means = P._apply_mean_tendencies_with_clouds(state, turb, dt, flux, wind, rhosfc, mf=mf,
+        **P._mynn_dheat_kwargs(qke_new, turb["el"], state.p))
+    u, v, theta, qv, qc, qi = means[:6]
+    ni_update = {} if state.ni is None else {'ni':means[6]}
     km, kh = P._retrieve_exchange_coeffs(state, turb)
     tke = 0.5 * qke_new
 
@@ -141,6 +155,7 @@ def _advance_native(state: P.MynnPBLColumnState, dt: float, debug: bool,
     del qdiss
     return (
         state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el, qsq=qsq_new, qc=qc, qi=qi,
+                      **ni_update,
                       **P._mynn_plume_diagnostics(state, mf)),
         turb["pblh"],
     )

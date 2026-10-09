@@ -1,0 +1,3 @@
+V0115: registry verdict FAIL-new-class; NEW items 1
+  d02 QGRAUP  @2026-01-17_11: flagged    5 (iv True) | GPU exact 0 True (ii) | CPU max 5.92e-14 cap 1e-10 (iii True) -> EXPLAINED
+ANNEX PASS (all NEW items explained)

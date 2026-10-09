@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "scope": "W2 MON33W2 diagnostic; E41 HARD FAIL prevents release acceptance",
+  "raw_d6": {
+    "complete": true,
+    "verdict": "PASS",
+    "domains": {
+      "d01": "PASS",
+      "d02": "PASS"
+    },
+    "breach_frames": {
+      "d01": [],
+      "d02": []
+    },
+    "note": "Raw D6 verdict; registered predictability/integrity classifications are separate."
+  },
+  "domain_hours": 146,
+  "numeric_rows": 1604,
+  "d6_rmse_bias_checks": 2920,
+  "d6_finite_count_checks": 5840,
+  "forecast_release_claim": false,
+  "metrics_sha256": "47385e96a724c1ab13c690a295f22b49459f9ebf03cf84055a830c3fd28de73e"
+}

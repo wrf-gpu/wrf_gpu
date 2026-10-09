@@ -1,242 +1,60 @@
-<h1>Performance &amp; GPU Modes</h1>
-
-<div class="admon measured">
-  <div class="admon-title">v0.3.2 — matched timing and original-WRF validation</div>
-  <p>RTX 5090 (sm_120, CUDA 13), Ryzen 9 9950X: cached Canary 24-hour
-  whole-run rate <strong>3.305 s/forecast hour</strong> under host contention.
-  The matched v0.3.1 reference was 3.669: <strong>9.9% less wall time</strong>;
-  this is not a quiet-host absolute benchmark. Four concurrent three-nest
-  Tenerife cases × 24 h measured <strong>5.507 s/case-hour</strong> aggregate
-  (<strong>22.4×</strong> CPU-WRF 3×4 cores), including init/load and without
-  compression; the all-four-running steady window was 4.857 (25.4×).</p>
-  <p>PROD is bitwise versus v0.3.1; WN3 d01 is bitwise and children differ
-  at round-off level, passing all three original-CPU D6 gates. d03 worst PSFC
-  RMSE is <strong>8.66 Pa versus 4.49 Pa</strong> in v0.3.1 (limit 120 Pa).
-  Registered raw-integrity exceptions remain disclosed. Swiss measurements
-  remain v0.3.1; longer-lead studies remain v0.3.0. Ensemble and giant-domain
-  scaling figures are inferred best-case scenarios.
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.2.md">Evidence, clocks and limitations</a>.</p>
-</div>
-
-<p class="lead">wrf_gpu's value is <strong>capability, fidelity, stability and energy efficiency at
-scale</strong> — not a blanket single-card speedup. This page explains the one-time compile and
-the seconds-fast warm start, the opt-in throughput modes, VRAM sizing, and exactly which
-performance claims are measured versus projected.</p>
-
-<div class="admon measured">
-  <div class="admon-title">Historical v0.3.0 throughput (RTX 5090)</div>
-  <p>GPU rates are whole-run (startup and output included); the CPU-WRF references (12 cores) are
-  defined in METHODS:
-  two-domain 9/3&nbsp;km Canary 24&nbsp;h <strong>4.12&nbsp;s per forecast hour</strong> (CPU-WRF 92.3&nbsp;s,
-  <strong>22.4×</strong>); four three-domain Tenerife forecasts sharing the GPU
-  <strong>9.68&nbsp;s per case-hour</strong> (CPU-WRF 3&nbsp;×&nbsp;4 cores 123.4&nbsp;s, <strong>12.75×</strong>; N=3 and N=4
-  within 0.5%, the GPU is saturated); the six-case 72&nbsp;h production batch (two waves of three)
-  <strong>6.28&nbsp;s per case-hour</strong> (19.6×). Methods, energy and receipts:
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/METHODS.md">METHODS</a> and
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/PROVENANCE.md">PROVENANCE</a>.
-  The sections below describe earlier releases and opt-in modes; their numbers are historical.</p>
-</div>
-
-<div class="admon honest"><div class="admon-title">Current measurement scope</div>
-  <p>Speed depends on geometry, compiler layout, cache state and hardware. Current
-  release evidence is the measured cached Canary run above, on RTX 5090. Earlier
-  tiny-grid and multi-nest figures below describe older releases and do not set a
-  speed limit for v0.3.1. Multi-GPU execution and B200/B300 operation are not tested.
-  The conservative stack gate passes; accepted static flags remain disclosed.</p></div>
-
-<h2 id="cold-compile">First run is slow on purpose — the cold compile</h2>
-<p>The first forecast <strong>JIT-compiles the GPU kernels</strong>: a one-time cold compile with
-<strong>no output before integration starts</strong>. It is compiling, not hung. Compile time
-scales with grid size:</p>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Case</th><th>One-time cold compile</th></tr></thead>
-<tbody>
-<tr><td>Bundled single-domain d01 (3 km)</td><td>~½–2 min</td></tr>
-<tr><td>Ordinary nested case</td><td>~8–12 min</td></tr>
-<tr><td>All-7-island 9-domain nest</td><td>tens of minutes (a separate, larger compile)</td></tr>
-</tbody>
-</table>
-</div>
-
-<h2 id="warm-cache">Warm cache &amp; seconds-fast warm start</h2>
-<p>A persistent, per-user on-disk JIT cache is <strong>on by default with zero config</strong>. It
-is <strong>version-keyed</strong> (<code>gpuwrf</code> + JAX/JAXLIB + backend) so a stale
-older-release cache is never mistaken for a warm one, and it <strong>hits across forecast
-dates</strong> (a new or leap-year date is a warm hit — the date is a runtime argument, not baked
-into the program).</p>
-<p>On the fused nested path, a fresh process then <strong>warm-loads the compiled GPU executable
-in seconds</strong> via an <strong>AOT cheap-key</strong>: the executable is serialized to disk
-and indexed by a metadata key computed <em>without lowering</em>, so a new process loads it
-directly and skips the multi-tens-of-minutes re-lower the old cache still paid.</p>
-<div class="admon measured">
-  <div class="admon-title">Measured</div>
-  <p>The 9-nest fused stress re-confirm has both fused phases load <code>source=aot_blob</code>
-  cross-process with <strong>0 re-lower</strong>, all 9 domains finite (warm peak host RSS
-  16.4&nbsp;GB); the 3-domain cold→warm gate is <strong>byte-identical</strong> to the cold compile
-  (<code>max_abs_diff 0</code>) with no runtime regression. A warm load is numerically inert — the
-  key only <em>locates</em> the blob.</p>
-</div>
-<p>Opt out with <code>GPUWRF_NESTED_AOT=0</code>; add the fail-closed backstop
-<code>GPUWRF_AOT_VERIFY=1</code>; use <code>GPUWRF_BITWISE=1</code> or
-<code>GPUWRF_NESTED_FUSE=0</code> for the eager bitwise/debug path. See
-<a href="environment.html#compile-cache-and-warm-start">Environment Variables</a>.</p>
-<div class="admon note">
-  <div class="admon-title">Scope of the compile-cache win</div>
-  <p>The warm start is faster at <em>getting a run started</em>, <strong>not</strong> at running
-  the forecast itself. Warm forecast throughput (seconds per forecast-hour) is set by
-  the model kernels — the warm start rides the same compiled executable and just loads it from disk
-  in seconds instead of re-lowering it.</p>
-</div>
-
-<h2 id="batched-ensemble">Batched ensemble — filling the small-grid GPU (v0.23)</h2>
-<p>A single small operational nest under-uses the GPU: it is launch/occupancy-bound, so the card
-sits mostly idle. The opt-in batched ensemble runs <strong>B independent, same-geometry forecasts
-concurrently under one outer <code>jax.vmap</code></strong> wrapped around the unbatched
-orchestration. The dynamical core is untouched; the default (<code>GPUWRF_BATCH_ENSEMBLE</code>
-unset / <code>=1</code>) is byte-identical.</p>
-<div class="admon measured">
-  <div class="admon-title">Measured — Tenerife 3 km→1 km 2-nest, one RTX 5090, warm</div>
-  <div class="table-scroll">
-  <table>
-  <thead><tr><th>B (concurrent cases)</th><th>Total throughput</th><th>% of large-grid ceiling</th><th>Peak VRAM</th></tr></thead>
-  <tbody>
-  <tr><td>1</td><td>4.51 M cells/s</td><td>78 %</td><td>9.4 GiB</td></tr>
-  <tr><td>2</td><td>4.62 M cells/s</td><td>79 %</td><td>10.8 GiB</td></tr>
-  <tr><td>3</td><td>5.24 M cells/s</td><td>90 %</td><td>15.4 GiB</td></tr>
-  <tr><td><strong>4</strong></td><td><strong>5.63 M cells/s</strong></td><td><strong>97 %</strong></td><td>18.3 GiB</td></tr>
-  <tr><td>5</td><td>5.62 M cells/s (plateau)</td><td>97 %</td><td>~26 GiB (cap)</td></tr>
-  </tbody>
-  </table>
-  </div>
-  <p>The large-grid saturation ceiling is <strong>5.81 M cells/s</strong>, measured on a
-  compute-bound Alps 433²@1 km case on the same card. Batching the tiny Tenerife grid reaches
-  <strong>≈97 % of that ceiling</strong> at B=4. <code>B_max=5</code> is VRAM-capped at ~26 GiB on
-  the 5090; a larger card batches further.</p>
-</div>
-<p><strong>Use it for</strong> many-case throughput — ensembles, parameter sweeps,
-parallel-in-time multi-day chunks — on small operational domains where one case leaves the GPU
-underused. Set the count with <code>GPUWRF_BATCH_ENSEMBLE=4</code>.</p>
-
-<h3 id="batched-ensemble-distinct-init">Distinct-init batches (same date, different ICs)</h3>
-<p>By default the batch <strong>replicates</strong> the single <code>--input-dir</code> across all
-<code>B</code> lanes. To batch <strong>distinct initial conditions</strong> — e.g. an
-initial-condition / perturbation ensemble for the <strong>same forecast date</strong> — list
-exactly <code>B</code> input directories in <code>GPUWRF_BATCH_INPUT_DIRS</code> (comma- or
-<code>:</code>-separated). The batched ensemble runs on the <strong>nested path
-(<code>--max-dom&nbsp;&gt;&nbsp;1</code>), one-way</strong>; every lane must be
-<strong>homogeneous</strong> — same grid, physics suite, timestep <strong>and forecast
-date/time</strong> — with only the initial/boundary <em>data values</em> differing.</p>
-<div class="admon warn">
-  <div class="admon-title">Different forecast dates are not batchable (yet)</div>
-  <p>The date/time is baked into the namelist's static-aux (part of the compiled program's key),
-  so lanes with <strong>different start dates</strong> fail closed with
-  <code>batch lane N d01: namelist/static treedef differs</code> — even if only
-  <code>start_day</code>/<code>end_day</code> differ. Batching stacks lanes under one
-  <code>jax.vmap</code>, which needs one shared program; different dates compile to different
-  programs. <strong>For multi-day throughput, run the days sequentially</strong> (each is its own
-  warm-cache hit). True multi-date batching (threading the date as a per-lane runtime input) is a
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md">v0.24-and-beyond roadmap</a> item.</p>
-</div>
-<pre><code><span class="c"># B=4 IC/perturbation members, SAME date, run concurrently</span>
-export GPUWRF_BATCH_ENSEMBLE=4
-export GPUWRF_BATCH_INPUT_DIRS="/case/2025-01-21/mem1,/case/2025-01-21/mem2,/case/2025-01-21/mem3,/case/2025-01-21/mem4"
-python -m gpuwrf.cli run \
-    --input-dir   /case/2025-01-21/mem1 \
-    --output-dir  runs/ic_ensemble \
-    --max-dom     3 \
-    --hours       24 \
-    --scratch-dir /fast/nvme/scratch</code></pre>
-<p>Each lane writes its own <code>wrfout</code> set under <code>--output-dir</code>; the run
-payload records the resolved <code>input_dirs</code> and per-lane <code>run_starts</code>. Since
-v0.23.2 the separator accepts commas (the older <code>:</code>-only contract still works).</p>
-<div class="admon note">
-  <div class="admon-title">Does it fit in VRAM?</div>
-  <p>Batching stacks <code>B</code> lanes, so peak VRAM grows roughly with <code>B</code>. The win
-  is on <strong>small, launch-bound grids that leave VRAM headroom</strong> (a Tenerife 3→1 km
-  nest is ~9.4 GiB at B=1 → 18.3 GiB at B=4 on a 32 GiB card). A larger fp64 nest that already
-  peaks in the ~20–30 GiB range does <strong>not</strong> leave room for B&gt;1 on a 32 GiB card —
-  there, run sequentially or use a bigger card.</p>
-</div>
-
-<h2 id="fp32">fp32 — the default since v0.3.0</h2>
-<p>Since v0.3.0 the default path runs fused fp32 kernels (WRF's own single precision; double precision
-only where WRF uses it) — this is where the speed comes from on GPUs whose fp64 rate is a small
-fraction of fp32. <code>GPUWRF_FAST_DEFAULTS=0</code> turns the fast paths off. The rest of this section
-describes the older v0.20 opt-in mode, kept for reference; its numbers are historical.</p>
-<p>The opt-in
-<code>GPUWRF_ACOUSTIC_PRECISION_MODE=mixed_perturb_fp32_v020</code> mode is
-<strong>capability/VRAM-only</strong>, not a speedup:</p>
-<ul>
-  <li>cuts whole-run VRAM by <strong>−14.4 %</strong> (aggressive mode) and extends full-physics
-  cell capability <strong>~1.16×</strong> (fits a 700² grid where fp64 caps near 650²);</li>
-  <li>on a single RTX 5090 it is <strong>not</strong> faster — the fp32/fp64 throughput-ceiling
-  ratio is <strong>≈0.91</strong>, and there is no peak-VRAM win on small single domains
-  (radiation-transient-bounded below ~384²).</li>
-</ul>
-<div class="admon honest">
-  <div class="admon-title">Honest scope of the fp32 fidelity check</div>
-  <p>fp32 tolerance bands are checked only at the <strong>1 h forecast lead</strong> (19/19 fields
-  green) — real, but <strong>not stringent</strong> (2–3 orders of magnitude inside the eventual
-  24 h skill bands). fp32 is only truly stressed by the 24–120 h skill gate, which is future work.
-  fp32 is single-domain / capability-only: on the deep all-7 9-domain nest it can OOM on the RRTMG
-  transient and is ~5× slower than fp64 there anyway. Do not read the 1 h pass as a 24–120 h skill
-  proof.</p>
-</div>
-
-<h2 id="vram">VRAM &amp; host memory sizing</h2>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Case</th><th>Peak VRAM</th></tr></thead>
-<tbody>
-<tr><td>d01 9 km standalone</td><td>≈ 4.7 GiB</td></tr>
-<tr><td>1 km single domain (chunked BouLac)</td><td>≈ 18.25 GiB (fits one RTX 5090 bit-identically)</td></tr>
-<tr><td>All-island 9/3/1 km nested (AC1_FIT)</td><td>≈ 18.1 GiB peak</td></tr>
-<tr><td>Switzerland d01 72 h gate</td><td>≈ 22.9 GiB</td></tr>
-<tr><td>Canary L2 d02 72 h nested gate</td><td>≈ 29.8 GiB</td></tr>
-</tbody>
-</table>
-</div>
-<p>Peak VRAM is transient working memory (radiation transients dominate), not persistent fp64
-State. A <code>--max-dom&nbsp;&gt;&nbsp;1</code> run performs a CPU-side <strong>VRAM-headroom
-preflight</strong> that fails closed (exit 75) <em>before</em> the long compile rather than OOMing
-mid-run; tune it with <code>GPUWRF_MIN_FREE_VRAM_FRACTION</code> /
-<code>GPUWRF_MIN_FREE_VRAM_GIB</code> or bypass with <code>--force-gpu-run</code>.</p>
-<div class="admon warn">
-  <div class="admon-title">High resident host RAM (~36 GB)</div>
-  <p>A run currently holds ~36 GB of host RAM resident even at low VRAM, because the Noah-MP /
-  physics constant tables are baked into the compiled executable rather than passed as runtime
-  arguments. This is precision-independent and does <strong>not</strong> affect correctness or
-  results, but it limits running two instances on a 64 GB box. Root-caused; the fix is deferred.</p>
-</div>
-
-<h2 id="default-path-perf">Default-path work reductions (v0.23)</h2>
-<p>v0.23 adds two <strong>value-preserving</strong> default-on reductions that cut work without
-changing results: <strong>P0</strong> computes only the radiation flux slices the
-<code>wrfout</code> writer consumes (CPU bit-identical, 17/17 fields), and <strong>P3</strong>
-fuses a flat 2-domain parent+child cascade into one program (fail-closed for every other
-topology, CPU sha256 fused==eager). The dynamical core is untouched (net dynamics diff vs v0.22.2
-= 0 lines). The mandatory canary benchmark measures <strong>407 vs 411 s/forecast-hour</strong>
-(3-domain, 1 h, warm) — no regression. See <a href="validation.html#default-numerics">Validation →
-Default numerics</a>.</p>
-
-<h2 id="scaling-energy">Scaling &amp; energy — measured vs projected</h2>
-<div class="admon measured">
-  <div class="admon-title">Measured</div>
-  <p>A real 1 km Alpine forecast runs on one professional GPU (full physics, convection-permitting).
-  The device-bound fp64 kernel is near-roofline. The single-workstation energy-efficiency story is
-  not yet an at-scale benchmark; per-kWh and cluster-level efficiency remain projected below.</p>
-</div>
-<div class="admon warn">
-  <div class="admon-title">Projected — not yet benchmarked at scale</div>
-  <p>This workstation has one physical RTX 5090. A multi-GPU <code>shard_map</code> +
-  collective-halo (<code>lax.ppermute</code>) foundation exists and is bit-identity-validated on a
-  fake/CPU mesh, and the scaling harness lifts to bigger GPUs — but real multi-GPU throughput,
-  NVLink/NCCL bandwidth, and per-kWh figures at cluster scale are <strong>unmeasured and
-  projected</strong>. No competitive benchmark (e.g. vs AceCAST) has been run; that positioning is
-  an expectation, not a measurement.</p>
-</div>
-<p>Cross-version note: do not carry the historical ~674 s/forecast-hour number across topology,
-physics, and release boundaries. v0.23.4's nine-nest stress workload is materially different. Do
-not read the version history as a per-card nest-speed multiplier; use a matched canary or observed
-case progress.</p>
+<h1>Performance, memory and energy</h1><p>Whole-run speed and energy figures below retain their measured v0.3.2 windows; the v0.3.3 science wave is not a new quiet-host throughput benchmark. The v0.3.3 small-grid stability firewall adds about 12% kernels and 8% ordinary-root time on grids of ≤4096 horizontal columns only. Large WN3/Monica programs are byte-identical across that firewall delta.</p>
+<p>Use the measured hardware, workload and clock behind each number. This page keeps
+v0.3.2 benchmarks dated; completed v0.3.3 trajectory and compiled-program evidence is linked on the validation page. Older timings are not relabelled as new W3 measurements.</p>
+<h2 id="default-path-perf">Large regional forecasts on one card</h2>
+<p>[M] RTX 5090 (sm_120, CUDA 13), Ryzen 9 9950X: a cached 24-hour Canary
+9/3 km two-domain run takes <strong>79.319 seconds total, 3.305 s/forecast hour</strong>,
+including startup and output. The twelve-core original CPU-WRF main-loop reference
+is 92.3 s/hour: a <strong>27.9× clock ratio</strong>. CPU and GPU windows are explicitly
+different. The host was contended; this is a conservative measured absolute result,
+not a quiet-host or universal speed claim.</p>
+<p>The matched v0.3.1 GPU run took 88.060 seconds, 3.669 s/hour; B/A=0.901,
+9.9% lower whole-run wall [M]. The v0.3.2 steady-segment median is 2.625 s/hour,
+and initialization/pre-step work is 15.008 seconds. Small grids can remain
+launch-limited; that does not negate the measured regional single-card gain.</p>
+<p><a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.2.md">Exact source, geometry, clocks and receipts</a>.</p>
+<h2 id="cold-compile">The first run compiles</h2>
+<p>A new source, geometry or target can spend minutes compiling before integration.
+Cold setup is a separate cost from a warm forecast. Run a new geometry/version
+alone once before attempting concurrent cold builds. No quiet-host W3 compile
+or warm-readiness number is inferred from the old benchmark.</p>
+<h2 id="warm-cache">Reuse compatible executables</h2>
+<p>Later compatible runs reuse caches. Native nested AOT prefetch defaults ON;
+OFF loads at first dispatch. Compatibility includes target and effective controls.
+A copied cache can safely refuse a fingerprint mismatch even when pin-file contents
+match: path-bearing XLA flags are part of the target binding. Refusal is not a
+forecast failure or permission to bypass compatibility checks.</p>
+<h2 id="batched-ensemble">Independent cases sharing one GPU</h2>
+<p>[M] Four three-nest Tenerife cases × 24 h measured <strong>5.507 s/case-hour</strong>
+aggregate, 22.4× the CPU-WRF 3×4-core main-loop throughput reference (123.4 s/case-hour).
+The all-four-running steady window measured 4.857 s/case-hour, 25.4×. Whole-run
+clocks include init/load and output, without compression. The FIFO tail is not
+the steady-window throughput number. Greater aggregate throughput can increase
+one case's latency.</p>
+<h2 id="batched-ensemble-distinct-init">Different dates or members</h2>
+<pre><code>scripts/run_parallel_cases.sh --out-root runs/batch CASE_A CASE_B -- \
+  --domains-from-namelist --hours 24</code></pre>
+<p>The launcher checks both GPU and host memory, admits cases and queues the rest.
+v0.3.2 observed 5,032 MiB warm GPU allocation/case and about 5.6 GB host high-water;
+these are workload-specific values, not universal sizing constants.</p>
+<h2 id="fp32">Precision with original-WRF evidence</h2>
+<p>Validated fp32 hot paths and carry are defaults on GPU, with WRF DOUBLE islands
+retained. Original-CPU comparisons cover selected regional 24/72-hour cases.
+An opt-out or different scheme combination needs its own scope; older f64 fallback
+still has the historical Eddington shortwave choice, while W3 REFTRA corrects the
+active REAL path. See <a href="validation.html">validation</a>.</p>
+<h2 id="vram">C-auto and measured memory</h2>
+<p>Preflight priority is explicit <code>GPUWRF_MIN_FREE_VRAM_GIB</code>, then a
+verified geometry/settings C-auto plan, then cold fallback
+<code>max(24 GiB, 0.50 × total VRAM)</code>. A reserved pool needs outside-pool
+headroom; an unreserved pool also needs its budget. Explicit allocator settings
+win. Cold compilation and warm forecasts have different host peaks.</p>
+<h2 id="scaling-energy">Measured board energy and inferred scenarios</h2>
+<p>[M] The v0.3.2 four-case sweep integrated timestamped board-power samples to
+0.678 Wh/case-hour. Adding an assumed 67 W host share gives 0.780 Wh [I]. The
+twelve-core CPU reference uses approximately 200 W, maintainer measurement; its
+energy is 6.86 Wh/case-hour [I]. This accounting is not measured whole-machine
+efficiency. Four-core Swiss CPU energy is unknown.</p>
+<p>Existing ensemble/giant-domain scenarios on H100/B200/B300 are inferred,
+not data-centre GPU runs. Distributed multi-GPU forecasts are not implemented.
+See the <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.2.md">methods, assumptions and uncertainty</a>.</p>

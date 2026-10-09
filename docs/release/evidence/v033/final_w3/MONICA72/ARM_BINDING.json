@@ -1,0 +1,161 @@
+{
+  "id": "MONICA72",
+  "executed_revision": "7a0c93ff4d19b1892067711d884739d246432344",
+  "package_tree": "008f074b3d85741639579d75c93eb06262a16321",
+  "original_cpu_reference": "original CPU-WRF RF02 joined0-72",
+  "hours": 72,
+  "domains": [
+    "d01",
+    "d02"
+  ],
+  "domain_hours": 146,
+  "scope": "Actual7a execution; releasebe0 via nativeBYTE628de151, not a be0 execution. Original CPU-WRF truth. Raw strict24/full72/integrity failures and frozenannex/Ownerledger remain distinct; L4/L6 station-dependent decisions pending.",
+  "verdicts": {
+    "strict24": {
+      "status": "PASS",
+      "hours": 24,
+      "sha256": "4f700488a81179ee5b71c850c51c6630b3698ed3ecc3931c268203892c8ae2f6",
+      "report": "d6_24h_strict_verdict.json",
+      "breaches": {
+        "d01": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        },
+        "d02": {
+          "status": "PASS",
+          "pass": true,
+          "paired_frames": 25,
+          "frame_failures": [],
+          "incomplete": []
+        }
+      }
+    },
+    "full_D6": {
+      "status": "PASS",
+      "hours": 72,
+      "sha256": "8ca52f45adf78151d9da53ec49d8d9874310d1aafef2e7945b5a0a6497dc74f8",
+      "report": "d6_72h_verdict.json",
+      "breaches": ""
+    },
+    "integrity": {
+      "supplied_disposition": "PASS",
+      "sha256": "c683140f47c52ad7dca8302bd2706303268d5b00ef01fcc7b6f932b445fd7864",
+      "report": "classes_all_72h.json"
+    },
+    "annex": {
+      "supplied_disposition": "SEE EXACT ANNEX; MANAGER LEDGER SEPARATE",
+      "sha256": "ec7ebc14f0d073660cb3171b39ccbbd9621a367bf8f3ba86f029ac15a659c8d4",
+      "report": "annex_postpass.txt"
+    }
+  },
+  "cached_figures_reused": false,
+  "elapsed_seconds": 147.23843168793246,
+  "receipt_sha256": "bce000e7b1de92c04636f9cada6b14e2755def2647e0076d07ffbed4eb59e326",
+  "compression_receipt_sha256": "503543cd7118b6d81e2ba4d8e26b585f8da4d887dd95892cb1f129dcb59d55f9",
+  "part_assets": [
+    {
+      "path": "PSFC_bands.png",
+      "sha256": "b138b26c7e4566a1fe8077d3be242ee863b0ead2399df24566ea001b689d2114"
+    },
+    {
+      "path": "PSFC_summary.png",
+      "sha256": "488e5f40b52c4c1af6f7f81585eefed07d98e123cde6610289aa2546d2b46ebd"
+    },
+    {
+      "path": "QVAPOR_bands.png",
+      "sha256": "6027960ffcf906911444caaf95748901e32e0dc4e320b119cdc3f54049c4fe93"
+    },
+    {
+      "path": "QVAPOR_summary.png",
+      "sha256": "4957dd5fa07c711c2288a84cc0cbd9b683201390fe4da53c1dd6370a7d09d6cc"
+    },
+    {
+      "path": "RAINNC_bands.png",
+      "sha256": "96dca5150e122e445cf404ae4458ca49ae269464cb5621d9393b0e2d3f96ed18"
+    },
+    {
+      "path": "RAINNC_hourly_bands.png",
+      "sha256": "fe301c26afb7fd30e7cc5fcd7fc75b705f7b0ffc4164ae67e7dd86ab5d9fbd65"
+    },
+    {
+      "path": "RAINNC_hourly_summary.png",
+      "sha256": "5e148329ad9c375f6fc5c92fe279dc77f33cdcb2f8d0c50cb8649bb9142023fa"
+    },
+    {
+      "path": "RAINNC_summary.png",
+      "sha256": "a7b659a24a76818f4ae08668a3d17451c23c8cb1b2a4f161007becec16d2f0e1"
+    },
+    {
+      "path": "T2_bands.png",
+      "sha256": "cd5f4c7219cc157ac4a3b13b7280683cf8d55e4dda984614960a18f895dd3b4b"
+    },
+    {
+      "path": "T2_summary.png",
+      "sha256": "966382edfef9227ab72bfadadce7c609e859c1e9903712b1edd32a1e7d9a3de7"
+    },
+    {
+      "path": "T_bands.png",
+      "sha256": "675a6a5a5d756c3cf3cffd492fce2e40fe7f4a1c5d2f5790215ecef3a807de94"
+    },
+    {
+      "path": "T_summary.png",
+      "sha256": "04a589965244363b512aebd7bca1f377976b3c91c0817b1f3d194b2c322abd1a"
+    },
+    {
+      "path": "U10_bands.png",
+      "sha256": "6f8f9c2704606c58e169b9ef9ce1d0296c647a379dc0c1c6b677235f9469e574"
+    },
+    {
+      "path": "U10_summary.png",
+      "sha256": "763c0c7251a7a74eca10bdbb04c91456f700c78a64bb76a9f17e0ca118b3f294"
+    },
+    {
+      "path": "U_bands.png",
+      "sha256": "7b2d90627317e63a611d405a228153e5cb0bc81a149dc7f8eea6ca3381cabfcf"
+    },
+    {
+      "path": "U_summary.png",
+      "sha256": "8766e8ec3b81c0248f47525a99eae0de39b123f68c4e874d6245aa1ecff42386"
+    },
+    {
+      "path": "V10_bands.png",
+      "sha256": "2edcecdac147883af18ea23c218c428398d059e581419bf93815b6cd3a1706f4"
+    },
+    {
+      "path": "V10_summary.png",
+      "sha256": "e38e85cb0daea391d30fffeb572f990fb41447e665f80d8643538b45514c6d82"
+    },
+    {
+      "path": "V_bands.png",
+      "sha256": "8198f59b0da86297e2db4d1edcdb1f39054c944e4c0a8b88d822b6b5176a3cee"
+    },
+    {
+      "path": "V_summary.png",
+      "sha256": "f24d5faf591e4d9562d11594709a177989a97c2e71d7c4030bf441b12a41c41d"
+    },
+    {
+      "path": "W_bands.png",
+      "sha256": "c6949707adb4710847503f4cecf7cdf77ced7364ccd3fb2ddff496820115585b"
+    },
+    {
+      "path": "W_summary.png",
+      "sha256": "276efdf677822e2d4a7a3204ea777559ebba77cea5bdac2ff3c7d440b04b870c"
+    },
+    {
+      "path": "heatmap.png",
+      "sha256": "dc19110519bb838d7db1b5e39240ec6857933b90d76bb63c6455564ab9af2b70"
+    },
+    {
+      "path": "index.html",
+      "sha256": "77be9991a81ce0c8fa9afa8e9140cdb6b78616cf47a83d06eb5e454ecf469443"
+    },
+    {
+      "path": "metrics.json",
+      "sha256": "516ce03a165ee3d9536f74839e8bd598477d205c9cb4c9a27da125655a850157"
+    }
+  ],
+  "ready_part_reused": true
+}

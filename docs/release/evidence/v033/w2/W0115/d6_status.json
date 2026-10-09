@@ -1,0 +1,372 @@
+{
+  "complete": true,
+  "verdict": "RAW_D6_FAILURES",
+  "domains": {
+    "d01": "PASS",
+    "d02": "PASS",
+    "d03": "FAIL"
+  },
+  "breach_frames": {
+    "d01": [],
+    "d02": [],
+    "d03": [
+      {
+        "field": "U10",
+        "lead_h": 38
+      },
+      {
+        "field": "U10",
+        "lead_h": 39
+      },
+      {
+        "field": "U10",
+        "lead_h": 40
+      },
+      {
+        "field": "U10",
+        "lead_h": 41
+      },
+      {
+        "field": "U10",
+        "lead_h": 42
+      },
+      {
+        "field": "U10",
+        "lead_h": 43
+      },
+      {
+        "field": "U10",
+        "lead_h": 44
+      },
+      {
+        "field": "U10",
+        "lead_h": 45
+      },
+      {
+        "field": "U10",
+        "lead_h": 46
+      },
+      {
+        "field": "U10",
+        "lead_h": 47
+      },
+      {
+        "field": "U10",
+        "lead_h": 48
+      },
+      {
+        "field": "U10",
+        "lead_h": 49
+      },
+      {
+        "field": "U10",
+        "lead_h": 50
+      },
+      {
+        "field": "U10",
+        "lead_h": 51
+      },
+      {
+        "field": "U10",
+        "lead_h": 52
+      },
+      {
+        "field": "V10",
+        "lead_h": 37
+      },
+      {
+        "field": "V10",
+        "lead_h": 38
+      },
+      {
+        "field": "V10",
+        "lead_h": 39
+      },
+      {
+        "field": "V10",
+        "lead_h": 40
+      },
+      {
+        "field": "V10",
+        "lead_h": 41
+      },
+      {
+        "field": "V10",
+        "lead_h": 42
+      },
+      {
+        "field": "V10",
+        "lead_h": 43
+      },
+      {
+        "field": "V10",
+        "lead_h": 44
+      },
+      {
+        "field": "V10",
+        "lead_h": 45
+      },
+      {
+        "field": "V10",
+        "lead_h": 47
+      },
+      {
+        "field": "V10",
+        "lead_h": 48
+      },
+      {
+        "field": "V10",
+        "lead_h": 49
+      },
+      {
+        "field": "V10",
+        "lead_h": 50
+      },
+      {
+        "field": "V10",
+        "lead_h": 51
+      },
+      {
+        "field": "V10",
+        "lead_h": 52
+      },
+      {
+        "field": "V10",
+        "lead_h": 53
+      },
+      {
+        "field": "V10",
+        "lead_h": 54
+      },
+      {
+        "field": "V10",
+        "lead_h": 55
+      },
+      {
+        "field": "V10",
+        "lead_h": 56
+      },
+      {
+        "field": "V10",
+        "lead_h": 58
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 19
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 20
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 21
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 22
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 23
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 24
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 25
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 26
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 27
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 28
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 29
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 30
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 31
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 32
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 33
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 34
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 35
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 36
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 37
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 38
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 39
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 40
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 41
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 42
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 43
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 44
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 45
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 46
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 47
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 48
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 49
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 50
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 51
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 52
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 53
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 54
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 55
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 56
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 57
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 58
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 59
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 60
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 61
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 62
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 63
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 64
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 65
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 66
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 67
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 68
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 69
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 70
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 71
+      },
+      {
+        "field": "RAINNC",
+        "lead_h": 72
+      }
+    ]
+  },
+  "note": "Raw D6 verdict; registered predictability/integrity classifications are separate."
+}

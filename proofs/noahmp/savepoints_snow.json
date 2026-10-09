@@ -1219,128 +1219,6 @@
           -1.5
         ]
       }
-    },
-    {
-      "case": "snow",
-      "forcing": {
-        "cosz": 0.9432140588760376,
-        "dz8w": 47.38938588235865,
-        "lwdn": 232.89566040039062,
-        "prcpconv": 0.0,
-        "prcpgrpl": 0.0,
-        "prcphail": 0.0,
-        "prcpnonc": 0.0,
-        "prcpsnow": 0.0,
-        "psfc": 67761.109375,
-        "q2": 0.006864030845463276,
-        "qc": 0.0,
-        "sfcprs": 67559.2578125,
-        "sfctmp": 280.91381378504894,
-        "soldn": 1090.612060546875,
-        "uu": -0.47027844190597534,
-        "vv": 2.569869041442871,
-        "zlvl": 23.694692941179326
-      },
-      "isltyp": 6,
-      "julian": 142.0,
-      "name": "teide_snow",
-      "shdfac": 0.22845273971557617,
-      "state_in": {
-        "albold": 0.75,
-        "canice": 0.0,
-        "canliq": 0.0,
-        "ch": 0.001,
-        "cm": 0.001,
-        "eah": 1500.0,
-        "fwet": 0.0,
-        "isnow": -1,
-        "qsfc": 0.012,
-        "sh2o": [
-          0.07875172793865204,
-          0.13265442848205566,
-          0.13265442848205566,
-          0.13265442848205566
-        ],
-        "smc": [
-          0.07875172793865204,
-          0.13265442848205566,
-          0.13265442848205566,
-          0.13265442848205566
-        ],
-        "smcwtd": 0.13265442848205566,
-        "sneqv": 75.0,
-        "sneqvo": 75.0,
-        "snice": [
-          0.0,
-          0.0,
-          70.0
-        ],
-        "snliq": [
-          0.0,
-          0.0,
-          5.0
-        ],
-        "snowh": 0.3,
-        "stc": [
-          0.0,
-          0.0,
-          268.0,
-          289.26629638671875,
-          277.3570251464844,
-          277.1935119628906,
-          275.3641662597656
-        ],
-        "tah": 283.0134582519531,
-        "tauss": 0.0,
-        "tg": 308.5160217285156,
-        "tv": 283.0134582519531,
-        "zsnso": [
-          0.0,
-          0.0,
-          -0.3,
-          -0.05,
-          -0.25,
-          -0.7,
-          -1.5
-        ]
-      },
-      "vegtyp": 16,
-      "wrf": {
-        "isnow_in": -1,
-        "isnow_out": -3,
-        "snice_out": [
-          12.1326618,
-          30.3317184,
-          30.3317184
-        ],
-        "snliq_out": [
-          0.367279917,
-          0.918182015,
-          0.918182015
-        ],
-        "snow_in": {
-          "albold": 0.75,
-          "sneqv": 75.0,
-          "sneqvo": 75.0,
-          "snowh": 0.300000012
-        },
-        "snow_out": {
-          "albold": 0.749949992,
-          "fsno": 0.833654702,
-          "qsnbot": 0.0,
-          "sneqv": 74.9997406,
-          "snowh": 0.299995154
-        },
-        "zsnso_out": [
-          -0.0500000007,
-          -0.174997583,
-          -0.299995154,
-          -0.349995166,
-          -0.549995184,
-          -0.999995172,
-          -1.79999518
-        ]
-      }
     }
   ],
   "columns_index": [
@@ -1353,16 +1231,16 @@
     "nighttime_veg9",
     "nighttime_veg10",
     "nighttime_veg13",
-    "nighttime_veg16",
-    "teide_snow"
+    "nighttime_veg16"
   ],
   "component": "S3 snow",
   "corpus": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "dataset": "MODIFIED_IGBP_MODIS_NOAH",
   "kind": "external oracle: compiled pristine WRF module_sf_noahmplsm.o NOAHMP_SFLX called on real Canary d03 land columns; per-column input snapshot + WRF-computed output (NOT a self-compare)",
-  "ncolumns": 11,
+  "ncolumns": 10,
   "nsnow": 3,
   "nsoil": 4,
+  "oracle_wiring": "NF05 wired driver: calculate_soil=.true., soil_update_steps=1, FICEOLD start-of-step, irrigation reset (module_sf_noahmpdrv.F:648-675,873-877,1027-1028); inputs = frozen columns",
   "proof": "noahmp-component-savepoints (v0.2.0 P0-3, Sprint 0b)",
   "scope_options": {
     "dveg": 4,
@@ -1378,5 +1256,6 @@
     "opt_stc": 1,
     "opt_tbot": 2
   },
+  "teide_snow": "dropped from all/water/soil_thermo/snow: synthetic column, wired pristine WRF aborts on its own ERRWAT (23.6 mm); kept in the energy/phenology slices (computed before the water balance)",
   "wrf_source": "~/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F"
 }

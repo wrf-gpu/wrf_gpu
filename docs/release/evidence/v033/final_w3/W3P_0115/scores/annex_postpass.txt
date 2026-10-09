@@ -1,0 +1,8 @@
+W3P_0115: registry verdict FAIL-new-class; NEW items 6
+  d01 QNICE   @2026-01-16_16: flagged   39 (iv True) | GPU exact 0 True (ii) | CPU max 2.63e+00 cap 1e+01 (iii True) -> EXPLAINED
+  d01 QNICE   @2026-01-18_13: flagged    1 (iv True) | GPU exact 0 True (ii) | CPU max 7.83e-03 cap 1e+01 (iii True) -> EXPLAINED
+  d03 SNOW    @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 2.32e-04 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWC   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 6.79e-05 cap 1e-03 (iii True) -> EXPLAINED
+  d03 SNOWH   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.94e-06 cap 1e-05 (iii True) -> EXPLAINED
+  d03 TAUSS   @2026-01-17_16: flagged    3 (iv True) | GPU exact 0 True (ii) | CPU max 1.91e-03 cap 5e-02 (iii True) -> EXPLAINED
+ANNEX PASS (all NEW items explained)

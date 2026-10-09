@@ -58,7 +58,7 @@ def prepare(case, output, domain, file, whole=False):
     np.savez(output / f'{domain}.npz', **arrays)
     if whole:
         whole_arrays = {f'state_{name}': np.asarray(getattr(column, name))
-                        for name in column.__slots__}
+                        for name in column.__slots__ if getattr(column, name) is not None}
         whole_arrays.update({f'flux_{name}': np.asarray(getattr(flux, name))
                              for name in flux._fields})
         if not all(np.isfinite(value).all() for value in whole_arrays.values()):

@@ -174,7 +174,9 @@ def kiss_random_lanes(seeds, *, first: int, ng: int, nlay: int):
 
 def _random_values(p, *, first, ng, legacy_fp64, sw=False):
     nlay = p.shape[-1]
-    if kiss_kernel_enabled() and not legacy_fp64:
+    # CPU runs the bitwise-equal jump-ahead stream: the lane kernel's CPU interpret mode aliases the
+    # masked tail lanes onto (last column, g < tail) and returns NaN there when ncol*ng % 128 != 0.
+    if kiss_kernel_enabled() and not legacy_fp64 and jax.default_backend() != "cpu":
         return kiss_random_lanes(_pressure_seeds(p), first=first, ng=ng, nlay=nlay)
     if sw and legacy_fp64:
         # Retain the exact legacy SW seeding graph. Its explicit fp64 floor/
@@ -194,25 +196,63 @@ def _random_values(p, *, first, ng, legacy_fp64, sw=False):
     return jnp.moveaxis(random, (0, 1), (-1, -2))
 
 
+# Overlap: icld=1 (random) by default. GPUWRF_RRTMG_MAXRAND=1 selects WRF's cldovrlp=2
+# maximum-random overlap (Registry default): the SAME KISS draws, then the case(2) chain.
+# Defined below the KISS-lane kernel so its Pallas source locations stay put (E58).
+_MAXRAND = os.environ.get("GPUWRF_RRTMG_MAXRAND", "0") == "1"
+
+
+def max_random_cdf(random, cldf):
+    """WRF McICA maximum-random overlap (icld=2, irng=0) CDF chain.
+
+    module_ra_rrtmg_lw.F:2481-2490 / module_ra_rrtmg_sw.F:1803-1812, after the
+    same KISS draws as icld=1: for ilev = 2..nlay (layer 1 = bottom),
+    CDF(ilev) = CDF(ilev-1) if CDF(ilev-1) > 1 - cldf(ilev-1) else
+    CDF(ilev) * (1 - cldf(ilev-1)). ``random``: ``(..., nlay, ng)`` draws;
+    ``cldf``: ``(..., nlay)`` cldmin-floored fractions. Arithmetic in the draws'
+    dtype (WRF real(kind=rb) = REAL4 for the REAL32 path).
+    """
+    dtype = random.dtype
+    clear = dtype.type(1.0) - cldf.astype(dtype)
+
+    def step(prev, xs):
+        draw, clear_below = xs
+        cur = jnp.where(prev > clear_below[..., None], prev, draw * clear_below[..., None])
+        return cur, cur
+
+    draws = jnp.moveaxis(random, -2, 0)
+    _, upper = lax.scan(step, draws[0], (draws[1:], jnp.moveaxis(clear, -1, 0)[:-1]))
+    return jnp.moveaxis(jnp.concatenate((draws[:1], upper), axis=0), 0, -2)
+
+
 def lw_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=jnp.float32,
-                  legacy_fp64=_LEGACY_FP64):
-    """Reference-compatible LW icld=1/irng=0/permuteseed=150 mask."""
+                  legacy_fp64=_LEGACY_FP64, maxrand=None):
+    """Reference-compatible LW irng=0/permuteseed=150 mask: icld=1, or icld=2 with ``maxrand``."""
+    maxrand = _MAXRAND if maxrand is None else maxrand
     random = _random_values(p_layer_pa, first=151, ng=140, legacy_fp64=legacy_fp64)
     if not legacy_fp64:
         cloud_fraction = cloud_fraction.astype(jnp.float32)
     dtype = cloud_fraction.dtype
     cldf = jnp.where(cloud_fraction < dtype.type(1.0e-20), dtype.type(0.0), cloud_fraction)
+    if maxrand:
+        random = max_random_cdf(random, cldf)
     return (random >= (1.0 - cldf[..., :, None])).astype(output_dtype)
 
 
-def sw_cloud_mask(p_pa, cloud_fraction, gpoint_mask, *, legacy_fp64=_LEGACY_FP64):
-    """Reference-compatible SW random-overlap mask, including padded points."""
+def sw_cloud_mask(p_pa, cloud_fraction, gpoint_mask, *, legacy_fp64=_LEGACY_FP64, maxrand=None):
+    """Reference-compatible SW mask (icld=1, or icld=2 with ``maxrand``), including padded points."""
     # Imported lazily: this standalone kernel does not change solver ownership.
     from gpuwrf.physics.rrtmg_sw import _SW_GLOBAL_GPOINT_INDEX, _SW_GPOINT_COUNTS
 
+    maxrand = _MAXRAND if maxrand is None else maxrand
     random = _random_values(p_pa, first=2, ng=sum(_SW_GPOINT_COUNTS), legacy_fp64=legacy_fp64, sw=True)
     if not legacy_fp64:
         cloud_fraction = cloud_fraction.astype(jnp.float32)
+    if maxrand:
+        # WRF SW floors at cldmin too (module_ra_rrtmg_sw.F:1721); the icld=1 path keeps its graph.
+        dtype = cloud_fraction.dtype
+        cloud_fraction = jnp.where(cloud_fraction < dtype.type(1.0e-20), dtype.type(0.0), cloud_fraction)
+        random = max_random_cdf(random, cloud_fraction)
     cloudy = random >= (1.0 - cloud_fraction[..., :, None])
     reduced = jnp.take(cloudy, _SW_GLOBAL_GPOINT_INDEX, axis=-1)
     return reduced.astype(gpoint_mask.dtype) * gpoint_mask

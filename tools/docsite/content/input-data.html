@@ -74,14 +74,10 @@ ergonomics. wrf_gpu reads the namelist directly:</p>
   scheme is refused with a named reason, never silently substituted (see
   <a href="namelist.html">Namelist Compatibility</a>).</li>
   <li><code>&amp;domains&nbsp;max_dom</code> is read to know how many domains the case
-  describes, but a nested <em>run</em> is opt-in via <code>--max-dom</code> — a
-  multi-domain namelist run without <code>--max-dom</code> executes a single domain
+  describes, but a nested <em>run</em> uses <code>--domains-from-namelist</code> or explicit <code>--max-dom</code> — a
+  multi-domain namelist run without either nesting flag executes a single domain
   and prints a reminder.</li>
-  <li>Some cadence keys are approximated with a named, non-fatal warning: the cumulus
-  / PBL cadence keys (<code>cudt</code>, <code>bldt&nbsp;&gt;&nbsp;0</code>) are not
-  honored verbatim — the GPU port runs those physics every dynamics step (a
-  conservative approximation), so a real WRF namelist (e.g. <code>cudt=5</code>) is
-  accepted with a warning rather than rejected.</li>
+  <li>Native runs honor per-domain <code>radt</code> and <code>cudt</code> through integer step cadence. Other cadence approximations, when present, are named separately in the effective payload.</li>
 </ul>
 
 <p>By default <code>run</code> uses <code>&lt;input-dir&gt;/namelist.input</code>;
@@ -107,3 +103,13 @@ and the variable subset are on the <a href="output.html">Output</a> page.</p>
   and which fail closed. <a href="nesting.html">Nesting</a> — how live boundaries are
   built for child domains.</p>
 </div>
+
+<h2 id="sst-forcing">SST forcing inputs</h2><p>With native <code>sst_update=1</code>, supply
+the per-domain <code>wrflowinp</code> auxiliary files and valid NetCDF interval records.
+Ice-free support requires <code>io_form_auxinput4=2</code> and a positive auxiliary interval;
+SEAICE and skin/lake coupling remain refused.</p>
+<h2 id="native-cadence">Native cadence and controls</h2><p>Native runs bind per-domain
+<code>radt</code> and <code>cudt</code> to integer step cadence; requested <code>topo_shading</code>,
+<code>slope_rad</code>, <code>moist_adv_opt</code> and <code>scalar_adv_opt</code> reach the
+corresponding controls. This includes the native single-root route. Source binding and
+supported dispatch are separate from complete numerical validation.</p>

@@ -22,6 +22,9 @@ from gpuwrf.physics.rrtmg_constants import (
     AVOGADRO,
     CH4_VMR,
     CO2_VMR,
+    rrtmg_constant,
+    rrtmg_cloud_water_path,
+    rrtmg_heating_rate,
     CP_AIR,
     DRY_AIR_MOLECULAR_WEIGHT,
     GRAVITY,
@@ -332,6 +335,7 @@ _LW_ARRAY_FIELDS: tuple[str, ...] = (
     "pressure_interfaces",
     "temperature_interfaces",
     "ozone_vmr",
+    "re_cloud", "re_ice", "re_snow", "xland",
 )
 _LW_GAS_FIELDS: tuple[str, ...] = (
     "co2_vmr",
@@ -341,7 +345,10 @@ _LW_GAS_FIELDS: tuple[str, ...] = (
     "cfc12_vmr",
 )
 _LW_STATIC_FIELDS: tuple[str, ...] = ("top_pressure_pa",)
-_LW_CHILD_FIELDS: tuple[str, ...] = _LW_ARRAY_FIELDS + _LW_GAS_FIELDS
+# Append new optional leaves after the existing gas leaves: OFF argument paths
+# and the original column ABI remain identical.
+_LW_MP_RE_FIELDS = ("re_cloud", "re_ice", "re_snow", "xland")
+_LW_CHILD_FIELDS: tuple[str, ...] = tuple(n for n in _LW_ARRAY_FIELDS if n not in _LW_MP_RE_FIELDS) + _LW_GAS_FIELDS + _LW_MP_RE_FIELDS
 # Non-array scalars, in the historical aux order, for equality and hashing.
 _LW_SCALAR_FIELDS: tuple[str, ...] = _LW_STATIC_FIELDS + _LW_GAS_FIELDS
 
@@ -382,6 +389,7 @@ class RRTMGLWColumnState:
         "pressure_interfaces",
         "temperature_interfaces",
         "ozone_vmr",
+        "re_cloud", "re_ice", "re_snow", "xland",
         "top_pressure_pa",
         "co2_vmr",
         "n2o_vmr",
@@ -413,6 +421,7 @@ class RRTMGLWColumnState:
         cfc11_vmr: float | None = None,
         cfc12_vmr: float | None = None,
         ozone_vmr=None,
+        re_cloud=None, re_ice=None, re_snow=None, xland=None,
     ) -> None:
         self.T = T
         self.p = p
@@ -455,6 +464,17 @@ class RRTMGLWColumnState:
         # WRF o3input=2 supplies O3RAD on model mass layers.  None keeps the
         # historical INIRAD/O3DATA climatology path byte-identical.
         self.ozone_vmr = ozone_vmr
+        # Explicit radii request the WRF has_reqc/i/s optics. None retains
+        # the established fixed-radius operator and contributes no array leaf.
+        radii = (re_cloud, re_ice, re_snow)
+        if any(v is None for v in radii) and not all(v is None for v in radii):
+            raise ValueError("re_cloud/re_ice/re_snow must be all supplied or all None")
+        if re_cloud is not None:
+            if xland is None:
+                raise ValueError("MP effective radii require WRF XLAND for liquid fallback")
+            if any(tuple(v.shape) != tuple(p.shape) for v in radii):
+                raise ValueError("MP effective radii must have the column-layer shape")
+        self.re_cloud, self.re_ice, self.re_snow, self.xland = re_cloud, re_ice, re_snow, xland
         # WRF `rrtmg_lwinit` uses the grid's p_top to set NLAYERS.  This is
         # static metadata because it determines JAX array shapes.  None keeps
         # the historical one-buffer-layer behavior for bare/fixture callers;
@@ -1210,6 +1230,10 @@ def _flatten_lw_state(state: RRTMGLWColumnState, leading_shape: tuple[int, ...],
             if state.ozone_vmr is None
             else _flatten_layer_field(state.ozone_vmr, leading_shape, ncol)
         ),
+        re_cloud=None if state.re_cloud is None else _flatten_layer_field(state.re_cloud, leading_shape, ncol),
+        re_ice=None if state.re_ice is None else _flatten_layer_field(state.re_ice, leading_shape, ncol),
+        re_snow=None if state.re_snow is None else _flatten_layer_field(state.re_snow, leading_shape, ncol),
+        xland=None if state.xland is None else _flatten_surface_field(state.xland, leading_shape, ncol),
     )
 
 
@@ -1244,6 +1268,10 @@ def _pad_lw_state(state: RRTMGLWColumnState, ncol: int, padded_ncol: int) -> RRT
             if state.ozone_vmr is None
             else _pad_leading_columns(state.ozone_vmr, ncol, padded_ncol)
         ),
+        re_cloud=None if state.re_cloud is None else _pad_leading_columns(state.re_cloud, ncol, padded_ncol),
+        re_ice=None if state.re_ice is None else _pad_leading_columns(state.re_ice, ncol, padded_ncol),
+        re_snow=None if state.re_snow is None else _pad_leading_columns(state.re_snow, ncol, padded_ncol),
+        xland=None if state.xland is None else _pad_leading_columns(state.xland, ncol, padded_ncol),
     )
 
 
@@ -1284,6 +1312,10 @@ def _slice_lw_state(state: RRTMGLWColumnState, start, tile_cols: int, padded_nco
                 state.ozone_vmr, start, tile_cols, padded_ncol
             )
         ),
+        re_cloud=None if state.re_cloud is None else _slice_leading_columns(state.re_cloud, start, tile_cols, padded_ncol),
+        re_ice=None if state.re_ice is None else _slice_leading_columns(state.re_ice, start, tile_cols, padded_ncol),
+        re_snow=None if state.re_snow is None else _slice_leading_columns(state.re_snow, start, tile_cols, padded_ncol),
+        xland=None if state.xland is None else _slice_leading_columns(state.xland, start, tile_cols, padded_ncol),
     )
 
 
@@ -1534,7 +1566,7 @@ def _pressure_layer_mass(p):
 
     nz = p.shape[-1]
     interfaces = _pressure_interfaces(p)
-    return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / GRAVITY, MIN_LAYER_MASS)
+    return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / rrtmg_constant("GRAVITY", p.dtype, GRAVITY), MIN_LAYER_MASS)
 
 
 def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
@@ -1562,7 +1594,7 @@ def _rrtmg_column_amounts(
     h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
     dp_mb = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) * 0.01, 1.0e-8)
-    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * rrtmg_constant("GRAVITY", pressure_interfaces.dtype, GRAVITY) * amm * (1.0 + h2ovmr))
     colh2o = 1.0e-20 * coldry * h2ovmr
     colco2 = 1.0e-20 * coldry * co2_vmr
     colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
@@ -1572,7 +1604,7 @@ def _rrtmg_column_amounts(
     absorber = colh2o + 0.03 * colco2 + 0.05 * colo3 + 0.02 * coln2o + 0.02 * colch4 + 0.0001 * colo2
     dry_plus_water = coldry + coldry * h2ovmr
     pwvcm = jnp.sum(18.0160 * coldry * h2ovmr, axis=-1) / jnp.maximum(DRY_AIR_MOLECULAR_WEIGHT * jnp.sum(dry_plus_water, axis=-1), 1.0e-12)
-    pwvcm = pwvcm * (1.0e3 * pressure_interfaces[..., 0] * 0.01) / (1.0e2 * GRAVITY)
+    pwvcm = pwvcm * (1.0e3 * pressure_interfaces[..., 0] * 0.01) / (1.0e2 * rrtmg_constant("GRAVITY", pressure_interfaces.dtype, GRAVITY))
     return absorber, pwvcm
 
 
@@ -1684,7 +1716,7 @@ def _lw_setcoef(
     pavel = jnp.maximum(p_pa * 0.01, 1.0e-12)
     pz = pressure_interfaces_pa * 0.01
     dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], 1.0e-12)
-    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
+    coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * rrtmg_constant("GRAVITY", pressure_interfaces_pa.dtype, GRAVITY) * amm * (1.0 + h2ovmr))
     o3_vmr = (
         _lw_o3_profile_vmr(pressure_interfaces_pa)
         if o3_vmr is None
@@ -2333,10 +2365,10 @@ def _lw_tfn_factor(odepth):
     """WRF `tfn_tbl` source correction from `rrtmg_lw.F:3403-3409,8054-8070`."""
 
     tau = jnp.maximum(odepth, 0.0)
-    tblind = tau / (LW_BPADE + tau)
+    tblind = tau / (rrtmg_constant("LW_BPADE", odepth.dtype, LW_BPADE) + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
     tfn = idx.astype(_canonical_float()) / float(LW_NTBL)
-    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, rrtmg_constant("LW_BPADE", odepth.dtype, LW_BPADE) * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
     exp_tbl = jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS)
     table_factor = jnp.where(
         tau_tbl < 0.06,
@@ -2418,11 +2450,14 @@ def _kiss_step(seed1, seed2, seed3, seed4):
 
 
 def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=None):
-    """Builds the WRF random-overlap McICA mask for the LW fixture path.
+    """Builds the WRF McICA mask for the LW path (`irng=0`, `permuteseed=150`).
 
-    The WRF harness uses `icld=1`, `irng=0`, and `permuteseed=150`, so this
-    ports only the random-overlap KISS path from module_ra_rrtmg_lw.F:2402-2438.
+    `icld=1` random overlap (module_ra_rrtmg_lw.F:2402-2438) by default;
+    GPUWRF_RRTMG_MAXRAND=1 applies WRF's `icld=2` maximum-random chain
+    (:func:`gpuwrf.kernels.rad_mcica.max_random_cdf`) to the same draws.
     """
+    from gpuwrf.kernels import rad_mcica
+
     if output_dtype is None:
         output_dtype = _canonical_float()
 
@@ -2448,10 +2483,12 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=None
     leading = len(p_layer_pa.shape) - 1
     cdf = jnp.transpose(cdf, tuple(range(2, 2 + leading)) + (1, 0))
     cldf = jnp.where(cloud_fraction < 1.0e-20, 0.0, cloud_fraction)
+    if rad_mcica._MAXRAND:
+        cdf = rad_mcica.max_random_cdf(cdf, cldf)
     return (cdf >= (1.0 - cldf[..., :, None])).astype(output_dtype)
 
 
-def _lw_cloud_global(state, p_ext, layer_mass_ext):
+def _lw_cloud_global(state, p_ext, layer_mass_ext, *, pressure_interfaces=None):
     """WRF LW `mcica_subcol_lw` mask (global g order) and in-cloud water paths.
 
     Returns ``(cldf_global (..., nlay, 140), clw_path, ciw_path, csw_path)``.
@@ -2476,9 +2513,12 @@ def _lw_cloud_global(state, p_ext, layer_mass_ext):
         layer_mass_ext = layer_mass_ext.astype(cloud_dtype)
         p_ext = p_ext.astype(cloud_dtype)
     cloud_safe = jnp.maximum(cloud_ext, 0.01)
-    clw_path = qc_ext * layer_mass_ext * 1000.0 / cloud_safe
-    ciw_path = qi_ext * layer_mass_ext * 1000.0 / cloud_safe
-    csw_path = qs_ext * 0.99 * layer_mass_ext * 1000.0 / cloud_safe
+    clw_path = rrtmg_cloud_water_path(qc_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype) / cloud_safe
+    ciw_path = rrtmg_cloud_water_path(qi_ext, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype) / cloud_safe
+    csw_path = rrtmg_cloud_water_path(qs_ext * 0.99, layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype) / cloud_safe
+    if state.re_cloud is not None:
+        radii = _lw_mp_radii(state, p_ext)
+        csw_path = rrtmg_cloud_water_path(qs_ext * radii.snow_mass_factor.astype(qs_ext.dtype), layer_mass_ext, pressure_interfaces, entry_dtype=state.p.dtype) / cloud_safe
     cldf_global = _lw_mcica_random_cloud_mask(
         p_ext,
         cloud_ext,
@@ -2487,11 +2527,11 @@ def _lw_cloud_global(state, p_ext, layer_mass_ext):
     return cldf_global, clw_path, ciw_path, csw_path
 
 
-def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
+def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle, *, pressure_interfaces=None):
     """Ports the WRF LW `mcica_subcol_lw` random mask plus `cldprmc` optical depth."""
 
     del tables
-    cldf_global, clw_path, ciw_path, csw_path = _lw_cloud_global(state, p_ext, layer_mass_ext)
+    cldf_global, clw_path, ciw_path, csw_path = _lw_cloud_global(state, p_ext, layer_mass_ext, pressure_interfaces=pressure_interfaces)
     clw_global = jnp.where(cldf_global > 0.5, clw_path[..., :, None], 0.0)
     ciw_global = jnp.where(cldf_global > 0.5, ciw_path[..., :, None], 0.0)
     csw_global = jnp.where(cldf_global > 0.5, csw_path[..., :, None], 0.0)
@@ -2504,6 +2544,10 @@ def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
     liquid = jnp.asarray(cloud.liquid, dtype=clw_band.dtype).reshape((1,) * (clw_band.ndim - 2) + (16, 1))
     ice = jnp.asarray(cloud.ice, dtype=ciw_band.dtype).reshape((1,) * (ciw_band.ndim - 2) + (16, 1))
     snow = jnp.asarray(cloud.snow, dtype=csw_band.dtype).reshape((1,) * (csw_band.ndim - 2) + (16, 1))
+    if state.re_cloud is not None:
+        from gpuwrf.physics.rrtmg_mp_re import lw_radius_coefficients
+        lc, ic, sc = lw_radius_coefficients(_lw_mp_radii(state, p_ext), clw_band.dtype)
+        liquid, ice, snow = lc[..., None], ic[..., None], sc[..., None]
     taucmc = clw_band * liquid + ciw_band * ice + csw_band * snow
     return cldf_band, taucmc
 
@@ -2511,10 +2555,10 @@ def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
 def _lw_lookup_terms(tau):
     """Returns WRF lookup-table tau/exp/tfn values for `rtrnmc`."""
 
-    tblind = tau / (LW_BPADE + tau)
+    tblind = tau / (rrtmg_constant("LW_BPADE", tau.dtype, LW_BPADE) + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
     tfn = idx.astype(_canonical_float()) / float(LW_NTBL)
-    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, rrtmg_constant("LW_BPADE", tau.dtype, LW_BPADE) * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
     tau_tbl = jnp.where(idx == 0, 0.0, tau_tbl)
     exp_tbl = jnp.where(idx == LW_NTBL, LW_EXP_EPS, jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS))
     tfn_tbl = jnp.where(
@@ -3012,10 +3056,10 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
         (state.qv, jnp.repeat(state.qv[..., -1:], buffer_layers, axis=-1)), axis=-1
     )
     layer_mass = jnp.maximum(
-        (original_interfaces[..., :-1] - original_interfaces[..., 1:]) / GRAVITY,
+        (original_interfaces[..., :-1] - original_interfaces[..., 1:]) / rrtmg_constant("GRAVITY", state.p.dtype, GRAVITY),
         MIN_LAYER_MASS,
     )
-    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
+    layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / rrtmg_constant("GRAVITY", state.p.dtype, GRAVITY), MIN_LAYER_MASS)
     _, pwvcm = _rrtmg_column_amounts(
         qv_ext,
         pressure_interfaces,
@@ -3041,9 +3085,9 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
     if cloud_global:
         # BP57: the band-sum transfer kernel builds cldfmc/taucmc per g-point
         # itself from the global McICA mask and the in-cloud water paths.
-        cldfmc, taucmc = _lw_cloud_global(state, p_ext, layer_mass_ext), None
+        cldfmc, taucmc = _lw_cloud_global(state, p_ext, layer_mass_ext, pressure_interfaces=pressure_interfaces), None
     else:
-        cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
+        cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables, pressure_interfaces=pressure_interfaces)
     planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
     if not build_taumol:
         # Chunked flux path: do NOT materialise the full `(..., nlay, 16, 16)`
@@ -3164,9 +3208,20 @@ def _lw_solver_fluxes_chunked(
 
         # Band-invariant: mask compare + kernel packing once per call, not per band.
         packed_cloud = pack_lw_cloud(cldf_global > 0.5, clw_path, ciw_path, csw_path)
+        mp_cloud_tables = None
+        if state.re_cloud is not None:
+            from gpuwrf.physics.rrtmg_mp_re import raw_cloud_tables
+            from gpuwrf.kernels.rad_lw_transfer import pack_lw_cloud_mp_re
+            raw = raw_cloud_tables("lw")
+            liquid = np.pad(raw["absliq1"], ((0,0),(0,64-raw["absliq1"].shape[1])))
+            ice = np.pad(raw["absice3"], ((0,0),(0,64-raw["absice3"].shape[1])))
+            mp_cloud_tables = _LWCloudTableBundle(liquid, ice, ice)
+            packed_cloud = pack_lw_cloud_mp_re(cldf_global > .5, clw_path, ciw_path, csw_path, _lw_mp_radii(state, nlay))
 
     def body_sums(carry, band):
         from gpuwrf.kernels.rad_lw_transfer import lw_band_flux_sums
+        if mp_cloud_tables is not None:
+            from gpuwrf.kernels.rad_lw_transfer import lw_band_flux_sums_mp_re as lw_band_flux_sums
 
         tau_b, frac_b = lax.switch(band, taumol_branches)
         parts = lw_band_flux_sums(
@@ -3174,7 +3229,7 @@ def _lw_solver_fluxes_chunked(
             jnp.take(secdiff, band, axis=-1), scale_band[band], tables.lw_gpoint_mask[band],
             jnp.take(planklay, band, axis=-1), jnp.take(planklev, band, axis=-1),
             jnp.take(plankbnd, band, axis=-1), cloud_layer, with_clear_sky,
-            gpoint_counts=_LW_GPOINT_COUNTS, cloud=_native_lw_cloud_tables())
+            gpoint_counts=_LW_GPOINT_COUNTS, cloud=_native_lw_cloud_tables() if mp_cloud_tables is None else mp_cloud_tables)
         return tuple(acc + part for acc, part in zip(carry, parts[:n_acc])), None
 
     def body(carry, band):
@@ -3277,7 +3332,11 @@ def _longwave_impl(
         )
     net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
-    heating_rate = layer_net_heating / (layer_mass * CP_AIR)
+    from gpuwrf.physics.rrtmg_constants import _RRTMG_REAL_CONSTANTS
+    heating_interfaces = None
+    if _RRTMG_REAL_CONSTANTS and layer_net_heating.dtype == jnp.float32:
+        heating_interfaces, _, _ = _lw_extended_pressure_profiles(state.p, state.top_pressure_pa, state.pressure_interfaces)
+    heating_rate = rrtmg_heating_rate(layer_net_heating, layer_mass, heating_interfaces)
     surface_emission = STEFAN_BOLTZMANN * state.surface_emissivity * state.surface_temperature**4
     # Internal WRF buffer interfaces are implementation detail.  Preserve the
     # established nz+2 API: surface..model-top interfaces, then the true TOA.
@@ -3451,3 +3510,15 @@ def solve_rrtmg_lw_column_debug_stripped(
                                     _lw_floating_dtype(tables, jnp.float32), False)
         return _lw_floating_dtype(result, output_dtype)
     return _longwave_impl(state, tables, False)
+
+
+def _lw_mp_radii(state, p_ext):
+    """has_req mediation with clear above-model-top buffers."""
+    from gpuwrf.physics.rrtmg_mp_re import prepare_radiation_radii, RadiationRadii
+    r = prepare_radiation_radii(state.T, state.cloud_fraction, state.xland,
+                                state.re_cloud, state.re_ice, state.re_snow)
+    n = (p_ext if isinstance(p_ext, int) else p_ext.shape[-1]) - state.p.shape[-1]
+    def extend(v, value):
+        return jnp.concatenate((v, jnp.full(v.shape[:-1] + (n,), value, v.dtype)), axis=-1)
+    return RadiationRadii(extend(r.liquid_um, 2.5), extend(r.ice_um, 5.),
+                          extend(r.snow_um, 10.), extend(r.snow_mass_factor, .99))

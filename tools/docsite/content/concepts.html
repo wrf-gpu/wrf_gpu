@@ -88,7 +88,7 @@ commands on the <a href="validation.html">Validation</a> page.</p>
   stability&nbsp; &gt; &nbsp;identity&nbsp; &gt; &nbsp;speed&nbsp; &gt; &nbsp;memory</p>
 <p>A result is never destabilized or altered to go faster or fit in less memory. Since v0.3.0 the default path
 runs the validated fp32 kernels (WRF's own single precision), revalidated against CPU-WRF; other
-performance features stay <strong>opt-in or value-preserving</strong>. Proven WRF-fidelity fixes may
+validated fp32 fast paths are release defaults, with explicit opt-outs; performance changes retain their numerical scope. Proven WRF-fidelity fixes may
 intentionally move results, as v0.23.4 and v0.3.0 do; affected trajectories must then be revalidated. See
 <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
 

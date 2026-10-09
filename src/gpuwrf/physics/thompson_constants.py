@@ -178,6 +178,42 @@ DS_FIRST = math.sqrt(_XDX_S_FIRST * (_XDX_S_FIRST * _S_BIN_RATIO))
 DS_LAST = math.sqrt((_XDX_S_LAST / _S_BIN_RATIO) * _XDX_S_LAST)
 
 
+# WRF's own REAL values of the Thompson mp8 constants the release (native REAL) path consumes, where the f64 folds
+# above differ. WRF folds PARAMETERs and runs thompson_init / the mp_thompson constant sub-expressions in REAL, one
+# rounding per operation, and builds every gamma constant with its own WGAMMA = EXP(GAMMLN(x)) (Numerical-Recipes
+# Lanczos, GAMMLN rounded to REAL; module_mp_thompson.F:5325/:5371), not the exact gamma function. IEEE bits from
+# gfortran 14.3 with the pristine FCOPTIM compiling WRF's declarations/statements and GAMMLN/WGAMMA verbatim
+# (proofs/thompson/wrf_constants/wrf_constants.F90 -> wrf_constants.txt). Every value is exactly representable in
+# REAL, so DOUBLE contexts see DBLE(REAL) as in WRF. Selected by
+# thompson_column._wrf() under GPUWRF_THOMPSON_WRF_CONSTANTS (BD94); MP_RE takes AM_R / AM_I.
+WRF_REAL_CONSTANTS = {
+    "AM_R": 523.5988159179688,  # bits 1141040723, :128 am_r = PI*rho_w/6.0
+    "AM_I": 466.0029296875,  # bits 1139343456, :137 am_i = PI*rho_i/6.0
+    "D0I": 1.289843385166023e-05,  # bits 928540250, :666 D0i = (xm0i/am_i)**(1./bm_i)
+    "CRG7": 3.3233511447906494,  # bits 1079292361, :719 crg(7) = WGAMMA(3.5)
+    "CIG6": 3.3233511447906494,  # bits 1079292361, :699 cig(6) = WGAMMA(3.5)
+    "CCG5_NU12": 355687448182784.0,  # bits 1470218104, :682 ccg(5,12) = WGAMMA(18.)
+    "OCG2_NU12": 7.647166320318144e-13,  # bits 727138212, :684 ocg2(12) = 1./ccg(2,12)
+    "T1_QR_QC": 22873.9375,  # bits 1186116576, :786 PI*.25*av_r * crg(9)
+    "T1_QR_QI": 22873.9375,  # bits 1186116576, :787 PI*.25*av_r * crg(9)
+    "T2_QR_QI": 1437212032.0,  # bits 1319851067, :788 PI*.25*am_r*av_r * crg(8)
+    "T1_QS_QC": 31.41592788696289,  # bits 1106990034, :794 PI*.25*av_s
+    "T1_QS_QI": 31.41592788696289,  # bits 1106990034, :797 PI*.25*av_s
+    "T1_MELT_QS": 4.853478912991704e-06,  # bits 916642577, :808 PI*4.*C_sqrd*olfus * 0.86
+    "T2_MELT_QS": 8.576598702347837e-06,  # bits 923788342, :809 PI*4.*C_sqrd*olfus * 0.28*Sc3*SQRT(av_s)
+    "CGE9_OLD": 3.8899998664855957,  # bits 1081669058, :762 cge(9,idx_bg1) = mu_g + bv_g_old + 3.
+    "CGG6_OLD": 20.36322784423828,  # bits 1101195236, :767 cgg(6,idx_bg1) = WGAMMA(cge(6,idx_bg1))
+    "OGG3": 0.1666666716337204,  # bits 1042983595, :779 ogg3 = 1./cgg(3,1)
+    "T1_QG_QC_OLD": 1817.2269287109375,  # bits 1155737411, :2432 PI*.25*av_g(idx_bg1) * cgg(9,idx_bg1)
+    "T2_MELT_QG_OLD": 0.00018076917331200093,  # bits 960335067, :2808 PI*4.*C_cube*olfus * 0.28*Sc3*SQRT(av_g)*cgg(11)
+    "LAMC_PREFIX": 142942333304832.0,  # bits 1459749211, :1833/:2173/:3659 nc*am_r*ccg(2,12)*ocg1(12), nc = Nt_c
+    "DC_G_PREFIX": 16.98038101196289,  # bits 1099421650, :2181 (ccg(3,12)*ocg2(12))**obmr
+    "D0R_X075": 3.749999814317562e-05,  # bits 941443409, :1894 D0r*0.75
+    "D0S_X01": 3.000000106112566e-05,  # bits 939239555, :2670 0.1*D0s
+    "PNR_WAU_DEN": 7.853981465189008e-09,  # bits 839314989, :2191 am_r*nu_c*10.*D0r*D0r*D0r
+}
+
+
 def constant_table() -> dict[str, float]:
     """Returns scalar constants for tests and ADR/report generation."""
 

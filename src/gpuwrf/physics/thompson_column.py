@@ -120,6 +120,7 @@ from gpuwrf.physics.thompson_constants import (
     T2_SUBL_QS,
     T_0,
     TNO,
+    WRF_REAL_CONSTANTS,
     XM0I,
 )
 from gpuwrf.physics.thompson_saturation import (
@@ -207,6 +208,35 @@ def _native_real_enabled() -> bool:
     return os.environ.get("GPUWRF_THOMPSON_NATIVE_REAL", "0") == "1"
 
 
+def _wrf_constants_enabled() -> bool:
+    """GPUWRF_THOMPSON_WRF_CONSTANTS (BD94): WRF's own REAL init constants on the native REAL path; f64 legacy unchanged."""
+    return os.environ.get("GPUWRF_THOMPSON_WRF_CONSTANTS", "0") == "1" and _native_real_enabled()
+
+
+def _wrf(name: str, legacy: float) -> float:
+    """``legacy`` (the port's f64 fold) or, under the key, WRF's REAL value of the same constant (WRF_REAL_CONSTANTS)."""
+    return WRF_REAL_CONSTANTS[name] if _wrf_constants_enabled() else legacy
+
+
+def _am_r() -> float:
+    return _wrf("AM_R", AM_R)
+
+
+def _am_i() -> float:
+    return _wrf("AM_I", AM_I)
+
+
+def _d0i() -> float:
+    return _wrf("D0I", D0I)
+
+
+def _times_cgg63(x, cgg63):
+    """x * cgg(6)/cgg(3) of the graupel mass fall speed; under the key WRF's per-op x*cgg(6)*ogg3 (:2417, :3758)."""
+    if _wrf_constants_enabled():
+        return x * WRF_REAL_CONSTANTS["CGG6_OLD"] * WRF_REAL_CONSTANTS["OGG3"]
+    return x * cgg63
+
+
 def _graupel_constants():
     """(av_g, bv_g, cgg6/cgg3, t1_qg_qc, cge9, t2_subl_qg, t2_melt_qg, cge11) of the mp8 graupel fall law.
 
@@ -214,7 +244,8 @@ def _graupel_constants():
     path keeps the hail-aware table entry it always used.
     """
     if _native_real_enabled():
-        return (AV_G_OLD, BV_G_OLD, CGG6_OVER_CGG3_OLD, T1_QG_QC_OLD, CGE9_OLD, T2_SUBL_QG_OLD, T2_MELT_QG_OLD, CGE11_OLD)
+        return (AV_G_OLD, BV_G_OLD, CGG6_OVER_CGG3_OLD, _wrf("T1_QG_QC_OLD", T1_QG_QC_OLD), _wrf("CGE9_OLD", CGE9_OLD),
+                T2_SUBL_QG_OLD, _wrf("T2_MELT_QG_OLD", T2_MELT_QG_OLD), CGE11_OLD)
     return (AV_G_MP8, BV_G_MP8, CGG6_OVER_CGG3, T1_QG_QC, CGE9, T2_SUBL_QG, T2_MELT_QG, CGE11)
 
 
@@ -469,18 +500,18 @@ def _clamp_rain_number(qr, Nr, rho):
     active = qr > R1
     rr = jnp.maximum(qr * rho, R1)
     nr = jnp.maximum(Nr * rho, R2)
-    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    lamr = (_am_r() * CRG3 * ORG2 * nr / rr) ** OBMR
     if _native_real_enabled():
         lamr = lamr.astype(jnp.float64)
     mvd_r = (3.0 + 0.672) / lamr
     if _native_real_enabled():
         mvd_r = mvd_r.astype(jnp.float32)  # WRF REAL mvd_r (:1589).
-    mvd_clamped = jnp.minimum(2.5e-3, jnp.maximum(D0R * 0.75, mvd_r))
+    mvd_clamped = jnp.minimum(2.5e-3, jnp.maximum(_wrf("D0R_X075", D0R * 0.75), mvd_r))
     out_of_band = mvd_clamped != mvd_r
     lamr_c = (3.0 + 0.672) / mvd_clamped
     if _native_real_enabled():
         lamr_c = lamr_c.astype(jnp.float64)
-    nr_c = CRG2 * ORG3 * rr * _dpow(lamr_c, 3.0) / AM_R
+    nr_c = CRG2 * ORG3 * rr * _dpow(lamr_c, 3.0) / _am_r()
     if _native_real_enabled():
         nr_c = nr_c.astype(jnp.float32)  # WRF REAL nr(k)
     # Only the diagnostic number is rebuilt, and only when out of the band; the
@@ -501,7 +532,7 @@ def _rain_distribution(qr, Nr, rho):
     Nr = _clamp_rain_number(qr, Nr, rho)
     rr = jnp.maximum(qr * rho, R1)
     nr = jnp.maximum(Nr * rho, R2)
-    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    lamr = (_am_r() * CRG3 * ORG2 * nr / rr) ** OBMR
     if _native_real_enabled():
         lamr = lamr.astype(jnp.float64)
     ilamr = 1.0 / lamr
@@ -517,10 +548,10 @@ def _cloud_distribution(qc, rho):
     """Encapsulates the mp=8 cloud gamma terms used by Berry-Reinhardt."""
 
     rc = jnp.maximum(qc * rho, R1)
-    lamc = (NT_C * AM_R * CCG2_NU12 * OCG1_NU12 / rc) ** OBMR
+    lamc = (_wrf("LAMC_PREFIX", NT_C * AM_R * CCG2_NU12 * OCG1_NU12) / rc) ** OBMR
     if _native_real_enabled():
         lamc = lamc.astype(jnp.float64)
-    xdc = jnp.maximum(D0C * 1.0e6, (rc / (AM_R * NT_C)) ** OBMR * 1.0e6)
+    xdc = jnp.maximum(D0C * 1.0e6, (rc / (_am_r() * NT_C)) ** OBMR * 1.0e6)
     mvd_c = (3.0 + NU_C_MP8 + 0.672) / lamc
     if _native_real_enabled():
         mvd_c = mvd_c.astype(jnp.float32)  # WRF REAL mvd_c (:1589).
@@ -534,28 +565,28 @@ def _ice_distribution(qi, Ni, rho):
     ri = jnp.maximum(qi * rho, R1)
     ni = jnp.maximum(Ni * rho, R2)
     lami_missing = CIE2 / 5.0e-6
-    ni_missing = jnp.minimum(999.0e3, OIG2 * ri / AM_I * _dpow(lami_missing, 3.0))
+    ni_missing = jnp.minimum(999.0e3, OIG2 * ri / _am_i() * _dpow(lami_missing, 3.0))
     ni = jnp.where((qi > R1) & (ni <= R2), ni_missing, ni)
-    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    lami = (_am_i() * 6.0 * OIG1 * ni / ri) ** OBMI
     if _native_real_enabled():
         lami = lami.astype(jnp.float64)
     xdi_raw = (3.0 + 0.0 + 1.0) / lami
     if _native_real_enabled():
         xdi_raw = xdi_raw.astype(jnp.float32)
     lami_small = CIE2 / 5.0e-6
-    ni_small = jnp.minimum(999.0e3, OIG2 * ri / AM_I * _dpow(lami_small, 3.0))
+    ni_small = jnp.minimum(999.0e3, OIG2 * ri / _am_i() * _dpow(lami_small, 3.0))
     lami_large = CIE2 / 300.0e-6
-    ni_large = OIG2 * ri / AM_I * _dpow(lami_large, 3.0)
+    ni_large = OIG2 * ri / _am_i() * _dpow(lami_large, 3.0)
     ni = jnp.where((qi > R1) & (xdi_raw < 5.0e-6), ni_small, ni)
     ni = jnp.where((qi > R1) & (xdi_raw > 300.0e-6), ni_large, ni)
-    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    lami = (_am_i() * 6.0 * OIG1 * ni / ri) ** OBMI
     if _native_real_enabled():
         lami = lami.astype(jnp.float64)
     ilami = 1.0 / lami
-    xdi = jnp.maximum(D0I, (3.0 + 0.0 + 1.0) * ilami)
+    xdi = jnp.maximum(_d0i(), (3.0 + 0.0 + 1.0) * ilami)
     if _native_real_enabled():
         xdi = xdi.astype(jnp.float32)  # WRF REAL xDi/xmi (:1599,1613).
-    xmi = AM_I * _dpow(xdi, 3.0)
+    xmi = _am_i() * _dpow(xdi, 3.0)
     return ri, ni, lami, ilami, xdi, xmi, qi > R1
 
 
@@ -593,7 +624,7 @@ def _balance_ice_number(qi, Ni, rho):
     ni = jnp.maximum(Ni * rho, R2)
     # WRF's `if (xri .gt. R1)` test is on the mass DENSITY xri = MAX(R1, qi*rho).
     active = ri > R1
-    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    lami = (_am_i() * 6.0 * OIG1 * ni / ri) ** OBMI
     if _native_real_enabled():
         lami = lami.astype(jnp.float64)
     xdi = CIE2 / lami
@@ -603,8 +634,8 @@ def _balance_ice_number(qi, Ni, rho):
     too_large = xdi > 300.0e-6
     # cig(1) = Gamma(mu_i+1) = 1 and bm_i = 3, written as literals to match the
     # surrounding ice code (_ice_distribution, _finish).
-    ni_small = jnp.minimum(999.0e3, OIG2 * ri / AM_I * (CIE2 / 5.0e-6) ** 3.0)
-    ni_large = OIG2 * ri / AM_I * (CIE2 / 300.0e-6) ** 3.0
+    ni_small = jnp.minimum(999.0e3, OIG2 * ri / _am_i() * (CIE2 / 5.0e-6) ** 3.0)
+    ni_large = OIG2 * ri / _am_i() * (CIE2 / 300.0e-6) ** 3.0
     ni_bal = jnp.where(too_small, ni_small, jnp.where(too_large, ni_large, ni))
     # Trailing number ceiling, WRF 3053-3055.
     over_ceiling = ni_bal > 999.0e3
@@ -751,7 +782,8 @@ def _snow_terminal_velocity_wrf(rhof, xds, active_snow):
     ils2_mass = 1.0 / (mrat * _SNOW_LAM1)
     t3_vts = _SNOW_KAP0 * _SNOW_CSG1 * ils1_mass**_SNOW_CSE1
     t4_vts = _SNOW_KAP1 * mrat**_SNOW_MU_S * _SNOW_CSG7 * ils2_mass**_SNOW_CSE7
-    vts = rhof * AV_S * (t1_vts + t2_vts) / jnp.maximum(t3_vts + t4_vts, R1)
+    denominator = jnp.where(active_snow, t3_vts + t4_vts, jnp.ones_like(t3_vts))
+    vts = rhof * AV_S * (t1_vts + t2_vts) / denominator
     return jnp.where(active_snow, vts, 0.0)
 
 
@@ -872,18 +904,18 @@ def _ice_collection_rates_from_moments(
     oxmi = 1.0 / jnp.maximum(xmi, XM0I)
 
     sci_gate = cold & active_ice & (rs >= 1.0e-6)
-    prs_sci = jnp.where(sci_gate, T1_QS_QI * rhof * EF_SI * ri * smoe, 0.0)
+    prs_sci = jnp.where(sci_gate, _wrf("T1_QS_QI", T1_QS_QI) * rhof * EF_SI * ri * smoe, 0.0)
     if _native_real_enabled():
         prs_sci = prs_sci.astype(jnp.float64)  # WRF DOUBLE prs_sci (pni_sci follows)
     pni_sci = prs_sci * oxmi
 
     rci_gate = cold & active_ice & active_rain & (rr >= R_R_FIRST) & (mvd_r > 4.0 * xdi)
     lamr_fv = jnp.maximum(lamr + FV_R, R1)
-    pri_rci = jnp.where(rci_gate, rhof * T1_QR_QI * EF_RI * ri * n0_r * _dpow(lamr_fv, -CRE9), 0.0)
-    pnr_rci = jnp.where(rci_gate, rhof * T1_QR_QI * EF_RI * ni * n0_r * _dpow(lamr_fv, -CRE9), 0.0)
+    pri_rci = jnp.where(rci_gate, rhof * _wrf("T1_QR_QI", T1_QR_QI) * EF_RI * ri * n0_r * _dpow(lamr_fv, -CRE9), 0.0)
+    pnr_rci = jnp.where(rci_gate, rhof * _wrf("T1_QR_QI", T1_QR_QI) * EF_RI * ni * n0_r * _dpow(lamr_fv, -CRE9), 0.0)
     pnr_rci = jnp.minimum(nr * odts, pnr_rci)
     pni_rci = pri_rci * oxmi
-    prr_rci = jnp.where(rci_gate, rhof * T2_QR_QI * EF_RI * ni * n0_r * _dpow(lamr_fv, -CRE8), 0.0)
+    prr_rci = jnp.where(rci_gate, rhof * _wrf("T2_QR_QI", T2_QR_QI) * EF_RI * ni * n0_r * _dpow(lamr_fv, -CRE8), 0.0)
     prr_rci = jnp.minimum(rr * odts, prr_rci)
     prg_rci = pri_rci + prr_rci
     return prs_sci, pni_sci, pri_rci, pni_rci, prr_rci, pnr_rci, prg_rci
@@ -923,20 +955,20 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
     # WRF caps xni at 999e3 BEFORE forming lami (module_mp_thompson.F:3043), making
     # _finish idempotent against a large finite Ni (defense-in-depth).
     xni = jnp.minimum(jnp.maximum(R2, ni_raw * rho), 999.0e3)
-    lami = (AM_I * 6.0 * OIG1 * xni / ri) ** OBMI
+    lami = (_am_i() * 6.0 * OIG1 * xni / ri) ** OBMI
     xdi = 4.0 / lami
     lami = jnp.where(xdi < 5.0e-6, CIE2 / 5.0e-6, lami)
     lami = jnp.where(xdi > 300.0e-6, CIE2 / 300.0e-6, lami)
-    Ni = jnp.where(qi <= R1, 0.0, jnp.minimum((ri / AM_I * _dpow(lami, 3.0) * OIG2) / rho, 999.0e3 / rho))
+    Ni = jnp.where(qi <= R1, 0.0, jnp.minimum((ri / _am_i() * _dpow(lami, 3.0) * OIG2) / rho, 999.0e3 / rho))
 
     nr_raw = jnp.maximum(R2 / rho, state.Nr)
     rr = jnp.maximum(qr * rho, R1)
     xnr = jnp.maximum(R2, nr_raw * rho)
-    lamr = (AM_R * CRG3 * ORG2 * xnr / rr) ** OBMR
+    lamr = (_am_r() * CRG3 * ORG2 * xnr / rr) ** OBMR
     mvd_r = (3.0 + 0.672) / lamr
-    mvd_r = jnp.minimum(2.5e-3, jnp.maximum(D0R * 0.75, mvd_r))
+    mvd_r = jnp.minimum(2.5e-3, jnp.maximum(_wrf("D0R_X075", D0R * 0.75), mvd_r))
     lamr = (3.0 + 0.672) / mvd_r
-    Nr = jnp.where(qr <= R1, 0.0, CRG2 * ORG3 * rr * _dpow(lamr, 3.0) / AM_R / rho)
+    Nr = jnp.where(qr <= R1, 0.0, CRG2 * ORG3 * rr * _dpow(lamr, 3.0) / _am_r() / rho)
     return state.replace(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, T=T, rho=rho)
 
 
@@ -980,10 +1012,9 @@ def _condensation_branch(state):
     return (ssatw > EPS) | ((ssatw < -EPS) & (state.qc > R1))
 
 
-def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: float) -> tuple[ThompsonColumnState, jax.Array]:
+def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: float, *, vapor=None):
     """Implements the 3-iteration Thompson cloud condensation adjustment."""
 
-    del dt
     qvs = saturation_mixing_ratio_liquid(state.p, state.T)
     lvap = latent_heat_vaporization(state.T)
     ocp = cp_inverse(state.qv)
@@ -999,6 +1030,13 @@ def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: flo
     clap = jnp.where(clap < 0.0, jnp.maximum(clap, -state.qc), jnp.minimum(clap, state.qv - 1.0e-10))
     condensed_cloud = clap > EPS
     qv = state.qv - clap
+    if vapor is not None:
+        # WRF :3479/:3488 accumulates a REAL tendency against raw qv1d,
+        # while the Newton solve above uses the floored private work array.
+        qv1d, qvten = vapor
+        odt = np.float32(1.0) / np.float32(dt)
+        qvten = (qvten.astype(jnp.float64) - (clap * odt).astype(jnp.float64)).astype(jnp.float32)
+        qv = jnp.where(qv1d < 1.0e-10, jnp.maximum(1.0e-10, qv1d + float(dt) * qvten), qv)
     T = state.T + lvap * ocp * clap
     adjusted = state.replace(
         qv=qv,
@@ -1006,6 +1044,8 @@ def _saturation_adjustment_with_condensation(state: ThompsonColumnState, dt: flo
         T=T,
         rho=density_from_pressure_temperature(state.p, T, qv),
     )
+    if vapor is not None:
+        return adjusted, condensed_cloud, qvten
     return adjusted, condensed_cloud
 
 
@@ -1025,7 +1065,7 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     rr, nr, lamr, ilamr, mvd_r, n0_r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
 
     # Berry-Reinhardt autoconversion, WRF lines 2242-2258.
-    dc_g = ((CCG3_NU12 * OCG2_NU12) ** OBMR / lamc) * 1.0e6
+    dc_g = (_wrf("DC_G_PREFIX", (CCG3_NU12 * OCG2_NU12) ** OBMR) / lamc) * 1.0e6
     if _native_real_enabled():
         dc_g = dc_g.astype(jnp.float32)  # WRF REAL Dc_g: the Berry-Reinhardt chain is REAL
     dc_b = jnp.maximum(xdc**3 * dc_g**3 - xdc**6, 0.0) ** (1.0 / 6.0)
@@ -1043,7 +1083,7 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     # a prior ``jnp.maximum(..., R2=1e-6)`` clamp here silently REPLACED the true
     # 7.85e-9 divisor with 1e-6, shrinking the autoconversion rain-number source by
     # ~127x and starving Nr in cloud-base / autoconversion-dominated columns.
-    pnr_wau = prr_wau / (AM_R * NU_C_MP8 * 10.0 * D0R**3)
+    pnr_wau = prr_wau / _wrf("PNR_WAU_DEN", AM_R * NU_C_MP8 * 10.0 * D0R**3)
 
     # WRF rain-collecting-cloud-water shape from t_Efrw, initialized at
     # module_mp_thompson.F.pre:4921-4977 and consumed at lines 2260-2268.
@@ -1056,7 +1096,7 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     ef_rw = _take2(tables.t_Efrw, idx_r_eff, idx_c_eff)
     if _native_real_enabled():
         ef_rw = ef_rw.astype(jnp.float32)  # WRF REAL Ef_rw read from the DOUBLE t_Efrw
-    prr_rcw_raw = rhof * T1_QR_QC * ef_rw * rc * n0_r * _dpow(lamr + FV_R, -CRE9)
+    prr_rcw_raw = rhof * _wrf("T1_QR_QC", T1_QR_QC) * ef_rw * rc * n0_r * _dpow(lamr + FV_R, -CRE9)
     prr_rcw = jnp.where(active_rain & (mvd_r > D0R) & (mvd_c > D0C), prr_rcw_raw, 0.0)
     prr_rcw = jnp.minimum(jnp.maximum(rc - prr_wau * float(dt), 0.0) / float(dt), prr_rcw)
 
@@ -1091,7 +1131,7 @@ def _apply_warm_rain_rates(state, dt, prr_wau, pnr_wau, prr_rcw, pnr_rcr):
     # unbounded -> Nr runaway -> overflow.  Bit-identical below the band max (same
     # CRG2, ORG3, AM_R, D0R, R1 constants _finish uses).
     _rr_cap = jnp.maximum(new_state.qr * new_state.rho, R1)
-    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / AM_R / new_state.rho
+    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / _am_r() / new_state.rho
     return new_state.replace(Nr=jnp.maximum(0.0, jnp.minimum(new_state.Nr, _nr_max)))
 
 
@@ -1100,6 +1140,7 @@ def _rain_evaporation(
     dt: float,
     skip_evaporation: jax.Array | bool = False,
     graupel_melt: jax.Array | float = 0.0,
+    *, vapor=None,
 ) -> ThompsonColumnState:
     """Applies WRF Srivastava-Coen rain evaporation from lines 3561-3638."""
 
@@ -1139,17 +1180,30 @@ def _rain_evaporation(
     limited_rate = jnp.minimum(rate_max, evap_rate)
     limited_rate = jnp.where((jnp.asarray(graupel_melt) > 0.0) & ~fast_clear, limited_rate * eva_factor, limited_rate)
     evap = jnp.where(active, limited_rate * float(dt), 0.0)
+    if vapor is not None:
+        return _apply_rain_evaporation(state, evap, lvap, ocp, vapor=vapor,
+                                      vapor_rate=jnp.where(active, limited_rate, 0.0), dt=dt)
     return _apply_rain_evaporation(state, evap, lvap, ocp)
 
 
-def _apply_rain_evaporation(state, evap, lvap, ocp):
+def _apply_rain_evaporation(state, evap, lvap, ocp, *, vapor=None, vapor_rate=None, dt=None):
     """Rain evaporation update for an evaporated amount (zero: Nr floor only)."""
     nr_loss = jnp.where(state.qr > 0.0, jnp.minimum(state.Nr * 0.99, state.Nr * evap / jnp.maximum(state.qr, R1)), 0.0)
     if _native_real_enabled():
         heat = lvap * ocp * evap
         evap, nr_loss, heat = _real_incr(evap, nr_loss, heat)
-        return state.replace(qv=state.qv + evap, qr=state.qr - evap,
-                             Nr=jnp.maximum(0.0, state.Nr - nr_loss), T=state.T - heat)
+        out = state.replace(qv=state.qv + evap, qr=state.qr - evap,
+                            Nr=jnp.maximum(0.0, state.Nr - nr_loss), T=state.T - heat)
+        if vapor is not None:
+            # WRF :3563/:3569/:3572: DOUBLE evaporation rate -> REAL
+            # cumulative tendency -> raw baseline update -> working density.
+            qv1d, qvten = vapor
+            qvten = (qvten.astype(jnp.float64) + vapor_rate).astype(jnp.float32)
+            affected = qv1d < 1.0e-10
+            qv = jnp.where(affected, jnp.maximum(1.0e-10, qv1d + float(dt) * qvten), out.qv)
+            rho = jnp.where(affected, density_from_pressure_temperature(out.p, out.T, qv), out.rho)
+            return out.replace(qv=qv, rho=rho), qvten
+        return out
     return state.replace(
         qv=state.qv + evap,
         qr=state.qr - evap,
@@ -1215,7 +1269,7 @@ def _ice_sources_with_process_flags(
     rr_for_index = jnp.maximum(rr0, R_R_FIRST)
     _, _nr, lamr0, _ilamr0, _mvd_r0, _n0_r0, _active_rain0 = _rain_distribution(state.qr, state.Nr, state.rho)
     lam_exp = lamr0
-    n0_exp = ORG1 * rr_for_index / AM_R * _dpow(lam_exp, CRE1)
+    n0_exp = ORG1 * rr_for_index / _am_r() * _dpow(lam_exp, CRE1)
     idx_r = _lookup_digit_index(rr_for_index, -6, N_R_TABLE)
     idx_r1 = _lookup_digit_index(n0_exp, 6, N_R1_TABLE)
     idx_tc = jnp.clip(jnp.floor(-(state.T - 273.15) + 0.5).astype(jnp.int32) - 1, 0, N_TC_TABLE - 1)
@@ -1287,7 +1341,7 @@ def _ice_sources_with_process_flags(
     rg, ng, lamg_g, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.Ng, state.rho)
 
     # Snow/graupel melting formula structure from WRF lines 2845-2889.
-    prr_sml_rate = (tempc * tcond - 2.5e6 * diffu * del_qvs) * (T1_MELT_QS * smo1 + T2_MELT_QS * rhof2 * vsc2 * smof)
+    prr_sml_rate = (tempc * tcond - 2.5e6 * diffu * del_qvs) * (_wrf("T1_MELT_QS", T1_MELT_QS) * smo1 + _wrf("T2_MELT_QS", T2_MELT_QS) * rhof2 * vsc2 * smof)
     prr_sml_rate = jnp.minimum(rs / float(dt), jnp.maximum(0.0, prr_sml_rate)) / state.rho
     snow_melt = jnp.where((state.T > T_0) & active_snow, prr_sml_rate * float(dt), 0.0)
     pnr_sml = jnp.where(rs > R1, smo0 / rs * snow_melt * state.rho * 10.0 ** (-0.25 * (twet - T_0)), 0.0)
@@ -1324,7 +1378,7 @@ def _ice_sources_with_process_flags(
     # cold->warming nest columns.  Bit-identical below the band max (same CRG2,
     # ORG3, AM_R, D0R, R1 constants _finish uses).
     _rr_cap = jnp.maximum(state.qr * state.rho, R1)
-    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / AM_R / state.rho
+    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / _am_r() / state.rho
     state = state.replace(Nr=jnp.maximum(0.0, jnp.minimum(state.Nr, _nr_max)))
     state = _real_state(state)
 
@@ -1369,7 +1423,7 @@ def _ice_sources_with_process_flags(
     iau_table_mass = iaus[..., 0]
     iau_table_num = iaus[..., 1]
     iau_large = (idx_i == N_I_TABLE - 1) | (xdi > 5.0 * D0S)
-    iau_small = xdi < 0.1 * D0S
+    iau_small = xdi < _wrf("D0S_X01", 0.1 * D0S)
     prs_iau_mass = jnp.where(iau_large, ri * 0.99, jnp.where(iau_small, 0.0, jnp.minimum(ri * 0.99, iau_table_mass)))
     pni_iau_num = jnp.where(iau_large, ni * 0.95, jnp.where(iau_small, 0.0, jnp.minimum(ni * 0.95, iau_table_num)))
     prs_iau_mass = jnp.where(active_ice & cold_block, prs_iau_mass, 0.0)
@@ -1549,7 +1603,7 @@ def _ice_sources_with_process_flags(
         if _native_real_enabled():
             ef_sw = ef_sw.astype(jnp.float32)  # WRF REAL Ef_sw read from the DOUBLE t_Efsw
         scw_gate = active_snow & active_cloud & (mvd_c > D0C) & (xds > D0S)
-        prs_scw = jnp.where(scw_gate, rhof * T1_QS_QC * ef_sw * rc_rime * smoe, 0.0)
+        prs_scw = jnp.where(scw_gate, rhof * _wrf("T1_QS_QC", T1_QS_QC) * ef_sw * rc_rime * smoe, 0.0)
         prs_scw = jnp.minimum(rc_rime * odts, prs_scw)
         if _native_real_enabled():
             prs_scw = prs_scw.astype(jnp.float64)  # REAL product stored in WRF's DOUBLE prs_scw
@@ -1558,7 +1612,7 @@ def _ice_sources_with_process_flags(
         # mu_g=0): Stokes-number efficiency of WRF 2414-2431.
         xdg = 4.0 * ilamg
         av_g, bv_g, cgg63, t1_qg_qc, cge9, _t2_subl_qg, _t2_melt_qg, _cge11 = _graupel_constants()
-        vtg = rhof * av_g * cgg63 * ilamg**bv_g
+        vtg = _times_cgg63(rhof * av_g, cgg63) * ilamg**bv_g
         if _native_real_enabled():
             xdg, vtg = xdg.astype(jnp.float32), vtg.astype(jnp.float32)  # WRF REAL xDg / vtg
         stoke_g = mvd_c * mvd_c * vtg * RHO_W_RIME / (9.0 * jnp.maximum(visco, R1) * jnp.maximum(xdg, R1))
@@ -1701,7 +1755,7 @@ def _cold_collection_rates(
     # Rain slope/intercept for idx_r / idx_r1 (WRF 2319-2333).
     _, _nr_c, lamr, _ilamr, _mvd_r, _n0r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
     rr_idx = jnp.maximum(rr, R_R_FIRST)
-    n0r_exp = ORG1 * rr_idx / AM_R * _dpow(lamr, CRE1)
+    n0r_exp = ORG1 * rr_idx / _am_r() * _dpow(lamr, CRE1)
     idx_r = _lookup_digit_index(rr_idx, -6, N_R_TABLE)
     idx_r1 = _lookup_digit_index(n0r_exp, 6, N_R1_TABLE)
 
@@ -2087,11 +2141,11 @@ def _fall_speeds(state: ThompsonColumnState, vts_boost=None, *, fill_down=None,
     # ``nr(k)`` rebuilt at module_mp_thompson.F:3240-3250, NOT from the raw
     # prognostic Nr; the same clamp the rate-stage slopes use (_rain_distribution).
     nr = jnp.maximum(_clamp_rain_number(state.qr, state.Nr, rho) * rho, R2)
-    lamr = (AM_R * CRG3 * ORG2 * nr / rr) ** OBMR
+    lamr = (_am_r() * CRG3 * ORG2 * nr / rr) ** OBMR
     if _native_real_enabled():
         lamr = lamr.astype(jnp.float64)
     vt_r_mass = rhof * AV_R * CRG6 * ORG3 * _dpow(lamr, CRE3) * _dpow(lamr + FV_R, -CRE6)
-    vt_r_num = rhof * AV_R * CRG7 / CRG12 * lamr ** CRE12 * ((lamr + FV_R) ** (-CRE7))
+    vt_r_num = rhof * AV_R * _wrf("CRG7", CRG7) / CRG12 * lamr ** CRE12 * ((lamr + FV_R) ** (-CRE7))
     vt_r_mass = fill(jnp.where(act_r, vt_r_mass, 0.0), act_r)
     vt_r_num = fill(jnp.where(act_r, vt_r_num, 0.0), act_r)
 
@@ -2103,12 +2157,12 @@ def _fall_speeds(state: ThompsonColumnState, vts_boost=None, *, fill_down=None,
     # the raw prognostic Ni.  Same working-number discipline as rain above.
     ni = jnp.maximum(_balance_ice_number(state.qi, state.Ni, rho) * rho, R2)
     # cig(2) = Gamma(bm_i+mu_i+1) = Gamma(4) = 6 (WRF module_mp_thompson.F:695).
-    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    lami = (_am_i() * 6.0 * OIG1 * ni / ri) ** OBMI
     if _native_real_enabled():
         lami = lami.astype(jnp.float64)
     ilami = 1.0 / lami
     vt_i_mass = rhof * AV_I * CIG3 * OIG2 * _dpow(ilami, BV_I)
-    vt_i_num = rhof * AV_I * CIG6 / CIG7 * _dpow(ilami, BV_I)
+    vt_i_num = rhof * AV_I * _wrf("CIG6", CIG6) / CIG7 * _dpow(ilami, BV_I)
     vt_i_mass = fill(jnp.where(act_i, vt_i_mass, 0.0), act_i)
     vt_i_num = fill(jnp.where(act_i, vt_i_num, 0.0), act_i)
 
@@ -2116,7 +2170,9 @@ def _fall_speeds(state: ThompsonColumnState, vts_boost=None, *, fill_down=None,
     tempc = state.T - 273.15
     _rs2, xds, _smo0, _smo1, _smof, _csnow, _act_s = _snow_moments(state.qs, rho, tempc, tables)
     vts_raw = _snow_terminal_velocity_wrf(rhof, xds, act_s)
-    if vts_boost is not None:
+    if vts_boost is not None and _mixed_phase_wrf_enabled():
+        vts_raw = _wrf_snow_speed(vts_raw, vts_boost, _rs2, rr, vt_r_mass)
+    elif vts_boost is not None:
         # WRF line 3721: vts = vts*vts_boost(k) (riming-dominant layers fall up
         # to 1.5x faster; boost==1.0 elsewhere and with riming disabled).
         vts_raw = vts_raw * vts_boost
@@ -2128,7 +2184,7 @@ def _fall_speeds(state: ThompsonColumnState, vts_boost=None, *, fill_down=None,
     _rg, _ng, _lamg, ilamg, _n0_g, _active_g = _graupel_distribution(state.qg, None if native else state.Ng, rho)
     if native:
         av_g, bv_g, cgg63 = _graupel_constants()[:3]
-        vt_g_mass = fill(jnp.where(act_g, rhof * av_g * cgg63 * ilamg ** bv_g, 0.0), act_g)  # cgg(6)*ogg3 (:3758)
+        vt_g_mass = fill(jnp.where(act_g, _times_cgg63(rhof * av_g, cgg63) * ilamg ** bv_g, 0.0), act_g)  # cgg(6)*ogg3 (:3758)
     else:
         vt_g_mass = fill(jnp.where(act_g, rhof * AV_G_MP8 * 6.0 * ORG3 * ilamg ** BV_G_MP8, 0.0), act_g)
     vt_g_num = fill(jnp.where(act_g, rhof * AV_G_MP8 * CRG7 / CRG12 * ilamg ** BV_G_MP8, 0.0), act_g)
@@ -2251,11 +2307,11 @@ def _cloud_water_fall_speed(state: ThompsonColumnState, rho_rc=None, rho_f=None)
     rhof = _rho_correction(state.rho if rho_f is None else rho_f)
     rc = jnp.maximum(state.qc * rho_rc, R1)
     # lamc identical to _cloud_distribution / WRF line 3659.
-    lamc = (NT_C * AM_R * CCG2_NU12 * OCG1_NU12 / rc) ** OBMR
+    lamc = (_wrf("LAMC_PREFIX", NT_C * AM_R * CCG2_NU12 * OCG1_NU12) / rc) ** OBMR
     if _native_real_enabled():
         lamc = lamc.astype(jnp.float64)
     ilamc = 1.0 / lamc
-    vtc = rhof * AV_C * CCG5_NU12 * OCG2_NU12 * _dpow(ilamc, BV_C)
+    vtc = rhof * AV_C * _wrf("CCG5_NU12", CCG5_NU12) * _wrf("OCG2_NU12", OCG2_NU12) * _dpow(ilamc, BV_C)
     if _native_real_enabled():
         vtc = vtc.astype(jnp.float32)  # WRF REAL vtc/sed_c (:1592,1603).
     # WRF :3657 tests the DENSITY rc(k) = MAX(R1, qc*rho) > R1 (not the mixing ratio).
@@ -2463,7 +2519,7 @@ def _debug_checks(state: ThompsonColumnState, debug: bool) -> ThompsonColumnStat
     return state.replace(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, Ni=Ni, Nr=Nr, T=T, p=p, rho=rho)
 
 
-def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: bool, *, sediment: bool):
+def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: bool, *, sediment: bool, raw_vapor=False):
     """Shared Thompson column body; optionally runs sedimentation.
 
     WRF order (module_mp_thompson.F): stage rates/tendencies (2157-3247),
@@ -2494,39 +2550,75 @@ def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: boo
     storage_dtypes = {name: jnp.asarray(getattr(state, name)).dtype for name in ThompsonColumnState.__slots__}
     state = _cast_state(state, work)
 
+    vapor = None
+    if raw_vapor:
+        # Native mp8 only. WRF :1226 retains raw qv1d; :1800 floors a
+        # separate qv work array, never the original tendency baseline.
+        raw_entry = _real_state(state)
+        vapor = (raw_entry.qv, jnp.zeros_like(raw_entry.qv))
     state = _clip_species(state)
+    if raw_vapor:
+        entry = _real_state(state)
+        rho = density_from_pressure_temperature(entry.p, entry.T, entry.qv)
+        state = state.replace(rho=jnp.where(raw_entry.qv < 1.0e-10, rho, state.rho))
+        # WRF :1990/:2020 returns before applying any vapor tendency if
+        # the entire column has neither hydrometeors nor supersaturation.
+        qvsi = jnp.where(entry.T <= T_0, saturation_mixing_ratio_ice(entry.p, entry.T),
+                        saturation_mixing_ratio_liquid(entry.p, entry.T))
+        ssati = entry.qv / qvsi - 1.0
+        supersaturated = (ssati > 0.0) & (jnp.abs(ssati) >= EPS)
+        no_micro = ~jnp.any((entry.qc > R1) | (entry.qr > R1) | (entry.qi > R1)
+                           | (entry.qs > R1) | (entry.qg > R1) | supersaturated,
+                           axis=-1, keepdims=True)
     state = _reset_mp8_graupel_number(state)
     valid = _thermodynamically_admissible(state)
     fallback = state
     state = _debug_checks(state, debug)
-    # Native REAL: WRF forms the rain-snow/rain-graupel rates from the entry rr/nr (idx_r1 :2279), not from the
-    # number left by rain self-collection/break-up.
-    cold_entry = _real_state(state) if _native_real_enabled() else None
-    state = _warm_rain_collection(state, dt)
-    state = _real_state(state)
-    cold_rates = (
-        _cold_collection_rates(state if cold_entry is None else cold_entry, dt, COLD_COLLECTION_TABLES)
-        if _cold_collection_enabled()
-        else _zero_cold_collection_rates(state)
-    )
-    state, graupel_melt, vts_boost, cold_rates = _ice_sources_with_process_flags(
-        state, dt, cold_collection_rates=cold_rates
-    )
-    state = _real_state(state)
-    if _cold_collection_enabled():
-        # rain-collecting-snow / rain-collecting-graupel below 0 C: convert rain
-        # to graupel where supercooled rain meets snow/graupel (WRF 2484-2548).
-        # Computed after the freeze/riming staging pass, mirroring WRF's
-        # single-pass rate staging before sedimentation.
-        state = _apply_cold_collection_rates(state, dt, cold_rates)
+    if _mixed_phase_wrf_enabled():   # WRF single-pass source stage (B55 + mixed-phase fixes, end of module)
+        if vapor is None:
+            state, graupel_melt, vts_boost = _wrf_mixed_phase_sources(
+                _real_state(state), dt, THOMPSON_TABLES, _mixed_phase_cold_tables())
+        else:
+            state, graupel_melt, vts_boost, qvten = _wrf_mixed_phase_sources(
+                _real_state(state), dt, THOMPSON_TABLES, _mixed_phase_cold_tables(), vapor=vapor)
+            vapor = (vapor[0], qvten)
+    else:
+        # Native REAL: WRF forms the rain-snow/rain-graupel rates from the entry rr/nr (idx_r1 :2279), not from the
+        # number left by rain self-collection/break-up.
+        cold_entry = _real_state(state) if _native_real_enabled() else None
+        state = _warm_rain_collection(state, dt)
         state = _real_state(state)
+        cold_rates = (
+            _cold_collection_rates(state if cold_entry is None else cold_entry, dt, COLD_COLLECTION_TABLES)
+            if _cold_collection_enabled()
+            else _zero_cold_collection_rates(state)
+        )
+        state, graupel_melt, vts_boost, cold_rates = _ice_sources_with_process_flags(
+            state, dt, cold_collection_rates=cold_rates
+        )
+        state = _real_state(state)
+        if _cold_collection_enabled():
+            # rain-collecting-snow / rain-collecting-graupel below 0 C: convert rain
+            # to graupel where supercooled rain meets snow/graupel (WRF 2484-2548).
+            # Computed after the freeze/riming staging pass, mirroring WRF's
+            # single-pass rate staging before sedimentation.
+            state = _apply_cold_collection_rates(state, dt, cold_rates)
+            state = _real_state(state)
     qc_pre_cond, rho_pre_cond, branch = state.qc, state.rho, _condensation_branch(state)
     qr_pre_cond = state.qr   # WRF L_qr set point (:3236-3239)
-    state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
+    if vapor is None:
+        state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
+    else:
+        state, cloud_condensed, qvten = _saturation_adjustment_with_condensation(state, dt, vapor=vapor)
+        vapor = (vapor[0], qvten)
     state = _real_state(state)
     # WRF gates cloud sedimentation on ANY(L_qc) from the PRE-condensation cloud (P0 gate-2 attribution).
     cloud_sed_on = _wrf_l_qc_any(qc_pre_cond, rho_pre_cond, state.qc, branch)
-    state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
+    if vapor is None:
+        state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
+    else:
+        state, qvten = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed,
+                                       graupel_melt=graupel_melt, vapor=vapor)
     state = _real_state(state)
     if sediment:
         cloud_rho = _cloud_sed_rho_stages(rho_pre_cond, qr_pre_cond, state)   # WRF density stages (K5, D2)
@@ -2540,6 +2632,11 @@ def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: boo
         state = _finish(state)
         state = _real_state(state)
     state = _select_state(valid, state, fallback)
+    if raw_vapor:
+        # WRF no_micro never copies its private floor back to qv1d (:2020,
+        # :1350). Hydrometeor/number cleanup above remains in effect.
+        state = state.replace(qv=jnp.where(no_micro & valid, raw_entry.qv, state.qv),
+                              rho=jnp.where(no_micro & valid, raw_entry.rho, state.rho))
     state = _restore_state(state, storage_dtypes)
     # Precip (surface accumulation, mm) tracks the fp64 accumulators downstream;
     # keep it fp64 regardless of work dtype so the per-step sum does not lose a
@@ -2659,3 +2756,516 @@ def step_thompson_column_with_precip(state: ThompsonColumnState, dt: float, *, d
     """
 
     return _maybe_tiled_thompson_full(state, dt, debug)
+
+
+# ---------------------------------------------------------------------------
+# GPUWRF_THOMPSON_MIXED_PHASE_WRF (default off, native REAL only): WRF's single-pass source stage
+# (mp_thompson, module_mp_thompson.F:1810-3204). Every warm-rain and frozen-species rate is formed from the
+# ENTRY column, then WRF's joint conservation limiters (:2853-2955), its REAL tendencies (:2971-3180) and one
+# state update (:3195-3204) — instead of the staged warm -> freeze -> melt -> deposition -> riming applies above
+# (B55). Adds what the staged path lacks: the wet-bulb twet (:2001-2011) for the rcs/rcg branch, Ef_gw, melt
+# enhancement and pnr_sml/pnr_gml; the warm rain-snow / rain-graupel branch (:2512-2547) and the :2946 re-balance;
+# the r_s(1)/r_g(1) collection guards; warm snow/graupel sublimation only while not melting (:2783-2833);
+# the melt enhancement term (:2786-2789); the rime split in the cold block only (:2758); Hallett-Mossop
+# splintering (:2741-2752); tcg_racg read like WRF at idx_bg1 and the cloud-freezing planes at WRF's integer-nic1
+# idx_n (thompson_tables.load_wrf_cold_collection_tables); the melting-snow fall-speed blend (:3721-3724).
+# ---------------------------------------------------------------------------
+_OLFUS32 = np.float32(1.0) / np.float32(334000.0)   # WRF olfus = 1./(lsub - lvap0), REAL parameter
+
+
+def _mixed_phase_wrf_enabled() -> bool:
+    return os.environ.get("GPUWRF_THOMPSON_MIXED_PHASE_WRF", "0") == "1"
+
+
+def _mixed_phase_cold_tables():
+    """Cold-collection tables + effective tcg_racg as fp64 jnp arrays, built PER CALL from the host cache (a cached jax
+    value would leak from one trace into the next program: F0, FINDINGS E206); the full-column kernel substitutes its
+    table refs. WRF reads these tables in DOUBLE, so without x64 this refuses instead of truncating to fp32."""
+    from gpuwrf.physics.thompson_tables import load_wrf_cold_collection_tables  # noqa: PLC0415
+    host = load_wrf_cold_collection_tables()
+    if jax.dtypes.canonicalize_dtype(jnp.float64) != jnp.float64:      # x64 off, incl. jax.enable_x64(False) scopes
+        raise ValueError("GPUWRF_THOMPSON_MIXED_PHASE_WRF needs jax_enable_x64: the WRF cold-collection tables are DOUBLE")
+    return type(host)(*(jnp.asarray(table, dtype=jnp.float64) for table in host))
+
+
+def _wrf_melting_band(tempc):
+    """k <= k_melting (:1975-1985): every level at or below the highest level with tempc > 0."""
+    k = jnp.arange(tempc.shape[-1], dtype=jnp.int32)
+    return k <= jnp.max(jnp.where(tempc > 0.0, k, -1), axis=-1, keepdims=True)
+
+
+def _wrf_theta_e(p, t, w, tlcl):
+    """theta_e (:6032-6062, Bolton 1980 eqn 43), REAL."""
+    rr = w + 1.0e-8
+    xx = t * (100000.0 / p) ** (0.2854 * (1.0 - 0.28 * rr))
+    return xx * jnp.exp((3.376 / tlcl - 0.00254) * ((rr * 1000.0) * (1.0 + 0.81 * rr)))
+
+
+def _wrf_theta_wetb(the):
+    """theta_wetb (:6111-6145): REAL*8 DATA from REAL literals, DOUBLE Horner, REAL answer."""
+    c = [float(np.float32(v)) for v in (-1.00922292e-10, -1.47945344e-8, -1.7303757e-6, -0.00012709,
+                                        1.15849867e-6, -3.518296861e-9, 3.5741522e-12)]
+    d = [float(np.float32(v)) for v in (0.0, -3.5223513e-10, -5.7250807e-8, -5.83975422e-6,
+                                        4.72445163e-8, -1.13402845e-10, 8.729580402e-14)]
+    x = jnp.minimum(475.0, the).astype(jnp.float64)
+
+    def horner(a):
+        return a[0] + x * (a[1] + x * (a[2] + x * (a[3] + x * (a[4] + x * (a[5] + x * a[6])))))
+
+    return jnp.where(x <= 335.5, horner(c), horner(d)).astype(the.dtype) + 273.15
+
+
+def _wrf_twet(temp, p, qv, qvs, band):
+    """Wet-bulb twet (:2001-2011): min(T, compT_fr_The(theta_e(T_lcl))) on k <= k_melting where satw < 0.999.
+
+    compT_fr_The (:6149-6175) is WRF's Newton iteration (<= 100 steps, |cor| < 0.01, theta_wetb fallback); each
+    cell stops at its own convergence step, the loop ends when no needing cell is left.
+    """
+    need = band & (qv / qvs < 0.999)
+    es = p * (qv + 1.0e-8) / (0.622 + (qv + 1.0e-8))
+    esln = jnp.log(es)
+    dew_t = jnp.minimum(temp - 0.001, (35.86 * esln - 4947.2325) / (esln - 23.6837))       # t_dew :6089
+    tlcl = 1.0 / (1.0 / (dew_t - 56.0) + jnp.log(temp / dew_t) / 800.0) + 56.0             # t_lcl :6066
+    the = jnp.where(need, _wrf_theta_e(p, temp, qv, tlcl), temp)
+    guess0 = (the - 0.5 * jnp.maximum(the - 270.0, 0.0) ** 1.05) * (p / 100000.0) ** 0.2
+    todo0 = jnp.where(need, 1.0, 0.0).astype(temp.dtype)
+
+    def body(carry):
+        it, guess, todo = carry
+        tenu = _wrf_theta_e(p, guess, saturation_mixing_ratio_liquid(p, guess), guess)
+        tenup = _wrf_theta_e(p, guess + 1.0, saturation_mixing_ratio_liquid(p, guess + 1.0), guess + 1.0)
+        cor = (the - tenu) / (tenup - tenu)
+        active = todo > 0.0
+        guess = jnp.where(active, guess + cor, guess)
+        todo = jnp.where(active & (cor < 0.01) & (-cor < 0.01), 0.0, todo)
+        return it + 1, guess, todo
+
+    def cond(carry):
+        it, _guess, todo = carry
+        return (it < 100) & jnp.any(todo > 0.0)
+
+    _it, guess, todo = jax.lax.while_loop(cond, body, (jnp.int32(0), guess0, todo0))
+    comp = jnp.where(todo > 0.0, _wrf_theta_wetb(the) * (p / 100000.0) ** 0.286, guess)
+    return jnp.where(need, jnp.minimum(temp, comp), temp)
+
+
+def _wrf_subl_prefactor(state, ssati, diffu, tcond, qvsi):
+    """Srivastava-Coen prefactor (:2383-2400) with WRF's level qvsi (= qvs above 0 C, :1978-1981)."""
+    otemp = 1.0 / state.T
+    rvs = state.rho * qvsi
+    rvs_p = rvs * otemp * (LSUB * otemp / RV - 1.0)
+    rvs_pp = rvs * (
+        otemp * (LSUB * otemp / RV - 1.0) * otemp * (LSUB * otemp / RV - 1.0)
+        + (-2.0 * LSUB * otemp * otemp * otemp / RV)
+        + otemp * otemp
+    )
+    gamsc = LSUB * diffu / tcond * rvs_p
+    alphsc = 0.5 * (gamsc / (1.0 + gamsc)) * (gamsc / (1.0 + gamsc)) * rvs_pp / rvs_p * rvs / rvs_p
+    alphsc = jnp.maximum(1.0e-9, alphsc)
+    xsat = jnp.where(jnp.abs(ssati) < 1.0e-9, 0.0, ssati)
+    t1_subl = 4.0 * PI * (1.0 - alphsc * xsat + 2.0 * alphsc * alphsc * xsat * xsat - 5.0 * alphsc**3 * xsat**3) / (1.0 + gamsc)
+    return t1_subl, rvs
+
+
+def _wrf_warm_rain_rates(state, dt, tables, odts):
+    """prr_wau/pnr_wau/prr_rcw/pnr_rcr (:2157-2207) from the entry column; prr_rcw = MIN(rc*odts, .) (:2205)."""
+    rc, lamc, xdc, mvd_c, active_cloud = _cloud_distribution(state.qc, state.rho)
+    rr, nr, lamr, _ilamr, mvd_r, n0_r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
+    rhof = _air_properties(state)[6]
+    dc_g = ((_wrf("DC_G_PREFIX", (CCG3_NU12 * OCG2_NU12) ** OBMR) / lamc) * 1.0e6).astype(jnp.float32)
+    dc_b = jnp.maximum(xdc**3 * dc_g**3 - xdc**6, 0.0) ** (1.0 / 6.0)
+    zeta1_raw = 6.25e-6 * xdc * dc_b**3 - 0.4
+    zeta = 0.027 * rc * (0.5 * (zeta1_raw + jnp.abs(zeta1_raw)))
+    taud_raw = 0.5 * dc_b - 7.5
+    tau = 3.72 / jnp.maximum(rc * (0.5 * (taud_raw + jnp.abs(taud_raw)) + R1), R1)
+    prr_wau = jnp.where((rc > 0.01e-3) & active_cloud, jnp.minimum(rc * odts, zeta / tau), 0.0).astype(jnp.float64)
+    pnr_wau = prr_wau / _wrf("PNR_WAU_DEN", AM_R * NU_C_MP8 * 10.0 * D0R**3)
+    idx_r_eff = jnp.clip(jnp.floor(N_EFRW_R * jnp.log(jnp.maximum(mvd_r, DR_FIRST) / DR_FIRST)
+                                   / jnp.log(DR_LAST / DR_FIRST)), 0, N_EFRW_R - 1).astype(jnp.int32)
+    idx_c_eff = jnp.clip(jnp.floor(mvd_c * 1.0e6).astype(jnp.int32) - 1, 0, N_EFRW_C - 1)
+    ef_rw = _take2(tables.t_Efrw, idx_r_eff, idx_c_eff).astype(jnp.float32)
+    prr_rcw = rhof * _wrf("T1_QR_QC", T1_QR_QC) * ef_rw * rc * n0_r * _dpow(lamr + FV_R, -CRE9)
+    prr_rcw = jnp.where(active_rain & (mvd_r > D0R) & (mvd_c > D0C), jnp.minimum(rc * odts, prr_rcw), 0.0)
+    ef_rr = 1.0 - jnp.exp(2300.0 * (mvd_r - 1950.0e-6))
+    pnr_rcr = jnp.where(active_rain & (mvd_r > D0R), ef_rr * 2.0 * nr * rr, 0.0)
+    return prr_wau, pnr_wau, prr_rcw, pnr_rcr
+
+
+def _wrf_rain_snow_graupel_rates(state, dt, cold_tables, twet, odts):
+    """Rain-snow / rain-graupel collection, both twet branches (:2484-2547), WRF guards rs >= r_s(1), rg >= r_g(1)."""
+    rho = state.rho
+    rr = jnp.maximum(state.qr * rho, R1)
+    rs = jnp.maximum(state.qs * rho, R1)
+    rg = jnp.maximum(state.qg * rho, R1)
+    nr = jnp.maximum(state.Nr * rho, R2)
+    _, _nr_c, lamr, _ilamr, _mvd_r, _n0r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
+    rr_idx = jnp.maximum(rr, R_R_FIRST)
+    idx_r = _lookup_digit_index(rr_idx, -6, N_R_TABLE)
+    idx_r1 = _lookup_digit_index(ORG1 * rr_idx / _am_r() * _dpow(lamr, CRE1), 6, N_R1_TABLE)
+    idx_s = _lookup_digit_index(jnp.maximum(rs, 1.0e-6), -6, 37)
+    idx_t = jnp.clip(-(jnp.trunc((state.T - 273.15 - 2.5) / 5.0) - 1.0), 1.0, 9.0).astype(jnp.int32) - 1
+    _rg_d, ng, lamg, _ilamg_d, _n0g_d, _act_g = _graupel_distribution(state.qg, state.Ng, state.rho)
+    idx_g = _lookup_digit_index(jnp.maximum(rg, 1.0e-6), -6, 37)
+    idx_g1 = _lookup_digit_index(jnp.maximum(ORG1 * rg / AM_G_MP8 * _dpow(lamg, 4.0), 1.0e2), 2, 37)
+    rain = active_rain & (rr >= R_R_FIRST)
+    racs = rain & (rs >= 1.0e-6)
+    racg = rain & (rg >= 1.0e-6)
+    cold = twet < T_0
+
+    def s4(name):
+        return _take4(getattr(cold_tables, name), idx_s, idx_t, idx_r1, idx_r)
+
+    def g4(name):
+        return _take4(getattr(cold_tables, name), idx_g1, idx_g, idx_r1, idx_r)
+
+    rr_odts, rs_odts, rg_odts = (rr * odts).astype(jnp.float64), (rs * odts).astype(jnp.float64), (rg * odts).astype(jnp.float64)
+    prr_rcs_c = jnp.maximum(-rr_odts, -(s4("tmr_racs2") + s4("tcr_sacr2") + s4("tmr_racs1") + s4("tcr_sacr1")))
+    prs_rcs_c = jnp.maximum(-rs_odts, s4("tmr_racs2") + s4("tcr_sacr2") - s4("tcs_racs1") - s4("tms_sacr1"))
+    prg_rcs_c = jnp.minimum(((rr + rs) * odts).astype(jnp.float64), s4("tmr_racs1") + s4("tcr_sacr1") + s4("tcs_racs1") + s4("tms_sacr1"))
+    pnr_rcs_c = jnp.minimum((nr * odts).astype(jnp.float64), s4("tnr_racs1") + s4("tnr_racs2") + s4("tnr_sacr1") + s4("tnr_sacr2"))
+    prs_rcs_w = jnp.maximum(-rs_odts, -s4("tcs_racs1") - s4("tms_sacr1") + s4("tmr_racs2") + s4("tcr_sacr2"))
+    prr_rcs = jnp.where(racs, jnp.where(cold, prr_rcs_c, -prs_rcs_w), 0.0)
+    prs_rcs = jnp.where(racs, jnp.where(cold, prs_rcs_c, prs_rcs_w), 0.0)
+    prg_rcs = jnp.where(racs & cold, prg_rcs_c, 0.0)
+    pnr_rcs = jnp.where(racs & cold, pnr_rcs_c, 0.0)
+
+    prg_rcg_c = jnp.minimum(rr_odts, g4("tmr_racg") + g4("tcr_gacr"))
+    pnr_rcg_c = jnp.minimum((nr * odts).astype(jnp.float64), g4("tnr_racg") + g4("tnr_gacr"))
+    prr_rcg_w = jnp.minimum(rg_odts, g4("tcg_racg"))
+    png_rcg_w = jnp.minimum((ng * odts).astype(jnp.float64), g4("tnr_racg"))
+    prr_rcg = jnp.where(racg, jnp.where(cold, -prg_rcg_c, prr_rcg_w), 0.0)
+    prg_rcg = -prr_rcg
+    pnr_rcg = jnp.where(racg, jnp.where(cold, pnr_rcg_c, -1.5 * g4("tnr_gacr")), 0.0)
+    png_rcg = jnp.where(racg & ~cold, png_rcg_w, 0.0)
+    return prr_rcs, prs_rcs, prg_rcs, pnr_rcs, pnr_rcs, prr_rcg, prg_rcg, pnr_rcg, png_rcg
+
+
+def _wrf_scale(mask, ratio, *rates):
+    """rate*ratio where the WRF limiter fires (REAL ratio, DOUBLE rate)."""
+    return tuple(jnp.where(mask, r * ratio, r) for r in rates)
+
+
+def _wrf_mixed_phase_activity(state):
+    """Per-cell (warm, cold) activity of _wrf_mixed_phase_sources, a SUPERSET of its rate gates: every warm rate needs
+    cloud or rain > R1; every cold/mixed-phase/melt rate needs ice, snow or graupel > R1, cloud or rain > R1 in a cold
+    cell (freezing), or a nucleation cell (ssati >= 0.25, or ssatw > EPS below 253.15 K; tested with 0.2 / 0)."""
+    l_qc, l_qr = state.qc > R1, state.qr > R1
+    cold = state.T < T_0
+    ssati = state.qv / saturation_mixing_ratio_ice(state.p, state.T) - 1.0
+    ssatw = state.qv / saturation_mixing_ratio_liquid(state.p, state.T) - 1.0
+    nuc = cold & ((ssati >= 0.2) | ((ssatw > 0.0) & (state.T < 253.15)))
+    ice = (state.qi > R1) | (state.qs > R1) | (state.qg > R1)
+    return l_qc | l_qr, ice | (cold & (l_qc | l_qr)) | nuc
+
+
+def _wrf_mixed_phase_sources(state, dt, tables, cold_tables, *, warm_rates=True, cold_rates=True, vapor=None):
+    """WRF single-pass source stage on the entry column; returns (state, prr_gml > 0 proxy, vts_boost).
+
+    warm_rates/cold_rates=False (EARLY_EXIT kernel branches, see _wrf_mixed_phase_activity) skip rate families that
+    are exactly zero in that column; limiters, tendencies, number caps and the update are shared.
+    """
+    if not _native_real_enabled():
+        raise ValueError("GPUWRF_THOMPSON_MIXED_PHASE_WRF requires GPUWRF_THOMPSON_NATIVE_REAL=1")
+    if _sed_prep_fused_enabled() or _implicit_sed_nsub():
+        raise ValueError("GPUWRF_THOMPSON_MIXED_PHASE_WRF implements WRF explicit sedimentation only")
+    f64 = jnp.float64
+    dtf = float(dt)
+    odts = np.float32(1.0) / np.float32(dtf)                  # WRF REAL odts = 1./dt
+    # WRF zeroes sub-R1 species and their numbers before any rate (:1820-1940).
+    state = state.replace(
+        qc=jnp.where(state.qc > R1, state.qc, 0.0), qr=jnp.where(state.qr > R1, state.qr, 0.0),
+        qi=jnp.where(state.qi > R1, state.qi, 0.0), qs=jnp.where(state.qs > R1, state.qs, 0.0),
+        qg=jnp.where(state.qg > R1, state.qg, 0.0),
+        Ni=jnp.where(state.qi > R1, state.Ni, 0.0), Nr=jnp.where(state.qr > R1, state.Nr, 0.0))
+    temp, qv, p, rho = state.T, state.qv, state.p, state.rho
+    tempc, diffu, visco, tcond, lvap, ocp, rhof, rhof2, vsc2 = _air_properties(state)
+    orho = 1.0 / rho
+    qvs = saturation_mixing_ratio_liquid(p, temp)
+    qvsi = jnp.where(tempc <= 0.0, saturation_mixing_ratio_ice(p, temp), qvs)
+    del_qvs = jnp.maximum(0.0, saturation_mixing_ratio_liquid(p, jnp.asarray(T_0, temp.dtype)) - qv)
+    ssatw = qv / qvs - 1.0
+    ssatw = jnp.where(jnp.abs(ssatw) < EPS, 0.0, ssatw)
+    ssati = qv / qvsi - 1.0
+    ssati = jnp.where(jnp.abs(ssati) < EPS, 0.0, ssati)
+    cold = temp < T_0
+    warm = ~cold
+
+    if warm_rates or cold_rates:
+        rc, _lamc, _xdc, mvd_c, l_qc = _cloud_distribution(state.qc, rho)
+        rr, nr, lamr, _ilamr, mvd_r, n0_r, active_rain = _rain_distribution(state.qr, state.Nr, rho)
+    else:  # dry column: rc/rr only reach the limiters, masked by l_qc/l_qr (both False)
+        rc, l_qc, rr = jnp.maximum(state.qc * rho, R1), state.qc > R1, jnp.maximum(state.qr * rho, R1)
+    l_qr = state.qr > R1
+    rate_max = (qv - qvsi) * rho * odts * 0.999                                          # REAL
+    zero64 = jnp.zeros_like(temp, dtype=f64)
+
+    # ---- warm rain (:2157-2207) ----
+    if warm_rates:
+        prr_wau, pnr_wau, prr_rcw, pnr_rcr = _wrf_warm_rain_rates(state, dt, tables, odts)
+    else:  # no cloud/rain > R1 in the column: every warm rate is exactly 0 (EARLY_EXIT kernel branch)
+        prr_wau = pnr_wau = prr_rcw = zero64
+        pnr_rcr = jnp.zeros_like(temp)
+
+    if cold_rates:
+        ri, ni, _lami, ilami, xdi, xmi, l_qi = _ice_distribution(state.qi, state.Ni, rho)
+        rs, xds, smo0, smo1, smof, c_snow, l_qs = _snow_moments(state.qs, rho, tempc, tables)
+        rg, ng, lamg, ilamg, n0_g, l_qg = _graupel_distribution(state.qg, state.Ng, rho)
+        # twet only enters snow/graupel processes (riming Ef_gw, rcs/rcg branch, melt, :2946 re-balance), all gated by
+        # L_qs/L_qg: the Newton solve runs only there (WRF solves every subsaturated k <= k_melting; same values used).
+        twet = _wrf_twet(temp, p, qv, qvs, _wrf_melting_band(tempc) & (l_qs | l_qg))
+        smoe = _snow_moment(tables.cse[12], jnp.maximum(state.qs * rho, R1) / AM_S, jnp.minimum(-0.1, tempc), tables)
+        _av_g, _bv_g, cgg63, t1_qg_qc, cge9, t2_subl_qg, t2_melt_qg, cge11 = _graupel_constants()
+
+        # ---- rain-snow / rain-graupel (:2484-2547) ----
+        prr_rcs, prs_rcs, prg_rcs, pnr_rcs, png_rcs, prr_rcg, prg_rcg, pnr_rcg, png_rcg = (
+            _wrf_rain_snow_graupel_rates(state, dt, cold_tables, twet, odts))
+
+        # ---- riming: snow / graupel collecting cloud water, all temperatures (:2403-2440) ----
+        xds_pos = NBS_EFSW * jnp.log(jnp.maximum(xds, DS_FIRST) / DS_FIRST) / math.log(DS_LAST / DS_FIRST)
+        idx_s_eff = jnp.clip(jnp.trunc(xds_pos), 0, NBS_EFSW - 1).astype(jnp.int32)
+        idx_c_rime = jnp.clip(jnp.floor(mvd_c * 1.0e6).astype(jnp.int32) - 1, 0, N_EFRW_C - 1)
+        ef_sw = _take2(tables.t_Efsw, idx_s_eff, idx_c_rime).astype(jnp.float32)
+        scw_gate = l_qs & l_qc & (mvd_c > D0C) & (xds > D0S)
+        prs_scw = jnp.where(scw_gate, jnp.minimum(rc * odts, rhof * _wrf("T1_QS_QC", T1_QS_QC) * ef_sw * rc * smoe), 0.0).astype(f64)
+        xdg = (4.0 * ilamg).astype(jnp.float32)
+        vtg = (_times_cgg63(rhof * _av_g, cgg63) * ilamg**_bv_g).astype(jnp.float32)
+        stoke_g = mvd_c * mvd_c * vtg * RHO_W_RIME / (9.0 * jnp.maximum(visco, R1) * jnp.maximum(xdg, R1))
+        ef_gw = jnp.where(stoke_g >= 0.4, jnp.where(stoke_g > 10.0, 0.77, 0.55 * jnp.log10(jnp.maximum(2.51 * stoke_g, R1))), 0.0)
+        ef_gw = jnp.where(twet > T_0, ef_gw * 0.1, ef_gw)                                    # :2431 twet
+        gcw_gate = l_qg & (rg >= 1.0e-6) & l_qc & (mvd_c > D0C)
+        prg_gcw = jnp.where(gcw_gate, rhof * t1_qg_qc * ef_gw * rc * n0_g * ilamg**cge9, 0.0)
+
+        # ---- cold block (:2554-2780) ----
+        rate_max64 = rate_max.astype(f64)
+        rr_idx = jnp.maximum(rr, R_R_FIRST)
+        idx_r = _lookup_digit_index(rr_idx, -6, N_R_TABLE)
+        idx_r1 = _lookup_digit_index(ORG1 * rr_idx / _am_r() * _dpow(lamr, CRE1), 6, N_R1_TABLE)
+        idx_tc = jnp.clip(jnp.floor(-tempc + 0.5).astype(jnp.int32) - 1, 0, N_TC_TABLE - 1)
+        qrfz = _take_qrfz(tables.qrfz, idx_r, idx_r1, idx_tc)
+        rfz_tab = cold & (rr > R_R_FIRST)
+        rfz_hom = cold & ~rfz_tab & l_qr & (temp < HGFR)
+        pri_rfz = jnp.where(rfz_tab, qrfz[..., 0] * odts, jnp.where(rfz_hom, rr * odts, 0.0)).astype(f64)
+        prg_rfz = jnp.where(rfz_tab, qrfz[..., 1] * odts, 0.0)
+        pni_rfz = jnp.where(rfz_tab, qrfz[..., 2] * odts, jnp.where(rfz_hom, nr * odts, 0.0)).astype(f64)
+        pnr_rfz = jnp.where(rfz_tab, jnp.minimum((nr * odts).astype(f64), qrfz[..., 3] * odts), 0.0)
+        _cf, _cn, pri_wfz, pni_wfz = _cloud_water_freezing_rates(state, dt, cold_tables)
+        pri_wfz = jnp.where(cold, pri_wfz, 0.0).astype(f64)
+        pni_wfz = jnp.where(cold, pni_wfz, 0.0).astype(f64)
+
+        nuc = cold & ((ssati >= 0.25) | ((ssatw > EPS) & (temp < 253.15)))
+        xnc = jnp.minimum(250.0e3, TNO * jnp.exp(ATO * (T_0 - temp)))
+        xni = (ni + (pni_rfz + pni_wfz) * dtf).astype(jnp.float32)
+        pni_inu = (0.5 * (xnc - xni + jnp.abs(xnc - xni)) * odts).astype(f64)
+        pri_inu = jnp.where(nuc, jnp.minimum(rate_max64, XM0I * pni_inu), 0.0)
+        pni_inu = jnp.where(nuc, pri_inu / XM0I, 0.0)
+
+        t1_subl, rvs = _wrf_subl_prefactor(state, ssati, diffu, tcond, qvsi)
+        oxmi = 1.0 / xmi
+        pri_ide = C_CUBE * t1_subl * diffu * ssati * rvs * OIG1 * 1.0 * ni * ilami
+        ide_neg = pri_ide < 0.0
+        pri_ide = jnp.where(ide_neg, jnp.maximum(jnp.maximum((-ri * odts).astype(f64), pri_ide), rate_max64),
+                            jnp.minimum(pri_ide, rate_max64))
+        idx_i = jnp.where(ri > R_I_FIRST, _lookup_digit_index(ri, -10, N_I_TABLE), 0)
+        idx_i1 = jnp.where(ni > NT_I_FIRST, _lookup_digit_index(ni, 0, N_I1_TABLE), 0)
+        iaus = _take3_last(tables.iaus, idx_i, idx_i1)
+        dep_i = cold & l_qi
+        pni_ide = jnp.where(dep_i & ide_neg, jnp.maximum((-ni * odts).astype(f64), pri_ide * oxmi), 0.0)
+        prs_ide = jnp.where(dep_i & ~ide_neg, (1.0 - iaus[..., 2]) * pri_ide, 0.0)
+        pri_ide = jnp.where(dep_i, jnp.where(ide_neg, pri_ide, iaus[..., 2] * pri_ide), 0.0)
+        iau_large = (idx_i == N_I_TABLE - 1) | (xdi > 5.0 * D0S)
+        iau_small = xdi < _wrf("D0S_X01", 0.1 * D0S)
+        prs_iau = jnp.where(iau_large, (ri * 0.99 * odts).astype(f64), jnp.where(
+            iau_small, 0.0, jnp.minimum((ri * 0.99 * odts).astype(f64), iaus[..., 0] * odts)))
+        pni_iau = jnp.where(iau_large, (ni * 0.95 * odts).astype(f64), jnp.where(
+            iau_small, 0.0, jnp.minimum((ni * 0.95 * odts).astype(f64), iaus[..., 1] * odts)))
+        prs_iau, pni_iau = jnp.where(dep_i, prs_iau, 0.0), jnp.where(dep_i, pni_iau, 0.0)
+
+        prs_sde_c = (c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)).astype(f64)
+        prs_sde_c = jnp.where(prs_sde_c < 0.0, jnp.maximum(jnp.maximum((-rs * odts).astype(f64), prs_sde_c), rate_max64),
+                              jnp.minimum(prs_sde_c, rate_max64))
+        prs_sde_c = jnp.where(cold & l_qs, prs_sde_c, 0.0)
+        gde_base = (C_CUBE * t1_subl * diffu * ssati * rvs) * n0_g * (
+            T1_SUBL_QG * _dpow(ilamg, CRE10) + t2_subl_qg * vsc2 * rhof2 * ilamg**cge11)
+        prg_gde_c = jnp.where(gde_base < 0.0, jnp.maximum(jnp.maximum((-rg * odts).astype(f64), gde_base), rate_max64),
+                              jnp.minimum(gde_base, rate_max64))
+        gde_c = cold & l_qg & (ssati < -EPS)
+        png_gde_c = jnp.where(gde_c & (prg_gde_c < 0.0), prg_gde_c * ng / rg, 0.0)
+        prg_gde_c = jnp.where(gde_c, prg_gde_c, 0.0)
+
+        prs_sci, pni_sci, pri_rci, pni_rci, prr_rci, pnr_rci, prg_rci = _ice_collection_rates_from_moments(
+            dt, rhof, ri, ni, xdi, xmi, l_qi, rs, smoe, rr, nr, lamr, mvd_r, n0_r, active_rain, cold=cold)
+
+        # Hallett-Mossop rime splinters (:2741-2752), before the rime split.
+        tf = jnp.where((tempc >= -5.0) & (tempc < -3.0), 0.5 * (-3.0 - tempc),
+                       jnp.where((tempc > -8.0) & (tempc < -5.0), 0.33333333 * (8.0 + tempc), 0.0))
+        hm = cold & (prg_gcw > EPS) & (tempc > -8.0)
+        pni_ihm = jnp.where(hm, 3.5e8 * tf * prg_gcw, 0.0)
+        pri_ihm = XM0I * pni_ihm
+        rime_sum = jnp.where(hm, prs_scw + prg_gcw, 1.0)
+        prs_ihm = jnp.where(hm, prs_scw / rime_sum * pri_ihm, 0.0)
+        prg_ihm = jnp.where(hm, prg_gcw / rime_sum * pri_ihm, 0.0)
+
+        # Rimed snow -> graupel split (:2758-2777), cold block only, against the per-cell prs_sde.
+        riming_dom = cold & (prs_scw > 2.0 * prs_sde_c) & (prs_sde_c > EPS)
+        r_frac = jnp.minimum(30.0, prs_scw / jnp.where(riming_dom, prs_sde_c, 1.0)).astype(jnp.float32)
+        g_frac = jnp.minimum(0.95, 0.15 + (r_frac - 2.0) * 0.028)
+        vts_boost = jnp.where(riming_dom, jnp.minimum(1.5, 1.1 + (r_frac - 2.0) * 0.014), 1.0).astype(jnp.float32)
+        vts_single = AV_S * xds**BV_S * jnp.exp(-FV_S * xds)
+        const_ri = jnp.clip(-(mvd_c * 0.5e6) * vts_single / jnp.minimum(-0.1, tempc), 0.1, 10.0)
+        rime_dens = (0.051 + 0.114 * const_ri - 0.0055 * const_ri * const_ri) * 1000.0
+        g_frac = jnp.where(riming_dom & (rime_dens >= 150.0), g_frac, 0.0)
+        prg_scw = g_frac * prs_scw
+        png_scw = jnp.where(g_frac > 0.0, prg_scw * smo0 / rs, 0.0)
+        prs_scw = jnp.where(riming_dom, (1.0 - g_frac) * prs_scw, prs_scw)
+
+        # ---- warm block: melt, enhancement, sublimation only when not melting (:2781-2834) ----
+        melt_base = tempc * tcond - 2.5e6 * diffu * del_qvs
+        prr_sml = (melt_base * (_wrf("T1_MELT_QS", T1_MELT_QS) * smo1 + _wrf("T2_MELT_QS", T2_MELT_QS) * rhof2 * vsc2 * smof)).astype(f64)
+        prr_sml = jnp.where(prr_sml > 0.0, prr_sml + 4218.0 * _OLFUS32 * (twet - T_0) * (prr_rcs + prs_scw), prr_sml)
+        prr_sml = jnp.where(warm & l_qs, jnp.minimum((rs * odts).astype(f64), jnp.maximum(0.0, prr_sml)), 0.0)
+        pnr_sml = jnp.where(prr_sml > 0.0, smo0 / rs * prr_sml * 10.0 ** (-0.25 * (twet - T_0)), 0.0)
+        sde_w = warm & l_qs & ~(prr_sml > 0.0) & (ssati < 0.0)
+        prs_sde_w = (C_SQRD * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)).astype(f64)
+        prs_sde = jnp.where(cold, prs_sde_c, jnp.where(sde_w, jnp.maximum((-rs * odts).astype(f64), prs_sde_w), 0.0))
+        n0_melt = jnp.where((rg * ng) < 1.0e-4, (1.0e-4 / rg) * ORG2 * lamg, n0_g)
+        prr_gml = melt_base * n0_melt * (T1_MELT_QG * _dpow(ilamg, CRE10) + t2_melt_qg * rhof2 * vsc2 * ilamg**cge11)
+        prr_gml = jnp.where(warm & l_qg, jnp.minimum((rg * odts).astype(f64), jnp.maximum(0.0, prr_gml)), 0.0)
+        pnr_gml = jnp.where(prr_gml > 0.0, prr_gml * ng / rg * 10.0 ** (-0.33 * (twet - T_0)), 0.0)
+        gde_w = warm & l_qg & ~(prr_gml > 0.0) & (ssati < 0.0)
+        prg_gde_w = jnp.maximum((-rg * odts).astype(f64), gde_base)
+        prg_gde = jnp.where(cold, prg_gde_c, jnp.where(gde_w, prg_gde_w, 0.0))
+        png_gde = jnp.where(cold, png_gde_c, jnp.where(gde_w, prg_gde_w * ng / rg, 0.0))
+    else:  # no ice/snow/graupel > R1, no cold cloud/rain, no nucleation (_wrf_mixed_phase_activity): all 0, twet = T
+        ri, l_qi = jnp.maximum(state.qi * rho, R1), state.qi > R1
+        rs, l_qs = jnp.maximum(state.qs * rho, R1), state.qs > R1
+        rg, l_qg = jnp.maximum(state.qg * rho, R1), state.qg > R1
+        twet, vts_boost = temp, jnp.ones_like(temp)
+        png_gde = png_rcg = png_rcs = png_scw = pni_iau = pni_ide = pni_ihm = pni_inu = zero64
+        pni_rci = pni_rfz = pni_sci = pni_wfz = pnr_gml = pnr_rcg = pnr_rci = pnr_rcs = zero64
+        pnr_rfz = pnr_sml = prg_gcw = prg_gde = prg_ihm = prg_rcg = prg_rci = prg_rcs = zero64
+        prg_rfz = prg_scw = pri_ide = pri_ihm = pri_inu = pri_rci = pri_rfz = pri_wfz = zero64
+        prr_gml = prr_rcg = prr_rci = prr_rcs = prr_sml = prs_iau = prs_ide = prs_ihm = zero64
+        prs_rcs = prs_sci = prs_scw = prs_sde = zero64
+    if dtf > 120.0:                                                                       # :2840-2844, warm block
+        prr_rcw = jnp.where(warm, prr_rcw + prs_scw + prg_gcw, prr_rcw)
+        prs_scw, prg_gcw = jnp.where(warm, 0.0, prs_scw), jnp.where(warm, 0.0, prg_gcw)
+
+    # ---- conservation limiters (:2853-2955; REAL sump/ratio) ----
+    real = jnp.float32
+    sump = (pri_inu + pri_ide + prs_ide + prs_sde + prg_gde).astype(real)
+    lim = ((sump > EPS) & (sump > rate_max)) | ((sump < -EPS) & (sump < rate_max))
+    ratio = rate_max / jnp.where(lim, sump, 1.0)
+    pri_inu, pri_ide, pni_ide, prs_ide, prs_sde, prg_gde = _wrf_scale(lim, ratio, pri_inu, pri_ide, pni_ide, prs_ide, prs_sde, prg_gde)
+    sump = (-prr_wau - pri_wfz - prr_rcw - prs_scw - prg_scw - prg_gcw).astype(real)
+    lim = (sump < -rc * odts) & l_qc
+    ratio = -rc * odts / jnp.where(lim, sump, 1.0)
+    prr_wau, pri_wfz, prr_rcw, prs_scw, prg_scw, prg_gcw = _wrf_scale(lim, ratio, prr_wau, pri_wfz, prr_rcw, prs_scw, prg_scw, prg_gcw)
+    sump = (pri_ide - prs_iau - prs_sci - pri_rci).astype(real)
+    lim = (sump < -ri * odts) & l_qi
+    ratio = -ri * odts / jnp.where(lim, sump, 1.0)
+    pri_ide, prs_iau, prs_sci, pri_rci = _wrf_scale(lim, ratio, pri_ide, prs_iau, prs_sci, pri_rci)
+    sump = (-prg_rfz - pri_rfz - prr_rci + prr_rcs + prr_rcg).astype(real)
+    lim = (sump < -rr * odts) & l_qr
+    ratio = -rr * odts / jnp.where(lim, sump, 1.0)
+    prg_rfz, pri_rfz, prr_rci, prr_rcs, prr_rcg = _wrf_scale(lim, ratio, prg_rfz, pri_rfz, prr_rci, prr_rcs, prr_rcg)
+    sump = (prs_sde - prs_ihm - prr_sml + prs_rcs).astype(real)
+    lim = (sump < -rs * odts) & l_qs
+    ratio = -rs * odts / jnp.where(lim, sump, 1.0)
+    prs_sde, prs_ihm, prr_sml, prs_rcs = _wrf_scale(lim, ratio, prs_sde, prs_ihm, prr_sml, prs_rcs)
+    sump = (prg_gde - prg_ihm - prr_gml + prg_rcg).astype(real)
+    lim = (sump < -rg * odts) & l_qg
+    ratio = -rg * odts / jnp.where(lim, sump, 1.0)
+    prg_gde, prg_ihm, prr_gml, prg_rcg = _wrf_scale(lim, ratio, prg_gde, prg_ihm, prr_gml, prg_rcg)
+    pri_ihm = prs_ihm + prg_ihm
+    ratio = jnp.minimum(jnp.abs(prr_rcg), jnp.abs(prg_rcg)).astype(real)                 # :2943-2951
+    prr_rcg = (ratio * jnp.where(prr_rcg.astype(real) < 0.0, -1.0, 1.0)).astype(f64)
+    prg_rcg = -prr_rcg
+    rebal = twet > T_0
+    ratio = jnp.minimum(jnp.abs(prr_rcs), jnp.abs(prs_rcs)).astype(real)
+    prr_rcs = jnp.where(rebal, (ratio * jnp.where(prr_rcs.astype(real) < 0.0, -1.0, 1.0)).astype(f64), prr_rcs)
+    prs_rcs = jnp.where(rebal, -prr_rcs, prs_rcs)
+
+    # ---- REAL tendencies (:2971-3180) and the one state update (:3195-3204) ----
+    def ten(x):
+        return (x * orho).astype(real)
+
+    qvten = ten(-pri_inu - pri_ide - prs_ide - prs_sde - prg_gde)
+    qcten = ten(-prr_wau - pri_wfz - prr_rcw - prs_scw - prg_scw - prg_gcw)
+    qiten = ten(pri_inu + pri_ihm + pri_wfz + pri_rfz + pri_ide - prs_iau - prs_sci - pri_rci)
+    niten = ten(pni_inu + pni_ihm + pni_wfz + pni_rfz + pni_ide - pni_iau - pni_sci - pni_rci)
+    qrten = ten(prr_wau + prr_rcw + prr_sml + prr_gml + prr_rcs + prr_rcg - prg_rfz - pri_rfz - prr_rci)
+    nrten = ten(pnr_wau + pnr_sml + pnr_gml - (pnr_rfz + pnr_rcr + pnr_rcg + pnr_rcs + pnr_rci + pni_rfz))
+    qsten = ten(prs_iau + prs_sde + prs_sci + prs_scw + prs_rcs + prs_ide - prs_ihm - prr_sml)
+    qgten = ten(prg_scw + prg_rfz + prg_gde + prg_rcg + prg_gcw + prg_rci + prg_rcs - prg_ihm - prr_gml)
+    ngten = ten(png_scw + pnr_rfz - png_rcg + pnr_rci + png_rcs + png_gde - pnr_gml)
+    ni1d, nr1d, ng1d = state.Ni, state.Nr, state.Ng          # input per-kg numbers (mp8 ng1d: entry diagnostic)
+
+    if cold_rates:
+        xri = jnp.maximum(R1, (state.qi + qiten * dtf) * rho)                                # :2999-3020
+        xni = jnp.maximum(R2, (ni1d + niten * dtf) * rho)
+        lami = ((_am_i() * 6.0 * OIG1 * xni / xri) ** OBMI).astype(f64)
+        xdi_t = ((3.0 + 0.0 + 1.0) * (1.0 / lami)).astype(real)                          # REAL xDi
+        ni_small = jnp.minimum(999.0e3, OIG2 * xri / _am_i() * _dpow(CIE2 / 5.0e-6, 3.0))
+        ni_large = OIG2 * xri / _am_i() * _dpow(CIE2 / 300.0e-6, 3.0)
+        niten = jnp.where(xri > R1, jnp.where(xdi_t < 5.0e-6, ((ni_small - ni1d * rho) * odts * orho).astype(real),
+                          jnp.where(xdi_t > 300.0e-6, ((ni_large - ni1d * rho) * odts * orho).astype(real), niten)),
+                          -ni1d * odts)
+        xni = jnp.maximum(0.0, (ni1d + niten * dtf) * rho)
+        niten = jnp.where(xni > 999.0e3, (999.0e3 - ni1d * rho) * odts * orho, niten)
+    else:  # qi = Ni = 0 (no ice > R1 in the column): xri = R1, the cap selects -ni1d*odts
+        niten = -ni1d * odts
+
+    if warm_rates or cold_rates:
+        xrr = jnp.maximum(R1, (state.qr + qrten * dtf) * rho)                                # :3035-3055
+        xnr = jnp.maximum(R2, (nr1d + nrten * dtf) * rho)
+        mvd_t = ((3.0 + 0.672) / ((_am_r() * CRG3 * ORG2 * xnr / xrr) ** OBMR).astype(f64)).astype(real)
+        mvd_c_r = jnp.minimum(2.5e-3, jnp.maximum(_wrf("D0R_X075", D0R * 0.75), mvd_t))
+        xnr_c = (CRG2 * ORG3 * xrr * _dpow(((3.0 + 0.672) / mvd_c_r).astype(f64), 3.0) / _am_r()).astype(real)
+        nrten = jnp.where(xrr > R1, jnp.where(mvd_c_r != mvd_t, ((xnr_c - nr1d * rho) * odts * orho).astype(real), nrten),
+                          -nr1d * odts)
+        qrten = jnp.where(xrr > R1, qrten, -state.qr * odts)
+    else:  # dry column: qr = Nr = 0, xrr = R1
+        nrten, qrten = -nr1d * odts, -state.qr * odts
+
+    if cold_rates:
+        xrg = jnp.maximum(R1, (state.qg + qgten * dtf) * rho)                                # :3074-3129
+        xng = jnp.maximum(R2, (ng1d + ngten * dtf) * rho)
+        mvd_t = ((3.0 + 0.672) / ((AM_G_MP8 * CRG3 * ORG2 * xng / xrg) ** OBMG).astype(f64)).astype(real)
+        mvd_c_g = jnp.minimum(25.4e-3, jnp.maximum(D0R, mvd_t))
+        xng_c = (ORG3 * xrg * _dpow(((3.0 + 0.672) / mvd_c_g).astype(f64), 3.0) / AM_G_MP8).astype(real)
+        ngten = jnp.where(xrg > R1, jnp.where(mvd_c_g != mvd_t, ((xng_c - ng1d * rho) * odts * orho).astype(real), ngten),
+                          -ng1d * odts)
+        qgten = jnp.where(xrg > R1, qgten, -state.qg * odts)
+    else:  # qg = 0 and no graupel source: xrg = R1
+        ngten, qgten = -ng1d * odts, -state.qg * odts
+
+    lfus2 = LSUB - lvap
+    tten = jnp.where(
+        cold,
+        (LSUB * ocp * (pri_inu + pri_ide + prs_ide + prs_sde + prg_gde)
+         + lfus2 * ocp * (pri_wfz + pri_rfz + prg_rfz + prs_scw + prg_scw + prg_gcw + prg_rcs + prs_rcs + prr_rci + prg_rcg)) * orho,
+        (LFUS * ocp * (-prr_sml - prr_gml - prr_rcg - prr_rcs) + LSUB * ocp * (prs_sde + prg_gde)) * orho).astype(real)
+
+    new_t = temp + dtf * tten
+    new_qv = jnp.maximum(1.0e-10, qv + dtf * qvten)
+    if vapor is not None:
+        # WRF :3192 uses raw qv1d plus the REAL source tendency. All rates,
+        # saturation and heat capacities above use the private working qv.
+        qv1d, _ = vapor
+        new_qv = jnp.where(qv1d < 1.0e-10, jnp.maximum(1.0e-10, qv1d + dtf * qvten), new_qv)
+    out = state.replace(
+        qv=new_qv, qc=state.qc + qcten * dtf, qr=state.qr + qrten * dtf, qi=state.qi + qiten * dtf,
+        qs=state.qs + qsten * dtf, qg=state.qg + qgten * dtf, Ni=ni1d + niten * dtf, Nr=nr1d + nrten * dtf,
+        Ng=ng1d + ngten * dtf, T=new_t, rho=density_from_pressure_temperature(p, new_t, new_qv))
+    # Melting snow (prr_sml > 0) falls at the snow/rain blend instead of vts*vts_boost (:3721-3726); the sign
+    # carries that to _fall_speeds (vts_boost >= 1 everywhere else).
+    vts_boost = jnp.where(prr_sml > 0.0, -1.0, vts_boost).astype(jnp.float32)
+    if vapor is not None:
+        return _real_state(out), prr_gml, vts_boost, qvten
+    return _real_state(out), prr_gml, vts_boost
+
+
+def _wrf_snow_speed(vts, vts_boost, rs, rr, vtr):
+    """Snow mass fall speed (:3721-3726, REAL): SR = rs/(rs+rr) blend with the rain speed where melting."""
+    sr = rs / (rs + rr)
+    return jnp.where(vts_boost < 0.0, vts * sr + (1.0 - sr) * vtr.astype(vts.dtype), vts * vts_boost)
