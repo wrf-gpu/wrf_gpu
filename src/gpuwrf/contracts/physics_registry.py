@@ -42,12 +42,10 @@ WRF Registry lines verified against
   endpoints with fp64 pristine-WRF oracle savepoints staged under
   ``proofs/v018/savepoints_fp64``; accepted for isolated oracle comparison and
   fail-closed in the operational scan until traceable JAX kernels land.
-* CAM-UW(9): F3 reference-only CAM5 vertical-diffusion stack. The standalone
-  WRF-Fortran CAM-UW column oracle is staged under
-  ``proofs/v023/feature_sprints/camuw_oracle`` and proved the previous JAX
-  scaffold RED vs WRF-Fortran. It remains accepted for oracle comparisons but
-  fail-closed in operational routing until a dedicated faithful-port milestone
-  lands.
+* CAM-UW(9): v0.3.4 faithful r8 port of the CAM5 vertical-diffusion stack
+  (``physics/bl_camuw.py``), parity-gated against ``proofs/v034/camuw_oracle``
+  (the v023 F3 oracle never initialised WRF's saturation table and is superseded).
+  CPU-oracle-qualified; GPU/coupled-forecast qualification pending.
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
 * Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16), and the
   reference-only long tail with real WRF oracle artifacts
@@ -140,10 +138,9 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
     13: SchemeOption("mp_physics", 13, "SBU-YLin", "sbu_ylinscheme", "implemented", "microphysics"),
     14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
-    # v0.23 F2: NSSL 2-moment + Morrison-aerosol are REFERENCE-ONLY (namelist-
-    # accepted for single-column oracle comparison, fail-closed in the scan):
-    # real single-column WRF oracles live at proofs/v022/f2_oracles/{nssl_2mom,
-    # morrison_aero}/ (fp32+fp64, 6 regimes, checksummed pristine sources).
+    # v0.23 F2: Morrison-aerosol is REFERENCE-ONLY (oracles at proofs/v022/f2_oracles/
+    # morrison_aero). NSSL 2-moment (18) is scan-wired since v0.3.4 (physics.nssl2mom,
+    # oracle proofs/v034/f2_oracles/nssl_2mom; CPU-oracle-qualified, root domains only).
     18: SchemeOption("mp_physics", 18, "NSSL 2-moment", "nssl_2mom", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
     # v0.17: WSM6 single-moment + a separate precipitating HAIL class (qh). GPU
@@ -192,11 +189,9 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
-    # CAM-UW(9): F3 reference-only. A WRF-Fortran CAM-UW oracle is preserved in
-    # proofs/v023/feature_sprints/camuw_oracle, and that oracle proved the former
-    # JAX scaffold RED vs WRF-Fortran. Accepted for oracle work; fail-closed in
-    # the operational scan until the dedicated faithful-port milestone lands.
-    9: SchemeOption("bl_pbl_physics", 9, "CAM-UW", "camuwpblscheme", "accepted", "pbl"),
+    # CAM-UW(9): v0.3.4 faithful r8 port, parity-gated against the fixed pristine-WRF
+    # oracle proofs/v034/camuw_oracle (CPU-oracle-qualified; GPU qualification pending).
+    9: SchemeOption("bl_pbl_physics", 9, "CAM-UW", "camuwpblscheme", "implemented", "pbl"),
     # TEMF(10): v0.18 reference-only endpoint. A fp64 pristine-WRF single-column
     # oracle is staged (phys/module_bl_temf.F; proofs/v018/temf_pbl10_reference_oracle.json),
     # but no traceable JAX column kernel is scan-wired.
@@ -243,15 +238,12 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
     # slot (CU_SCAN_ADAPTERS[3], stateless State->State), savepoint-parity-gated
     # against unmodified module_cu_gf_*.F (proofs/v060/gf_gpubatch_savepoint_parity.json).
     3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "implemented", "cumulus"),
-    # v0.17 SAS family: pristine-WRF fp64 savepoints exist, but the shared JAX
-    # endpoint is RED vs oracle and remains reference-only / fail-closed.
+    # v0.3.4 o1-sas: scale-aware GFS SAS ported (bitwise vs the pristine WRF REAL
+    # build, proofs/v034/scalesas) and scan-wired (CU_SCAN_ADAPTERS[4]).
     4: SchemeOption("cu_physics", 4, "Scale-aware GFS SAS", "scalesasscheme", "accepted", "cumulus"),
-    # Grell-3D (5): v0.18 has a standalone pristine-WRF G3DRV oracle harness and
-    # savepoints (proofs/v018/oracle/cumulus_grell), but all available trial
-    # columns are null; an active trigger and faithful JAX endpoint remain
-    # blocked. Accepted only for fail-closed oracle work -- NOT in
-    # CU_SCAN_ADAPTERS / _SCAN_WIRED_OPTIONS.
-    5: SchemeOption("cu_physics", 5, "Grell-3D ensemble", "g3scheme", "accepted", "cumulus"),
+    # v0.3.4 o1-grell: line-faithful JAX G3DRV/conv_grell_spread3d port, scan-wired
+    # (CU_SCAN_ADAPTERS[5]); CPU-oracle-qualified (proofs/v034), GPU pending.
+    5: SchemeOption("cu_physics", 5, "Grell-3D ensemble", "g3scheme", "implemented", "cumulus"),
     6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
     # KIM Simplified Arakawa-Schubert (14): v0.13 Tier-3 reference-only with a
     # nontrivial fp64 pristine-WRF oracle staged; JAX kernel remains carry-over.
@@ -260,9 +252,10 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
     # SAS family (94/95/96, cu-sas lane) and Grell-Devenyi(93) / previous
     # Kain-Fritsch(99) (cu-kfgrell lane) are v0.17/v0.18 reference-only: accepted
     # for isolated real-WRF oracle work, but NOT scan-wired until their candidate
-    # JAX endpoints pass source-specific pristine-WRF savepoint parity. GD(93)
-    # has a v0.18 standalone GRELLDRV harness/savepoints, but they are null-only.
-    93: SchemeOption("cu_physics", 93, "Grell-Devenyi ensemble", "gdscheme", "accepted", "cumulus"),
+    # JAX endpoints pass source-specific pristine-WRF savepoint parity.
+    # v0.3.4 o1-grell: line-faithful JAX GRELLDRV port, scan-wired (CU_SCAN_ADAPTERS[93]);
+    # CPU-oracle-qualified (proofs/v034), GPU pending.
+    93: SchemeOption("cu_physics", 93, "Grell-Devenyi ensemble", "gdscheme", "implemented", "cumulus"),
     94: SchemeOption("cu_physics", 94, "2015 GFS SAS / HWRF", "sasscheme", "accepted", "cumulus"),
     95: SchemeOption("cu_physics", 95, "Previous GFS SAS / HWRF OSAS", "osasscheme", "accepted", "cumulus"),
     96: SchemeOption("cu_physics", 96, "Previous new GFS SAS / YSU NSAS", "nsasscheme", "accepted", "cumulus"),
@@ -277,14 +270,12 @@ SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
     # radiation forcing + explicit TMN/THC/EMISS SlabStaticBundle).
     1: SchemeOption("sf_surface_physics", 1, "thermal-diffusion slab LSM", "slabscheme", "implemented", "land_surface"),
     2: SchemeOption("sf_surface_physics", 2, "Noah classic", "lsmscheme", "accepted", "land_surface"),
-    # ruc=3 (RUC multi-layer soil/snow LSM) is v0.17 REFERENCE-ONLY: a fp64
-    # pristine-WRF single-column oracle is staged (LSMRUC->SOILVEGIN->SFCTMP,
-    # proofs/v017/oracle/ruclsm + savepoints/ruclsm), but a faithful traceable JAX
-    # column port of the ~7.5k-LOC multi-layer soil/snow solver (SFCTMP + SOIL/
-    # SNOWSOIL + SOILTEMP/SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA) is a documented
-    # carry-over, so it is "accepted" (selectable for a single-column reference
-    # comparison) and fail-closes in the operational scan.
-    3: SchemeOption("sf_surface_physics", 3, "RUC LSM", "ruclsmscheme", "accepted", "land_surface"),
+    # ruc=3 (RUC multi-layer soil/snow LSM) is v0.3.4 "implemented" (lane o1-ruc): the
+    # faithful JAX LSMRUC port physics.ruclsm (SFCTMP + SOIL/SNOWSOIL + SOILTEMP/
+    # SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA) matches the unmodified WRF oracle
+    # (proofs/v034/oracle/ruclsm) and is scan-wired via coupling.ruc_surface_hook;
+    # CPU-oracle-qualified, GPU/coupled-forecast qualification pending.
+    3: SchemeOption("sf_surface_physics", 3, "RUC LSM", "ruclsmscheme", "implemented", "land_surface"),
     4: SchemeOption("sf_surface_physics", 4, "Noah-MP", "noahmpscheme", "implemented", "land_surface"),
     # px=7 (Pleim-Xiu 2-layer ISBA LSM) is v0.17 GPU-operational: the fp64-oracle-
     # validated physics.lsm_pleim_xiu SURFPX+QFLUX column port is scan-wired via
@@ -462,9 +453,10 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     26: ("Nn", "Nc", "Nr"),
     # WRF Registry package thompsonaero: scalar:qnc,qnr,qni,qnwfa,qnifa.
     28: ("Ni", "Nr", "Nc", "nwfa", "nifa"),
-    # v0.23 F2: Morrison-aerosol = base Morrison numbers + prognostic droplet
-    # number (aercu_opt=2 INUM=0); the 10-species prescribed AEROCU aerosol
-    # inputs have NO State substrate yet (part of why mp=40 stays scan-unwired).
+    # Morrison-aerosol (Registry morr_tm_aero scalar qnc,qni,qns,qnr,qng) =
+    # base Morrison numbers + droplet number Nc. v0.3.4 O1 scan-wires the WRF
+    # stand-alone point aercu_opt=0 (Nc = constant NDCNST output); the
+    # aercu_opt=2 AEROCU aerosol inputs have no State substrate (needs cu=11).
     40: ("Ni", "Ns", "Nr", "Ng", "Nc"),
     97: (),
 }
@@ -851,9 +843,8 @@ LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     # RUC carries the multi-layer soil/snow land state (SOILT skin temperature,
     # TSO soil temperatures, SOILMOIS/SH2O total+liquid soil moisture, SMFR3D
     # frozen-soil fraction + KEEPFR3DFLAG, SNOW/SNOWH snow water+depth, plus the
-    # diagnostic surface moisture QSFC/QVG/QCG/QSG). REFERENCE-ONLY: the carry
-    # member list documents the state the future JAX port must thread, but the
-    # operational scan fail-closes RUC (physics.lsm_ruc; oracle staged).
+    # diagnostic surface moisture QSFC/QVG/QCG/QSG). The full LSMRUC INOUT carry is
+    # coupling.ruc_surface_hook.RucLandState (physics.ruclsm STATE_SCALARS/PROFILES).
     3: ("soilt", "tso", "soilmois", "sh2o", "smfr3d", "keepfr3dflag", "snow", "snowh", "qsfc"),
     4: ("NoahMPLandState",),
     # Pleim-Xiu carries the 2-layer ISBA land state (TG/T2 soil temperatures,

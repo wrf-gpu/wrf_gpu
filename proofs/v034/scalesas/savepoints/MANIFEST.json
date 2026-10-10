@@ -1,0 +1,63 @@
+{
+ "configs": {
+  "cfg_dt18_stepcu1": {
+   "DT": 18.0,
+   "DY": 3000.0,
+   "ITIMESTEP": 2,
+   "PGCON": 0.550000011920929,
+   "STEPCU": 1,
+   "census_r4": {
+    "active_QE": 64,
+    "active_nonQE": 138,
+    "evapcap": 19,
+    "evapcap_active": 0,
+    "htop_km": 9,
+    "kill_cina": 0,
+    "kill_cinpcr": 40,
+    "kill_closure": 0,
+    "kill_cthk": 65,
+    "kill_dthk": 14,
+    "kill_jmin_aa1": 1,
+    "kill_kbcon": 113,
+    "kill_wc_ddaa1": 1,
+    "ktconn": 26,
+    "ktconn_active": 21,
+    "restore_rn<=0": 19
+   }
+  },
+  "cfg_dt54_stepcu5": {
+   "DT": 54.0,
+   "DY": 9000.0,
+   "ITIMESTEP": 10,
+   "PGCON": 0.550000011920929,
+   "STEPCU": 5,
+   "census_r4": {
+    "active_QE": 154,
+    "active_nonQE": 61,
+    "evapcap": 3,
+    "evapcap_active": 0,
+    "htop_km": 9,
+    "kill_cina": 0,
+    "kill_cinpcr": 40,
+    "kill_closure": 3,
+    "kill_cthk": 65,
+    "kill_dthk": 14,
+    "kill_jmin_aa1": 1,
+    "kill_kbcon": 113,
+    "kill_wc_ddaa1": 1,
+    "ktconn": 26,
+    "ktconn_active": 20,
+    "restore_rn<=0": 3
+   }
+  }
+ },
+ "module_cu_scalesas_sha256": "7059cd38a34a855959a20eb6f5988637f49b8ec33d0f94fadd421763c4139bd8",
+ "sha256": {
+  "cfg_dt18_stepcu1_oracle_r4.npz": "b5d0bf518cfceca10968b075d417330d8e7ac72aa52a8c69b6cbc20fb0af9871",
+  "cfg_dt18_stepcu1_oracle_r8.npz": "851657258f6ec79dbd5dbf5bd10c95c1528412db7d237e29cb7feabd43e78714",
+  "cfg_dt54_stepcu5_oracle_r4.npz": "6c4b9c3dc29373d209bad45d7d933c13b1016666cc5fcf765480f022b431a113",
+  "cfg_dt54_stepcu5_oracle_r8.npz": "460f6c5a8d01c89589b8dcf16610c9cc14657e092af139b57d6107a0ec7c8f63",
+  "columns_inputs.npz": "eb1ed297e287bb4b3373ab6d0c331d14486251323d06ea0f53fc6614fb48d405"
+ },
+ "wrf_module": "phys/module_cu_scalesas.F (WRF 4.7.1, unmodified)"
+}

@@ -76,6 +76,7 @@ from gpuwrf.runtime.domain_tree import (
     run_operational_domain_tree,
     with_live_child_boundary_config,
 )
+from gpuwrf.io.namelist_binding import bind_namelist_options
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     _advance_chunk,
@@ -153,6 +154,9 @@ class NestedPipelineConfig:
     # Speculative cached loads; actual runtime keys still gate executable reuse.
     # Default-off until concurrent GPU loading and wall-time gates pass.
     aot_prefetch: bool = False
+    # Controlled end-time extension: a resumed run may continue to a LATER end
+    # (``hours``) than the run that wrote the checkpoint only when this is set.
+    extend_end_time: bool = False
 
 
 def domain_names_for(max_dom: int) -> tuple[str, ...]:
@@ -931,6 +935,11 @@ def _load_domains(
             topo_shading=_domain_physics_int(run, "topo_shading", name, 0),
             slope_rad=slope_rad,
         )
+        # v0.3.4 P0 (o1-nlbind): bind every namelist.input scheme selection
+        # (mp/bl/sfclay/ra_lw/ra_sw/cu/urban/lake) and the &dynamics damping/
+        # filter/diffusion knobs; <=v0.3.3 silently ran from_grid's defaults.
+        # Absent keys keep the values above (release namelists: same program).
+        namelist = bind_namelist_options(namelist, run.namelist, name)
         if noahmp_land is not None:
             namelist = dataclass_replace(
                 namelist,
@@ -1153,6 +1162,9 @@ _BATCH_CANONICAL_NAMELIST_FIELDS = (
     "px_static",
     "px_land",
     "px_rad",
+    "ruc_static",
+    "ruc_land",
+    "ruc_rad",
 )
 
 
@@ -3218,6 +3230,31 @@ def _require_native_base_state(carries, source) -> None:
             "or restart from a checkpoint written by the fast-default build."
         )
 
+def _restart_end_time(driver_state, config) -> dict[str, Any]:
+    """Like WRF restart, a resumed run may lengthen the forecast, but only on request.
+
+    The checkpoint identity binds the run stream (inputs, source, output, options)
+    without its end time; the end is recorded in the verified driver state. Equal
+    ends resume as before; a later end needs ``extend_end_time``; shortening is
+    refused (history alarms and the end checkpoint would no longer be a prefix).
+    """
+
+    saved = driver_state.get("forecast_hours")
+    if saved is None:
+        raise ValueError("restart checkpoint does not record its forecast end time")
+    saved, requested = float(saved), float(config.hours)
+    if requested < saved:
+        raise ValueError(
+            f"restart cannot shorten the checkpointed forecast ({saved:g} h -> {requested:g} h)"
+        )
+    if requested > saved and not config.extend_end_time:
+        raise ValueError(
+            f"restart forecast end differs from the checkpointed run ({saved:g} h -> "
+            f"{requested:g} h); pass --extend-run to continue to the later end time"
+        )
+    return {"checkpoint_hours": saved, "hours": requested, "extended": requested > saved}
+
+
 def _execute_nested_pipeline(
     config: NestedPipelineConfig, *, _prefetch_handles: list,
 ) -> dict[str, Any]:
@@ -3270,6 +3307,12 @@ def _execute_nested_pipeline(
         raise ValueError("operational checkpoint/resume currently requires B=1")
     if config.checkpoint_dir is not None and config.checkpoint_interval_steps < 1:
         raise ValueError("checkpoint cadence must be positive in root-domain steps")
+    if config.extend_end_time and config.resume_checkpoint is None:
+        raise ValueError("end-time extension requires a resume checkpoint")
+    from gpuwrf.io.wrfbdy_coverage import require_wrfbdy_coverage
+
+    for input_dir in config.batch_input_dirs or (config.input_dir,):
+        require_wrfbdy_coverage(input_dir, config.hours, domain=names[0])
     prefetch_report = {"enabled": bool(config.aot_prefetch), "domains": {}}
     prefetch_started = None
     if config.aot_prefetch and batch_size == 1:
@@ -3341,6 +3384,7 @@ def _execute_nested_pipeline(
             )
             if tuple(receipt["domains"]) != names or receipt["dt_s"] != dt_by_domain:
                 raise ValueError("restart domain topology/timesteps differ from current run")
+            restart_report["end_time"] = _restart_end_time(restart_snapshot["driver_state"], config)
             initial_carries = {name: _commit_to_operational_device(carry) for name, carry in restart_snapshot["carries"].items()}
             _require_native_base_state(initial_carries, config.resume_checkpoint)
             restart_report.update(resumed_from=str(config.resume_checkpoint), read_wall_s=time.perf_counter() - resume_t0)
@@ -3671,6 +3715,7 @@ def _execute_nested_pipeline(
                 generation, storage_receipt = restart_store.save(
                     carries, own_steps, dt_by_domain, restart_identity,
                     driver_state={
+                        "forecast_hours": config.hours,
                         "history_stream": writer.history_journal.stream,
                         "outputs": output_receipts(writer.written),
                         "writer_census": writer_census_snapshot(writer),

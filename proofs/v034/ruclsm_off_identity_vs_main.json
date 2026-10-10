@@ -1,0 +1,66 @@
+{
+ "legacy": {
+  "base_rev": "09e31feef9ea84a4a340f283df76c7e4dc38cfe1",
+  "cand_rev": "6a3b3a02e10956ea647c39be8c219c8c3cdb6717",
+  "GPUWRF_FAST_DEFAULTS": "0",
+  "pallas_interpret": false,
+  "programs": {
+   "noahmp_thompson_mynn_rrtmg/ordinary": {
+    "base": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+    "cand": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+    "n_eqns_top": 66375,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg/radiation": {
+    "base": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+    "cand": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+    "n_eqns_top": 68107,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/ordinary": {
+    "base": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+    "cand": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+    "n_eqns_top": 66429,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/radiation": {
+    "base": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+    "cand": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+    "n_eqns_top": 68161,
+    "identical": true
+   }
+  }
+ },
+ "fast": {
+  "base_rev": "09e31feef9ea84a4a340f283df76c7e4dc38cfe1",
+  "cand_rev": "6a3b3a02e10956ea647c39be8c219c8c3cdb6717",
+  "GPUWRF_FAST_DEFAULTS": "1",
+  "pallas_interpret": true,
+  "programs": {
+   "noahmp_thompson_mynn_rrtmg/ordinary": {
+    "base": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "cand": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "n_eqns_top": 24653,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg/radiation": {
+    "base": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "cand": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "n_eqns_top": 26533,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/ordinary": {
+    "base": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "cand": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "n_eqns_top": 24831,
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/radiation": {
+    "base": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "cand": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "n_eqns_top": 26711,
+    "identical": true
+   }
+  }
+ }
+}

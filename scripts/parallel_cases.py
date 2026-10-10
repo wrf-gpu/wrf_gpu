@@ -46,6 +46,7 @@ CLI_REFUSED = {"--input-dir": "set per case by the launcher", "--output-dir": "s
                "--checkpoint-dir": _NO_RESTART, "--checkpoint-interval-steps": _NO_RESTART,
                "--checkpoint-max-bytes": _NO_RESTART, "--checkpoint-max-generations": _NO_RESTART,
                "--checkpoint-reserve-bytes": _NO_RESTART, "--resume-checkpoint": _NO_RESTART,
+               "--extend-run": _NO_RESTART,
                "-h": "not a case option", "--help": "not a case option"}
 
 

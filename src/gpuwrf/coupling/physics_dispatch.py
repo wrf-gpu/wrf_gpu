@@ -163,10 +163,10 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     13: _mp_entry(13, "gpuwrf.physics.microphysics_sbu_ylin", "sbu_ylin_physics_tendency", gpu=True),
     14: _mp_entry(14, "gpuwrf.physics.microphysics_wdm5", "wdm5_physics_tendency", gpu=True),
     16: _mp_entry(16, "gpuwrf.physics.microphysics_wdm6", "wdm6_physics_tendency", gpu=True),
-    # v0.23 F2 mp=18 NSSL 2-moment: REFERENCE-ONLY (real fp32+fp64 single-column
-    # oracles at proofs/v022/f2_oracles/nssl_2mom); the endpoint raises
-    # NotImplementedError -- never silently wrong -- and the scan fail-closes.
-    18: _mp_entry(18, "gpuwrf.physics.microphysics_nssl2mom", "nssl2mom_run", gpu=False),
+    # v0.3.4 mp=18 NSSL 2-moment: JAX port of module_mp_nssl_2mom.F (physics.nssl2mom), parity-gated
+    # stage by stage vs the pristine-WRF oracle proofs/v034/f2_oracles/nssl_2mom; CPU-oracle-qualified,
+    # GPU/coupled-forecast qualification pending. Single (root) domains only; nested fail closed.
+    18: _mp_entry(18, "gpuwrf.physics.nssl2mom.adapter", "nssl2mom_adapter", gpu=True, adapter=True),
     # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
     24: _mp_entry(24, "gpuwrf.physics.microphysics_wsm7", "wsm7_physics_tendency", gpu=True),
     # v0.17 WDM7 = WDM6 double-moment + separate single-moment hail (qh + hail_acc).
@@ -176,11 +176,12 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     # Ni/Nr/Ns/Ng + the aerosol-aware prognostics Nc/nwfa/nifa and applying the
     # WRF fake surface aerosol emission each step.
     28: _mp_entry(28, "gpuwrf.coupling.physics_couplers", "thompson_aero_adapter", gpu=True, adapter=True),
-    # v0.23 F2 mp=40 Morrison-aerosol: REFERENCE-ONLY (real fp32+fp64
-    # single-column oracles at proofs/v022/f2_oracles/morrison_aero); column
-    # kernel validated vs oracle, but no AEROCU/droplet-number State substrate,
-    # so the scan fail-closes.
-    40: _mp_entry(40, "gpuwrf.physics.microphysics_morrison_aero", "morrison_aero_run", gpu=False),
+    # v0.3.4 O1 mp=40 Morrison-aerosol: scan-wired at WRF's stand-alone point
+    # aercu_opt=0 (constant droplets, INUC=0, aero DCS cascade; Nc = WRF qnc);
+    # pristine-WRF oracle proofs/v034/f2_oracles/morrison_aero_opt0. The
+    # aercu_opt=2 prescribed-aerosol kernel path is oracle-proven but needs
+    # cu_physics=11 (MSKF) in WRF and is not operational.
+    40: _mp_entry(40, "gpuwrf.physics.microphysics_morrison_aero", "morrison_aero_tendency", gpu=True),
     # mp=97 Goddard GCE single-moment 3-ice (gsfcgce): jit/vmap column port,
     # savepoint-parity-proven against unmodified phys/module_mp_gsfcgce.F
     # (proofs/v090/goddard_mp_r2_savepoint_parity.json). No new prognostic state.
@@ -223,18 +224,17 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv", "qc", "qke"),
                    writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
-    # CAM-UW(9): F3 reference-only/fail-closed. A standalone WRF-Fortran CAM-UW
-    # oracle exists and proves the previous JAX scaffold RED; the faithful port
-    # is a separate milestone. Kept as non-runnable dispatch metadata so
-    # namelist/reference tooling can name the scheme, but the operational scan
-    # must fail closed before compute.
+    # CAM-UW(9): v0.3.4 faithful r8 port of module_bl_camuwpbl_driver (UW moist
+    # turbulence + implicit CAM vdiff), parity-gated against the fixed pristine-WRF
+    # oracle proofs/v034/camuw_oracle. Threads OperationalCarry.camuw_pbl
+    # (KVM3D/KVH3D/TAURES); called explicitly by operational_mode (like MYJ).
     9: SchemeEntry("pbl", 9, PBL_SCHEMES[9].name, "gpuwrf.coupling.scan_adapters", "camuw_pbl_adapter",
-                   "state_adapter", False,
-                   reads_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
-                   writes_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
-                   carry_members=("qke",),
-                   notes="REFERENCE_ONLY after F3: WRF-Fortran oracle built; previous JAX "
-                   "scaffold RED vs oracle (pblh max_abs=1384.6212005615234 m)."),
+                   "state_adapter", True,
+                   reads_state=("u", "v", "theta", "qv", "qc", "qi", "Ni", "hfx", "qfx", "ustar"),
+                   writes_state=("u", "v", "theta", "qv", "qc", "qi", "Ni", "pblh"),
+                   carry_members=("camuw_pbl",),
+                   notes="CPU-oracle-qualified (78 records, <=1-2 REAL ulp); GPU/coupled-forecast "
+                   "qualification pending. Needs WRF HFX/QFX from Noah-MP or sf_sfclay=5."),
     # Shin-Hong(11): v0.18 JAX/vmap port of the scale-aware YSU-family PBL,
     # scan-wired as a State->State adapter. It consumes revised-MM5 surface
     # forcing and grid dx/dy for the scale-aware partition functions.
@@ -300,7 +300,7 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
 # runtime RQVFTEN/RQVBLTEN from active moisture advection and the PBL qv increment.
 # Grell-Freitas (cu=3) is the v0.9.0 GPU-batched jit/vmap port of the scale-aware
 # closure-ensemble kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated.
-# New Tiedtke (cu=16) and the SAS family (cu=4/94/95/96) stay
+# Scale-aware SAS (cu=4) is scan-wired since v0.3.4. New Tiedtke (cu=16) and SAS 94/95/96 stay
 # gpu_runnable=False / fail-closed until their distinct WRF source paths pass
 # traceable JAX parity. All route through the combined R*CUTEN tendency +
 # RAINCV/PRATEC family (S0 cugd_* correction: no inert cugd_* State carry for GF).
@@ -330,15 +330,18 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                    "module_cu_gf_deep.F/module_cu_gf_sh.F/module_cu_gf_wrfdrv.F "
                    "(proofs/v060/gf_gpubatch_savepoint_parity.json). cugd_* carry DROPPED per S0 "
                    "correction -- routed via R*CUTEN + RAINCV/PRATEC + shallow diags."),
-    4: SchemeEntry("cumulus", 4, CU_SCHEMES[4].name, "gpuwrf.physics.cumulus_sas",
-                   "step_sas_family_column", "column_state", False,
+    4: SchemeEntry("cumulus", 4, CU_SCHEMES[4].name, "gpuwrf.physics.cumulus_scalesas",
+                   "cu_scalesas_columns", "column_state", True,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
-                   writes_state=("theta", "qv", "qc", "qi", "u", "v"),
+                   writes_state=("theta", "qv", "qc", "qi"),
                    tendency_members=CUMULUS_TENDENCY_MEMBERS[4], accumulators=("rainc_acc",),
-                   notes="v0.17 reference-only: fp64 pristine-WRF oracle exists for "
-                   "phys/module_cu_scalesas.F:CU_SCALESAS, but the shared JAX "
-                   "endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); "
-                   "fail-closed in the operational scan."),
+                   notes="v0.3.4 o1-sas: faithful JAX port of module_cu_scalesas.F (ARW = "
+                   "mfdeepcnv only), bitwise vs the pristine WRF REAL build "
+                   "(proofs/v034/scalesas; tests/test_v034_scalesas_parity.py); "
+                   "held-rate WRF STEPCU cadence via coupling.scalesas_adapter. "
+                   "Python-API only: pristine WRF ARW refuses cu_physics=4 "
+                   "(share/module_check_a_mundo.F:671, FATAL) so no CPU-WRF reference exists and "
+                   "the CLI refuses it pre-JAX; module-oracle-qualified, GPU/coupled pending."),
     6: SchemeEntry("cumulus", 6, CU_SCHEMES[6].name, "gpuwrf.physics.cumulus_tiedtke_jax", "tiedtke_column_jax",
                    "column_state", True,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
@@ -360,14 +363,29 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                     "scan-wired via CU_SCAN_ADAPTERS[16] with WRF RQVFTEN (flux-form qv "
                     "advection + PBL forcing) and RTHFTEN (accumulated physics theta "
                     "forcing; advective-theta component is a named coupling caveat)."),
+    5: SchemeEntry("cumulus", 5, CU_SCHEMES[5].name, "gpuwrf.physics.cumulus_g3",
+                   "step_grell3_column", "column_state", True,
+                   reads_state=("u", "v", "w", "theta", "qv", "p", "ph", "xland"),
+                   writes_state=("theta", "qv", "qc", "qi"),
+                   tendency_members=CUMULUS_TENDENCY_MEMBERS[5], accumulators=("rainc_acc",),
+                   notes="v0.3.4 OPERATIONAL Grell-3D: line-faithful JAX G3DRV + "
+                   "conv_grell_spread3d (physics._grell_cup_jax), scan-wired via "
+                   "CU_SCAN_ADAPTERS[5]; machine-precision fp64 vs pristine-WRF multi-column "
+                   "tile oracle (proofs/v034). CPU-oracle-qualified; GPU/coupled-forecast "
+                   "qualification pending. WRF defaults ishallow=0, cugd_avedx=1, clos_choice=0. "
+                   "Not oracle-verified (no staged column exercises it): the keep_going "
+                   "downdraft-origin search. Real-case Swiss CPU smoke timed out (3 steps)."),
     93: SchemeEntry("cumulus", 93, CU_SCHEMES[93].name, "gpuwrf.physics.cumulus_grell_devenyi",
-                    "step_grell_devenyi_column", "column_state", False,
-                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
+                    "step_grell_devenyi_column", "column_state", True,
+                    reads_state=("u", "v", "w", "theta", "qv", "p", "ph", "xland"),
                     writes_state=("theta", "qv", "qc", "qi"),
                     tendency_members=CUMULUS_TENDENCY_MEMBERS[93], accumulators=("rainc_acc",),
-                    notes="v0.18 RED/reference-only. A pristine-WRF GRELLDRV harness/savepoints exist, "
-                    "but current trial columns are null-only; no source-specific traceable JAX endpoint "
-                    "has passed parity; not scan-wired."),
+                    notes="v0.3.4 OPERATIONAL Grell-Devenyi: line-faithful JAX GRELLDRV "
+                    "(physics._grell_cup_jax), scan-wired via CU_SCAN_ADAPTERS[93]; "
+                    "machine-precision fp64 vs pristine-WRF multi-column tile oracle "
+                    "(proofs/v034). CPU-oracle-qualified; GPU/coupled-forecast qualification "
+                    "pending. Not oracle-verified (no staged column exercises them): the "
+                    "keep_going downdraft-origin search and neg_check."),
     94: SchemeEntry("cumulus", 94, CU_SCHEMES[94].name, "gpuwrf.physics.cumulus_sas",
                     "step_sas_family_column", "column_state", False,
                     reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
@@ -428,20 +446,16 @@ _SURFACE_ENTRIES: dict[int, SchemeEntry] = {
                    carry_members=("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn"),
                    notes="Owns a 4-layer (num_soil_layers=4) land carry; does NOT reinterpret the "
                    "2-D State.soil_moisture as a 4-layer field (S0 land carry rule)."),
-    # v0.17 RUC LSM (3): REFERENCE-ONLY. A fp64 pristine-WRF single-column oracle is
-    # staged (proofs/v017/oracle/ruclsm; LSMRUC->SOILVEGIN->SFCTMP, unmodified source),
-    # but the ~7.5k-LOC multi-layer soil/snow JAX column kernel is a documented
-    # carry-over, so it is gpu_runnable=False / fail-closed in the operational scan.
-    3: SchemeEntry("land_surface", 3, SURFACE_SCHEMES[3].name, "gpuwrf.physics.lsm_ruc",
-                   "ruc_column", "land_step", False,
+    # v0.3.4 RUC LSM (3): faithful JAX LSMRUC port (physics.ruclsm), scan-wired via
+    # coupling.ruc_surface_hook.ruc_surface_step (explicit ruc_static/ruc_land, MYNN-SL).
+    3: SchemeEntry("land_surface", 3, SURFACE_SCHEMES[3].name, "gpuwrf.coupling.ruc_surface_hook",
+                   "ruc_surface_step", "state_adapter", True,
                    reads_state=("t_skin", "soil_moisture", "mavail"),
                    writes_state=("t_skin", "soil_moisture", "mavail"),
                    carry_members=LAND_CARRY_MEMBERS[3],
-                   notes="RUC multi-layer soil/snow LSM; fp64 pristine-WRF oracle staged "
-                   "(proofs/v017/oracle/ruclsm) but the faithful JAX column port "
-                   "(SFCTMP+SOIL+SOILTEMP+SOILMOIST+SOILPROP+TRANSF) is a carry-over -- "
-                   "accepted/fail-closed in the operational GPU scan, NOT parity-proven as a "
-                   "JAX kernel yet."),
+                   notes="RUC multi-layer soil/snow LSM; CPU-oracle-qualified vs the unmodified "
+                   "WRF LSMRUC oracle (proofs/v034/oracle/ruclsm, snow/melt/frozen soil, fp64 "
+                   "<=1.3e-10 rel); GPU/coupled-forecast qualification pending."),
     4: SchemeEntry("land_surface", 4, SURFACE_SCHEMES[4].name, "gpuwrf.coupling.noahmp_surface_hook",
                    "noahmp_surface_step", "state_adapter", True,
                    reads_state=("t_skin", "soil_moisture", "mavail"),
@@ -625,6 +639,13 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
             f"surface forcing for the requested scheme. Select sf_sfclay_physics=1, "
             f"or use bl_pbl_physics=5 (MYNN, consumes the selected scheme's State flux "
             f"handles) / bl_pbl_physics=2 (MYJ, pairs with sf_sfclay_physics=2)."
+        )
+    if pbl_opt == 9 and sfclay_opt != 5 and _option_from(config, "land_surface") != 4:
+        raise UnsupportedSchemeSelection(
+            "bl_pbl_physics=9 (CAM-UW) consumes WRF's surface-driver HFX/QFX/UST (State hfx/qfx/ustar), "
+            "which are produced by Noah-MP (sf_surface_physics=4 / use_noahmp) or by "
+            f"sf_sfclay_physics=5; selected sf_sfclay_physics={sfclay_opt} without Noah-MP would "
+            "feed stale fluxes. Select Noah-MP or sf_sfclay_physics=5."
         )
     return PhysicsSuite(
         microphysics=scheme_entry("microphysics", _option_from(config, "microphysics")),

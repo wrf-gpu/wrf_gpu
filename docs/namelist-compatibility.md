@@ -50,7 +50,7 @@ A machine-readable catalog (`src/gpuwrf/io/scheme_catalog.py`) classifies
 *every* WRF v4 code of the gated namelist parameters — `mp_physics`,
 `cu_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `sf_surface_physics`,
 `ra_lw_physics`, `ra_sw_physics`, the dynamics options `diff_opt`, `km_opt`,
-`damp_opt`, `diff_6th_opt`, `rk_order`, `w_damping`, and `sf_urban_physics` —
+`damp_opt`, `diff_6th_opt`, `rk_ord` (port alias `rk_order`), `w_damping`, and `sf_urban_physics` —
 against the **full WRF v4 enumeration** (`src/gpuwrf/io/wrf_scheme_catalog.py`,
 transcribed from `WRF/run/README.namelist`). Each selection resolves to exactly
 one status:
@@ -70,10 +70,10 @@ one status:
    run a different scheme* than you requested (or route through a missing
    kernel). Refusing is the honest behavior: never a silent wrong-scheme result.
    Today (v0.17 wave-1) the `reference_only` schemes are:
-   SAS family (`cu_physics=4/94/95/96`, RED vs pristine-WRF oracles),
+   SAS family (`cu_physics=94/95/96`, RED vs pristine-WRF oracles; `cu_physics=4` is refused like WRF ARW's check_a_mundo, its faithful kernel is Python-API only),
    Grell-3D ensemble (`cu_physics=5`), KIM SAS (`cu_physics=14`), New Tiedtke
    (`cu_physics=16`), Grell-Devenyi ensemble (`cu_physics=93`), previous
-   Kain-Fritsch (`cu_physics=99`), RUC (`sf_surface_physics=3`) and SSiB
+   Kain-Fritsch (`cu_physics=99`), SSiB
    (`sf_surface_physics=8`) land-surface, Shin-Hong (`bl_pbl_physics=11`) and
    GBM (`bl_pbl_physics=12`) PBL, GSFC/Goddard NUWRF longwave
    (`ra_lw_physics=5`), new Goddard shortwave (`ra_sw_physics=5`), and GFDL-Eta
@@ -168,11 +168,15 @@ selections; see `proofs/v023/feature_sprints/G3_REPORT.md`.
 | 14 | WDM5 | OPERATIONAL | double-moment 5-class (WDM warm-rain + WSM5 ice, no graupel/hail); reuses WDM6 Nn/Nc/Nr leaves; 6/6 pristine-WRF fp64 oracle |
 | 16 | WDM6 | OPERATIONAL | +qnn/qnc/qnr (additive State leaves Nc/Nn); savepoint-parity |
 
-WSM7 (`mp=24`) and WDM7 are NOT listed: WSM7's column kernel is ported and
-fp64 savepoint-parity-proven (`physics.microphysics_wsm7`), but it carries a
-separate precipitating **hail class (`qh`)** that the operational moist-state
-pytree (`MOIST_SPECIES`) does not hold, so it fail-closes rather than silently
-dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
+**v0.3.4 CLI probe (release defaults, REAL32 carry):** the column kernels of
+`mp=1/2/3/4/6/10/13/14/16/97` (and PBL `bl=7/8/12`, GSFC shortwave `ra_sw=2`) could not be
+traced under the release carry (f32/f64 scan-carry mismatch; hidden ≤ v0.3.3 because the CLI
+never bound the key). They now run as an explicit **fp64 island**: the State is widened to f64
+for the scheme call (the precision of their fp64 WRF savepoint parity) and stored back REAL —
+not WRF REAL arithmetic, CPU-traced only, GPU speed/fidelity not qualified. `mp=24` (WSM7),
+`mp=26` (WDM7), `mp=28` (aerosol-aware Thompson) and `mp=40` (Morrison-aerosol) are **refused**
+under the release defaults: the root lateral moist/scalar boundary (`GPUWRF_ROOT_SCALAR_BDY_RK1`)
+has no `qh` / `nwfa,nifa` / `Ns,Ng,Nc` record. See [What `gpuwrf run` binds](#cli-binding-v034).
 
 ### Cumulus — `cu_physics`
 
@@ -182,7 +186,7 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 1  | Kain-Fritsch | OPERATIONAL | scan-wired; carries NCA/W0AVG; savepoint-parity |
 | 2  | Betts-Miller-Janjic | OPERATIONAL | adjustment scheme; carries CLDEFI; fp64 savepoint-parity |
 | 3  | Grell-Freitas | OPERATIONAL | v0.9.0 GPU-batched jit/vmap scale-aware adapter; savepoint-parity |
-| 4  | Scale-aware GFS SAS | REFERENCE-ONLY | v0.17 fp64 pristine-WRF savepoints staged; shared JAX endpoint RED vs oracle; not operationally scan-wired |
+| 4  | Scale-aware GFS SAS | REFERENCE-ONLY (Python API) | WRF ARW rejects cu_physics=4 (`share/module_check_a_mundo.F:671`, FATAL; WRF suggests 95), so the CLI refuses it pre-JAX and no CPU-WRF reference exists. v0.3.4 faithful JAX port of `module_cu_scalesas.F` (ARW: deep `mfdeepcnv` only), bitwise vs the pristine WRF REAL build (`proofs/v034/scalesas`), with WRF `cudt`/STEPCU held-rate scan wiring reachable from the Python API (`gpuwrf.physics.cumulus_scalesas`, `gpuwrf.coupling.scalesas_adapter`); GPU/coupled qualification pending |
 | 5  | Grell-3D ensemble | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
 | 6  | Tiedtke | OPERATIONAL | GPU-batched (`cumulus_tiedtke_jax`); savepoint-parity; requires active flux-form moisture advection (`use_flux_advection=True`, `moist_adv_opt=1/2`) so WRF `RQVFTEN` is available |
 | 14 | KIM Simplified Arakawa-Schubert | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
@@ -222,6 +226,7 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 0  | disabled | OPERATIONAL | no land-surface model |
 | 1  | thermal-diffusion slab LSM | REFERENCE-ONLY | JAX-ported + fp64 oracle, but needs a TSLB land carry + GSW/GLW forcing + TMN/THC/EMISS statics; LSM hook deferred |
 | 2  | Noah classic | OPERATIONAL | 4-layer land carry; savepoint-parity |
+| 3  | RUC LSM | SCAN-WIRED via explicit bundles (API only) | v0.3.4: faithful JAX LSMRUC port (snow, frozen soil, mosaic); explicit `ruc_static`/`ruc_land` via the scan API with MYNN-SL + Thompson -- `gpuwrf run`/nested pipeline still reject sf=3 (`_SUPPORTED_NESTED_LAND_OPTIONS=(0,4)`); CPU-oracle-qualified (fp64 ≤1.3e-10 vs pristine WRF, 48 regimes x 12 steps); WRF `SFCDIAGS_RUCLSM` 2-m diagnostics not ported; GPU/coupled-forecast qualification pending; sea ice fails closed |
 | 4  | Noah-MP | OPERATIONAL | **default**; set `use_noahmp=True`; savepoint-parity |
 
 ### Shortwave radiation — `ra_sw_physics`
@@ -268,7 +273,7 @@ RRTMG-derived regardless of which SW/LW θ-tendency scheme is active.
 
 ### Dynamics / numerics
 
-`rk_order=3` (RK3 only); `diff_opt` 0/1/2; `km_opt` 0/1/4; `diff_6th_opt` 0/2
+`rk_ord=3` (WRF name; the port also accepts `rk_order`; RK3 only); `diff_opt` 0/1/2; `km_opt` 0/1/4; `diff_6th_opt` 0/2
 (2 = monotonic 6th-order filter, no up-gradient flux); `damp_opt` 0/3 (3 =
 upper-level w-Rayleigh); `w_damping` 0/1. Urban/lake defaults remain
 `sf_urban_physics=0` and `sf_lake_physics=0`; BEP/BEM (`sf_urban_physics=2/3`)
@@ -310,18 +315,140 @@ runs):
   accept 0 (standard), 1 (positive-definite), 2 (monotonic); the WENO variants
   (3/4) are not wired.
 * **`gwd_opt`** 0/1 (see `GPUWRF_GWD_NESTED` above); 3 not wired.
-* **`slope_rad`** 0/1 and **`topo_shading`** 0/1 are recognized, but the v0.23.4
-  nested runtime currently binds both disabled. Treat this as a disclosed
-  implementation gap, not an active terrain-radiation capability.
-* **MYNN-EDMF sub-options** gated to the WRF default sub-config: `bl_mynn_edmf=1`,
-  `edmf_mom=1`, `edmf_tke=0`, `mixscalars=1`, `mixqt=0`, `edmf_dd=0`,
-  `mixlength` 1|2. `icloud_bl=1` (MYNN-radiation cloud-fraction coupling) and
-  `bl_mynn_tkeadvect=.true.` are NOT scan-wired (fail closed if set).
-* **`radt`** — single-domain execution derives its radiation cadence from the
-  namelist, but the v0.23.4 nested pipeline currently targets a fixed 1,800 s
-  interval. A different nested `radt` is not yet honored. **`bldt` / `cudt`** — the
-  port runs PBL/cumulus **every dynamics step**; a positive interval is a
+* **`slope_rad`** 0/1 and **`topo_shading`** 0/1 (with `shadlen`) are bound per
+  domain (RRTMG SW slope radiation / topographic shadowing).
+* **MYNN-EDMF sub-options** gated to the WRF default sub-config that the port runs:
+  `bl_mynn_edmf=1`, `edmf_mom=1`, `edmf_tke=0`, `mixscalars=1`, `mixqt=0`,
+  `edmf_dd=0`, `mixlength=1`, `icloud_bl=1` (the MYNN sub-grid clouds feed RRTMG).
+  `icloud_bl=0`, `bl_mynn_mixlength=0/2` and `bl_mynn_tkeadvect=.true.` are not
+  bound and fail closed (≤ v0.3.3 wrongly accepted `icloud_bl=0`/`mixlength=2` and
+  refused `icloud_bl=1`).
+* **`radt`** and **`cudt`** are bound per domain (radiation cadence; KF STEPCU).
+  **`bldt`** — the port runs PBL **every dynamics step**; a positive interval is a
   non-fatal approximation warning (the run proceeds), not a rejection.
+
+<a id="cli-binding-v034"></a>
+
+## What `gpuwrf run` binds from `namelist.input` (v0.3.4)
+
+**≤ v0.3.3 silently ignored non-default physics** (see `KNOWN_ISSUES.md`): the CLI
+never read `mp_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `ra_lw_physics`,
+`ra_sw_physics` or the `&dynamics` damping/filter knobs, and ran the release suite.
+From v0.3.4 (`src/gpuwrf/io/namelist_binding.py`):
+
+* **Bound per domain** (native single-root / live-nested driver and the replay
+  driver): `mp_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `ra_lw_physics`,
+  `ra_sw_physics`, `cu_physics`, `sf_urban_physics`, `sf_lake_physics`, `epssm`,
+  `damp_opt`, `zdamp`, `dampcoef`, `w_damping`, `diff_6th_opt`, `diff_6th_factor`,
+  `khdif`, `kvdif`, `c_s`, `c_k`, `mix_isotropic`, `mix_upper_bound`,
+  `tke_upper_bound`, `shadlen`, `cam_abs_freq_s` (CAM `ra_lw_physics=3` absorptivity refresh,
+  single value for all domains). These keys were already bound: `radt`, `cudt`,
+  `use_mp_re`, `gwd_opt`, `topo_shading`, `slope_rad`, `diff_opt`, `km_opt`,
+  `h_sca_adv_order`, `moist_adv_opt`, `scalar_adv_opt`, `time_step_sound`,
+  `top_lid`, `sf_surface_physics` (native: 0 or 4), `sst_update`. `physics_suite =
+  'CONUS'/'tropical'` fills omitted (or `-1`) scheme keys exactly like WRF.
+* An **omitted `&dynamics` knob runs the WRF Registry default** (epssm 0.1, w_damping 0,
+  diff_6th_opt 0, damp_opt 3, zdamp 5000, dampcoef 0.2, diff_6th_factor 0.12; ≤ v0.3.3
+  hard-wired 0.5 / 1 / 2 regardless). An **omitted scheme key** runs the release suite
+  (Thompson / MYNN / MYNN-SL / RRTMG) with a warning — WRF itself leaves it at -1 unless a
+  `physics_suite` fills it. The release namelists set every one of these keys explicitly, so
+  they produce the byte-identical program.
+* **Refused before any compute** (`NamelistNotHonouredError`): any explicit
+  `&physics`/`&dynamics`/`&noah_mp` value of a key the port does not bind that
+  differs from the WRF Registry default it runs (e.g. `smdiv`, `rk_ord`,
+  `non_hydrostatic=.false.`, any Noah-MP `dveg`/`opt_*`), unknown keys, native land
+  options other than 0/4, `hypsometric_opt` ≠ 2, `(diff_opt, km_opt)` pairs without an operational
+  diffusion path (only diff_opt 0, 1/4 and 2/3 run; constant-K `km_opt=1` is not CLI-bound and
+  traced as *no* diffusion; `km_opt=2`/`5` are unqualified v0.22 scaffolds that give NaN under the
+  release REAL carry — refused in v0.3.4), PBL schemes that need the revised-MM5 surface layer
+  (`bl_pbl_physics=1/7/8/11/12/99` require `sf_sfclay_physics=1`), and per-domain selections that WRF
+  itself refuses or overrides (`share/module_check_a_mundo.F`: `sf_surface`,
+  `sf_sfclay`, `ra_lw`, `ra_sw` equal on all domains; `bl_pbl`, `cu`, `gwd_opt` equal
+  or 0; WRF runs the innermost domain's `mp_physics` everywhere).
+* **Warnings (the run proceeds)**: the CPU-history replay / single non-d01 domain
+  driver integrates at its fixed 10 s step with 10 sound steps and hourly CPU-WRF land
+  replay, so `time_step`, `time_step_sound`, `sf_surface_physics` and `sst_update` are
+  not honoured there; output-only `do_radar_ref` / `prec_acc_dt` fields are not
+  written; `fractional_seaice` is exact only on ice-free domains.
+
+### Per-code CLI support matrix (measured)
+
+<!-- O1NLBIND_MATRIX -->
+
+Measured by tracing the production step (`_advance_chunk_fori`, one step) through the real CLI loader on the Swiss RD11 case with the release defaults (CPU, `proofs/o1_nlbind/probe.py`; raw data `proofs/o1_nlbind/cli_support_matrix.json`). *traces* = the namelist value reaches the bound `OperationalNamelist` and the program builds; it is **not** a forecast or GPU qualification. *refused/crash* rows show what the pipeline did before the v0.3.4 CLI refusals (the CLI now stops these before compute). The `diff_opt=2, km_opt=2/5` rows trace, but executing them under the release defaults gives NaN (rel034, 2026-10-10): the CLI refuses both in v0.3.4.
+
+| namelist edit (Swiss RD11 d01, release defaults) | bound | program changes | result | evidence |
+|---|---|---|---|---|
+| `bl_pbl_physics=1, sf_sfclay_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `cu_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `cu_physics=2` | True | True | traces | pre-rebase (main 643416607) |
+| `cu_physics=3` | True | True | traces | pre-rebase (main 643416607) |
+| `cu_physics=6` | True | True | traces | pre-rebase (main 643416607) |
+| `cu_physics=16` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_opt=0, km_opt=0` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_opt=2, km_opt=1` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_opt=2, km_opt=2` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_opt=2, km_opt=3` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_opt=2, km_opt=5` | True | True | traces | pre-rebase (main 643416607) |
+| `damp_opt=0` | True | True | traces | pre-rebase (main 643416607) |
+| `w_damping=0` | True | True | traces | pre-rebase (main 643416607) |
+| `diff_6th_opt=0` | True | True | traces | pre-rebase (main 643416607) |
+| `epssm=0.1` | True | True | traces | pre-rebase (main 643416607) |
+| `sf_surface_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `sf_surface_physics=1` | None | None | refused/crash: ValueError: d01: sf_surface_physics=1 is not wired in the standalone nested pipeline (supported: 0 = prescribed bulk surface, 4 = Noah-MP). Refusing t | pre-rebase (main 643416607) |
+| `mp_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `mp_physics=1` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=2` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=3` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=4` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=6` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=10` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=13` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=14` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=16` | True | True | traces | final (main dee37ef2a) |
+| `mp_physics=24` | True | None | refused/crash: NotImplementedError: GPUWRF_ROOT_SCALAR_BDY_RK1 covers ('qv', 'qc', 'qr', 'qi', 'qs', 'qg', 'Ni', 'Nr'); 'qh' is not represented | pre-rebase (main 643416607) |
+| `mp_physics=26` | True | None | refused/crash: NotImplementedError: GPUWRF_ROOT_SCALAR_BDY_RK1 covers ('qv', 'qc', 'qr', 'qi', 'qs', 'qg', 'Ni', 'Nr'); 'qh' is not represented | pre-rebase (main 643416607) |
+| `mp_physics=28` | True | None | refused/crash: NotImplementedError: GPUWRF_ROOT_SCALAR_BDY_RK1 covers ('qv', 'qc', 'qr', 'qi', 'qs', 'qg', 'Ni', 'Nr'); 'nwfa' is not represented | pre-rebase (main 643416607) |
+| `mp_physics=97` | True | True | traces | final (main dee37ef2a) |
+| `bl_pbl_physics=0, sf_sfclay_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `bl_pbl_physics=2, sf_sfclay_physics=2` | True | True | traces | pre-rebase (main 643416607) |
+| `bl_pbl_physics=3, sf_sfclay_physics=3` | True | True | traces | pre-rebase (main 643416607) |
+| `bl_pbl_physics=7, sf_sfclay_physics=7` | True | None | refused/crash: UnsupportedSchemeSelection: surface-layer/PBL pairing violation: bl_pbl_physics=7 (YSU/ACM2/BouLac/Shin-Hong/GBM/MRF) re-derives its surface-layer for | pre-rebase (main 643416607) |
+| `bl_pbl_physics=8, sf_sfclay_physics=1` | True | True | traces | final (main dee37ef2a) |
+| `bl_pbl_physics=11, sf_sfclay_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `bl_pbl_physics=12, sf_sfclay_physics=1` | True | True | traces | final (main dee37ef2a) |
+| `bl_pbl_physics=99, sf_sfclay_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `bl_pbl_physics=1, sf_sfclay_physics=91` | True | None | refused/crash: UnsupportedSchemeSelection: surface-layer/PBL pairing violation: bl_pbl_physics=1 (YSU/ACM2/BouLac/Shin-Hong/GBM/MRF) re-derives its surface-layer for | pre-rebase (main 643416607) |
+| `ra_lw_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `ra_lw_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `ra_lw_physics=31, ra_sw_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `ra_sw_physics=0` | True | True | traces | pre-rebase (main 643416607) |
+| `ra_sw_physics=1` | True | True | traces | pre-rebase (main 643416607) |
+| `ra_sw_physics=2` | True | True | traces | HEAD e90c1d4f4 (main dee37ef2a) |
+| `mp_physics=40` | True | None | refused/crash: NotImplementedError: GPUWRF_ROOT_SCALAR_BDY_RK1 covers ('qv', 'qc', 'qr', 'qi', 'qs', 'qg', 'Ni', 'Nr'); 'Ns' is not represented | final v1 (candidate c82b9b75b; island arms superseded) |
+| `bl_pbl_physics=9` | True | True | traces | final v1 (candidate c82b9b75b; island arms superseded) |
+| `diff_opt=2, km_opt=1, khdif=100, kvdif=1` | True | True | traces | final v1 (candidate c82b9b75b; island arms superseded) |
+| `bl_pbl_physics=7, sf_sfclay_physics=1` | True | True | traces | HEAD e90c1d4f4 (main dee37ef2a) |
+| `sf_sfclay_physics=1` | True | True | traces | final (main dee37ef2a) |
+| `sf_sfclay_physics=7` | True | True | traces | final (main dee37ef2a) |
+| `sf_sfclay_physics=91` | True | True | traces | final (main dee37ef2a) |
+| `cu_physics=5` | True | True | traces | rebased 1188aba98 (main b5100f705) |
+| `cu_physics=93` | True | True | traces | rebased 1188aba98 (main b5100f705) |
+| `ra_lw_physics=3, ra_sw_physics=3` | True | True | traces | rebased 2f9004938 (main 14253f8ca, +o1-camrad) |
+| `ra_lw_physics=3, ra_sw_physics=3, cam_abs_freq_s=10800` | True | True | traces | rebased 2f9004938 (main 14253f8ca, +o1-camrad) |
+
+| release identity | base sha | candidate sha | identical |
+|---|---|---|---|
+| pre-rebase (main 643416607) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| final v1 (candidate c82b9b75b; island arms superseded) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| final (main dee37ef2a) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| final PROD d01 (main dee37ef2a) :: s0_case_20260725 | `6fc715a2bd63` | `6fc715a2bd63` | True |
+| HEAD e90c1d4f4 (main dee37ef2a) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| HEAD e90c1d4f4 PROD d01 (main dee37ef2a) :: s0_case_20260725 | `6fc715a2bd63` | `6fc715a2bd63` | True |
+| rebased 1188aba98 (main b5100f705) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| rebased 1188aba98 PROD d01 (main b5100f705) :: s0_case_20260725 | `6fc715a2bd63` | `6fc715a2bd63` | True |
+| rebased 2f9004938 (main 14253f8ca, +o1-camrad) :: cpu | `2bf12cb8374d` | `2bf12cb8374d` | True |
+| rebased 2f9004938 PROD d01 (main 14253f8ca) :: s0_case_20260725 | `6fc715a2bd63` | `6fc715a2bd63` | True |
 
 ## Out-of-scope features (documented decisions, fail closed)
 
@@ -353,7 +480,7 @@ To run an existing real-data WRF `namelist.input` on the port today:
   Noah-MP + `use_noahmp`, `ra_lw_physics=4` / `ra_sw_physics=4` RRTMG). A
   **`[REFERENCE-ONLY]`** scheme (SAS `cu=4/94/95/96`, Grell-3D `cu=5`, KSAS
   `cu=14`, New-Tiedtke `cu=16`, Grell-Devenyi `cu=93`, previous-KF `cu=99`,
-  RUC `sf_surface=3`, SSiB `sf_surface=8`, Shin-Hong `bl=11`, GBM `bl=12`,
+  SSiB `sf_surface=8`, Shin-Hong `bl=11`, GBM `bl=12`,
   GSFC/Goddard LW `ra_lw=5`, Goddard SW `ra_sw=5`, GFDL-Eta `ra_lw=99` /
   `ra_sw=99`, BEP/BEM `sf_urban_physics=2/3`, Lake `sf_lake_physics=1`) is **rejected by
   `gpuwrf run`** — it is for reference comparisons only; the error names the
@@ -377,8 +504,11 @@ To run an existing real-data WRF `namelist.input` on the port today:
 * **2-D Smagorinsky vs 3-D closures.** WRF's recommended real-data turbulence
   settings `diff_opt=1` (2nd-order on coordinate surfaces) + `km_opt=4`
   (horizontal Smagorinsky) **are implemented and operationally wired** (WRF
-  `smag2d_km`, parity in `proofs/v090/diffopt1_smagorinsky_parity.json`), as is
-  the constant-K path `diff_opt=2`/`km_opt=1`. The Smagorinsky parity scope is
+  `smag2d_km`, parity in `proofs/v090/diffopt1_smagorinsky_parity.json`), and
+  `diff_opt=2`/`km_opt=3` runs the literal 3-D Smagorinsky; `km_opt=2/5` are refused in v0.3.4. The
+  constant-K path `diff_opt=2`/`km_opt=1` exists only for programmatic idealized
+  runs (`const_nu_m2_s`); `gpuwrf run` refuses it (v0.3.4: it does not bind
+  `khdif`/`kvdif`). The Smagorinsky parity scope is
   the documented idealized-slab reduction (unit map factors, flat-eta
   `zx=zy=0`); the slope-correction branch is gated on `diff_opt==2`. The 3-D
   closures `km_opt=2` (3-D TKE), `km_opt=3` (3-D Smagorinsky) and `km_opt=5`

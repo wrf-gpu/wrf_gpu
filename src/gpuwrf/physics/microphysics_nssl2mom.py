@@ -1,66 +1,45 @@
-"""WRF NSSL 2-moment microphysics (``mp_physics=18``).
+"""WRF NSSL 2-moment microphysics (``mp_physics=18``) -- public entry points.
 
-REFERENCE-ONLY (v0.23 F2).  This module owns the JAX endpoint name the
-dispatcher records (``coupling.physics_dispatch._MP_ENTRIES[18]``).
+v0.3.4 (lane o1-nssl): JAX port of the UNMODIFIED ``phys/module_mp_nssl_2mom.F`` (sha256 29f42e76...)
+default mp=18 configuration (2-moment + hail + predicted/activated CCN + graupel/hail volume, MM2013
+fall speeds) in :mod:`gpuwrf.physics.nssl2mom`:
 
-A real single-column **oracle** built from the UNMODIFIED WRF source is staged:
-``proofs/v023/oracle/nssl2mom`` drives the pristine
-``phys/module_mp_nssl_2mom.F`` (``nssl_2mom_init`` -> ``nssl_2mom_driver``) in
-the WRF-default mp=18 configuration (2-moment + hail + predicted CCN + variable
-graupel/hail density, MM2013 fall speeds; every init choice cited to
-``module_check_a_mundo.F``/``module_physics_init.F`` in the oracle README), both
-canonical fp32 and ``-fdefault-real-8`` fp64, 6 regimes ->
-``proofs/v022/f2_oracles/nssl_2mom/nssl{,_fp64}_case_{1..6}.json`` with source
-sha256 provenance.  Known documented gap: the hail (QHL) process rates are
-unexercised by the current Morrison-mirroring seeds (a hail-seeded supplementary
-case is required before any hail-parity claim).
+* column kernel ``nssl2mom.driver.nssl2mom_column`` = WRF ``nssl_2mom_driver`` (calcnfromq at
+  itimestep==1, sediment1d, nssl_2mom_gs, NUCOND, smallvalues, radardd02/calc_eff_radius);
+* operational State adapter ``nssl2mom.adapter.nssl2mom_adapter`` (scan-wired for single/root
+  domains in ``runtime.operational_mode``; nested domains fail closed).
 
-The **traceable JAX column kernel** is a documented carry-over: the driver-level
-path exercised by the oracle (``sediment1d``/``ziegfall1d`` fall-speed
-sedimentation with hybrid number fallout, ``nssl_2mom_gs`` process rates,
-``nucond`` saturation adjustment/nucleation, ``calcnfromq``/``smallvalues``) is
-~10k+ LOC of coupled multi-moment microphysics inside the 25k-LOC module, plus
-graupel/hail volume scalars (``qvolg``/``qvolh``) that have no operational
-State substrate yet.  Shipping a partial kernel would risk silently-wrong
-hydrometeors, so NO operational kernel is provided: mp=18 is namelist-accepted
-(REFERENCE_ONLY, selectable for single-column oracle comparison) and
-fail-closes in the operational scan (not in
-``runtime.operational_mode._SCAN_WIRED_OPTIONS``; dispatch entry has
-``gpu_runnable=False``).
-
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F``
-(``nssl_2mom_init`` line ~1248; ``nssl_2mom_driver`` line ~2361).
+Qualification: CPU-oracle-qualified -- stage-by-stage and end-to-end parity against the pristine-WRF
+oracle ``proofs/v034/f2_oracles/nssl_2mom`` (17 cases, fp64 <= 1e-12 relative, fp32 dual-reference
+band); GPU / coupled-forecast qualification pending.
 """
 
 from __future__ import annotations
 
-NSSL2MOM_ORACLE_DIR = "proofs/v023/oracle/nssl2mom"
-NSSL2MOM_SAVEPOINT_DIR = "proofs/v022/f2_oracles/nssl_2mom"
+NSSL2MOM_ORACLE_DIR = "proofs/v034/oracle/nssl2mom"
+NSSL2MOM_SAVEPOINT_DIR = "proofs/v034/f2_oracles/nssl_2mom"
 
-# Frozen mp=18 state contract (WRF Registry packages nssl_2mom + nssl2mconc):
-# moist qv/qc/qr/qi/qs/qg(=NSSL graupel QH)/qh(=NSSL hail QHL) and numbers
-# Nn(CCN)/Nc/Nr/Ni/Ns/Ng/Nh; the qvolg/qvolh volume scalars are NOT yet State
-# leaves (documented blocker for scan wiring).
+# WRF Registry members of the default mp=18 configuration (packages nssl_2mom + nssl2mconc + nssl_hail +
+# nssl_ccn_opt + nssl_hailvol) and their State leaves: qg = NSSL graupel, qh = NSSL hail,
+# qndrop -> Nc, qnn (activated CCN) -> Nn, qvolg/qvolh = graupel/hail particle volume.
 NSSL2MOM_MOIST_MEMBERS = ("qv", "qc", "qr", "qi", "qs", "qg", "qh")
 NSSL2MOM_NUMBER_MEMBERS = ("Nn", "Nc", "Nr", "Ni", "Ns", "Ng", "Nh")
-NSSL2MOM_MISSING_STATE_SCALARS = ("qvolg", "qvolh")
+NSSL2MOM_VOLUME_MEMBERS = ("qvolg", "qvolh")
 
 
-def nssl2mom_run(*args, **kwargs):
-    """NSSL 2-moment column endpoint -- REFERENCE-ONLY carry-over.
+def nssl2mom_run(fields, dt, *, itimestep: int = 2, precision: str = "fp32", diag: bool = False):
+    """One WRF ``nssl_2mom_driver`` call on WRF-named column fields ``(..., nz)`` (k=0 surface).
 
-    Raises instead of silently returning a wrong hydrometeor state.  The
-    non-self-compare evidence for a future faithful port is the pristine-WRF
-    oracle at :data:`NSSL2MOM_ORACLE_DIR` with savepoints at
-    :data:`NSSL2MOM_SAVEPOINT_DIR`.
+    ``fields``: th qv qc qr qi qs qg qh qndrop qnr qni qns qng qnh qnn qvolg qvolh (mixing ratios,
+    #/kg, m3/kg) + pii p w dz rho.  Returns ``(out, precip, diagnostics)`` (see
+    :func:`gpuwrf.physics.nssl2mom.driver.nssl2mom_column`).
     """
+    from gpuwrf.physics.nssl2mom.constants import get_constants
+    from gpuwrf.physics.nssl2mom.driver import nssl2mom_column
+    from gpuwrf.physics.nssl2mom.indices import FP32, FP64
 
-    raise NotImplementedError(
-        "mp_physics=18 (NSSL 2-moment) is REFERENCE-ONLY: the faithful traceable "
-        f"JAX kernel is a documented carry-over. A real single-column oracle is "
-        f"staged at {NSSL2MOM_ORACLE_DIR} ({NSSL2MOM_SAVEPOINT_DIR}) for a future "
-        "faithful port. mp=18 fail-closes in the operational scan."
-    )
+    prec = FP32 if precision == "fp32" else FP64
+    return nssl2mom_column(fields, dt, get_constants(prec.name), prec, itimestep=itimestep, diag=diag)
 
 
 __all__ = [
@@ -68,6 +47,6 @@ __all__ = [
     "NSSL2MOM_SAVEPOINT_DIR",
     "NSSL2MOM_MOIST_MEMBERS",
     "NSSL2MOM_NUMBER_MEMBERS",
-    "NSSL2MOM_MISSING_STATE_SCALARS",
+    "NSSL2MOM_VOLUME_MEMBERS",
     "nssl2mom_run",
 ]

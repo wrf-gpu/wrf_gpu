@@ -1,0 +1,30 @@
+{
+ "load_s": 216.20068496197928,
+ "source": "src",
+ "cu_physics": 4,
+ "stepcu": 3,
+ "held_seed": [
+  "float32",
+  "float32",
+  "float32",
+  "float32",
+  "float32",
+  "float32",
+  "float32"
+ ],
+ "steps": [],
+ "result": {
+  "steps": {
+   "d01": 6
+  },
+  "wall_s": 485.2491654949263,
+  "finite": true,
+  "max_abs_RTHCUTEN": 0.0,
+  "max_abs_RQVCUTEN": 9.140948414865235e-12,
+  "cols_PRATEC_pos": 0,
+  "max_rainc_mm": 0.0,
+  "max_abs_theta_step_change_vs_init": 2.0647987727863324,
+  "census_guards": null
+ },
+ "process_s": 708.566671523964
+}

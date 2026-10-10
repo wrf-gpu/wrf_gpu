@@ -137,9 +137,23 @@ def solve_tridiagonal_thomas(a: jax.Array, b: jax.Array, c: jax.Array, rhs: jax.
 
 
 def solve_tridiagonal_xla(a: jax.Array, b: jax.Array, c: jax.Array, rhs: jax.Array) -> jax.Array:
-    """Solves a leading-axis tridiagonal system through XLA's primitive."""
+    """Solves a leading-axis tridiagonal system through XLA's primitive.
+
+    On the GPU this is XLA's ``tridiagonal_solve`` (cuSPARSE ``gtsv``). On the
+    CPU backend that primitive routes to jaxlib's LAPACK FFI, which deadlocks
+    XLA:CPU's affinity-sized intra-op pool when several solves run concurrently
+    (E105): there this falls back to the pure-JAX Thomas scan, identical to
+    :func:`solve_tridiagonal` on CPU. The GPU path is unchanged.
+    """
 
     rhs = jnp.asarray(rhs)
+    if jax.default_backend() == "cpu":
+        return solve_tridiagonal_thomas(
+            jnp.asarray(a, dtype=rhs.dtype),
+            jnp.asarray(b, dtype=rhs.dtype),
+            jnp.asarray(c, dtype=rhs.dtype),
+            rhs,
+        )
     moved_rhs = jnp.moveaxis(rhs, 0, -1)
     moved_a = jnp.moveaxis(jnp.asarray(a, dtype=rhs.dtype), 0, -1)
     moved_b = jnp.moveaxis(jnp.asarray(b, dtype=rhs.dtype), 0, -1)

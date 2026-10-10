@@ -1,0 +1,68 @@
+{
+ "proof": "o1-ruc OFF-path identity (E151)",
+ "base_rev": "99130f2336aedacd8e4a97875676be53ceb54b4a",
+ "candidate": "lane/o1-ruc working tree (surface_layer_with_exchange variant)",
+ "case": "examples/switzerland_d01 (Noah-MP sf=4, Thompson, MYNN, MYNN-SL, RRTMG; +KF cu=1 variant)",
+ "traced": "jax.make_jaxpr(_physics_boundary_step(carry, namelist, step_index, run_radiation in {False,True}))",
+ "env": {
+  "JAX_PLATFORMS": "cpu",
+  "GPUWRF_FAST_DEFAULTS": "0",
+  "interpret": false
+ },
+ "normalisation": "source locations and name_and_src_info stripped",
+ "programs": {
+  "noahmp_thompson_mynn_rrtmg/ordinary": {
+   "base": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+   "candidate": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+   "identical": true,
+   "n_eqns_top": 66375
+  },
+  "noahmp_thompson_mynn_rrtmg/radiation": {
+   "base": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+   "candidate": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+   "identical": true,
+   "n_eqns_top": 68107
+  },
+  "noahmp_thompson_mynn_rrtmg_kf/ordinary": {
+   "base": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+   "candidate": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+   "identical": true,
+   "n_eqns_top": 66429
+  },
+  "noahmp_thompson_mynn_rrtmg_kf/radiation": {
+   "base": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+   "candidate": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+   "identical": true,
+   "n_eqns_top": 68161
+  }
+ },
+ "all_identical": true,
+ "superseded_attempt": "first candidate (SurfaceLayerDiagnostics.flhc/flqc fields) differed: Noah-MP small_grid_firewall barrier wraps the whole diag tuple (+2 operands) -> discarded (RUC05)",
+ "rebased_reproof": {
+  "base_rev": "15b374b5c6fc9f31d1a9a51d761b20b2b1b23f6a (main incl. o1-camuw merge)",
+  "candidate_rev": "2ce6b8e39f1b80c557ef234cb8789c98ce8032dc (lane/o1-ruc rebased)",
+  "programs": {
+   "noahmp_thompson_mynn_rrtmg/ordinary": {
+    "base": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+    "candidate": "c46f3e24f9c5025b5c5be1b77f23daeecad00b6aaeae8a002e1e14f8009eb424",
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg/radiation": {
+    "base": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+    "candidate": "5a82aff070fddc04368c50b8be292a71cc37ea6a4c9691c830be3bb3c3a8783a",
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/ordinary": {
+    "base": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+    "candidate": "2ec0ae5bd8da57644cd9cd202b86c2bd77ca02bd782cab5bb14ead2aa2d439d3",
+    "identical": true
+   },
+   "noahmp_thompson_mynn_rrtmg_kf/radiation": {
+    "base": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+    "candidate": "6294aeb3d142c4fc9c7cba5b9cb93564f92ae8832afd9cdee9f834159292abf9",
+    "identical": true
+   }
+  },
+  "all_identical": true
+ }
+}

@@ -7,6 +7,14 @@ WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.4] - 2026-10-10
+
+- **Fix:** ≤0.3.3 `gpuwrf run` silently ignored non-default `mp_physics`, `bl_pbl_physics`, `sf_sfclay_physics`, `ra_lw/sw_physics` and the `&dynamics` damping/filter keys, running the release suite instead. v0.3.4 binds every option per domain or refuses it before compute. Re-run affected forecasts. Catalog MP/PBL/SW codes that crashed under the fp32 carry now run in explicit fp64 islands; `mp_physics` 24/26/28/40 are refused (root boundary species not carried). Omitted `&dynamics` keys now take WRF Registry defaults (epssm 0.1, w_damping 0, diff_6th_opt 0) instead of the old hard-wired 0.5/1/2; `diff_opt=2`/`km_opt=1,2,5` refused.
+- Fix: CPU-backend tridiagonal solves no longer deadlock XLA's thread pool; GPU lowering byte-identical.
+- Standalone single-domain checkpoint/resume and `--extend-run` (SIGKILL + resume byte-identical to the uninterrupted run on GPU release defaults and on CPU [M]; checkpoint overhead unmeasured). Native runs past the `wrfbdy` coverage are refused up front.
+- Experimental opt-in schemes (oracle-matched on CPU, most GPU-smoked; not forecast-validated; see the support matrix): CAM-UW PBL (`bl_pbl_physics=9`), Grell-3D/Grell–Devenyi (`cu_physics=5/93`), 3-D Smagorinsky (`km_opt=3`), CAM radiation (`ra_lw/sw_physics=3`), RUC LSM (`sf_surface_physics=3`) and scale-aware SAS (`cu_physics=4`), both API only; NSSL two-moment (`mp_physics=18`, CPU only).
+- Default program unchanged from v0.3.3; its validation is reused. The version-keyed cache recompiles once per installation. [Release notes](release_notes/RELEASE_NOTES_v0.3.4.md) · [Support matrix](docs/release/SUPPORT_MATRIX_v0.3.4.md).
+
 ## [0.3.3] - 2026-10-09
 
 - Faster native fp32 Noah-MP radiation, corrected GPU compiler layouts and Thompson snow fall speeds matched to WRF.

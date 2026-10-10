@@ -156,7 +156,14 @@ def test_radiation_specs_are_held_rate_theta_tendencies() -> None:
     assert "GSW" in dudhia.diagnostics and "GLW" in rrtm.diagnostics
     assert dudhia.owner_module == "src/gpuwrf/physics/ra_sw_dudhia.py"
 
-    for code in (3, 5, 7, 99):
+    for spec in (scheme_step_spec("radiation", 3, "lw"), scheme_step_spec("radiation", 3, "sw")):
+        # v0.3.4 (lane o1-camrad): CAM graduated; pristine camrad true-caller oracle, honest qualification.
+        assert spec.writes_state == ("theta",)
+        assert spec.wrf_slot == "first_rk_radiation_driver"
+        assert "STATUS: IMPLEMENTED" in spec.notes and "qualification pending" in spec.notes
+        assert "proofs/cam_rad" in spec.oracle and "NOT a self-compare" in spec.oracle
+
+    for code in (5, 7, 99):
         lw_tail = scheme_step_spec("radiation", code, "lw")
         sw_tail = scheme_step_spec("radiation", code, "sw")
         for spec in (lw_tail, sw_tail):

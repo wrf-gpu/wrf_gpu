@@ -1,0 +1,29 @@
+{
+ "base_rev": "99130f233",
+ "closure_files": 189,
+ "changed": [
+  "AI_OPERATOR.md",
+  "docs/_assets/search-index.json",
+  "docs/input-data.html",
+  "docs/limitations.html",
+  "docs/nesting.html",
+  "docs/output.html",
+  "docs/running.html",
+  "docs/search-index.json",
+  "scripts/parallel_cases.py",
+  "src/gpuwrf/cli.py",
+  "src/gpuwrf/integration/nested_pipeline.py",
+  "src/gpuwrf/runtime/restart_store.py",
+  "tests/v025/restart/test_single_domain_restart.py",
+  "tools/docsite/content/input-data.html",
+  "tools/docsite/content/limitations.html",
+  "tools/docsite/content/nesting.html",
+  "tools/docsite/content/output.html",
+  "tools/docsite/content/running.html"
+ ],
+ "changed_in_closure": [],
+ "closure_digest_base": "d32fba7f1e1dd0d027f75aef5c50f4bb768851cc0dd6298dc323201110f1b45d",
+ "closure_digest_candidate": "d32fba7f1e1dd0d027f75aef5c50f4bb768851cc0dd6298dc323201110f1b45d",
+ "identical": true,
+ "source_fingerprint_hash_candidate": "f34f0ec13c7a3211c0367a3b2e70b4b74194f17ed7ce96c7c00ece61cb50c9f0"
+}

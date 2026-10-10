@@ -86,9 +86,13 @@ TARGETS: tuple[dict[str, Any], ...] = (
         "wrf_sources": ("phys/module_sf_ruclsm.F",),
         "registry_packages": ("ruclsmscheme",),
         "oracle_kind": "single_column_metrics",
-        "oracle_metrics": "proofs/v018/ruc_lsm_parity_metrics.json",
-        "oracle_raw_savepoint": "proofs/v017/savepoints/ruclsm/fp64/ruclsm_fp64.json",
-        "required_status": "reference_only",
+        # v0.3.4 (lane o1-ruc): faithful port physics.ruclsm vs the v2 per-step oracle
+        # (31 regimes x 12 steps incl. snow/frozen soil); scan-wired through the explicit
+        # land bundle seam (coupling.ruc_surface_hook), like slab/Pleim-Xiu.
+        "oracle_metrics": "proofs/v034/ruclsm_parity_metrics.json",
+        "oracle_raw_savepoint": "proofs/v034/savepoints/ruclsm/fp64/ruclsm_v2_fp64.json",
+        "required_status": "implemented",
+        "scan_wired_via": "explicit_land_bundle",
     },
 )
 
@@ -226,10 +230,24 @@ def _target_report(target: dict[str, Any]) -> dict[str, Any]:
     support = classify_scheme(key, code)
     accepted = code in ACCEPTED_NAMELIST_OPTIONS.get(key, ())
     scan_wired = code in _SCAN_WIRED_OPTIONS.get(key, ())
+    if target.get("scan_wired_via") == "explicit_land_bundle":
+        # land schemes are not in _SCAN_WIRED_OPTIONS: they ride an explicit bundle seam
+        from gpuwrf.coupling.physics_dispatch import scheme_entry
+
+        scan_wired = bool(scheme_entry("land_surface", code).gpu_runnable)
     scan_reason = _SCAN_UNWIRED_REASON.get(f"{key}={code}")
     oracle = _oracle_report(target)
 
-    if support.status is SupportStatus.IMPLEMENTED and scan_wired:
+    from gpuwrf.io.scheme_catalog import _RELEASE_CARRY_UNRUNNABLE
+
+    cli_refused = code in _RELEASE_CARRY_UNRUNNABLE.get(key, {})
+    if cli_refused and scan_wired:
+        # v0.3.4 (o1-nlbind): scan-wired, but `gpuwrf run` cannot build the step under
+        # the release defaults -> REFERENCE_ONLY with the measured reason.
+        expected_status = SupportStatus.REFERENCE_ONLY
+        coverage = "scan_wired_cli_refused"
+        gate_ok = support.status is expected_status and accepted and oracle["present"]
+    elif support.status is SupportStatus.IMPLEMENTED and scan_wired:
         # v0.23 F2: a bundle scheme that graduated to a faithful, oracle-proven
         # kernel wired into the operational scan. Honesty gate: it must be
         # accepted AND still carry its oracle evidence (no evidence, no wiring).

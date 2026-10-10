@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.3</span>
+          <span class="brand-sub">User's Guide · v0.3.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -87,6 +87,22 @@ wired.</p>
   substitutes or skips a scheme</strong>. These are boundaries and a roadmap, not hidden gaps.
   This is a WRF-compatible reimplementation validated against WRF as an oracle, not a bit-true
   Fortran port: expect operational (RMSE-class) agreement, not byte equality.</p>
+</div>
+
+<div class="admon warn" id="v033-silent-options">
+  <div class="admon-title">Upgrade note for v0.3.3 users: non-default physics options were silently ignored</div>
+  <p>In wrf_gpu <strong>≤ 0.3.3</strong>, <code>gpuwrf run</code> did not read <code>mp_physics</code>,
+  <code>bl_pbl_physics</code>, <code>sf_sfclay_physics</code>, <code>ra_lw_physics</code>,
+  <code>ra_sw_physics</code> or the <code>&amp;dynamics</code> damping/filter knobs (<code>epssm</code>,
+  <code>damp_opt</code>, <code>zdamp</code>, <code>dampcoef</code>, <code>w_damping</code>,
+  <code>diff_6th_opt</code>, <code>diff_6th_factor</code>). The namelist check accepted the request,
+  but the run used Thompson / MYNN / MYNN surface layer / RRTMG with the release dynamics values.
+  The release configuration was unaffected. <strong>Re-run any ≤ 0.3.3 forecast that selected
+  another scheme.</strong> From v0.3.4 every option is bound per domain, and any explicit value the
+  run would not honour is refused before compute. See
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/KNOWN_ISSUES.md">KNOWN_ISSUES</a> and the
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/SUPPORT_MATRIX_v0.3.4.md">v0.3.4
+  support matrix</a>.</p>
 </div>
 
 <h2 id="fail-closed">The fail-closed philosophy<a class="headerlink" href="#fail-closed" aria-label="Permalink">¶</a></h2>
@@ -163,10 +179,15 @@ the table below separates current scheme-code counts from the broader catalog.</
   <span class="pill op">Operational</span> — machine-precision JAX kernel vs a pristine-WRF
   single-column oracle. (Like Tiedtke <code>cu=6</code>, it needs active flux-form moisture
   advection so WRF <code>RQVFTEN</code> is available; see <a href="dynamics.html#advection">Dynamics</a>.)</li>
-  <li><strong>Morrison-aerosol microphysics (<code>mp_physics=40</code>)</strong> joins
-  <span class="pill ref">Reference-only</span> with real oracle — the fp64 column kernel is proven
-  to machine precision, but the prescribed AEROCU aerosol inputs have no operational State substrate yet.</li>
-  <li><strong>NSSL 2-moment (<code>mp_physics=18</code>), CAM-UW PBL (<code>bl_pbl_physics=9</code>),
+  <li><strong>Morrison-aerosol microphysics (<code>mp_physics=40</code>)</strong> joined
+  <span class="pill ref">Reference-only</span> in v0.23. Its <code>aercu_opt=0</code> column kernel is
+  CPU-oracle-qualified in v0.3.4, but the CLI refuses it because the root lateral-boundary update does not carry
+  Ns/Ng/Nc (see the <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/SUPPORT_MATRIX_v0.3.4.md">v0.3.4
+  support matrix</a>).</li>
+  <li><strong>CAM-UW PBL (<code>bl_pbl_physics=9</code>)</strong> runs as an <strong>experimental</strong>
+  opt-in scheme from v0.3.4 (CPU-oracle-qualified, not forecast-validated).</li>
+  <li><strong>NSSL 2-moment (<code>mp_physics=18</code>)</strong> runs as an <strong>experimental</strong> opt-in scheme from v0.3.4 (CPU-oracle-qualified, not yet run on the GPU).</li>
+  <li><strong>
   urban BEP/BEM (<code>sf_urban_physics=2/3</code>) and the WRF lake model
   (<code>sf_lake_physics=1</code>)</strong> are <span class="pill ref">Reference-only</span> /
   <span class="pill closed">Fail-closed</span> with staged oracles; their faithful ports are tracked

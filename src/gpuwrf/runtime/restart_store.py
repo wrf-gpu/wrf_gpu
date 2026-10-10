@@ -52,7 +52,12 @@ def _host(tree):
 
 
 def nested_identity(config, bundles, run_start):
-    """Bind inputs, output stream, model source, configuration and AOT policy."""
+    """Bind inputs, output stream, model source, configuration and AOT policy.
+
+    The forecast end (``hours``) is deliberately NOT part of the identity: it is
+    recorded in the verified driver state, so a resumed run can be extended under
+    explicit control (nested_pipeline._restart_end_time) in the same stream.
+    """
     from gpuwrf.runtime.aot_cheap_key import canonical_digest, global_trace_env_hash, version_fingerprint_hash
     source = Path(__file__).resolve().parents[1]
     source_hash = hashlib.sha256()
@@ -69,7 +74,7 @@ def nested_identity(config, bundles, run_start):
         "source_sha256": source_hash.hexdigest(), "inputs": inputs,
         "input_dir": str(Path(config.input_dir).resolve()),
         "output_dir": str(Path(config.output_dir).resolve()),
-        "run_start": run_start.isoformat(), "hours": config.hours,
+        "run_start": run_start.isoformat(),
         "feedback": config.feedback, "emit_initial_history": config.emit_initial_history,
         "namelists": {name: canonical_digest(bundle.namelist) for name, bundle in bundles.items()},
         "mp_re_config": {name: mp_re_config(bundle.namelist) for name, bundle in bundles.items()},

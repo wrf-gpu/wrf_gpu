@@ -1111,6 +1111,13 @@ class OperationalNamelist:
     px_static: object = None
     px_land: object = None
     px_rad: object = None
+    # Explicit RUC LSM (sf_surface_physics=3) operational inputs (v0.3.4, lane
+    # o1-ruc): a RucStaticBundle (RucConfig + WRF RUC tables + IVGTYP/ISLTYP/XLAND/
+    # XICE/TMN/SHDMIN/SHDMAX/ALBBCK) and the seeded RucLandState (RUC soil levels from
+    # wrfinput). If either is absent the scan rejects sf_surface_physics=3.
+    ruc_static: object = None
+    ruc_land: object = None
+    ruc_rad: object = None
     # --- orographic gravity-wave drag (gwd_opt=1) ---------------------------
     # ``gwd_opt`` (static aux) selects the WRF GWDO scheme: 0 = off (default,
     # byte-unchanged), 1 = orographic GWD + flow blocking (faithful bl_gwdo_run
@@ -1160,6 +1167,9 @@ class OperationalNamelist:
     radiation_interval_s: float = 0.0
     cumulus_cadence_steps: int = 1
     cudt_minutes: float = 0.0
+    # WRF cam_abs_freq_s (Registry default 21600 s): ra_lw_physics=3 CAM recomputes its LW absorptivities/emissivity
+    # only every cam_abs_freq_s (module_radiation_driver.F:1601) and holds them in OperationalCarry.cam_abs.
+    cam_abs_freq_s: float = 21600.0
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -1398,6 +1408,9 @@ class OperationalNamelist:
             _StaticHolder(self.px_static),
             _StaticHolder(self.px_land),
             _StaticHolder(self.px_rad),
+            _StaticHolder(self.ruc_static),
+            _StaticHolder(self.ruc_land),
+            _StaticHolder(self.ruc_rad),
             int(self.gwd_opt),
             int(self.ra_sw_physics),
             int(self.ra_lw_physics),
@@ -1411,6 +1424,7 @@ class OperationalNamelist:
             int(self.h_sca_adv_order),
             bool(self.specified_bdy_cadence),
             bool(self.specified_adv_degrade),
+            float(self.cam_abs_freq_s),
         )
         return children, aux
 
@@ -1479,6 +1493,9 @@ class OperationalNamelist:
             px_static_holder,
             px_land_holder,
             px_rad_holder,
+            ruc_static_holder,
+            ruc_land_holder,
+            ruc_rad_holder,
             gwd_opt,
             ra_sw_physics,
             ra_lw_physics,
@@ -1492,6 +1509,7 @@ class OperationalNamelist:
             h_sca_adv_order,
             specified_bdy_cadence,
             specified_adv_degrade,
+            cam_abs_freq_s,
         ) = aux
         # #114: recover the date-derived clock scalars from the date-blind holder so the
         # legacy clock_base=None path still reads the exact same values (value-preserving).
@@ -1514,6 +1532,9 @@ class OperationalNamelist:
         px_static = px_static_holder.value
         px_land = px_land_holder.value
         px_rad = px_rad_holder.value
+        ruc_static = ruc_static_holder.value
+        ruc_land = ruc_land_holder.value
+        ruc_rad = ruc_rad_holder.value
         return cls(
             grid=grid,
             tendencies=tendencies,
@@ -1581,6 +1602,9 @@ class OperationalNamelist:
             px_static=px_static,
             px_land=px_land,
             px_rad=px_rad,
+            ruc_static=ruc_static,
+            ruc_land=ruc_land,
+            ruc_rad=ruc_rad,
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
             data_assimilation=data_assimilation,
@@ -1596,6 +1620,7 @@ class OperationalNamelist:
             h_sca_adv_order=h_sca_adv_order,
             specified_bdy_cadence=specified_bdy_cadence,
             specified_adv_degrade=specified_adv_degrade,
+            cam_abs_freq_s=cam_abs_freq_s,
         )
 
 
@@ -4206,6 +4231,7 @@ def _augment_large_step_tendencies(
     | None = None,
     frozen_diff6_theta_tendency: jax.Array | None = None,
     frozen_diff6_uvw_tendencies: tuple[jax.Array, jax.Array, jax.Array] | None = None,
+    frozen_les3d_km3: tuple[jax.Array, jax.Array, jax.Array, jax.Array] | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -4443,7 +4469,19 @@ def _augment_large_step_tendencies(
     # reductions.  Momentum diffusion currently uses conservative variable-K
     # scalar flux divergence on each staggered field; the deformation-stress
     # momentum tensor is the remaining parity item called out in the proof report.
-    if int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 3, 5):
+    if int(namelist.diff_opt) == 2 and int(namelist.km_opt) == 3:
+        # o1-smag3d: literal WRF km_opt=3 (gpuwrf.dynamics.les3d_smagorinsky, pristine-oracle
+        # parity): RK1-frozen ru/rv/rw/t_tendf already folded as rk_addtend_dry consumes them.
+        if frozen_les3d_km3 is None:
+            from gpuwrf.runtime.les3d_km3 import les3d_km3_forward_tendencies
+
+            frozen_les3d_km3 = les3d_km3_forward_tendencies(haloed, namelist, base_state=base_state)[:4]
+        du3, dv3, dw3, dth3 = frozen_les3d_km3
+        u_t = u_t + du3.astype(u_t.dtype)
+        v_t = v_t + dv3.astype(v_t.dtype)
+        w_t = w_t + dw3.astype(w_t.dtype)
+        th_t = th_t + dth3.astype(th_t.dtype)
+    elif int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 3, 5):
         turb = _diffopt2_turbulence_fields(haloed, namelist, dz=dz)
         theta_base = _theta_base_offset(haloed.theta) * jnp.ones_like(haloed.theta)
         th_t = th_t + horizontal_diffusion_coord_scalar_tendency(
@@ -4710,7 +4748,38 @@ def _advected_scalar_species(namelist: "OperationalNamelist") -> tuple[str, ...]
         return _MOISTURE_SPECIES + _HAIL_MP_ADVECTED_EXTRAS.get(mp, ())
     if mp == 28:
         return _MOISTURE_SPECIES + ("nwfa", "nifa")
+    if mp == 40:
+        # v0.3.4 O1: Registry morr_tm_aero scalar qnc,qni,qns,qnr,qng -- Ni/Nr
+        # ride the number path below; qns/qng/qnc are transported here with the
+        # same flux-form machinery as mp=28's nwfa/nifa (PD family by
+        # _SCALAR_FAMILY_SPECIES; stencil = moist_adv_opt, WRF's scalar_adv_opt,
+        # identical when both are equal as in PROD/WN3).  Nc is overwritten by
+        # the aercu_opt=0 scheme every call, so its transport cannot feed back.
+        return _MOISTURE_SPECIES + ("Ns", "Ng", "Nc")
     return _MOISTURE_SPECIES
+
+
+# NSSL 2-moment (mp=18) number scalars beyond the Ni/Nr pair (WRF ``scalar`` array members
+# qndrop/qns/qng/qnh/qnn, Registry nssl2mconc/nssl_hail/nssl_ccn_opt) transported by the SAME root
+# rk_scalar_tend flux-form call as Ni/Nr.  Requires moist_adv_opt == scalar_adv_opt (one stacked
+# call); qvolg/qvolh ride the hail moist extras above.
+_NSSL_NUMBER_SCALARS: tuple[str, ...] = ("Nc", "Ns", "Ng", "Nh", "Nn")
+
+
+def _nssl_number_scalars(namelist: "OperationalNamelist") -> tuple[str, ...]:
+    if int(namelist.moist_adv_opt) != int(namelist.scalar_adv_opt) or int(namelist.moist_adv_opt) == 0:
+        raise NotImplementedError(
+            "mp_physics=18 (NSSL) transport needs moist_adv_opt == scalar_adv_opt != 0 (one stacked "
+            f"scalar transport call); got moist_adv_opt={int(namelist.moist_adv_opt)}, "
+            f"scalar_adv_opt={int(namelist.scalar_adv_opt)}")
+    return _NSSL_NUMBER_SCALARS
+
+
+def _nssl_root_flow_only(namelist: "OperationalNamelist") -> dict:
+    """mp=18: NSSL extras with no lateral boundary records take WRF's flow_dep_bdy on the root."""
+    if getattr(namelist, "mp_physics", None) != 18:
+        return {}
+    return {"flow_only": ("qh", "qvolg", "qvolh") + _NSSL_NUMBER_SCALARS}
 
 
 def _scalar_transport_coupled_tendencies(
@@ -5260,6 +5329,13 @@ def _rk_scan_step(
     )
     rk1_forward_diffopt1 = None if rk1_diffopt1_bundle is None else rk1_diffopt1_bundle[:4]
     rk1_scalar_xkhh = None if rk1_diffopt1_bundle is None else rk1_diffopt1_bundle[4]
+    # o1-smag3d: WRF diff_opt=2/km_opt=3 forms its whole diffusion bundle (dry *_tendf and
+    # moist/scalar sc_tend) once in first_rk_step_part2 from the time-t fields.
+    rk1_les3d_km3 = None
+    if int(namelist.diff_opt) == 2 and int(namelist.km_opt) == 3:
+        from gpuwrf.runtime.les3d_km3 import les3d_km3_forward_tendencies
+
+        rk1_les3d_km3 = les3d_km3_forward_tendencies(rk1_reference, namelist, base_state=carry.base_state)
     # Canonical real-data nests select diff_6th_opt=2.  WRF builds theta's
     # sixth-order contribution once from the time-t/RK1 field into ``t_tendf``;
     # the previous operational path rebuilt a periodic, cell-mass approximation
@@ -5345,15 +5421,15 @@ def _rk_scan_step(
     # (added before the sixth-order term, module_em.F:1380-1423).
     root_scalar_hdiff_active = (
         not nested_frozen_bundle
-        and rk1_scalar_xkhh is not None
+        and (rk1_scalar_xkhh is not None or rk1_les3d_km3 is not None)
         and bool(namelist.use_flux_advection)
     )
 
     def _root_scalar_sc_tend(muts_rk1):
         hdiff = (
             _diffopt1_scalar_horizontal_diffusion(rk1_reference, rk1_scalar_xkhh, muts_rk1, namelist)
-            if root_scalar_hdiff_active
-            else {}
+            if root_scalar_hdiff_active and rk1_scalar_xkhh is not None
+            else (dict(rk1_les3d_km3.scalar_sc) if root_scalar_hdiff_active else {})
         )
         if not root_scalar_diff6_active:
             return hdiff
@@ -5419,7 +5495,7 @@ def _rk_scan_step(
         hdiff = (
             _diffopt1_scalar_horizontal_diffusion(rk1_reference, rk1_scalar_xkhh, muts_rk1, namelist)
             if rk1_scalar_xkhh is not None
-            else None
+            else (None if rk1_les3d_km3 is None else dict(rk1_les3d_km3.scalar_sc))
         )
         if int(namelist.diff_6th_opt) == 0:
             if hdiff is None:
@@ -5518,6 +5594,7 @@ def _rk_scan_step(
             frozen_diffopt1_tendencies=rk1_forward_diffopt1,
             frozen_diff6_theta_tendency=rk1_forward_diff6_theta,
             frozen_diff6_uvw_tendencies=rk1_forward_diff6_uvw,
+            frozen_les3d_km3=None if rk1_les3d_km3 is None else tuple(rk1_les3d_km3[:4]),
         ); tendencies, stage_carry, haloed = _small_grid_firewall((tendencies, stage_carry, haloed), stage_carry.state.theta.shape[-2:])
         # WRF advances moisture/other scalars after acoustic integration and
         # constructs their tendencies with ``sumflux`` -- the time-average of
@@ -5530,6 +5607,10 @@ def _rk_scan_step(
         moisture_advected = (
             bool(namelist.use_flux_advection) and int(namelist.moist_adv_opt) != 0
         )
+        if nested_frozen_bundle and getattr(namelist, "mp_physics", None) == 18:
+            raise NotImplementedError(
+                "mp_physics=18 (NSSL) is wired for single (root) domains only: nested parent->child forcing of "
+                "the NSSL number/volume scalars (qndrop/qns/qng/qnh/qnn, qvolg/qvolh) is not ported")
         if nested_frozen_bundle:
             # WRF's separate ``other_scalar_advance`` always transports the
             # represented Thompson QNI/QNR fields when flux advection is active;
@@ -5579,6 +5660,8 @@ def _rk_scan_step(
             )
             moist_species = _advected_scalar_species(namelist) if moisture_advected else ()
             q_species = moist_species + (("Ni", "Nr") if number_scalars_advected else ())
+            if getattr(namelist, "mp_physics", None) == 18 and number_scalars_advected:
+                q_species = q_species + _nssl_number_scalars(namelist)
             q_tendencies = None
             post_acoustic_scalar_transport = bool(moisture_advected or number_scalars_advected)
         tke_advected = int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 5)
@@ -5819,7 +5902,7 @@ def _rk_scan_step(
                     ) if (root_scalar_diff6_active or root_scalar_hdiff_active) else None
                     relaxed = flow = ()
                     if root_scalar_rk1:
-                        relaxed, flow = root_scalar_rk1_split(namelist.boundary_config, q_species)
+                        relaxed, flow = root_scalar_rk1_split(namelist.boundary_config, q_species, **_nssl_root_flow_only(namelist))
                         root_sc = _root_sc_with_boundary(
                             root_sc,
                             _rk1_cached("root_bdy", stage, None, lambda _unused: root_scalar_boundary_tendencies(
@@ -5834,7 +5917,7 @@ def _rk_scan_step(
                 root_sc_early = None
                 if phys_moist_sc is not None:
                     owned = (
-                        root_scalar_rk1_split(namelist.boundary_config, q_species)[0]
+                        root_scalar_rk1_split(namelist.boundary_config, q_species, **_nssl_root_flow_only(namelist))[0]
                         if root_scalar_rk1 else ()
                     )
                     stage_phys_sc = _physics_sc_outside_spec(
@@ -6428,15 +6511,19 @@ _SCAN_WIRED_OPTIONS = {
     # mp=24 WSM7 + 26 WDM7 (v0.17 hail: WSM6/WDM6 + a separate precipitating qh +
     # hail_acc; WDM7 also keeps the WDM6 double-moment Nc/Nn;
     # coupling.scan_adapters.{wsm7_adapter,wdm7_adapter}).
-    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97),
+    # mp=40 Morrison-aerosol at WRF's stand-alone point aercu_opt=0 (v0.3.4 O1,
+    # coupling.scan_adapters.morrison_aero_adapter; aercu_opt>0 needs cu=11).
+    # mp=18 NSSL 2-moment (v0.3.4 o1-nssl: physics.nssl2mom JAX port, CPU-oracle-qualified vs
+    # proofs/v034/f2_oracles/nssl_2mom; root-domain transport of Nc/Ns/Ng/Nh/Nn, nested fail-closed).
+    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 18, 24, 26, 28, 40, 97),
     # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 3 GFS wired (v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
     # 11 Shin-Hong is the v0.18 scale-aware JAX/vmap port; 12 GBM is the v0.18
-    # moist prognostic-TKE JAX/vmap port. 9 CAM-UW is F3 reference-only and is
-    # deliberately not scan-wired.
-    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 11, 12, 99),
+    # moist prognostic-TKE JAX/vmap port. 9 CAM-UW is the v0.3.4 faithful r8 port
+    # (proofs/v034/camuw_oracle; CPU-oracle-qualified, GPU-unqualified).
+    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 9, 11, 12, 99),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
     # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
     # 3 NCEP-GFS surface layer + 91 old-MM5 surface layer wired (v0.13 Tier-3,
@@ -6449,22 +6536,30 @@ _SCAN_WIRED_OPTIONS = {
     # moisture advection so the scan can diagnose WRF RQVFTEN). 16 New-Tiedtke
     # (v0.23 F2: machine-precision fp64 kernel vs the WRF oracle savepoints,
     # scan-wired via coupling.scan_adapters.ntiedtke_adapter; same flux-form
-    # moisture-advection requirement as cu=6). SAS-family 4/94/95/96 are
-    # reference-only / not wired.
-    "cu_physics": (0, 1, 2, 3, 6, 16),
+    # moisture-advection requirement as cu=6). SAS 94/95/96 are reference-only /
+    # not wired. 5 Grell-3D + 93 Grell-Devenyi: v0.3.4 o1-grell
+    # line-faithful JAX ports (coupling.scan_adapters.grell_cumulus_adapter),
+    # CPU-oracle-qualified vs pristine WRF (proofs/v034); GPU qualification pending.
+    # 4 scale-aware GFS SAS (v0.3.4 o1-sas: bitwise vs the pristine WRF REAL build,
+    # held-rate cadence via coupling.scalesas_adapter) -- Python-API only: WRF ARW refuses
+    # cu=4 (check_a_mundo.F:671) and so does the CLI (io.namelist_binding, scheme_catalog).
+    "cu_physics": (0, 1, 2, 3, 4, 5, 6, 16, 93),
     # ra_sw=0 disabled, 4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
     # theta tendency via dudhia_sw_theta_tendency), 2 GSFC/Chou-Suarez SW
     # (multi-band delta-Eddington, scan-wired held-rate theta tendency via
     # gsfc_sw_theta_tendency). Any other recognized SW scheme is fail-closed
-    # (no GPU scan adapter).
-    "ra_sw_physics": (0, 1, 2, 4),
+    # (no GPU scan adapter). 3 CAM SW (v0.3.4 o1-camrad: physics.ra_cam/ra_cam_sw port of phys/module_ra_cam.F,
+    # held-rate theta tendency via coupling.cam_radiation.cam_sw_theta_tendency; CPU-oracle-qualified).
+    "ra_sw_physics": (0, 1, 2, 3, 4),
     # ra_lw=0 disabled, 4 RRTMG LW (default), 1 classic AER RRTM LW (16-band k-distribution,
     # scan-wired held-rate theta tendency via rrtm_lw_theta_tendency, JAX-traceable
     # port of phys/module_ra_rrtm.F). 31 Held-Suarez idealized radiation (COMBINED
     # LW+SW Newtonian relaxation, phys/module_ra_hs.F:HSRAD, scan-wired held-rate
     # theta tendency via held_suarez_theta_tendency; requires ra_sw_physics=0 since
     # HSRAD is the only radiative call). SW/LW are otherwise selected independently.
-    "ra_lw_physics": (0, 1, 4, 31),
+    # 3 CAM LW (v0.3.4 o1-camrad: physics.ra_cam port of phys/module_ra_cam.F, held-rate theta tendency via
+    # coupling.cam_radiation.cam_lw_theta_tendency; CPU-oracle-qualified, GPU/coupled qualification pending).
+    "ra_lw_physics": (0, 1, 3, 4, 31),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -6476,10 +6571,6 @@ _SCAN_UNWIRED_REASON = {
     # intentionally absent here.
     # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
-    "mp_physics=18": "NSSL 2-moment (mp=18, phys/module_mp_nssl_2mom.F) has real v0.23 single-column fp32+fp64 pristine-WRF oracles (proofs/v022/f2_oracles/nssl_2mom), but the faithful traceable JAX kernel is not yet ported and the qvolg/qvolh volume-scalar state path is not wired; fail-closed in the operational scan",
-    "mp_physics=40": "Morrison aerosol (mp=40, phys/module_mp_morr_two_moment_aero.F) has real v0.23 single-column fp32+fp64 pristine-WRF oracles (proofs/v022/f2_oracles/morrison_aero) and a machine-precision-proven fp64 JAX column kernel (microphysics_morrison_aero), but the prescribed AEROCU aerosol inputs / prognostic droplet number have no operational State substrate; fail-closed in the operational scan",
-    "bl_pbl_physics=9": "CAM-UW is F3 REFERENCE_ONLY: a standalone WRF-Fortran CAM-UW oracle exists under proofs/v023/feature_sprints/camuw_oracle and proved the previous JAX scaffold RED vs oracle (pblh max_abs=1384.6212005615234 m); faithful CAM-UW port is a separate milestone",
-    "cu_physics=4": "Scale-aware GFS SAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=94": "2015 GFS SAS / HWRF has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=95": "Previous GFS SAS / HWRF OSAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=96": "Previous new GFS SAS / YSU NSAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
@@ -6487,9 +6578,7 @@ _SCAN_UNWIRED_REASON = {
     # Grell-Devenyi(93) have real pristine-WRF oracle artifacts. Their
     # traceable JAX column kernels remain carry-overs, so they fail-close here.
     "cu_physics=14": "KIM-SAS has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
-    "cu_physics=5": "Grell-3D ensemble has a v0.18 pristine-WRF G3DRV oracle harness/savepoints, including nontrivial active columns; faithful traceable JAX endpoint and operational scan wiring remain blocked",
     # cu=93 (Grell-Devenyi) / cu=99 (previous Kain-Fritsch) are v0.17 RED/reference-only.
-    "cu_physics=93": "Grell-Devenyi ensemble has a v0.18 pristine-WRF GRELLDRV oracle harness/savepoints, including nontrivial active columns; faithful traceable JAX endpoint and operational scan wiring remain blocked",
     "cu_physics=99": "previous Kain-Fritsch is accepted for v0.17 oracle work, but the available GPU endpoint is the KF-eta family, not a parity-proven module_cu_kf.F:KFCPS port",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
     "sf_surface_physics=1": "thermal-diffusion slab LSM requires an explicit slab_static (SlabStaticBundle: soil ZS/DZS + TMN/THC/EMISS/SNOWC) so the scan can advance the 5-layer TSLB land carry from GSW/GLW radiation forcing",
@@ -6499,7 +6588,7 @@ _SCAN_UNWIRED_REASON = {
     # LSMRUC/SSIB drivers); their faithful traceable JAX column kernels are documented
     # carry-overs (the ~7.5k-LOC RUC soil/snow solver and the ~6.6k-LOC SSiB SiB
     # canopy/soil/snow solver), so both fail-close here.
-    "sf_surface_physics=3": "RUC multi-layer soil/snow LSM has a single-column fp64 pristine-WRF oracle staged (proofs/v017/oracle/ruclsm, LSMRUC->SOILVEGIN->SFCTMP); traceable JAX column kernel is a Tier-3 carry-over (~7.5k-LOC soil/snow solver)",
+    "sf_surface_physics=3": "RUC LSM (physics/ruclsm.py, CPU-oracle-qualified vs proofs/v034/oracle/ruclsm) requires an explicit ruc_static (RucStaticBundle: RucConfig + WRF RUC tables + IVGTYP/ISLTYP/XLAND/XICE/TMN/SHDMIN/SHDMAX/ALBBCK) and a seeded ruc_land (RucLandState on the wrfinput RUC soil levels), sf_sfclay_physics=5 (MYNN-SL supplies FLHC/FLQC) and use_noahmp=False; sea-ice/lake points fail closed",
     "sf_surface_physics=8": "SSiB SiB biophysical canopy/soil/snow LSM has a single-column fp64 pristine-WRF oracle staged (proofs/v017/oracle/ssib, the unmodified SSIB driver); traceable JAX column kernel is a Tier-3 carry-over (~6.6k-LOC coupled SiB solver)",
     "sf_urban_physics=1": "single-layer UCM is recognized but no urban canopy state carry, pristine-WRF oracle, or faithful JAX kernel is wired into the operational scan",
     "sf_urban_physics=2": "BEP urban canopy (phys/module_sf_bep.F:BEP) needs the Registry bepscheme carry, urban-map/static tables, pristine-WRF oracle, and faithful JAX kernel before scan wiring",
@@ -6508,7 +6597,6 @@ _SCAN_UNWIRED_REASON = {
     # ra_sw=1 (Dudhia), ra_sw=2 (GSFC/Chou-Suarez) and ra_sw=4 (RRTMG) are
     # scan-wired; v0.18 recognizes ra_sw=3/5/7/99 for real-WRF oracle/parity work
     # only and fail-closes them here.
-    "ra_sw_physics=3": "CAM shortwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_cam.F:CAMRAD, proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
     "ra_sw_physics=5": "New Goddard shortwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_goddard.F:goddardrad, proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
     "ra_sw_physics=7": "FLG/UCLA shortwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_flg.F:RAD_FLG, proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
     "ra_sw_physics=99": "GFDL-Eta shortwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_gfdleta.F:ETARA, proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
@@ -6518,7 +6606,6 @@ _SCAN_UNWIRED_REASON = {
     # documented carry-over (the combined NUWRF SW+LW module is ~12.5k LOC), so it
     # fail-closes here. ra_lw=4 (RRTMG), 1 (classic RRTM), and 31 (Held-Suarez with
     # ra_sw=0) remain the operational LW.
-    "ra_lw_physics=3": "CAM longwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_cam.F:CAMRAD, proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
     "ra_lw_physics=5": "GSFC/Goddard NUWRF longwave has a v0.13 single-column fp64 pristine-WRF oracle and a v0.18 exact-driver paired real-WRF oracle (module_radiation_driver.F -> module_ra_goddard.F:goddardrad, proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json); no faithful JAX column kernel or operational scan wiring",
     "ra_lw_physics=7": "FLG/UCLA longwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_flg.F:RAD_FLG, proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
     "ra_lw_physics=99": "GFDL-Eta longwave has a v0.18 exact-driver real-WRF oracle (module_radiation_driver.F -> module_ra_gfdleta.F:ETARA, proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json) but no faithful JAX column kernel or operational scan wiring",
@@ -6538,6 +6625,11 @@ def _explicit_slab(namelist: OperationalNamelist) -> bool:
 def _explicit_pleim_xiu(namelist: OperationalNamelist) -> bool:
     explicit_land = getattr(namelist, "sf_surface_physics", None)
     return explicit_land is not None and int(explicit_land) == 7
+
+
+def _explicit_ruc(namelist: OperationalNamelist) -> bool:
+    explicit_land = getattr(namelist, "sf_surface_physics", None)
+    return explicit_land is not None and int(explicit_land) == 3
 
 
 def _resolve_operational_suite(namelist: OperationalNamelist):
@@ -6575,6 +6667,13 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
             or int(getattr(namelist, "moist_adv_opt", 0)) == 0
         )
     )
+    grell_cu = int(getattr(namelist, "cu_physics", 0)) in (5, 93)
+    if grell_cu and int(getattr(namelist, "cumulus_cadence_steps", 1)) > 1:
+        not_wired.append(
+            f"cu_physics={int(getattr(namelist, 'cu_physics', 0))} with cudt>0 "
+            "(Grell-3D/Grell-Devenyi held R*CUTEN between cumulus calls is not wired; "
+            "set cudt=0 so the scheme runs every step like WRF's stepcu=1)"
+        )
     if tiedtke_lacks_rqvften:
         not_wired.append(
             f"cu_physics={int(getattr(namelist, 'cu_physics', 0))} "
@@ -6611,8 +6710,39 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     # ruc=3 (RUC) / ssib=8 (SSiB) are v0.17 REFERENCE-ONLY: fp64 pristine-WRF
     # single-column oracle staged, faithful JAX column kernel is a carry-over -- always
     # fail-closed in the operational scan (never silently substituted by another LSM).
-    if land_opt in (3, 8):
+    if land_opt == 8:
         not_wired.append(f"sf_surface_physics={land_opt} ({_SCAN_UNWIRED_REASON[f'sf_surface_physics={land_opt}']})")
+    # ruc=3 (v0.3.4, lane o1-ruc): opt-in RUC LSM via coupling.ruc_surface_hook; needs the
+    # explicit WRF-derived bundles, the MYNN surface layer (exact FLHC/FLQC) and no
+    # Noah-MP; columns the port cannot run (sea ice, WRF nroot OOB) fail closed.
+    if land_opt == 3:
+        ruc_ok = (
+            getattr(namelist, "ruc_static", None) is not None
+            and getattr(namelist, "ruc_land", None) is not None
+            and int(getattr(namelist, "sf_sfclay_physics", 5)) == 5
+            and not bool(getattr(namelist, "use_noahmp", False))
+        )
+        # The previous-step precipitation (RAINBL/RAINNCV/SNOWNCV/GRAUPELNCV/SR) reaches the hook only
+        # through the Thompson precipitation carry; any other MP would silently feed zeros (rv-ruc #4).
+        # myj=.true. (MYJ PBL) selects LSMRUC's chs-based qkms/tkms path that the hook does not wire (A5).
+        if ruc_ok and int(getattr(namelist, "mp_physics", DEFAULT_MP_PHYSICS)) != DEFAULT_MP_PHYSICS:
+            not_wired.append(
+                f"sf_surface_physics=3 (RUC needs the previous-step precipitation carry, produced only by "
+                f"mp_physics={DEFAULT_MP_PHYSICS} Thompson; mp_physics={int(namelist.mp_physics)} would feed zero rain/snow)")
+            ruc_ok = None
+        if ruc_ok and int(getattr(namelist, "bl_pbl_physics", 5)) == 2:
+            not_wired.append("sf_surface_physics=3 (RUC with MYJ PBL needs LSMRUC's myj=.true. chs path; not wired)")
+            ruc_ok = None
+        if ruc_ok:
+            from gpuwrf.coupling.ruc_surface_hook import ruc_unsupported_mask
+
+            bad = ruc_unsupported_mask(namelist.ruc_land, namelist.ruc_static)
+            if bool(bad.any()):
+                not_wired.append(
+                    f"sf_surface_physics=3 ({int(bad.sum())} land columns need RUC sea-ice (SICE/"
+                    "SNOWSEAICE) or hit the WRF zshalf(nroot+1) out-of-bounds read; not ported)")
+        elif ruc_ok is not None:
+            not_wired.append(f"sf_surface_physics=3 ({_SCAN_UNWIRED_REASON['sf_surface_physics=3']})")
     # Held-Suarez (ra_lw=31) is a COMBINED idealized LW+SW Newtonian relaxation:
     # WRF's radiation driver makes the single HSRAD call and NO separate shortwave
     # call. Pairing it with a real SW scheme would double-count radiative heating,
@@ -6626,8 +6756,8 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,11,12,99}, "
-            "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,18,24,26,28,40,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, "
+            "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,4,5,6,16,93}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, "
             "ra_lw_physics in {0,1,4,31}). The following selected schemes "
@@ -6750,6 +6880,22 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
             if getattr(namelist, "px_rad", None) is not None
             else PleimXiuRadiation(px_soldn, px_lwdn)
         )
+    ruc_land = None
+    ruc_rad = None
+    if _explicit_ruc(namelist):
+        # RUC (sf_surface_physics=3): the seeded RucLandState (RUCLSMINIT + LSMRUC
+        # ktau=1 block, coupling.ruc_surface_hook.initial_ruc_land) rides the namelist;
+        # the legacy held radiation is the downward SW/LW like the slab/PX seams.
+        from gpuwrf.coupling.ruc_surface_hook import RucRadiation
+
+        ruc_land = namelist.ruc_land
+        init_radiation_calls += 1
+        ruc_soldn, ruc_lwdn, _ruc_cosz = noahmp_initial_rad(enforced, namelist)
+        ruc_rad = (
+            namelist.ruc_rad
+            if getattr(namelist, "ruc_rad", None) is not None
+            else RucRadiation(ruc_soldn, ruc_lwdn)
+        )
     # Noah-MP: the production daily/nested pipelines seed noahmp_land + noahmp_rad
     # via carry.replace AFTER this call. The generic single-domain operational path
     # (coverage gate) has no post-replace seam, so when an explicit noahmp_land
@@ -6779,6 +6925,8 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
         noahmp_land=noahmp_land,
         noahmp_rad=noahmp_rad,
         base_state=base_state,
+        ruc_land=ruc_land,
+        ruc_rad=ruc_rad,
     )
     if cu_opt == 1:
         from gpuwrf.physics.cumulus_kf import kf_real_enabled
@@ -6792,6 +6940,10 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
               if native_real_carry else jnp.zeros_like(enforced.theta) for _ in range(6)),
             jnp.zeros_like(enforced.t_skin, dtype=jnp.float32) if kf_real else jnp.zeros_like(enforced.t_skin),
         ))
+    elif cu_opt == 4:
+        # Scale-aware GFS SAS: held WRF REAL R*CUTEN/PRATEC in the KF carry layout.
+        from gpuwrf.coupling.scalesas_adapter import initial_scalesas_tendencies
+        result = result.replace(cumulus_tendencies=initial_scalesas_tendencies(enforced))
     if int(namelist.ra_sw_physics) == 4 and int(namelist.ra_lw_physics) == 4:
         # Flux diagnostics follow the retained surface/land interface (fp64),
         # while RTHRATEN follows the prognostic theta dtype.
@@ -6820,11 +6972,18 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     if _h_diabatic_pair_enabled(namelist):
         # WRF starts h_diabatic at zero (no microphysics call yet).
         result = result.replace(h_diabatic=jnp.zeros_like(enforced.theta))
+    if int(namelist.bl_pbl_physics) == 9:
+        # CAM-UW KVM3D/KVH3D/TAURES carry; zeros == WRF itimestep=1 initialisation.
+        from gpuwrf.physics.bl_camuw import initial_camuw_carry
+        result = result.replace(camuw_pbl=initial_camuw_carry(enforced))
+    if int(namelist.ra_lw_physics) == 3:
+        from gpuwrf.coupling.cam_radiation import initial_cam_held
+        result = result.replace(cam_abs=initial_cam_held(enforced))
     from gpuwrf.runtime.history_accumulators import full_history_enabled, seed_history
     if bool(namelist.use_noahmp) and full_history_enabled():
         land_history, energy_accumulators = seed_history(enforced)
         result = result.replace(land_history=land_history, energy_accumulators=energy_accumulators)
-    if bool(namelist.use_noahmp) and bool(namelist.run_physics) and int(namelist.mp_physics) == DEFAULT_MP_PHYSICS:
+    if (bool(namelist.use_noahmp) or _explicit_ruc(namelist)) and bool(namelist.run_physics) and int(namelist.mp_physics) == DEFAULT_MP_PHYSICS:
         from gpuwrf.runtime.noahmp_precipitation import seed_precipitation
         result = result.replace(noahmp_precipitation=seed_precipitation(enforced))
     return result
@@ -7012,7 +7171,7 @@ def _refresh_rrtmg_driver(carry, namelist, lead_seconds, run_radiation, clock_ba
     return carry.replace(rthraten=rate, radiation_diagnostics=diag, census=census, o3rad=o3rad)
 
 
-def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None, census=None, held_diagnostics=None):
+def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None, census=None, held_diagnostics=None, cam_abs=None):
     """Legacy surface-only refresh; native RRTMG4/4 uses _refresh_rrtmg_driver.
 
     Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
@@ -7080,6 +7239,16 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
             soldn = jnp.zeros_like(soldn)
         if int(namelist.ra_lw_physics) == 0:
             lwdn = jnp.zeros_like(lwdn)
+        if 3 in (int(namelist.ra_lw_physics), int(namelist.ra_sw_physics)):
+            # CAM (o1-camrad): the land surface sees the selected CAM scheme's GLW / SWDOWN, as in WRF.
+            from gpuwrf.coupling.cam_radiation import cam_doabsems, cam_surface_forcing
+
+            soldn, lwdn = cam_surface_forcing(
+                state, namelist.grid, soldn, lwdn, ra_lw_physics=int(namelist.ra_lw_physics),
+                ra_sw_physics=int(namelist.ra_sw_physics), time_utc=namelist.time_utc, lead_seconds=rad_lead_seconds,
+                clock_base=_rad_clock_base(clock_base), radiation_static=namelist.radiation_static, land_state=land_state,
+                held=cam_abs, doabsems=cam_doabsems(lead_seconds, namelist.dt_s, namelist.radiation_cadence_steps,
+                                                    namelist.cam_abs_freq_s, held=cam_abs))
         forcing = (soldn, lwdn, cosz)
         result = forcing if held_diagnostics is None else (forcing, rad)
         from gpuwrf.kernels.dyn_carry_fp32 import like, real_all_enabled
@@ -7273,12 +7442,21 @@ def _h_diabatic_pair_enabled(namelist: OperationalNamelist) -> bool:
     )
 
 
-def _apply_post_rk_microphysics(state: State, namelist: OperationalNamelist, *, return_precipitation=False) -> State:
+def _apply_post_rk_microphysics(state: State, namelist: OperationalNamelist, *, return_precipitation=False,
+                                step_index=None) -> State:
     """Update transported prognostics directly, as solve_em.F:3809 does."""
     if not bool(namelist.run_physics):
         return state
     mp_opt = int(namelist.mp_physics)
-    if mp_opt == DEFAULT_MP_PHYSICS:
+    if mp_opt == 18:
+        # NSSL 2-moment: WRF itimestep == 1 cold start (CN := 0, calcnfromq) on the first own step.
+        from gpuwrf.physics.nssl2mom.adapter import nssl2mom_adapter
+        first = False if step_index is None else jnp.equal(step_index, 1)
+        updated, nssl_precip = nssl2mom_adapter(state, float(namelist.dt_s), namelist.grid, first_step=first,
+                                                return_precipitation=True)
+        precip = {"rain": nssl_precip["rain_liquid"] + nssl_precip["hailncv"], "snow": nssl_precip["snowncv"],
+                  "graupel": nssl_precip["grplncv"], "ice": jnp.zeros_like(nssl_precip["snowncv"])}
+    elif mp_opt == DEFAULT_MP_PHYSICS:
         if return_precipitation:
             updated, precip = thompson_adapter(state, float(namelist.dt_s), return_precipitation=True)
         else:
@@ -7553,6 +7731,8 @@ def _physics_step_forcing(
         next_state = _microphysics_interior_only(
             next_state, thompson_aero_adapter(next_state, float(namelist.dt_s)), namelist
         )
+    elif not _microphysics_wrf_order_enabled() and mp_opt == 18:
+        raise NotImplementedError("mp_physics=18 (NSSL) is wired only on the WRF-order post-RK microphysics path")
     elif not _microphysics_wrf_order_enabled() and mp_opt in MP_SCAN_ADAPTERS:
         next_state = _microphysics_interior_only(
             next_state,
@@ -7583,6 +7763,7 @@ def _physics_step_forcing(
             lower_legacy_rad = _refresh_noahmp_rad(
                 next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad,
                 land_state=carry.noahmp_land, clock_base=clock_base, census=next_carry.census,
+                cam_abs=carry.cam_abs,
             )
             if next_carry.census is not None:
                 lower_legacy_rad, census = lower_legacy_rad
@@ -7608,6 +7789,7 @@ def _physics_step_forcing(
             next_carry_rad = _refresh_noahmp_rad(
                 next_state, namelist, lead_seconds, run_radiation, carry.noahmp_rad,
                 land_state=carry.noahmp_land, clock_base=clock_base, census=next_carry.census,
+                cam_abs=carry.cam_abs,
             )
             if next_carry.census is not None:
                 next_carry_rad, census = next_carry_rad
@@ -7643,7 +7825,9 @@ def _physics_step_forcing(
             )
         next_carry = next_carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
     else:
-        if sf_opt == 2:
+        if _explicit_ruc(namelist):
+            pass  # RUC: the MYNN surface layer runs inside ruc_surface_step (exact FLHC/FLQC)
+        elif sf_opt == 2:
             next_state = janjic_sfclay_adapter(next_state, float(namelist.dt_s), namelist.grid)
         elif sf_opt in SFCLAY_SCAN_ADAPTERS:
             next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
@@ -7742,6 +7926,39 @@ def _physics_step_forcing(
                 px_land=next_px_land,
                 px_rad=PleimXiuRadiation(px_soldn, px_lwdn),
             )
+        elif _explicit_ruc(namelist):
+            # RUC LSM (sf_surface_physics=3, lane o1-ruc): MYNN surface layer + LSMRUC
+            # (coupling.ruc_surface_hook). Native RRTMG: WRF GSW = SWDOWN-SWUP held in
+            # radiation_diagnostics; legacy: held downward SW/LW -> GSW with the RUC albedo.
+            from gpuwrf.coupling.ruc_surface_hook import RucRadiation, ruc_net_radiation, ruc_surface_step
+
+            if next_carry.radiation_diagnostics is not None:
+                rdiag = next_carry.radiation_diagnostics
+                ruc_net = RucRadiation(jnp.asarray(rdiag.swdown) - jnp.asarray(rdiag.swup), rdiag.glw)
+                next_ruc_rad = carry.ruc_rad
+            else:
+                held_ruc_rad = (carry.ruc_rad.gsw, carry.ruc_rad.glw, jnp.zeros_like(carry.ruc_rad.gsw))
+                refreshed_rad = _refresh_noahmp_rad(
+                    next_state, namelist, lead_seconds, run_radiation, held_ruc_rad,
+                    census=next_carry.census,
+                )
+                if next_carry.census is not None:
+                    refreshed_rad, census = refreshed_rad
+                    next_carry = next_carry.replace(census=census)
+                ruc_soldn, ruc_lwdn, _ruc_cosz = refreshed_rad
+                next_ruc_rad = RucRadiation(ruc_soldn, ruc_lwdn)
+                ruc_net = ruc_net_radiation(ruc_soldn, ruc_lwdn, carry.ruc_land.alb)
+            next_state, next_ruc_land = ruc_surface_step(
+                next_state,
+                carry.ruc_land,
+                namelist.ruc_static,
+                float(namelist.dt_s),
+                namelist.grid,
+                radiation=ruc_net,
+                precipitation=next_carry.noahmp_precipitation,
+                first_timestep=first_timestep,
+            )
+            next_carry = next_carry.replace(ruc_land=next_ruc_land, ruc_rad=next_ruc_rad)
 
     # --- PBL slot ---
     # bl=2 MYJ is the v0.13 traceable MYJ PBL (paired with the Janjic surface
@@ -7751,6 +7968,15 @@ def _physics_step_forcing(
     next_state, next_carry = _small_grid_firewall((next_state, next_carry), next_state.theta.shape[-2:]); pbl_entry_state = next_state
     if bl_opt == 2:
         next_state = myj_pbl_adapter(next_state, float(namelist.dt_s), namelist.grid)
+    elif bl_opt == 9:
+        # CAM-UW threads its own carry and reads the held radiation CLDFRA/RTHRATEN.
+        from gpuwrf.coupling.scan_adapters import camuw_pbl_adapter
+        held_rad = getattr(next_carry, "radiation_diagnostics", None)
+        next_state, camuw_carry = camuw_pbl_adapter(
+            next_state, float(namelist.dt_s), namelist.grid, camuw=next_carry.camuw_pbl,
+            rthraten=next_carry.rthraten,
+            cldfra=None if held_rad is None else getattr(held_rad, "cloud_fraction", None))
+        next_carry = next_carry.replace(camuw_pbl=camuw_carry)
     elif bl_opt in PBL_SCAN_ADAPTERS:
         next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
@@ -7878,6 +8104,31 @@ def _physics_step_forcing(
             qvften=qvften16,
             thften=thften16,
         )
+    elif cu_opt in (5, 93):
+        # Grell-3D / Grell-Devenyi: WRF RTHFTEN+RTHRATEN+RTHBLTEN and RQVFTEN+RQVBLTEN
+        # forcing = this step's accumulated non-convective increments since physics
+        # entry, plus the MYNN rates only when the PBL state was restored (WRF-RK
+        # source leaves); the advective part is a named carry-over.
+        periodic_x, _specified, _nested = _acoustic_lateral_bc_flags(namelist)
+        rad = next_carry.radiation_diagnostics
+        gsw = None if rad is None else (jnp.asarray(rad.swdown) - jnp.asarray(rad.swup))
+        pbl_restored = pbl_moist_raw is not None
+        next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
+            next_state, float(namelist.dt_s), namelist.grid, forcing_entry_state=before,
+            rthblten=rthblten if pbl_restored else None,
+            rqvblten=rqvblten if pbl_restored else None, gsw=gsw,
+            periodic_x=periodic_x, periodic_y=periodic_x,
+        )
+    elif cu_opt == 4:
+        # Scale-aware GFS SAS (v0.3.4 o1-sas): WRF cumulus_driver itimestep/STEPCU gate,
+        # inputs from the time-n physics entry, held REAL rates (coupling.scalesas_adapter).
+        from gpuwrf.coupling.scalesas_adapter import scalesas_cadence_step
+        next_state, sas_rates = scalesas_cadence_step(
+            before, next_state, next_carry.cumulus_tendencies, float(namelist.dt_s), namelist.grid,
+            stepcu=int(namelist.cumulus_cadence_steps),
+            itimestep=1 + jnp.rint(jnp.asarray(lead_seconds) / float(namelist.dt_s)).astype(jnp.int32))
+        if sas_rates is not None:
+            next_carry = next_carry.replace(cumulus_tendencies=sas_rates)
     elif cu_opt in CU_STATELESS_SCAN_ADAPTERS:
         next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
             next_state, float(namelist.dt_s), namelist.grid
@@ -7942,6 +8193,18 @@ def _physics_step_forcing(
     def _sw_tendency() -> jnp.ndarray:
         if ra_sw == 0:
             return jnp.zeros_like(next_state.theta)
+        if ra_sw == 3:
+            from gpuwrf.coupling.cam_radiation import cam_sw_theta_tendency
+
+            return cam_sw_theta_tendency(
+                next_state,
+                namelist.grid,
+                time_utc=namelist.time_utc,
+                lead_seconds=lead_seconds,
+                clock_base=rad_clock_base,
+                radiation_static=namelist.radiation_static,
+                land_state=land_for_rad,
+            )
         if ra_sw == 1:
             return dudhia_sw_theta_tendency(
                 next_state,
@@ -8028,8 +8291,24 @@ def _physics_step_forcing(
                 land_state=land_for_rad,
                 use_mp_re=int(mp_re_active(namelist)),
             )
+        if ra_lw == 3:
+            # CAM LW (o1-camrad): the held REAL absorptivities ride with the held rate (WRF cam_abs_freq_s).
+            from gpuwrf.coupling.cam_radiation import cam_doabsems, cam_lw_theta_tendency, initial_cam_held
+
+            cam_prev = carry.cam_abs if carry.cam_abs is not None else initial_cam_held(next_state)
+            rth_lw, cam_next = cam_lw_theta_tendency(
+                next_state, namelist.grid, time_utc=namelist.time_utc, lead_seconds=lead_seconds,
+                clock_base=rad_clock_base, radiation_static=namelist.radiation_static, land_state=land_for_rad,
+                held=cam_prev, doabsems=cam_doabsems(lead_seconds, namelist.dt_s, namelist.radiation_cadence_steps,
+                                                     namelist.cam_abs_freq_s, held=cam_prev))
+            return _sw_tendency() + rth_lw, cam_next
         return _sw_tendency() + _lw_tendency()
 
+    held_value = carry.rthraten
+    if ra_lw == 3:
+        from gpuwrf.coupling.cam_radiation import initial_cam_held
+
+        held_value = (carry.rthraten, carry.cam_abs if carry.cam_abs is not None else initial_cam_held(next_state))
     if next_carry.radiation_diagnostics is None and getattr(next_carry, "o3rad", None) is not None:
         raise NotImplementedError(
             "GPUWRF_NEST_O3_FROM_PARENT needs the RRTMG driver refresh (radiation_diagnostics seeded); "
@@ -8042,7 +8321,7 @@ def _physics_step_forcing(
             return _refresh_rthraten(None), count_work(next_carry.census, "radiation_tendency_calls")
 
         def held_refresh(_unused):
-            return carry.rthraten, next_carry.census
+            return held_value, next_carry.census
 
         if isinstance(run_radiation, bool):
             held_rthraten, census = counted_refresh(None) if run_radiation else held_refresh(None)
@@ -8050,11 +8329,14 @@ def _physics_step_forcing(
             held_rthraten, census = jax.lax.cond(run_radiation, counted_refresh, held_refresh, None)
         next_carry = next_carry.replace(census=census)
     elif isinstance(run_radiation, bool):
-        held_rthraten = _refresh_rthraten(None) if run_radiation else carry.rthraten
+        held_rthraten = _refresh_rthraten(None) if run_radiation else held_value
     else:
         held_rthraten = jax.lax.cond(
-            run_radiation, _refresh_rthraten, lambda _u: carry.rthraten, None
+            run_radiation, _refresh_rthraten, lambda _u: held_value, None
         )
+    if ra_lw == 3 and next_carry.radiation_diagnostics is None:
+        held_rthraten, cam_abs_next = held_rthraten
+        next_carry = next_carry.replace(cam_abs=cam_abs_next)
     # WRF-faithful RTHRATEN cadence (rad_rk_tendf=1): instead of the lumped one-step
     # Euler add ``theta += dt*RTHRATEN`` BEFORE the dycore (the v0.9 SHIPPED default,
     # rad_rk_tendf=0), route the SAME held rate through the ``t_tendf`` channel of
@@ -8324,7 +8606,9 @@ def _physics_boundary_step_with_limiter_diagnostics(
     if _microphysics_wrf_order_enabled():
         pre_microphysics_theta = next_state.theta
         if carry.noahmp_precipitation is not None:
-            next_state, precip = _apply_post_rk_microphysics(next_state, namelist, return_precipitation=True)
+            next_state, precip = _apply_post_rk_microphysics(
+                next_state, namelist, return_precipitation=True,
+                **({"step_index": step_index} if getattr(namelist, "mp_physics", None) == 18 else {}))
             from gpuwrf.runtime.noahmp_precipitation import precipitation_from_step
             rates = carry.cumulus_tendencies
             convective_rate = jnp.zeros_like(next_state.t_skin) if rates is None else rates[6]
@@ -8332,7 +8616,8 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 precip, convective_rate, float(namelist.dt_s),
                 spec_zone=_microphysics_spec_zone(namelist)))
         else:
-            next_state = _apply_post_rk_microphysics(next_state, namelist)
+            next_state = _apply_post_rk_microphysics(
+                next_state, namelist, **({"step_index": step_index} if getattr(namelist, "mp_physics", None) == 18 else {}))
         carry = carry.replace(state=next_state)
         if carry.h_diabatic is not None:
             # moist_physics_finish_em (use_theta_m=1): h_diabatic*dt is exactly the

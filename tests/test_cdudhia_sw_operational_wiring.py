@@ -191,10 +191,10 @@ def test_ra_sw1_rthraten_equals_dudhia_sw_plus_rrtmg_lw() -> None:
 
 def test_unwired_ra_sw_value_fails_closed() -> None:
     grid = _grid()
-    # ra_sw=3 (CAM) is recognized but NOT scan-wired (no GPU radiation-slot
+    # ra_sw=5 (new Goddard) is recognized but NOT scan-wired (no GPU radiation-slot
     # adapter); ra_sw=2 (GSFC/Chou-Suarez) is now scan-wired, so it no longer
     # belongs here.
-    nml = _namelist(grid, ra_sw_physics=3)
+    nml = _namelist(grid, ra_sw_physics=5)  # (3 = CAM is scan-wired since v0.3.4)
     with pytest.raises(UnsupportedSchemeSelection):
         _resolve_operational_suite(nml)
 

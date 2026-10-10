@@ -1,0 +1,123 @@
+{
+ "proof": "o1-grell OFF-path identity (E151)",
+ "case": "examples/switzerland_d01 d01, _physics_boundary_step jaxpr, tree-root + source locations stripped",
+ "base_tree": "git archive main@99130f233 (src data scripts)",
+ "candidate_branch_commit": "26d5e994f967ad2556d52eb0a5a06d6690008eac",
+ "env": "JAX_PLATFORMS=cpu GPUWRF_JAX_CACHE=0, Pallas interpret patch in both arms; run A: GPUWRF_FAST_DEFAULTS unset (=release defaults ON), run B: GPUWRF_FAST_DEFAULTS=1 explicit",
+ "runs": {
+  "A_default_env": {
+   "release_cu0/ordinary": {
+    "base_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "cand_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "identical": true,
+    "chars": 8172354
+   },
+   "release_cu0/radiation": {
+    "base_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "cand_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "identical": true,
+    "chars": 9859252
+   },
+   "release_cu1/ordinary": {
+    "base_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "cand_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "identical": true,
+    "chars": 9090300
+   },
+   "release_cu1/radiation": {
+    "base_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "cand_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "identical": true,
+    "chars": 10776762
+   },
+   "release_cu3/ordinary": {
+    "base_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "cand_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "identical": true,
+    "chars": 8863772
+   },
+   "release_cu3/radiation": {
+    "base_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "cand_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "identical": true,
+    "chars": 10549227
+   }
+  },
+  "B_fast_defaults_1": {
+   "release_cu0/ordinary": {
+    "base_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "cand_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "identical": true,
+    "chars": 8172354
+   },
+   "release_cu0/radiation": {
+    "base_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "cand_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "identical": true,
+    "chars": 9859252
+   },
+   "release_cu1/ordinary": {
+    "base_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "cand_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "identical": true,
+    "chars": 9090300
+   },
+   "release_cu1/radiation": {
+    "base_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "cand_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "identical": true,
+    "chars": 10776762
+   },
+   "release_cu3/ordinary": {
+    "base_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "cand_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "identical": true,
+    "chars": 8863772
+   },
+   "release_cu3/radiation": {
+    "base_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "cand_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "identical": true,
+    "chars": 10549227
+   }
+  }
+ },
+ "all_identical": true,
+ "final_tree_refresh": {
+  "base_tree": "git archive main@09e31feef (src data scripts)",
+  "candidate_parent_commit": "f44ecd1bf62b00985e85f2d66607280d37a18e1c",
+  "env": "GPUWRF_FAST_DEFAULTS unset (= release defaults ON), JAX_PLATFORMS=cpu, Pallas interpret in both arms",
+  "programs": {
+   "release_cu0/ordinary": {
+    "base_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "cand_sha256": "a3331141191cf7012e90c9ae32d836545cb31ff7a74986f4c062d9dc8adb49e0",
+    "identical": true
+   },
+   "release_cu0/radiation": {
+    "base_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "cand_sha256": "7e38267c8c3915e01d737867b0ce2b69028fa110430cebb910c227abbecf425d",
+    "identical": true
+   },
+   "release_cu1/ordinary": {
+    "base_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "cand_sha256": "911b5a82684dc098fa1b9f6e1e2fd00c779afe77e22c99793b49cf8015bc795c",
+    "identical": true
+   },
+   "release_cu1/radiation": {
+    "base_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "cand_sha256": "4a940c02542591af55e2c5251100ba534363d9503cc2302ae12ba431685332ec",
+    "identical": true
+   },
+   "release_cu3/ordinary": {
+    "base_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "cand_sha256": "66ed1798143b236c2d91db75e36e88f3ef74a3f78c20d9daf41cc53b14f2b9f1",
+    "identical": true
+   },
+   "release_cu3/radiation": {
+    "base_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "cand_sha256": "bc52aa163f4735a34c176134a3c08af8efbb6f315370e6ade4528190cdced3e0",
+    "identical": true
+   }
+  }
+ }
+}

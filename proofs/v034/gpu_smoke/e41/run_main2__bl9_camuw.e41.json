@@ -1,0 +1,322 @@
+{
+ "cache": "<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/run_main2/bl9_camuw/cache/jax",
+ "tool": "scripts/gpu_smoke_e41.py (cuobjdump fallback; opus-a19 tools absent)",
+ "n_entries": 2,
+ "unscanned": [],
+ "hard_stack_gate": "PASS",
+ "max_stack_B": 40,
+ "conservative_flags": true,
+ "entries": [
+  {
+   "entry": "jit__advance_chunk_fori-6f3c79a3417efc1bc741607331159037f1e9e38b1bfc52b23c1313c1b102bf46-cache",
+   "kind": "jax_cache",
+   "program": null,
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1292,
+     "max_stack_B": 40,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "input_pad_transpose_fusion_1",
+       1376,
+       8
+      ],
+      [
+       "loop_select_fusion_78",
+       1064,
+       6
+      ],
+      [
+       "input_scatter_fusion_93",
+       2088,
+       9
+      ],
+      [
+       "input_scatter_fusion_92",
+       2216,
+       10
+      ],
+      [
+       "input_scatter_fusion_94",
+       2136,
+       9
+      ],
+      [
+       "loop_compare_divide_minimum_multiply_or_power_select_subtract_fusion_1",
+       3656,
+       25
+      ],
+      [
+       "loop_clamp_maximum_select_fusion_1",
+       1088,
+       8
+      ],
+      [
+       "loop_select_fusion_41",
+       1504,
+       10
+      ],
+      [
+       "loop_add_maximum_negate_select_fusion_2",
+       1048,
+       4
+      ],
+      [
+       "loop_add_clamp_minimum_multiply_negate_select_subtract_fusion_1",
+       2312,
+       18
+      ],
+      [
+       "loop_select_fusion_80",
+       1640,
+       9
+      ],
+      [
+       "input_scatter_fusion_67",
+       2088,
+       9
+      ],
+      [
+       "input_scatter_fusion_66",
+       2216,
+       10
+      ],
+      [
+       "input_scatter_fusion_68",
+       2136,
+       9
+      ],
+      [
+       "loop_compare_divide_minimum_multiply_or_power_select_subtract_fusion",
+       3656,
+       25
+      ],
+      [
+       "loop_clamp_maximum_select_fusion",
+       1088,
+       8
+      ],
+      [
+       "loop_select_fusion_12",
+       1512,
+       10
+      ],
+      [
+       "loop_add_maximum_negate_select_fusion",
+       1048,
+       4
+      ],
+      [
+       "loop_add_clamp_minimum_multiply_negate_select_subtract_fusion",
+       2296,
+       18
+      ],
+      [
+       "input_add_divide_transpose_fusion",
+       2104,
+       14
+      ],
+      [
+       "loop_add_divide_dynamic_update_slice_multiply_pad_select_subtract_fusion",
+       2144,
+       10
+      ],
+      [
+       "input_divide_transpose_fusion",
+       1192,
+       16
+      ],
+      [
+       "loop_select_fusion_86",
+       1224,
+       2
+      ],
+      [
+       "input_maximum_select_transpose_fusion",
+       1632,
+       2
+      ],
+      [
+       "input_select_transpose_fusion_4",
+       2416,
+       6
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_over500": [],
+   "hlo_stats": {
+    "computations": 2217,
+    "kinput_fusions": 732,
+    "kinput_transpose_fusions": 444,
+    "max_kinput_transpose_instr": 333
+   },
+   "kinput_transpose_status": "MEASURED_RICH_JIT_HLO"
+  },
+  {
+   "entry": "e9467315d5df1b76e10613a433a42f5a5c0d109df13ba6ea94ec278a9b81484d.xlaexec",
+   "kind": "aot",
+   "program": "d01",
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1292,
+     "max_stack_B": 40,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "input_pad_transpose_fusion_1",
+       1376,
+       8
+      ],
+      [
+       "loop_select_fusion_78",
+       1064,
+       6
+      ],
+      [
+       "input_scatter_fusion_93",
+       2088,
+       9
+      ],
+      [
+       "input_scatter_fusion_92",
+       2216,
+       10
+      ],
+      [
+       "input_scatter_fusion_94",
+       2136,
+       9
+      ],
+      [
+       "loop_compare_divide_minimum_multiply_or_power_select_subtract_fusion_1",
+       3656,
+       25
+      ],
+      [
+       "loop_clamp_maximum_select_fusion_1",
+       1088,
+       8
+      ],
+      [
+       "loop_select_fusion_41",
+       1504,
+       10
+      ],
+      [
+       "loop_add_maximum_negate_select_fusion_2",
+       1048,
+       4
+      ],
+      [
+       "loop_add_clamp_minimum_multiply_negate_select_subtract_fusion_1",
+       2312,
+       18
+      ],
+      [
+       "loop_select_fusion_80",
+       1640,
+       9
+      ],
+      [
+       "input_scatter_fusion_67",
+       2088,
+       9
+      ],
+      [
+       "input_scatter_fusion_66",
+       2216,
+       10
+      ],
+      [
+       "input_scatter_fusion_68",
+       2136,
+       9
+      ],
+      [
+       "loop_compare_divide_minimum_multiply_or_power_select_subtract_fusion",
+       3656,
+       25
+      ],
+      [
+       "loop_clamp_maximum_select_fusion",
+       1088,
+       8
+      ],
+      [
+       "loop_select_fusion_12",
+       1512,
+       10
+      ],
+      [
+       "loop_add_maximum_negate_select_fusion",
+       1048,
+       4
+      ],
+      [
+       "loop_add_clamp_minimum_multiply_negate_select_subtract_fusion",
+       2296,
+       18
+      ],
+      [
+       "input_add_divide_transpose_fusion",
+       2104,
+       14
+      ],
+      [
+       "loop_add_divide_dynamic_update_slice_multiply_pad_select_subtract_fusion",
+       2144,
+       10
+      ],
+      [
+       "input_divide_transpose_fusion",
+       1192,
+       16
+      ],
+      [
+       "loop_select_fusion_86",
+       1224,
+       2
+      ],
+      [
+       "input_maximum_select_transpose_fusion",
+       1632,
+       2
+      ],
+      [
+       "input_select_transpose_fusion_4",
+       2416,
+       6
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_status": "UNKNOWN_AOT_METADATA"
+  }
+ ]
+}

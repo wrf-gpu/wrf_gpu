@@ -1,4 +1,10 @@
-# Known issues — v0.3.3
+# Known issues — v0.3.4
+
+**v0.3.4 (fix release).** wrf_gpu ≤ 0.3.3 silently ran the default physics suite when `namelist.input` selected another microphysics, PBL, surface-layer or radiation scheme or other damping/filter values. Re-run such forecasts; the binding fix and full key list are described below. Experimental opt-in schemes added in v0.3.4 are matched to unmodified-WRF oracles on CPU and most were GPU-smoked (three finite steps); none is a validated forecast configuration. CAM radiation (`ra_lw/ra_sw_physics=3`) still fails the static kernel stack check (2,144 B spill; fix planned for 0.4.0). Per-scheme gaps: [support matrix](docs/release/SUPPORT_MATRIX_v0.3.4.md). The default program is unchanged, so the v0.3.3 deviations below still apply.
+
+Open v0.3.3 follow-ups (not addressed in v0.3.4): coastal 10 m wind-speed excess; nine x-major loop-layout invariants on unpinned paths (E41 hardening); the amplitude of WRF-consistent negative-moisture visits versus original WRF is unproven; the ≤4,096-column stability firewall cost should become a layout-level fix.
+
+## v0.3.3 disclosed deviations (unchanged in v0.3.4)
 
 All eight original-CPU scoring readers are closed. The manager accepts the disclosed deviations under the Owner rule; raw failed checks remain failed.
 
@@ -9,6 +15,50 @@ All eight original-CPU scoring readers are closed. The manager accepts the discl
 - Swiss≤4096-column stability firewall:+12%kernels/~8%ordinary-root time, notwholewall; larger WN/Mon programs unchanged.
 
 [All final plots](docs/release/evidence/v033/final_w3/index.html) · [Raw reports, scope and ledger](docs/release/TECHNICAL_VALIDATION_APPENDIX_v0.3.3.md#final-eight-arm-results).
+
+## ≤ v0.3.3: `gpuwrf run` silently ignored non-default physics options (fixed in v0.3.4)
+
+In wrf_gpu **0.3.3 and earlier**, both CLI drivers (the native single-root / live-nested
+driver and the CPU-history replay driver) **never read** `mp_physics`, `bl_pbl_physics`,
+`sf_sfclay_physics`, `ra_lw_physics` or `ra_sw_physics` from `namelist.input`, nor the
+`&dynamics` knobs `epssm`, `damp_opt`, `zdamp`, `dampcoef`, `w_damping`, `diff_6th_opt` and
+`diff_6th_factor` (the replay driver also ignored `cu_physics`, `radt`, `cudt`, `top_lid`).
+The namelist check accepted the requested scheme and the forecast then **ran
+Thompson / MYNN / MYNN surface layer / RRTMG** with epssm 0.5, damp_opt 3, zdamp 5000,
+dampcoef 0.2, w_damping 1 and the 6th-order filter (2, 0.12). The validator also refused
+`icloud_bl=1`, the value that actually runs, and accepted `icloud_bl=0` and
+`bl_mynn_mixlength=2`, which never ran.
+
+**Who is affected:** only runs whose namelist selected something else. The release
+configuration (Thompson / MYNN / Noah-MP / RRTMG / KF with those dynamics values) asked for
+exactly what ran and is unchanged; its traced program is byte-identical in v0.3.4. **Re-run
+any ≤ 0.3.3 forecast that selected a different microphysics, PBL, surface-layer or radiation
+scheme or different damping/filter values:** its output came from the default suite.
+
+**v0.3.4:** every scheme and dynamics option is bound per domain. Before any compute,
+`gpuwrf run` **refuses** any explicit `&physics` / `&dynamics` / `&noah_mp` value the
+selected driver would not run. That includes values that differ from the WRF Registry
+default of a key the port does not bind, per-domain selections WRF itself rejects or
+overrides (WRF runs the innermost domain's `mp_physics` everywhere), and land options the
+native driver cannot build (it supports only 0 and 4). The CPU-history replay driver warns
+loudly that its fixed 10 s step, 10 sound steps and hourly CPU land replay replace
+`time_step`, `time_step_sound`, `sf_surface_physics` and `sst_update`. An omitted `&dynamics`
+knob now runs the WRF Registry default (`epssm` 0.1, `w_damping` 0, `diff_6th_opt` 0; ≤ 0.3.3
+hard-wired 0.5 / 1 / 2).
+
+**Exposed by the binding (v0.3.4 CLI probe on the real Swiss case, release defaults):** most
+non-Thompson microphysics (`mp=1/2/3/4/6/10/13/14/16/97`), PBL `bl=7/8/12` and GSFC shortwave
+`ra_sw=2` could not even be traced under the REAL32 release carry; ≤ 0.3.3 hid this by running
+the default scheme. They now run as an explicit fp64 island (scheme computed in fp64, stored
+REAL): CPU-traced, not GPU- or forecast-qualified. `mp=24` (WSM7), `26` (WDM7), `28`
+(aerosol-aware Thompson) and `40` (Morrison-aerosol) are refused: the release root boundary has no
+`qh` / `nwfa,nifa` / `Ns,Ng,Nc` record. Constant-K diffusion (`diff_opt=2`, `km_opt=1`) ran as *no*
+explicit diffusion through the CLI and is now refused, with every other `(diff_opt, km_opt)` pair
+that has no operational path. The 3-D TKE (`km_opt=2`) and SMS-3DTKE (`km_opt=5`) closures are
+unqualified v0.22 scaffolds that produce NaN under the release REAL carry and are refused in v0.3.4;
+`diff_opt=1/km_opt=4` (release) and `diff_opt=2/km_opt=3` (3-D Smagorinsky) run.
+Per-code CLI support matrix:
+[`docs/namelist-compatibility.md`](docs/namelist-compatibility.md#cli-binding-v034).
 
 ## Historical issue records (source-dated)
 

@@ -328,24 +328,25 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         18,
         "NSSL 2-moment",
         "src/gpuwrf/physics/microphysics_nssl2mom.py",
-        "v0.23 F2 REFERENCE-ONLY: real single-column fp32+fp64 pristine-WRF "
-        "oracle savepoints vs unmodified phys/module_mp_nssl_2mom.F (default mp=18 "
-        "config; proofs/v022/f2_oracles/nssl_2mom, drivers at "
-        "proofs/v023/oracle/nssl2mom). Traceable JAX kernel is a documented "
-        "carry-over; qvolg/qvolh volume scalars have no State substrate; "
-        "operational scan fail-closes.",
+        "v0.3.4 JAX port (gpuwrf.physics.nssl2mom) of unmodified phys/module_mp_nssl_2mom.F "
+        "(default mp=18 config), stage + end-to-end parity vs the pristine-WRF oracle "
+        "proofs/v034/f2_oracles/nssl_2mom (17 cases, fp64 <=1e-12, fp32 dual-reference band); "
+        "CPU-oracle-qualified, GPU/coupled-forecast qualification pending; root domains only.",
         accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
     ),
     _mp_spec(
         40,
         "Morrison aerosol-aware",
         "src/gpuwrf/physics/microphysics_morrison_aero.py",
-        "v0.23 F2 REFERENCE-ONLY: real single-column fp32+fp64 pristine-WRF "
-        "oracle savepoints vs unmodified phys/module_mp_morr_two_moment_aero.F "
-        "(aercu_opt=2; proofs/v022/f2_oracles/morrison_aero, drivers at "
-        "proofs/v023/oracle/morraero). Prescribed AEROCU aerosol inputs / "
-        "prognostic droplet number have no operational State substrate; "
-        "operational scan fail-closes.",
+        "v0.3.4 O1 scan-wired at aercu_opt=0 (WRF default; constant droplets, "
+        "Nc = WRF qnc): single-column fp32+fp64 pristine-WRF oracle savepoints "
+        "vs unmodified phys/module_mp_morr_two_moment_aero.F at aercu_opt=0 "
+        "(proofs/v034/f2_oracles/morrison_aero_opt0) and aercu_opt=2 "
+        "(proofs/v022/f2_oracles/morrison_aero). aercu_opt>0 needs cu_physics=11 "
+        "(MSKF, not ported) and is refused by the namelist check. KNOWN GAP: "
+        "WRF passes the Morrison effective radii re_cloud/re_ice/re_snow to "
+        "RRTMG (Registry morr_tm_aero); the port does not yet, so RRTMG uses "
+        "its default radii with mp=40.",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -493,22 +494,18 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="CAM-UW",
         wrf_slot="first_rk_pbl_driver",
         owner_module="src/gpuwrf/physics/bl_camuw.py",
-        oracle="F3 standalone WRF-Fortran CAM-UW column oracle under "
-        "proofs/v023/feature_sprints/camuw_oracle -- not a pristine-WRF savepoint "
-        "parity gate (no CAM-UW savepoint fixture exists yet; savepoint parity is "
-        "not claimed). The oracle proved the "
-        "previous JAX scaffold RED vs WRF-Fortran (worst pblh max_abs="
-        "1384.6212005615234 m). Full faithful CAM-UW port is a separate "
-        "milestone.",
-        reads_state=("u", "v", "theta", "qv", "qc", "qi", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
-        writes_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
+        oracle="v0.3.4 pristine-WRF CAM-UW column savepoint oracle proofs/v034/camuw_oracle "
+        "(unmodified WRF objects, WRF CAM_INIT incl. esinti, 3 carried steps; 13 synthetic "
+        "regimes + 13 Swiss CPU-WRF columns): every output <= 1-2 REAL ulp "
+        "(tests/test_v034_camuw_oracle_parity.py).",
+        reads_state=("u", "v", "theta", "qv", "qc", "qi", "Ni", "p", "ph", "mu", "ustar", "hfx", "qfx"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi", "Ni"),
         reads_carry=PBL_CARRY_MEMBERS[9],
         writes_carry=PBL_CARRY_MEMBERS[9],
         diagnostics=PBL_DIAGNOSTIC_MEMBERS[9],
-        notes="F3 REFERENCE_ONLY/fail-closed: namelist-accepted for oracle "
-        "comparison, but not operationally scan-wired. The adapter and "
-        "camuw_columns endpoint raise CamUwReferenceOnlyError so the broken "
-        "scaffold cannot be silently used.",
+        notes="Operational (CPU-oracle-qualified, GPU-unqualified). Carry "
+        "OperationalCarry.camuw_pbl = WRF KVM3D/KVH3D/TAURESX2D/TAURESY2D/TKE_PBL. "
+        "RTHRATENLW approximated by the held total RTHRATEN (exact at night).",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -800,17 +797,14 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="Grell-3D ensemble",
         wrf_slot="first_rk_cumulus_driver",
         owner_module="src/gpuwrf/physics/cumulus_g3.py",
-        oracle="v0.13 single-column fp64 pristine-WRF savepoint harness "
-        "(proofs/v013/oracle/cumulus) vs unmodified phys/module_cu_g3.F:G3DRV "
-        "(module verified to compile standalone; G3DRV driver + savepoints are a "
-        "Tier-3 carry-over)",
+        oracle="v0.3.4 multi-column pristine-WRF tile savepoints (proofs/v034/savepoints/cumulus_grell) "
+        "vs unmodified phys/module_cu_g3.F:G3DRV + conv_grell_spread3d (fp64 + WRF REAL builds)",
         reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
         writes_state=("theta", "qv", "qc", "qi"),
         returns_accumulators=("rainc_acc",),
         diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[5]),
-        notes="v0.13 Tier-3 reference-only: oracle harness scaffolded (G3DRV driver "
-        "+ savepoints + traceable JAX kernel are a carry-over); fail-closed in the "
-        "operational scan.",
+        notes="v0.3.4 OPERATIONAL (CPU-oracle-qualified; GPU/coupled-forecast qualification "
+        "pending): line-faithful JAX port scan-wired via CU_SCAN_ADAPTERS[5].",
     ),
     PhysicsStepSpec(
         family="cumulus",
@@ -833,17 +827,15 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="Grell-Devenyi ensemble",
         wrf_slot="first_rk_cumulus_driver",
         owner_module="src/gpuwrf/physics/cumulus_grell_devenyi.py",
-        oracle="v0.17 RED: real-WRF source target is unmodified "
-        "phys/module_cu_gd.F:GRELLDRV; no committed single-column savepoint "
-        "exists yet (proofs/v017/run_cu_kfgrell_parity.py records the gap).",
+        oracle="v0.3.4 multi-column pristine-WRF tile savepoints (proofs/v034/savepoints/cumulus_grell) "
+        "vs unmodified phys/module_cu_gd.F:GRELLDRV (fp64 + WRF REAL builds)",
         reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
         writes_state=("theta", "qv", "qc", "qi"),
         returns_accumulators=("rainc_acc",),
         diagnostics=("raincv", "pratec", *CUMULUS_TENDENCY_MEMBERS[93]),
-        notes="v0.17 reference-only / RED. The Grell-Devenyi ensemble has a "
-        "distinct WRF source path from Grell-Freitas; it is accepted for oracle "
-        "work but fail-closed in the operational scan until a source-specific "
-        "traceable JAX column endpoint passes pristine-WRF parity.",
+        notes="v0.3.4 OPERATIONAL (CPU-oracle-qualified; GPU/coupled-forecast qualification "
+        "pending): line-faithful JAX port scan-wired via CU_SCAN_ADAPTERS[93]; distinct WRF "
+        "source path from cu=3 Grell-Freitas.",
     ),
     PhysicsStepSpec(
         family="cumulus",
@@ -907,24 +899,20 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         option=3,
         name="RUC LSM",
         wrf_slot="first_rk_surface_driver",
-        owner_module="src/gpuwrf/physics/lsm_ruc.py",
-        oracle="v0.17 fp64 single-column savepoint vs unmodified WRF module_sf_ruclsm.F "
-        "(LSMRUC->SOILVEGIN->SFCTMP; proofs/v017/oracle/ruclsm + "
-        "savepoints/ruclsm/fp64/ruclsm_fp64.json, 5 regimes, REFERENCE-ONLY)",
+        owner_module="src/gpuwrf/physics/ruclsm.py",
+        oracle="v0.3.4 fp64+fp32 per-step savepoints vs unmodified WRF module_sf_ruclsm.F "
+        "(LSMRUC driver, 31 regimes x 12 steps incl. snow/melt/frozen soil/mosaic; "
+        "proofs/v034/oracle/ruclsm + savepoints/ruclsm/{fp64,fp32}/ruclsm_v2_*.json)",
         reads_state=("t_skin", "soil_moisture", "xland", "mavail", "roughness_m", "lu_index"),
         writes_state=("t_skin", "soil_moisture", "mavail"),
         reads_carry=LAND_CARRY_MEMBERS[3],
         writes_carry=LAND_CARRY_MEMBERS[3],
         diagnostics=("TSK", "HFX", "QFX", "LH", "GRDFLX", "SFCRUNOFF", "UDRUNOFF", "SNOW", "SNOWH"),
-        notes="RUC multi-layer soil/snow LSM (sf_surface_physics=3). STATUS: REFERENCE-ONLY -- "
-        "a fp64 pristine-WRF single-column oracle is staged (proofs/v017/oracle/ruclsm, "
-        "LSMRUC driver with SOILVEGIN reading the unmodified VEGPARM/SOILPARM/GENPARM "
-        "tables; NOT a self-compare), but a faithful traceable JAX column port of the "
-        "~7.5k-LOC multi-layer soil/snow solver (SFCTMP + SOIL/SNOWSOIL + SOILTEMP/"
-        "SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA) is a documented carry-over, so NO "
-        "operational kernel is shipped (avoiding a silently-wrong port) and RUC fail-closes "
-        "in the operational scan (not in _SCAN_WIRED_OPTIONS). owner_module is the JAX "
-        "column endpoint stub that exposes the carry shapes for the future port.",
+        notes="RUC multi-layer soil/snow LSM (sf_surface_physics=3). STATUS: implemented, "
+        "CPU-oracle-qualified (faithful column-vectorised JAX port of LSMRUC/SOILVEGIN/SFCTMP/"
+        "SOIL/SNOWSOIL/SOILTEMP/SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA, fp64 <=1.3e-10 rel "
+        "vs the pristine oracle); scan-wired via coupling.ruc_surface_hook. GPU/coupled-"
+        "forecast qualification pending; sea-ice/lake points fail closed.",
     ),
     PhysicsStepSpec(
         family="land_surface",
@@ -1202,30 +1190,27 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "Paired with ra_lw=99 because WRF ETARA computes and stores both radiative "
         "components in one shared driver; fail-closed in the operational scan.",
     ),
-    # CAM radiation pair (ra_lw_physics=3 / ra_sw_physics=3) -- v0.18 RA-tail
-    # REFERENCE-ONLY. WRF's CAMRAD (phys/module_ra_cam.F, the NCAR CAM 3.0 radiation,
-    # ~8.1k LOC) computes the LW and SW components selected through the camlwscheme /
-    # camswscheme slots. No faithful traceable JAX kernel is shipped (the volume +
-    # monthly ozone/aerosol climatology coupling makes an in-scope faithful port a
-    # self-compare risk), so both specs are fail-closed in the operational scan and
-    # lean on the v0.18 exact-driver real-WRF savepoint oracle.
+    # CAM radiation pair (ra_lw_physics=3 / ra_sw_physics=3) -- v0.3.4 (lane o1-camrad) faithful
+    # float64 JAX port of WRF's CAMRAD (phys/module_ra_cam.F + module_ra_cam_support.F, NCAR CAM 3.0
+    # radiation): physics.ra_cam{,_common,_lw,_lw_abs,_sw}, scan-wired via coupling.cam_radiation
+    # (held-rate RTHRATEN; CAM GLW / SWDOWN feed the land surface). WRF calls camrad separately for LW
+    # (dolw) and SW (dosw), so LW and SW are selectable independently.
     PhysicsStepSpec(
         family="radiation",
         option=3,
         name="CAM longwave",
         wrf_slot="first_rk_radiation_driver",
         owner_module="src/gpuwrf/physics/ra_cam.py",
-        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
-        "module_ra_cam.F:CAMRAD (proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
-        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
-        "ra_lw_physics=3; NOT a self-compare).",
+        oracle="pristine WRF camrad true-caller column savepoint oracle CAM01 (proofs/cam_rad: unmodified V4.7.1 camradinit+camrad "
+        "from libwrflib.a with the radiation_driver wiring, 210 real WN3 0227 + augmented columns, "
+        "LW / held-absorptivity arms; NOT a self-compare).",
         reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
         writes_state=("theta",),
         diagnostics=("GLW", "OLR", "RTHRATENLW"),
         variant="lw",
-        notes="ra_lw_physics=3. CAM 3.0 LW half of CAMRAD; STATUS: REFERENCE-ONLY. Paired with "
-        "ra_sw=3 (CAMRAD computes SW+LW in one driver). Namelist-accepted for a reference "
-        "comparison, fail-closed in the operational scan; operational default stays ra_lw=4 (RRTMG).",
+        notes="ra_lw_physics=3. CAM 3.0 LW half of CAMRAD; STATUS: IMPLEMENTED (operational-scan-wired, "
+        "CPU-oracle-qualified; GPU/coupled-forecast qualification pending). Absorptivities recomputed every "
+        "radiation call (WRF with cam_abs_freq_s <= radt).",
     ),
     PhysicsStepSpec(
         family="radiation",
@@ -1233,16 +1218,16 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="CAM shortwave",
         wrf_slot="first_rk_radiation_driver",
         owner_module="src/gpuwrf/physics/ra_cam.py",
-        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
-        "module_ra_cam.F:CAMRAD (proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
-        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
-        "ra_sw_physics=3; NOT a self-compare).",
+        oracle="pristine WRF camrad true-caller column savepoint oracle CAM01 (proofs/cam_rad: unmodified V4.7.1 camradinit+camrad "
+        "from libwrflib.a with the radiation_driver wiring, 210 real WN3 0227 + augmented columns, "
+        "SW arm day+night; NOT a self-compare).",
         reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
         writes_state=("theta",),
         diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
         variant="sw",
-        notes="ra_sw_physics=3. CAM 3.0 SW half of CAMRAD; STATUS: REFERENCE-ONLY. Shares the "
-        "CAMRAD driver + ozone/aerosol climatology with ra_lw=3, fail-closed in the operational scan.",
+        notes="ra_sw_physics=3. CAM 3.0 SW half of CAMRAD; STATUS: IMPLEMENTED (operational-scan-wired, "
+        "CPU-oracle-qualified; GPU/coupled-forecast qualification pending). Uniform CAM aerosol climatology "
+        "(aerosol_init) as in WRF.",
     ),
     # FLG/UCLA radiation pair (ra_lw_physics=7 / ra_sw_physics=7) -- v0.18 RA-tail
     # REFERENCE-ONLY. WRF's RAD_FLG (phys/module_ra_flg.F, the UCLA/Fu-Liou-Gu

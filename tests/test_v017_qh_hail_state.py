@@ -260,9 +260,9 @@ def test_hail_mp_family_unwired_members_stay_fail_closed() -> None:
         assert mp in ACCEPTED_MP_PHYSICS, mp
         assert mp in _SCAN_WIRED_OPTIONS["mp_physics"], mp
     # The shared fail-closed adapter slot still fails closed for an UNwired id
-    # (e.g. NSSL mp=18); WSM7/WDM7 never route through it.
+    # (e.g. legacy NSSL mp=17; NSSL mp=18 is wired since v0.3.4); WSM7/WDM7 never route through it.
     with pytest.raises(NotImplementedError):
-        hail_mp_adapter(None, 1.0, mp_physics=18)
+        hail_mp_adapter(None, 1.0, mp_physics=17)
 
 
 def test_state_zeros_hail_leaves_zero_on_gpu() -> None:

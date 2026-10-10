@@ -156,8 +156,27 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # (coupling.scan_adapters.MP_SCAN_ADAPTERS[97] = goddard_adapter, plain
     # State->State on the existing moist substrate), savepoint-parity-proven against
     # unmodified phys/module_mp_gsfcgce.F (proofs/v090/goddard_mp_r2_savepoint_parity.json).
-    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97}),
-    "cu_physics": frozenset({0, 1, 2, 3, 6, 16}),
+    # mp=40 Morrison-aerosol (v0.3.4 O1) is scan-wired at WRF's stand-alone point
+    # aercu_opt=0 (coupling.scan_adapters.morrison_aero_adapter; Nc = WRF qnc):
+    # CPU-oracle-qualified (proofs/v034/f2_oracles/morrison_aero_opt0, fp64 port
+    # <=1.6e-11 rel, fp32 REAL port in the base fp32 band, 7 regimes incl. ice
+    # nucleation); GPU/coupled-forecast qualification pending. aercu_opt>0 needs
+    # cu_physics=11 (MSKF, not ported) and is refused by the namelist check.
+    # KNOWN GAP (user-facing, see physics_interfaces mp=40 spec): WRF feeds the
+    # Morrison re_cloud/re_ice/re_snow to RRTMG (Registry morr_tm_aero); the port
+    # does not yet -- RRTMG uses its default radii with mp=40 (roadmap item).
+    # mp=18 NSSL 2-moment is the v0.3.4 JAX port (physics.nssl2mom; proofs/v034/f2_oracles/nssl_2mom):
+    # kernel CPU-oracle-qualified; coupled path not GPU-run (single domains only; refused with cu_physics/=0).
+    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 18, 24, 26, 28, 40, 97}),
+    # cu=5 Grell-3D + cu=93 Grell-Devenyi (v0.3.4 o1-grell): line-faithful JAX ports
+    # of G3DRV/conv_grell_spread3d and GRELLDRV, machine-precision vs pristine-WRF
+    # multi-column tile oracles (proofs/v034); CPU-oracle-qualified; GPU/coupled-
+    # forecast qualification pending. NOT oracle-verified (no staged column exercises
+    # them; mutants M1/M2 survive): the CUP_enss keep_going downdraft-origin search and
+    # GD neg_check. Real-case CPU smoke (Swiss d01) too slow on CPU: 3 root steps ran
+    # before a 45 min timeout without a finiteness receipt; the 12x12 operational-step
+    # smoke (tests/test_v034_grell_cumulus_wiring.py) is the standing coupled evidence.
+    "cu_physics": frozenset({0, 1, 2, 3, 5, 6, 16, 93}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
     # bl=99 MRF is the v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F
@@ -170,9 +189,9 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # operational, with explicit non-driving TKE/EL diagnostic caveat vs the v090
     # PARTIAL reference (TKE rel ~=0.285, EL rel ~=0.013). bl=12 GBM is the
     # v0.18 JAX/vmap moist prognostic-TKE PBL port.
-    # bl=9 CAM-UW is F3 REFERENCE_ONLY: the WRF-Fortran oracle exists, but the
-    # previous JAX scaffold was RED vs oracle and is not operationally wired.
-    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 11, 12, 99}),
+    # bl=9 CAM-UW is the v0.3.4 faithful r8 port (proofs/v034/camuw_oracle):
+    # CPU-oracle-qualified; GPU/coupled-forecast qualification pending.
+    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 9, 11, 12, 99}),
     # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
     # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
     # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
@@ -184,7 +203,10 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # sf_surface=7 (Pleim-Xiu 2-layer ISBA LSM) is v0.17 operationally scan-wired
     # (coupling.pleim_xiu_surface_hook.pleim_xiu_surface_step over the fp64
     # pristine-WRF-oracle-validated physics.lsm_pleim_xiu SURFPX+QFLUX port).
-    "sf_surface_physics": frozenset({0, 1, 2, 4, 7}),
+    # sf_surface=3 (RUC LSM) is v0.3.4 scan-wired (lane o1-ruc): faithful JAX LSMRUC
+    # port physics.ruclsm via coupling.ruc_surface_hook.ruc_surface_step, CPU-oracle-
+    # qualified (proofs/v034/oracle/ruclsm); see _IMPLEMENTED_NOTES.
+    "sf_surface_physics": frozenset({0, 1, 2, 3, 4, 7}),
     # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
     # (coupling.physics_couplers.rrtm_lw_theta_tendency over the JAX-traceable
     # physics.ra_lw_rrtm_jax kernel, dispatched in runtime.operational_mode by
@@ -196,14 +218,17 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # any SW selection since HSRAD is the sole radiative call), savepoint-parity-
     # proven against the unmodified WRF source at fp64
     # (proofs/v017/held_suarez_lw_savepoint_parity.json).
-    "ra_lw_physics": frozenset({0, 1, 4, 31}),
+    # ra_lw=3 (CAM LW) is v0.3.4 scan-wired (lane o1-camrad): physics.ra_cam port of
+    # phys/module_ra_cam.F via coupling.cam_radiation; see _IMPLEMENTED_NOTES.
+    "ra_lw_physics": frozenset({0, 1, 3, 4, 31}),
     # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) and ra_sw=2 (GSFC/Chou-Suarez
     # multi-band delta-Eddington SW) are now operationally scan-wired
     # (coupling.physics_couplers.dudhia_sw_theta_tendency / gsfc_sw_theta_tendency,
     # dispatched in runtime.operational_mode by OperationalNamelist.ra_sw_physics).
-    # ra_sw=3/5/7/99 (CAM/Goddard-new/FLG/GFDL-Eta) are accepted reference-only
+    # ra_sw=5/7/99 (Goddard-new/FLG/GFDL-Eta) are accepted reference-only
     # in v0.18 for real-WRF oracle/parity work, not operational scan-wiring.
-    "ra_sw_physics": frozenset({0, 1, 2, 4}),
+    # ra_sw=3 (CAM SW) is v0.3.4 scan-wired (lane o1-camrad), see _IMPLEMENTED_NOTES.
+    "ra_sw_physics": frozenset({0, 1, 2, 3, 4}),
 }
 
 # Recognized WRF schemes with an oracle-backed reference path that the
@@ -211,39 +236,9 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # operational run). Some entries are GREEN; some are RED and say so in the reason.
 # reason = the named scan-unwired reason; alternative = the operational swap.
 _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
-    # v0.23 F2: NSSL 2-moment (18) and Morrison-aerosol (40) now have REAL
-    # single-column pristine-WRF oracles (fp32 + fp64, 6 regimes, checksummed
-    # unmodified sources) at proofs/v022/f2_oracles/{nssl_2mom,morrison_aero}/
-    # built by proofs/v023/oracle/{nssl2mom,morraero}/. They are REFERENCE_ONLY:
-    # namelist-accepted for single-column oracle comparison, fail-closed in the
-    # operational GPU scan (never silently wrong).
+    # v0.23 F2 staged single-column oracles for NSSL (18) and Morrison-aerosol (40); both graduated
+    # to IMPLEMENTED in v0.3.4 (18: physics.nssl2mom, 40: aercu_opt=0) -- see _IMPLEMENTED.
     "mp_physics": {
-        18: (
-            "NSSL 2-moment has v0.23 single-column fp32+fp64 pristine-WRF "
-            "oracle savepoints (proofs/v022/f2_oracles/nssl_2mom, unmodified "
-            "phys/module_mp_nssl_2mom.F, default mp=18 config per "
-            "module_check_a_mundo/module_physics_init; hail-process rates "
-            "unexercised by the current seeds -- documented), but the faithful "
-            "traceable JAX kernel is not yet ported and the qvolg/qvolh volume "
-            "scalars have no State substrate, so it is fail-closed in the "
-            "operational GPU scan.",
-            "Use mp_physics=8/28 (Thompson) or 10 (Morrison) operationally; "
-            "compare single columns vs proofs/v022/f2_oracles/nssl_2mom.",
-        ),
-        40: (
-            "Morrison-aerosol (aercu_opt=2) has v0.23 single-column fp32+fp64 "
-            "pristine-WRF oracle savepoints (proofs/v022/f2_oracles/"
-            "morrison_aero, unmodified phys/module_mp_morr_two_moment_aero.F) "
-            "AND a faithful fp64 JAX column kernel proven to machine precision "
-            "against them (physics.microphysics_morrison_aero, worst field rel "
-            "~2e-13; tests/savepoint/test_morrison_aero_parity.py), but the "
-            "prescribed 10-species AEROCU aerosol inputs and prognostic droplet "
-            "number have no operational State substrate, so it is fail-closed "
-            "in the operational GPU scan.",
-            "Use mp_physics=10 (base Morrison, GPU-operational) or 28 "
-            "(aerosol-aware Thompson); compare single columns vs "
-            "proofs/v022/f2_oracles/morrison_aero.",
-        ),
     },
     # v0.23 G3: urban BEP/BEM (sf_urban=2/3) and WRF lake (sf_lake=1) are
     # REFERENCE_ONLY (namelist-accepted for oracle/reference work, fail-closed in
@@ -286,15 +281,17 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         ),
     },
     "cu_physics": {
-        # v0.17 SAS family: all four requested codes now have fp64 pristine-WRF
-        # single-column savepoints, but the shared JAX endpoint is still RED
-        # against those oracles. They are reference-only and fail-closed.
+        # cu=4 scale-aware GFS SAS (v0.3.4 o1-sas, manager decision 2026-10-10): pristine WRF
+        # ARW refuses it (share/module_check_a_mundo.F:671 FATAL; the call path would also pass
+        # an absent DYNMM as DY). The faithful kernel (physics.cumulus_scalesas, bitwise vs the
+        # pristine WRF REAL build of module_cu_scalesas.F, proofs/v034/scalesas) and its scan
+        # wiring (coupling.scalesas_adapter) are Python-API only: module-oracle-qualified,
+        # GPU/coupled qualification pending. The CLI refuses cu=4 pre-JAX like WRF.
         4: (
-            "Scale-aware GFS SAS has v0.17 single-column fp64 pristine-WRF "
-            "savepoints (module_cu_scalesas.F), but the shared JAX endpoint is "
-            "RED vs oracle, so it is fail-closed in the operational GPU scan.",
-            "Use cu_physics=1/2/3/6 for operational runs; use "
-            "proofs/v017/run_sas_family_parity.py for SAS oracle comparisons.",
+            "WRF ARW rejects cu_physics=4 (check_a_mundo); scale-aware SAS kernel is available via "
+            "the Python API only, no CPU-WRF reference exists",
+            "Use cu_physics=1/2/3/5/6/16/93 for CLI runs (WRF suggests 95, reference-only here); "
+            "API: gpuwrf.physics.cumulus_scalesas / gpuwrf.coupling.scalesas_adapter.",
         ),
         # v0.13 Tier-3 cumulus batch: New-Tiedtke(16) / KSAS(14) / Grell-3D(5) each
         # have a single-column fp64 pristine-WRF oracle staged
@@ -302,12 +299,6 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         # column kernels are a documented carry-over. They are REFERENCE_ONLY:
         # registry-accepted so a single-column reference comparison can be run, but
         # fail-closed in the operational GPU scan (never silently wrong).
-        5: (
-            "Grell-3D ensemble has a v0.13 single-column fp64 pristine-WRF oracle "
-            "staged, but its traceable JAX column kernel is not yet ported, so it "
-            "is fail-closed in the operational GPU scan.",
-            "Use cu_physics=3 (Grell-Freitas, GPU-operational) or 1/2/6.",
-        ),
         14: (
             "KIM Simplified Arakawa-Schubert has a v0.13 single-column fp64 "
             "pristine-WRF oracle staged, but its traceable JAX column kernel is not "
@@ -319,13 +310,8 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         # kernel machine-precision-proven vs the v0.13 oracle savepoints
         # (cumulus_ntiedtke + cumulus_ntiedtke_jax), scan-wired via
         # coupling.scan_adapters.ntiedtke_adapter.
-        93: (
-            "Grell-Devenyi ensemble is recognized for v0.17 oracle work, but no "
-            "source-specific traceable JAX column endpoint has passed parity "
-            "against unmodified phys/module_cu_gd.F:GRELLDRV, so it is fail-"
-            "closed in the operational GPU scan.",
-            "Use cu_physics=3 (Grell-Freitas, GPU-operational) or 1/2/6.",
-        ),
+        # cu=5 Grell-3D and cu=93 Grell-Devenyi graduated to IMPLEMENTED in v0.3.4
+        # (o1-grell; CPU-oracle-qualified, GPU qualification pending).
         94: (
             "2015 GFS SAS / HWRF has v0.17 single-column fp64 pristine-WRF "
             "savepoints (module_cu_sas.F), but the shared JAX endpoint is RED "
@@ -368,14 +354,6 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     # single-column reference comparison) and fail-closed in the operational GPU scan with
     # a named reason (never silently wrong).
     "sf_surface_physics": {
-        3: (
-            "RUC multi-layer soil/snow LSM has a v0.17 single-column fp64 pristine-WRF "
-            "oracle staged (LSMRUC->SOILVEGIN->SFCTMP, proofs/v017/oracle/ruclsm), but its "
-            "faithful traceable JAX column kernel (the ~7.5k-LOC soil/snow solver) is not "
-            "yet ported, so it is fail-closed in the operational GPU scan.",
-            "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), 1 (slab) "
-            "or 7 (Pleim-Xiu).",
-        ),
         8: (
             "SSiB SiB biophysical canopy/soil/snow LSM has a v0.17 single-column fp64 "
             "pristine-WRF oracle staged (the unmodified SSIB driver, proofs/v017/oracle/ssib), "
@@ -389,14 +367,6 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     # savepoints in proofs/v018/savepoints/ra_tail_wrf. They remain REFERENCE_ONLY
     # because no faithful traceable JAX kernels are wired into the operational scan.
     "ra_lw_physics": {
-        3: (
-            "CAM longwave has a v0.18 real-WRF driver oracle "
-            "(proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
-            "module_radiation_driver.F dispatch to module_ra_cam.F:CAMRAD), but no "
-            "faithful JAX column kernel is operationally scan-wired, so it is "
-            "fail-closed in the operational GPU scan.",
-            "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
-        ),
         5: (
             "GSFC/Goddard NUWRF longwave has a v0.13 single-column fp64 pristine-WRF "
             "oracle staged (module_ra_goddard.F:lwrad) and a v0.18 real-WRF paired "
@@ -423,14 +393,6 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         ),
     },
     "ra_sw_physics": {
-        3: (
-            "CAM shortwave has a v0.18 real-WRF driver oracle "
-            "(proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
-            "module_radiation_driver.F dispatch to module_ra_cam.F:CAMRAD), but no "
-            "faithful JAX column kernel is operationally scan-wired, so it is "
-            "fail-closed in the operational GPU scan.",
-            "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), or 2 (GSFC/Chou-Suarez).",
-        ),
         5: (
             "New Goddard shortwave has a v0.18 real-WRF paired driver oracle "
             "(proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json, "
@@ -457,16 +419,6 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         ),
     },
     "bl_pbl_physics": {
-        9: (
-            "CAM-UW PBL has an F3 standalone WRF-Fortran CAM-UW column oracle "
-            "(proofs/v023/feature_sprints/camuw_oracle), and that oracle proved "
-            "the previous JAX scaffold RED vs WRF-Fortran (worst pblh max_abs="
-            "1384.6212005615234 m). The faithful CAM-UW port is a separate "
-            "milestone, so bl_pbl_physics=9 is fail-closed in the operational "
-            "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
-            "proofs/v023/feature_sprints/camuw_oracle for CAM-UW oracle comparisons.",
-        ),
         4: (
             "QNSE-EDMF PBL has a v0.18 fp64 pristine-WRF single-column oracle "
             "staged (unmodified phys/module_bl_qnsepbl.F; "
@@ -508,9 +460,8 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
     # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
     # (IMPLEMENTED above), so they are no longer listed here. bl=3 GFS is IMPLEMENTED.
-    # bl_pbl_physics=9 (CAM-UW) is F3 REFERENCE_ONLY: the WRF-Fortran oracle is
-    # preserved, but the former JAX scaffold is proven RED and the faithful port
-    # is a separate milestone.
+    # bl_pbl_physics=9 (CAM-UW) is IMPLEMENTED (v0.3.4): the v023 oracle was itself
+    # defective (no esinti saturation table); proofs/v034/camuw_oracle replaces it.
     # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
     # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
     # rewrite (IMPLEMENTED above), so it is no longer listed here.
@@ -519,35 +470,90 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
 }
 
 
+# v0.3.4 (lane o1-nlbind, measured): scan-wired codes that ``gpuwrf run`` CANNOT
+# run under the release defaults (REAL32 carry, GPUWRF_FAST_DEFAULTS on): through
+# the real CLI loader on the Swiss RD11 case the production step cannot be traced
+# (proofs/o1_nlbind/cli_support_matrix.json).  Until v0.3.3 the CLI never bound
+# these keys, so the crash was masked by silently running the default scheme.
+# They move IMPLEMENTED -> REFERENCE_ONLY (validated column kernels, not runnable
+# operationally) so validate_operational_namelist refuses them before compute.
+_RELEASE_CARRY_UNRUNNABLE: Mapping[str, dict[int, str]] = {
+    "mp_physics": {
+        24: "the release root lateral moist/scalar boundary (GPUWRF_ROOT_SCALAR_BDY_RK1, "
+            "WRF RK1 sc_tend) has no record for the hail species qh "
+            "(coupling/boundary_apply.py root_scalar_rk1_split)",
+        26: "the release root lateral moist/scalar boundary (GPUWRF_ROOT_SCALAR_BDY_RK1, "
+            "WRF RK1 sc_tend) has no record for the hail species qh "
+            "(coupling/boundary_apply.py root_scalar_rk1_split)",
+        28: "the release root lateral moist/scalar boundary (GPUWRF_ROOT_SCALAR_BDY_RK1, "
+            "WRF RK1 sc_tend) has no record for the aerosol numbers nwfa/nifa, which "
+            "have their own WRF boundary branches (coupling/boundary_apply.py)",
+        40: "the release root lateral moist/scalar boundary (GPUWRF_ROOT_SCALAR_BDY_RK1, "
+            "WRF RK1 sc_tend) has no record for the Morrison number scalars Ns/Ng/Nc "
+            "(coupling/boundary_apply.py root_scalar_rk1_split). The v0.3.4 aercu_opt=0 column "
+            "kernel is CPU-oracle-qualified (proofs/v034/f2_oracles/morrison_aero_opt0); "
+            "aercu_opt>0 needs cu_physics=11 (MSKF, not ported); RRTMG does not yet receive the "
+            "Morrison re_cloud/re_ice/re_snow; GPU qualification pending",
+    },
+}
+_RELEASE_CARRY_ALTERNATIVE: Mapping[str, str] = {
+    "mp_physics": "Use mp_physics=8 (Thompson, release default) or another code that "
+    "`gpuwrf run` lists as operational.",
+}
+_IMPLEMENTED = {
+    key: codes - frozenset(_RELEASE_CARRY_UNRUNNABLE.get(key, {}))
+    for key, codes in _IMPLEMENTED.items()
+}
+_REFERENCE_ONLY = {
+    **_REFERENCE_ONLY,
+    **{
+        key: {
+            **_REFERENCE_ONLY.get(key, {}),
+            **{
+                code: (
+                    f"savepoint-parity column kernel and scan adapter exist, but under the "
+                    f"release defaults the operational step cannot be built: {why}. "
+                    f"Not runnable by `gpuwrf run` (v0.3.4 CLI probe; <=v0.3.3 silently ran "
+                    f"the default scheme instead)",
+                    _RELEASE_CARRY_ALTERNATIVE[key],
+                )
+                for code, why in codes.items()
+            },
+        }
+        for key, codes in _RELEASE_CARRY_UNRUNNABLE.items()
+    },
+}
+
 def _label(key: str) -> str:
     return WRF_PARAM_LABEL.get(key, key)
 
 
 # Per-key fallback alternative text used for RECOGNIZED_FAIL_CLOSED schemes.
 _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
-    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/13/14/16/24/26/28/97 (8=Thompson is the "
-    "operational default; 13=SBU-YLin; 24=WSM7 / 26=WDM7 add a precipitating hail class; "
-    "28=aerosol-aware Thompson; 97=Goddard GCE single-moment 3-ice).",
-    "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch eta, "
-    "3=Grell-Freitas, 6=Tiedtke requires active flux-form moisture advection "
-    "for RQVFTEN). Reference-only cumulus options 4/5/14/16/93/94/95/96/99 "
-    "fail-close in the operational scan.",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 11=Shin-Hong, "
-    "12=GBM, 99=MRF). PBL4/9/10/16/17 are accepted reference-only and "
+    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/13/14/16/18/97 (8=Thompson is the "
+    "operational default; 13=SBU-YLin; 18=NSSL 2-moment (single domains, cu_physics=0; kernel CPU-oracle-qualified, coupled path not GPU-run); 97=Goddard "
+    "GCE single-moment 3-ice). 24=WSM7 / 26=WDM7 / 28=aerosol-aware Thompson / 40=Morrison-aerosol are "
+    "refused under the release defaults (root boundary has no qh/nwfa,nifa/Ns,Ng,Nc record).",
+    "cu_physics": "Use one of cu_physics=0/1/2/3/5/6/16/93 (1=Kain-Fritsch eta, "
+    "3=Grell-Freitas, 5=Grell-3D, 93=Grell-Devenyi, 6/16=Tiedtke family requires "
+    "active flux-form moisture advection for RQVFTEN). Reference-only cumulus "
+    "options 4/14/94/95/96/99 fail-close in the operational scan.",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 9=CAM-UW, 11=Shin-Hong, "
+    "12=GBM, 99=MRF). PBL4/10/16/17 are accepted reference-only and "
     "fail-close in the operational scan.",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
     "7=Pleim-Xiu, 91=old-MM5).",
-    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab) "
-    "or 7 (Pleim-Xiu); 3=RUC and 8=SSiB are reference-only (fp64 oracle staged, JAX "
-    "kernel carry-over).",
-    "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
-    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia) or 2 (GSFC/Chou-Suarez); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
+    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab), "
+    "3 (RUC, explicit ruc_static/ruc_land) or 7 (Pleim-Xiu); 8=SSiB is reference-only "
+    "(fp64 oracle staged, JAX kernel carry-over).",
+    "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG), 1 (classic RRTM) or 3 (CAM); 5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
+    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), 2 (GSFC/Chou-Suarez) or 3 (CAM); 5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
-    "default; 2+km_opt=1/2/3/5 = constant-K / 3-D turbulence closures).",
-    "km_opt": "Use km_opt=0/1/2/3/4/5 (4 with diff_opt=1 = 2-D Smagorinsky; "
-    "1/2/3/5 with diff_opt=2 = constant-K / 3-D TKE / 3-D Smagorinsky / SMS-3DTKE).",
+    "default; 2+km_opt=3 = 3-D Smagorinsky).",
+    "km_opt": "Use km_opt=4 with diff_opt=1 (2-D Smagorinsky) or km_opt=3 with diff_opt=2 "
+    "(3-D Smagorinsky); km_opt=2/5 are refused in v0.3.4 (unqualified, NaN under the release carry).",
     "damp_opt": "Use damp_opt=0 (off) or 3 (upper-level w-Rayleigh).",
     "diff_6th_opt": "Use diff_6th_opt=0 (off) or 2 (monotonic 6th-order filter).",
     "rk_order": "Use rk_order=3 (WRF RK3).",
@@ -564,7 +570,9 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
 # --------------------------------------------------------------------------- #
 _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "diff_opt": frozenset({0, 1, 2}),
-    "km_opt": frozenset({0, 1, 2, 3, 4, 5}),
+    # v0.3.4: km_opt=2/5 refused (unqualified v022 scaffolds, NaN under the release REAL
+    # carry; manager decision on rel034 18:08Z) -> _PER_CODE_FAIL_CLOSED_REASON.
+    "km_opt": frozenset({0, 1, 3, 4}),
     "damp_opt": frozenset({0, 3}),
     "diff_6th_opt": frozenset({0, 2}),
     "rk_order": frozenset({3}),
@@ -582,6 +590,10 @@ _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # classify_scheme (not only dynamics): it supplies a specific reason in place of
 # the generic "NOT YET IMPLEMENTED" string when the truth is more precise.
 _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
+    "km_opt": {
+        2: 'refused for v0.3.4 (unqualified, NaN under the release REAL carry): the km_opt=2 prognostic-TKE path (flat periodic-interior tke_km/tke_rhs reduction) is an unqualified v022 scaffold that produces NaN when executed with the release defaults (rel034 finding 2026-10-10 18:08Z); a literal km_opt=2 operator (gpuwrf.dynamics.les3d_smagorinsky) is CPU-oracle-qualified but not wired: the LES TKE prognostic has no carry leaf yet.',
+        5: 'refused for v0.3.4 (unqualified, NaN under the release REAL carry): the km_opt=5 SMS-3DTKE path (blend without the implicit l_diss solve) is an unqualified v022 scaffold that produces NaN when executed with the release defaults (rel034 finding 2026-10-10 18:08Z).',
+    },
     "sf_urban_physics": {
         1: "G3 URBAN fail-closed scaffold: WRF single-layer UCM is recognized, "
         "but this sprint targets BEP/BEM and no UCM oracle/kernel/state carry is "
@@ -821,7 +833,7 @@ _PHYSICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, tuple[str, str]]] = {
             "(multi-session) -- it is deferred to the v1.0 CAM/CLM/CTSM-family ADR "
             "and fails closed (never silently substituted by another LSM).",
             "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), "
-            "1 (slab) or 7 (Pleim-Xiu); 3=RUC / 8=SSiB are reference-only. CLM4 is "
+            "1 (slab), 3 (RUC) or 7 (Pleim-Xiu); 8=SSiB is reference-only. CLM4 is "
             "carried to the v1.0 CAM/CLM/CTSM ADR.",
         ),
         6: (
@@ -1100,11 +1112,15 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
     # --- PBL / cloud sub-options ------------------------------------------ #
     RecognizedControl(
         "icloud_bl", "PBL-cloud-coupling",
-        frozenset({0}),
-        "recognized; the bl_pbl=MYNN <-> radiation sub-grid cloud-fraction "
-        "coupling (icloud_bl=1) is NOT scan-wired in v0.12.0 (the MYNN cloud "
-        "fraction is computed but not fed to the radiation cloud overlap).",
-        "Set icloud_bl=0.",
+        frozenset({1}),
+        # v0.3.4 (o1-nlbind): the v0.15 MYNN SGS-cloud chain feeds CLDFRA_BL/QC_BL/
+        # QI_BL to RRTMG unconditionally (physics_couplers, mynn_sgs_cloud); the
+        # old {0} claim refused the value that runs and accepted one that did not.
+        "recognized; the port runs WRF's default icloud_bl=1 (MYNN sub-grid cloud "
+        "fraction and condensate feed the RRTMG cloud input, "
+        "module_radiation_driver.F:1404-1431). icloud_bl=0 (radiation sees resolved "
+        "clouds only) is not bound.",
+        "Use icloud_bl=1 (WRF default) or omit the key.",
     ),
     RecognizedControl(
         "bl_mynn_tkeadvect", "MYNN-TKE-advection",
@@ -1160,11 +1176,12 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
     ),
     RecognizedControl(
         "bl_mynn_mixlength", "MYNN-mixing-length",
-        frozenset({1, 2}),
-        "recognized; the port wires the WRF MYNN mixing-length options 1 "
-        "(nonlocal/BouLac-blend) and 2 (local); other mixing-length options "
-        "are not wired.",
-        "Use bl_mynn_mixlength=1 or 2.",
+        frozenset({1}),
+        # v0.3.4 (o1-nlbind): no mixlength option reaches the MYNN port; it runs 1.
+        "recognized; the port runs the WRF-default MYNN mixing length "
+        "bl_mynn_mixlength=1 (nonlocal/BouLac blend, physics/mynn_constants.py); "
+        "options 0 and 2 are not bound.",
+        "Use bl_mynn_mixlength=1 (WRF default) or omit the key.",
     ),
     # --- Aerosol-aware Thompson (mp=28) input sub-options ------------------ #
     # v0.16: the port runs ONLY the WRF thompson_init climatological self-init
@@ -1442,6 +1459,47 @@ def _coerce_number(value: object) -> float | None:
     return None
 
 
+# Honest per-scheme qualification notes for IMPLEMENTED options (default reason otherwise).
+_IMPLEMENTED_NOTES: Mapping[tuple[str, int], str] = {
+    ("km_opt", 3): "Operationally wired into the GPU scan: literal WRF diff_opt=2 3-D Smagorinsky "
+    "(gpuwrf.dynamics.les3d_smagorinsky; RK1-frozen, vertical_diffusion_2 only with bl_pbl_physics=0; "
+    "isfflx/tke_drag_coefficient/tke_heat_flux are not read from the namelist, WRF defaults 1/0/0 apply; "
+    "moist diffusion reaches the root scalar update only with moist_adv_opt!=0). CPU-oracle-qualified "
+    "against pristine WRF REAL4 module_diffusion_em on real terrain crops. Coupled evidence is CPU-only "
+    "(Swiss d01): 3 steps in the legacy fp64 carry and 1 step of the release REAL32 program with Pallas "
+    "interpret mode + CPU-emulated PTX rounding, finite with 0 guard events; the compiled GPU program has "
+    "not been executed. GPU/coupled-forecast qualification pending.",
+    ("cu_physics", 5): "Operationally wired into the GPU scan (Grell-3D ensemble, v0.3.4): line-faithful port of "
+    "G3DRV/conv_grell_spread3d, CPU-oracle-qualified against the pristine-WRF multi-column tile oracle (proofs/v034); "
+    "GPU/coupled-forecast qualification pending. Positive cudt is refused. Not oracle-exercised: the CUP_enss "
+    "downdraft-origin (keep_going) search. Coupled evidence is a CPU 12x12 operational-step smoke only.",
+    ("cu_physics", 93): "Operationally wired into the GPU scan (Grell-Devenyi ensemble, v0.3.4): line-faithful port of "
+    "GRELLDRV, CPU-oracle-qualified against the pristine-WRF multi-column tile oracle (proofs/v034); GPU/coupled-"
+    "forecast qualification pending. Positive cudt is refused. Not oracle-exercised: the GD neg_check branch. "
+    "Coupled evidence is a CPU 12x12 operational-step smoke only.",
+    ("bl_pbl_physics", 9): "Operationally wired into the GPU scan (CAM-UW, v0.3.4): CPU-oracle-qualified "
+    "against proofs/v034/camuw_oracle; GPU/coupled-forecast qualification pending. Coupling caveat: WRF "
+    "passes LW-only RTHRATENLW, the port passes the held TOTAL radiative heating RTHRATEN (LW+SW), so "
+    "daytime cloud-top radiative forcing of the PBL is biased (exact at night).",
+    ("sf_surface_physics", 3): "Scan-wired via explicit bundles (RUC LSM, v0.3.4: coupling.ruc_surface_hook, "
+    "ruc_static/ruc_land, MYNN-SL, Thompson; API only -- gpuwrf run/nested pipeline still reject sf=3). "
+    "CPU-oracle-qualified: physics.ruclsm matches the unmodified WRF LSMRUC oracle (proofs/v034/oracle/ruclsm, "
+    "48 regimes x 12 steps incl. snow/melt/frozen soil/convective frpcpn, fp64 <=1.3e-10 rel); "
+    "GPU/coupled-forecast qualification pending. WRF SFCDIAGS_RUCLSM 2-m diagnostics are not ported. "
+    "Sea-ice/lake points fail closed.",
+    ("ra_lw_physics", 3): "Operationally wired into the GPU scan (coupling.cam_radiation, held-rate RTHRATEN + CAM GLW to the "
+    "land surface). CPU-oracle-qualified: physics.ra_cam matches the unmodified WRF camrad true caller "
+    "(proofs/cam_rad CAM01, 210 real WN3 + augmented multi-region cloud columns, day/night; fluxes "
+    "bit-identical in REAL, heating <= 2 ulp, held abs/ems path bit-identical); GPU/coupled-forecast "
+    "qualification pending. Absorptivities/emissivity are held and recomputed at WRF STEPABS cadence "
+    "(cam_abs_freq_s, default 21600 s; carried in restart); XICE = 0.",
+    ("ra_sw_physics", 3): "Operationally wired into the GPU scan (coupling.cam_radiation, held-rate RTHRATEN + CAM "
+    "SWDOWN = GSW/(1-ALBEDO) to the land surface). CPU-oracle-qualified against the unmodified WRF "
+    "camrad true caller (proofs/cam_rad CAM01, day/night, cloudy/clear, uniform CAM aerosol "
+    "climatology); GPU/coupled-forecast qualification pending. XICE = 0.",
+}
+
+
 def classify_scheme(key: str, code: int) -> SchemeSupport:
     """Classify one ``key=code`` selection into a :class:`SchemeSupport`.
 
@@ -1472,7 +1530,7 @@ def classify_scheme(key: str, code: int) -> SchemeSupport:
             key=key,
             code=code,
             status=SupportStatus.IMPLEMENTED,
-            reason="Operationally wired into the GPU scan.",
+            reason=_IMPLEMENTED_NOTES.get((key, code), "Operationally wired into the GPU scan."),
             alternative="",
             wrf_name=_scheme_name_or_none(key, code),
         )

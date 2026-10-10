@@ -268,7 +268,7 @@ def test_reference_failclosed_schemes_keep_specific_messages() -> None:
     downstream runtime concern, kept accurate in the SUPPORTED_OPTIONS text).
     """
 
-    # cu=3 Grell-Freitas is operational; cu=5/16/93/99 are accepted (reference).
+    # cu=3/5/93 are operational; cu=4/16/94/95/96/99 are accepted.
     validate_supported_namelist({"physics": {"cu_physics": [3]}})
     validate_supported_namelist({"physics": {"cu_physics": [4, 5, 16, 93, 94, 95, 96, 99]}})
     # ra_lw=1 classic RRTM, ra_sw=1 Dudhia: accepted (isolated savepoint).
@@ -301,9 +301,11 @@ def test_recognized_but_unimplemented_dynamics_option() -> None:
     # diff_opt=1/km_opt=4 is the v0.9.0 2-D Smagorinsky path (dynamics/explicit_diffusion.py,
     # parity proofs/v090/diffopt1_smagorinsky_parity.json) -- accepted, no raise.
     validate_supported_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
-    validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 2}})
     validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 3}})
-    validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 5}})
+    # v0.3.4: km_opt=2/5 refused (unqualified scaffolds, NaN under the release REAL carry).
+    for refused in (2, 5):
+        with pytest.raises(UnsupportedNamelistOption, match="NaN under the release REAL carry"):
+            validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": refused}})
     # km_opt=99 is not a recognized WRF option.
     with pytest.raises(UnsupportedNamelistOption) as excinfo2:
         validate_supported_namelist({"dynamics": {"km_opt": 99}})
@@ -358,14 +360,12 @@ def test_operational_validator_passes_implemented_suite() -> None:
         # ra_sw_physics=1 (Dudhia) and ra_lw_physics=1 (classic RRTM) are NOW
         # operationally scan-wired (see test_operational_validator_accepts_wired_*
         # below); they are no longer reference-only rejections.
-        # cu=16 (New-Tiedtke) graduated to IMPLEMENTED in v0.23 F2; the SAS
-        # family + KSAS remain the reference-only rejection exemplars.
+        # cu=16 (New-Tiedtke) graduated to IMPLEMENTED in v0.23 F2 and cu=4
+        # (scale-aware SAS) in v0.3.4; SAS 94 + KSAS remain reference-only exemplars.
         ("cu_physics", 14, "KIM Simplified Arakawa-Schubert", "cu_physics=1/2/3/6"),
-        ("cu_physics", 4, "Scale-aware GFS SAS", "cu_physics=1/2/3/6"),
-        ("cu_physics", 93, "Grell-Devenyi", "cu_physics=3"),
+        ("cu_physics", 94, "2015 GFS SAS", "cu_physics=1/2/3/6"),
         ("cu_physics", 99, "previous Kain-Fritsch", "cu_physics=1"),
         ("bl_pbl_physics", 4, "QNSE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
-        ("bl_pbl_physics", 9, "UW (CAM5)", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
         ("bl_pbl_physics", 10, "TEMF", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
         ("bl_pbl_physics", 16, "epsilon", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
         ("bl_pbl_physics", 17, "TPE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
@@ -412,14 +412,20 @@ def test_operational_validator_accepts_wired_dudhia_sw() -> None:
     )
 
 
+@pytest.mark.parametrize("key", ["ra_sw_physics", "ra_lw_physics"])
+def test_operational_validator_accepts_cam_radiation(key: str) -> None:
+    """v0.3.4 (lane o1-camrad): CAM radiation (3) is operationally scan-wired."""
+
+    validate_namelist({"physics": {key: [3]}})
+    validate_operational_namelist({"physics": {key: [3]}})
+
+
 @pytest.mark.parametrize(
     "key, value, scheme_substring",
     [
-        ("ra_sw_physics", 3, "CAM"),
         ("ra_sw_physics", 5, "Goddard"),
         ("ra_sw_physics", 7, "FLG"),
         ("ra_sw_physics", 99, "GFDL"),
-        ("ra_lw_physics", 3, "CAM"),
         ("ra_lw_physics", 5, "Goddard"),
         ("ra_lw_physics", 7, "FLG"),
         ("ra_lw_physics", 99, "GFDL"),
@@ -428,7 +434,7 @@ def test_operational_validator_accepts_wired_dudhia_sw() -> None:
 def test_operational_validator_rejects_reference_only_radiation(
     key: str, value: int, scheme_substring: str
 ) -> None:
-    """v0.17/v0.18 radiation-longtail selections (CAM/Goddard/FLG/GFDL-Eta) are
+    """v0.17/v0.18 radiation-longtail selections (Goddard/FLG/GFDL-Eta) are
     accepted for reference work but not operationally wired until real Fortran
     parity and faithful JAX kernels exist."""
 

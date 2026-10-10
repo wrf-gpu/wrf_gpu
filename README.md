@@ -11,7 +11,9 @@ forecasting: shorter turnaround, more independent forecasts per workstation,
 and less energy per forecast hour.
 
 This is an independent implementation, not WRF itself, and is not affiliated
-with or endorsed by UCAR/NCAR. **v0.3.3** has completed its eight-arm validation with the disclosed deviations below. WRF-order physics corrections and fast paths
+with or endorsed by UCAR/NCAR. **v0.3.4** is a fix release: `gpuwrf run` now binds or refuses every
+namelist physics option (≤0.3.3 silently ran the default suite for other schemes; re-run those).
+Its default program is unchanged from **v0.3.3**, which completed its eight-arm validation with the disclosed deviations below. WRF-order physics corrections and fast paths
 are enabled by default. Its fresh 72-hour identity evidence is described below;
 the speed and energy figures retain their explicitly dated v0.3.2 receipts.
 
@@ -95,13 +97,15 @@ combination in the wider scheme catalog.
 |---|---|
 | Implemented and measured in this release | WRF real-data inputs; ARW dynamics; the physics combination above; fixed one-way nests; complete history; memory-aware independent-case launcher |
 | Implemented, with a historical v0.3.1 regression gate | Nested checkpoint/resume; 2,262 variables byte-identical across six control/resume files [M] |
-| Recognized, but refused operationally where unwired | Reference-only schemes and unsupported options; diagnostics explain the selected scheme and reason |
+| Implemented in v0.3.4 | Single-domain checkpoint/resume and `--extend-run`; GPU SIGKILL + resume byte-identical in 754/754 history variables [M] |
+| Experimental opt-in (v0.3.4) | New schemes matched to unmodified-WRF oracles on CPU; not forecast-validated ([support matrix](docs/release/SUPPORT_MATRIX_v0.3.4.md)) |
+| Recognized, but refused before compute where unwired | Reference-only schemes and unsupported options; diagnostics explain the selected scheme and reason |
 | Out of scope or unimplemented | MPI/multi-GPU domain decomposition, moving/vortex-following nests, coupled chemistry/fire/hydrology, FDDA/4DVAR and stochastic physics |
 
 The wider catalog includes Kessler/Lin/WSM/Morrison/aerosol-aware Thompson,
 KF/BMJ/Grell–Freitas/Tiedtke and several boundary-layer/surface-layer pairs.
 Catalog support does not extend these measurements to every pairing.
-Reference-only examples include CAM-UW/NSSL. The [physics guide](https://wrf-gpu.github.io/wrf_gpu/physics.html)
+The [v0.3.4 support matrix](docs/release/SUPPORT_MATRIX_v0.3.4.md), the [physics guide](https://wrf-gpu.github.io/wrf_gpu/physics.html)
 and [machine-readable catalog](src/gpuwrf/io/scheme_catalog.py) give exact status;
 operational preflight is authoritative. Recognized cadence approximations are
 reported separately from scheme support.
@@ -383,6 +387,7 @@ original assumptions; v0.3.3 has not re-benchmarked those data-centre scenarios.
 
 | Version | Short history |
 |---|---|
+| v0.3.4 | Fix release: every namelist physics option bound or refused (≤0.3.3 silently ran defaults); experimental opt-in schemes; default program and validation unchanged |
 | v0.3.3 | Released with WRF-order MYNN, D1/D2/D3, snow and layout corrections; seven 72 h comparisons plus Swiss24, with raw rain/wind/ice/trace failures and accepted disclosures retained |
 | v0.3.2 | Matched whole-run −9.9%; N=4 24 h throughput 22.4× CPU; stable layout, startup/cache and momentum work |
 | v0.3.1 | WRF-order/snow/writer corrections; historical performance and validation |

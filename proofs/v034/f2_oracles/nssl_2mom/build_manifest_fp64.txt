@@ -1,0 +1,5 @@
+mode: fp64
+date: 2026-10-10T15:26:23Z
+gfortran: GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags: -O2 -ffree-form -ffree-line-length-none -ffpe-summary=none -cpp -fdefault-real-8 -fdefault-double-8
+pinning: taskset -c 25

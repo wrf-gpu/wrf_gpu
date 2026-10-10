@@ -85,6 +85,18 @@ def cpu_pallas_interpret(monkeypatch):
     finally:
         jax.clear_caches()
 
+@pytest.fixture(autouse=True)
+def _cli_run_env_is_test_local(monkeypatch):
+    """``gpuwrf.cli`` run exports GPUWRF_SCRATCH/GPUWRF_TMPDIR for its process; restore the
+    pre-test state after each test so one CLI test's scratch path never leaks into later tests."""
+    for key in ("GPUWRF_SCRATCH", "GPUWRF_TMPDIR"):
+        if key in os.environ:
+            monkeypatch.setenv(key, os.environ[key])
+        else:
+            monkeypatch.setenv(key, "")  # records the absence for teardown
+            monkeypatch.delenv(key)
+
+
 # The exact substrings emitted by gpuwrf.contracts.state._gpu_device() when no
 # JAX GPU backend is visible. These markers are produced ONLY by that guard.
 _GPU_REQUIRED_MARKERS = (

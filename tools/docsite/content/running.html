@@ -31,9 +31,10 @@ your build. Every flag:</p>
 <tr><td><code>--force-gpu-run</code></td><td>off</td><td>Nested runs only: bypass the GPU lock / free-VRAM preflight. Also available as <code>GPUWRF_FORCE_GPU_RUN=1</code>.</td></tr>
 <tr><td><code>--emit-initial-history</code></td><td>off, nested</td><td>Emit initialized lead zero before stepping; native single-root emits it automatically.</td></tr>
 <tr><td><code>--[no-]aot-prefetch</code></td><td>ON</td><td>Nested cached-executable loading at initialization; OFF loads on first dispatch.</td></tr>
-<tr><td><code>--checkpoint-dir / --checkpoint-interval-steps</code></td><td>unset / 0</td><td>Nested verified restart; positive cadence in root steps.</td></tr>
+<tr><td><code>--checkpoint-dir / --checkpoint-interval-steps</code></td><td>unset / 0</td><td>Verified restart (native single-domain d01 or nested); positive cadence in root steps.</td></tr>
 <tr><td><code>--checkpoint-max-bytes / --checkpoint-max-generations</code></td><td>8 GiB / 2</td><td>Retained checkpoint limit; at least two generations.</td></tr>
 <tr><td><code>--checkpoint-reserve-bytes / --resume-checkpoint</code></td><td>10 GiB / unset</td><td>Filesystem reserve / authenticated generation; resume the same output stream.</td></tr>
+<tr><td><code>--extend-run</code></td><td>off</td><td>With <code>--resume-checkpoint</code>: continue to a later <code>--hours</code> end than the checkpointed run.</td></tr>
 </tbody>
 </table>
 </div>
@@ -97,12 +98,38 @@ pre-supplied <code>wrfbdy_d02</code>). Mechanics: <a href="nesting.html">Nesting
 <h2 id="restart">Restart</h2>
 
 <div class="admon note">
-  <div class="admon-title">Restart: nested runs only</div>
-  <p>Nested runs (<code>max_dom &gt; 1</code>) write verified, rotating checkpoint generations with
-<code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> and resume in the same output stream with
-<code>--resume-checkpoint GEN</code>. Single-domain runs refuse these flags with a named reason, and the
-namelist <code>restart</code>/<code>restart_interval</code> settings do not provide crash recovery.</p>
+  <div class="admon-title">Restart: native single-domain and nested runs</div>
+  <p>Native runs — a single-domain d01 forecast initialized from <code>wrfinput</code>/<code>wrfbdy</code>, or a
+nested run (<code>max_dom &gt; 1</code>) — write verified, rotating checkpoint generations with
+<code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> (cadence in root-domain steps; a generation is also
+written at the forecast end) and resume in the same output stream with <code>--resume-checkpoint GEN</code>. Resume
+restores the full model carry (held radiation/cumulus tendencies with their step clocks, land state, accumulators)
+and the history ledger: committed frames stay untouched, later frames of the interrupted run are verified and
+rewritten, and lead zero is not written twice. CPU-WRF replay and non-d01 single-domain runs refuse these flags
+with a named reason; the namelist <code>restart</code>/<code>restart_interval</code> settings do not provide crash
+recovery.</p>
 </div>
+
+<p>Like a WRF restart with a longer run length, a resumed run can continue past its original end: resume with a
+larger <code>--hours</code> and <code>--extend-run</code>. History alarms keep the original start time, so the
+extended stream matches one uninterrupted run of the longer length. Without <code>--extend-run</code> a changed end
+time is refused, and shortening is always refused.</p>
+
+<p>Any native run (single-domain or nested, including a resumed <code>--extend-run</code>) whose end lies past the
+lateral boundary data is refused before it starts: the coverage is the shorter of <code>wrfbdy_d01</code> records
+&times; <code>interval_seconds</code> and WRF's last boundary time in the file. The model never holds the last
+boundary record past the end of the data.</p>
+
+<pre><code>gpuwrf run --input-dir CASE --output-dir runs/case --hours 24 \
+  --checkpoint-dir runs/ck --checkpoint-interval-steps 200
+gpuwrf run --input-dir CASE --output-dir runs/case --hours 24 \
+  --checkpoint-dir runs/ck --checkpoint-interval-steps 200 --resume-checkpoint runs/ck/generation-…
+gpuwrf run --input-dir CASE --output-dir runs/case --hours 48 \
+  --checkpoint-dir runs/ck --checkpoint-interval-steps 200 --resume-checkpoint runs/ck/generation-… --extend-run</code></pre>
+
+<p>Each checkpoint copies the carry to the host and writes it synchronously (with pending history drained first).
+Checkpoint continuation is validated byte-exact on CPU for the single-domain path; its GPU overhead has not been
+measured yet (the nested path carries a separate GPU byte-identity regression gate).</p>
 
 <h2 id="two-way-nesting">Two-way nesting (<code>--feedback</code>)</h2>
 

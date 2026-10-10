@@ -56,7 +56,9 @@ from gpuwrf.io.scheme_catalog import SupportStatus, classify_scheme
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SAVE_DIR = _REPO_ROOT / "proofs" / "v018" / "savepoints" / "ra_tail_wrf"
 _RA_KEYS = ("ra_lw_physics", "ra_sw_physics")
-_REF_ONLY_CODES = (3, 5, 7, 99)
+_ORACLE_CODES = (3, 5, 7, 99)
+# CAM (3) graduated in v0.3.4 (lane o1-camrad): IMPLEMENTED, see test_cam_radiation_is_operational below.
+_REF_ONLY_CODES = (5, 7, 99)
 _COMPILED_OUT_CODES = (14, 24)
 _CORE_FIELDS = ("RTHRATLW", "RTHRATSW", "GLW", "OLR", "SWDOWN")
 _EXACT_MODULE = {
@@ -95,7 +97,7 @@ def _load_savepoint(code: int) -> dict:
     return json.loads(path.read_text())
 
 
-@pytest.mark.parametrize("code", _REF_ONLY_CODES)
+@pytest.mark.parametrize("code", _ORACLE_CODES)
 def test_ra_tail_oracle_is_real_and_nontrivial(code: int) -> None:
     """The exact-driver real-WRF oracle exists, is finite, and exercised LW AND SW."""
 
@@ -209,6 +211,17 @@ def test_ra_tail_reference_only_and_fails_closed_operationally(key: str, code: i
     # But the operational forecast scan refuses it (never a silent wrong scheme).
     with pytest.raises(NotOperationallyWiredError):
         validate_operational_namelist({"physics": {key: [code]}})
+
+
+@pytest.mark.parametrize("key", _RA_KEYS)
+def test_cam_radiation_is_operational(key: str) -> None:
+    """ra_lw/sw_physics = 3 (CAM) is IMPLEMENTED (v0.3.4): operationally accepted, honestly qualified."""
+
+    support = classify_scheme(key, 3)
+    assert support.status is SupportStatus.IMPLEMENTED
+    assert "CPU-oracle-qualified" in support.reason and "GPU/coupled-forecast qualification pending" in support.reason
+    validate_namelist({"physics": {key: [3]}})
+    validate_operational_namelist({"physics": {key: [3]}})
 
 
 @pytest.mark.parametrize("code", _COMPILED_OUT_CODES)

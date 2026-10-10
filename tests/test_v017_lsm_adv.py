@@ -53,15 +53,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # (option, name-substring, JAX module, column entrypoint, oracle savepoint glob,
 #  the unmodified WRF source the oracle checksums)
+# RUC (3) graduated to IMPLEMENTED in v0.3.4 (tests/test_v034_ruclsm.py).
 _REF_LSMS = [
-    (
-        3,
-        "RUC",
-        "gpuwrf.physics.lsm_ruc",
-        "ruc_column",
-        "proofs/v017/savepoints/ruclsm/fp64",
-        "module_sf_ruclsm.F",
-    ),
     (
         8,
         "SSiB",

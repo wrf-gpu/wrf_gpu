@@ -80,9 +80,12 @@ scheme (``proofs/v022/f2_oracles/morrison_aero``), fp64 machine band binding
 
 from __future__ import annotations
 
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.contracts.physics_interfaces import PhysicsTendency
 from gpuwrf.physics import morrison_constants as C
 from gpuwrf.physics.microphysics_morrison import (
     polysvp, _slope_generic, _slope_droplet)
@@ -92,13 +95,13 @@ from gpuwrf.physics._morrison_aero_cold import (
     mdm_prescribed_activate)
 
 
-@jax.jit
+@partial(jax.jit, static_argnames=("aercu_opt",))
 def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
                       pii, p, dz, w, kzh,
                       aero_dust1, aero_dust2, aero_dust3, aero_dust4,
                       aero_seasalt, aero_sulfate, aero_bcpho, aero_bcphi,
                       aero_ocpho, aero_ocphi,
-                      dt, aercu_fct=1.0):
+                      dt, aercu_fct=1.0, aercu_opt=2):
     """Run one aerosol-aware Morrison step on a batch of columns.
 
     All 3-D-in-WRF args have shape (ncol, kx), bottom-up in k, except ``kzh``
@@ -106,7 +109,24 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     reads KZH(I,K+1,J).  The 10 ``aero_*`` args are the AEROCU species in
     WRF Registry order (ug/m3).  Returns the base outputs + ``nc`` and the
     aero diagnostics (efcg/efig/efsg/wact/ccn1..7).
+
+    ``aercu_opt`` (static) selects the WRF wrapper branch:
+      * 2 (default; the v0.23 oracle point): prognostic NC (iinum=INUM=0),
+        IACT=4 activation, INUC=2 Liu-Penner nucleation, CCN/EFCG/WACT
+        diagnostics.  Requires cu_physics=11 (MSKF) + the CESM aerosol file
+        in WRF (share/module_check_a_mundo.F:1407).
+      * 0 (WRF Registry default, the stand-alone-reachable point): aero.F
+        l.1071-1074 -> nc1d=0 placeholder, iinum=INUM=1 constant droplets
+        (NDCNST=250 cm-3 at l.1797/l.2711/l.4997), INUC=0 Cooper curve, no
+        activation, no aerosol diagnostics (the ``nc``/``kzh``/``aero_*``
+        inputs are dead; returned dict has no efcg/efig/efsg/wact/ccn*).
+        The aero module's DCS=350e-6 cascade and cloud-free Reff defaults
+        still apply, so this is NOT mp_physics=10.
     """
+    if aercu_opt not in (0, 2):
+        raise ValueError(f"morrison_aero_run: aercu_opt={aercu_opt!r} not ported "
+                         "(supported: 0 = constant droplets, 2 = prescribed aerosol)")
+    iinum = 1 if aercu_opt == 0 else 0
     th = jnp.asarray(th)
     f = th.dtype
     qv = jnp.asarray(qv, f); qc = jnp.asarray(qc, f); qr = jnp.asarray(qr, f)
@@ -125,6 +145,14 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     # ----------------------------------------------------------------------
     # Wrapper: WVAR from KZH one staggered level up (aero.F l.923-933).
     # ----------------------------------------------------------------------
+    if aercu_opt == 0:
+        # aero.F l.1071-1074: nc1d = 0 placeholder (constant set in micro);
+        # WVAR (l.923-933) is computed by WRF but only read by INUM=0
+        # activation / INUC=2 -> dead here.
+        nc = jnp.zeros_like(th)
+        return _morrison_aero_micro(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng,
+                                    nc, pii, p, dz, w, dt, None, None, None,
+                                    iinum=1)
     wvar = kzh[:, 1:] / 20.0
     wvar = jnp.maximum(0.10, wvar)
     wvar = jnp.minimum(50.0, wvar)
@@ -154,8 +182,37 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     for s in range(A.PSAT_PAMDM):
         acc = jnp.zeros_like(th)
         for m in range(A.NAER_CU):
-            acc = acc + naer[..., m] * A.CCNFACT_PAMDM[s, m]
+            acc = acc + naer[..., m] * f.type(A.CCNFACT_PAMDM[s, m])
         ccn.append(acc)
+
+    out = _morrison_aero_micro(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng,
+                               nc, pii, p, dz, w, dt, wvar, naer, maero,
+                               iinum=0)
+    effc, effi, effs = out["effc"], out["effi"], out["effs"]
+    # Wrapper aero outputs (aercu_opt>0, aero.F l.1130-1136)
+    efcg = jnp.maximum(2.49, jnp.minimum(effc, 50.0))
+    efig = jnp.maximum(4.99, jnp.minimum(effi, 120.0))
+    efsg = jnp.maximum(9.99, jnp.minimum(effs, 999.0))
+    wact = wvar + w
+
+    out.update({
+        "efcg": efcg, "efig": efig, "efsg": efsg, "wact": wact,
+        "ccn1": ccn[0], "ccn2": ccn[1], "ccn3": ccn[2], "ccn4": ccn[3],
+        "ccn5": ccn[4], "ccn6": ccn[5], "ccn7": ccn[6],
+    })
+    return out
+
+
+def _morrison_aero_micro(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
+                         pii, p, dz, w, dt, wvar, naer, maero, *, iinum):
+    """MORR_TWO_MOMENT_MICRO of the aero module (+ wrapper T/TH conversion).
+
+    ``iinum`` = 0 (aercu_opt=2: prognostic NC, IACT=4 activation, INUC=2) or
+    1 (aercu_opt=0: constant droplets, no activation, INUC=0 Cooper).
+    """
+    f = th.dtype
+    QSMALL = C.QSMALL
+    R = C.R; RV = C.RV; CP = C.CP; EP_2 = C.EP_2; PI = C.PI
 
     # wrapper: T = TH*PII
     t = th * pii
@@ -167,8 +224,8 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     xxls = 3.15e6 - 2370.0 * t + 0.3337e6
     cpm = CP * (1.0 + 0.887 * qv)
 
-    evs = jnp.minimum(0.99 * p, polysvp(t, 0))
-    eis = jnp.minimum(0.99 * p, polysvp(t, 1))
+    evs = jnp.minimum(0.99 * p, A.polysvp_real(t, 0))
+    eis = jnp.minimum(0.99 * p, A.polysvp_real(t, 1))
     eis = jnp.where(eis > evs, evs, eis)
     qvs = EP_2 * evs / (p - evs)
     qvi = EP_2 * eis / (p - eis)
@@ -232,6 +289,10 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
                        | ((t >= 273.15) & (qvqvs < 0.999)))
     do_cell = ~skip200
 
+    if iinum == 1:
+        # aercu_opt=0: constant droplet number NDCNST cm-3 -> kg-1
+        # (aero.F l.1797 warm / l.2711 cold branch entry; same as base port)
+        nc = C.NDCNST * 1.0e6 / rho
     # iinum=0: NC stays prognostic — the base port's constant-droplet
     # assignment (NDCNST*1e6/rho) is skipped.
 
@@ -446,7 +507,7 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
         cold, t, qv, qc, qr, qi, qs, qg, nc, ni, ns, nr, ng,
         qvs, qvi, qvqvs, qvqvsi, ab, abi, rho, dv, mu, sc, kap,
         ain, arn, asn, agn, acn, dum_dc, xxlv, xxls, xlf, cpm, p,
-        w, wvar, naer, dt)
+        w, wvar, naer, dt, inuc=2 if iinum == 0 else 0)
     (qv_c, t_c, qc_c, qr_c, qi_c, qni_c, qg_c,
      nc_c, ni_c, ns_c, nr_c, ng_c,
      ni_clamp, ns_clamp, nr_clamp, ng_clamp, nc_clamp) = out
@@ -475,7 +536,7 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     # =====================================================================
     dumt = t + dt * t_ten
     dumqv = qv + dt * qv_ten
-    dum_svp = jnp.minimum(0.99 * p, polysvp(dumt, 0))
+    dum_svp = jnp.minimum(0.99 * p, A.polysvp_real(dumt, 0))
     dumqss = EP_2 * dum_svp / (p - dum_svp)
     dumqc = jnp.maximum(qc + dt * qc_ten, 0.0)
     dums = dumqv - dumqss
@@ -496,11 +557,12 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     # (the IACT=4 reassignment drops the 0.10 floor); activate returns 0
     # for wbar<=0.
     # =====================================================================
-    act = do_cell & ((qc + qc_ten * dt) >= QSMALL)
-    wbar = w + wvar
-    nact = mdm_prescribed_activate(wbar, t, rho, naer, maero, xxlv)
-    dum2 = jnp.maximum((nact - nc) / dt, 0.0)
-    nc_ten = nc_ten + jnp.where(act, dum2, 0.0)
+    if iinum == 0:
+        act = do_cell & ((qc + qc_ten * dt) >= QSMALL)
+        wbar = w + wvar
+        nact = mdm_prescribed_activate(wbar, t, rho, naer, maero, xxlv)
+        dum2 = jnp.maximum((nact - nc) / dt, 0.0)
+        nc_ten = nc_ten + jnp.where(act, dum2, 0.0)
 
     # =====================================================================
     # SEDIMENTATION (aero: DUMFNC = MAX(0, NC+NCTEN*DT), aero LAMMINI)
@@ -511,7 +573,7 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
         qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
         qc_ten, qi_ten, qni_ten, qr_ten, qg_ten,
         nc_ten, ni_ten, ns_ten, nr_ten, ng_ten,
-        t, p, rho, dz, dt, do_cell)
+        t, p, rho, dz, dt, do_cell, iinum=iinum)
 
     ni_ten = ni_ten + ni_sed
     ns_ten = ns_ten + ns_sed
@@ -531,7 +593,8 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
                          qc_ten, qi_ten, qni_ten, qr_ten, qg_ten,
                          t_ten, qv_ten,
                          nc_ten, ni_ten, ns_ten, nr_ten, ng_ten,
-                         xxlv, xxls, xlf, cpm, p, rho, dt, do_cell)
+                         xxlv, xxls, xlf, cpm, p, rho, dt, do_cell,
+                         iinum=iinum)
     (t, qv, qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
      effc, effi, effs, effr, effg) = res
 
@@ -542,18 +605,47 @@ def morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
     graupelncv = grplprt
     sr = snowrt / (precrt + 1.0e-12)
 
-    # Wrapper aero outputs (aercu_opt>0, aero.F l.1130-1136)
-    efcg = jnp.maximum(2.49, jnp.minimum(effc, 50.0))
-    efig = jnp.maximum(4.99, jnp.minimum(effi, 120.0))
-    efsg = jnp.maximum(9.99, jnp.minimum(effs, 999.0))
-    wact = wvar + w
-
     return {
         "th": th_out, "qv": qv, "qc": qc, "qr": qr, "qi": qi, "qs": qs, "qg": qg,
         "ni": ni, "ns": ns, "nr": nr, "ng": ng, "nc": nc,
         "effc": effc, "effi": effi, "effs": effs, "effr": effr, "effg": effg,
-        "efcg": efcg, "efig": efig, "efsg": efsg, "wact": wact,
-        "ccn1": ccn[0], "ccn2": ccn[1], "ccn3": ccn[2], "ccn4": ccn[3],
-        "ccn5": ccn[4], "ccn6": ccn[5], "ccn7": ccn[6],
         "rainncv": rainncv, "snowncv": snowncv, "graupelncv": graupelncv, "sr": sr,
     }
+
+
+# ===========================================================================
+# Adapter: frozen PhysicsTendency per the S0 interface (mp_physics=40).
+# ===========================================================================
+def morrison_aero_tendency(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
+                           pii, p, dz, w, dt, *, aercu_opt=0):
+    """Run mp=40 and return a frozen PhysicsTendency (state_replacements).
+
+    Operational entry for the WRF-reachable stand-alone point ``aercu_opt=0``
+    (constant droplets; WRF forbids aercu_opt>0 without cu_physics=11 MSKF,
+    which is not ported).  The KZH / AEROCU inputs are dead at aercu_opt=0
+    and are passed as scalar zeros (XLA drops them).  ``Nc`` (WRF qnc) is
+    replaced by the scheme's output exactly as WRF's wrapper writes
+    ``NC(i,k,j) = nc1d(k)`` (aero.F l.1142): NDCNST*1e6/rho everywhere.
+    """
+    if aercu_opt != 0:
+        raise ValueError("morrison_aero_tendency: only aercu_opt=0 is operational "
+                         "(aercu_opt>0 needs cu_physics=11 MSKF + CESM aerosol input)")
+    z = 0.0
+    out = morrison_aero_run(th, qv, qc, qr, qi, qs, qg, ni, ns, nr, ng, nc,
+                            pii, p, dz, w, z, z, z, z, z, z, z, z, z, z, z,
+                            dt, aercu_opt=0)
+    return PhysicsTendency(
+        state_replacements={
+            "theta": out["th"], "qv": out["qv"], "qc": out["qc"], "qr": out["qr"],
+            "qi": out["qi"], "qs": out["qs"], "qg": out["qg"],
+            "Ni": out["ni"], "Ns": out["ns"], "Nr": out["nr"], "Ng": out["ng"],
+            "Nc": out["nc"],
+        },
+        accumulator_increments={
+            "rain_acc": out["rainncv"], "snow_acc": out["snowncv"],
+            "graupel_acc": out["graupelncv"],
+        },
+        diagnostics={
+            "re_cloud": out["effc"], "re_ice": out["effi"], "re_snow": out["effs"],
+        },
+    )

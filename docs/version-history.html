@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.3</span>
+          <span class="brand-sub">User's Guide · v0.3.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -56,6 +56,7 @@
 <div class="group-title">Reference</div>
 <a class="active" href="version-history.html">Version History</a>
 <div class="subnav">
+<a href="version-history.html#v034">v0.3.4 (2026-10-10)</a>
 <a href="version-history.html#v033">v0.3.3 (2026-10-09)</a>
 <a href="version-history.html#current">v0.3.2 — layout and startup (2026-10-05)</a>
 <a href="version-history.html#v031">v0.3.1 — WRF-order fixes and performance (2026-10-05)</a>
@@ -75,7 +76,7 @@
     <div class="content-wrap">
       <main>
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › Reference › Version History</div>
-        <h1>Version history and release notes</h1><p>v0.3.3: faster native Noah-MP radiation, corrected GPU layouts, Thompson snow fall speeds and small-grid stability barriers. <a href="release/RELEASE_NOTES_v0.3.3.md">Release notes and disclosures</a> · <a href="release/evidence/v033/final_w3/index.html">Final original-CPU plots</a>.</p><h2 id="v033">v0.3.3 (2026-10-09)<a class="headerlink" href="#v033" aria-label="Permalink">¶</a></h2><p>All eight final original-CPU comparisons are complete. Raw failed checks and accepted disclosures are linked from validation; earlier source labels remain historical.</p><h2>Earlier published releases</h2>
+        <h1>Version history and release notes</h1><p>v0.3.4: fix release — <code>gpuwrf run</code> binds or refuses every namelist physics option (≤0.3.3 silently ran the default suite for non-default schemes; re-run those). Experimental opt-in schemes; default program and its v0.3.3 validation unchanged. <a href="release/RELEASE_NOTES_v0.3.4.md">Release notes</a> · <a href="release/SUPPORT_MATRIX_v0.3.4.md">Support matrix</a>.</p><h2 id="v034">v0.3.4 (2026-10-10)<a class="headerlink" href="#v034" aria-label="Permalink">¶</a></h2><p>Fix release. The default compiled program is unchanged; the first run recompiles once because the cache is version-keyed.</p><p>v0.3.3: faster native Noah-MP radiation, corrected GPU layouts, Thompson snow fall speeds and small-grid stability barriers. <a href="release/RELEASE_NOTES_v0.3.3.md">Release notes and disclosures</a> · <a href="release/evidence/v033/final_w3/index.html">Final original-CPU plots</a>.</p><h2 id="v033">v0.3.3 (2026-10-09)<a class="headerlink" href="#v033" aria-label="Permalink">¶</a></h2><p>All eight final original-CPU comparisons are complete. Raw failed checks and accepted disclosures are linked from validation; earlier source labels remain historical.</p><h2>Earlier published releases</h2>
 
 <h2 id="current">v0.3.2 — layout and startup (2026-10-05)<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
 <p>Stable nested layout pin, accepted momentum fusion, lazy dormant-scheme

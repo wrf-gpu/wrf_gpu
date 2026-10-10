@@ -56,11 +56,10 @@ def test_scheme_catalog_classifications() -> None:
     assert classify_scheme("sf_sfclay_physics", 3).status is SupportStatus.IMPLEMENTED
     # slab (1) was bumped to IMPLEMENTED (v0.17 operationally scan-wired).
     assert classify_scheme("sf_surface_physics", 1).status is SupportStatus.IMPLEMENTED
-    # RUC (3) + SSiB (8) became v0.17 Tier-3 REFERENCE_ONLY: a fp64 pristine-WRF
-    # single-column oracle is staged (proofs/v017/oracle/{ruclsm,ssib}), but the
-    # faithful JAX column kernel is a carry-over, so each is namelist-accepted for a
-    # single-column reference comparison and fail-closes in the operational scan.
-    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.REFERENCE_ONLY
+    # SSiB (8) is v0.17 Tier-3 REFERENCE_ONLY (fp64 pristine-WRF single-column oracle
+    # staged, faithful JAX column kernel = carry-over). RUC (3) graduated to IMPLEMENTED
+    # in v0.3.4 (explicit ruc_static/ruc_land bundle seam, like slab/Pleim-Xiu).
+    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_surface_physics", 8).status is SupportStatus.REFERENCE_ONLY
 
 
@@ -117,9 +116,10 @@ def test_slab_lsm_resolves_with_static() -> None:
     assert suite.land_surface.gpu_runnable
 
 
-def test_ruc_lsm_rejected_out_of_matrix() -> None:
-    # RUC (3) is not in the accept matrix -> rejected at resolution.
-    with pytest.raises(Exception):
+def test_ruc_lsm_fails_closed_without_explicit_bundles() -> None:
+    # RUC (3) is scan-wired only through explicit ruc_static/ruc_land bundles; without
+    # them the operational resolution fails closed with the named RUC reason.
+    with pytest.raises(Exception, match="sf_surface_physics=3"):
         _resolve_operational_suite(_namelist(sf_surface_physics=3))
 
 

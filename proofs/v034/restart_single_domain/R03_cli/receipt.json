@@ -1,0 +1,168 @@
+{
+ "chain_log": [
+  "2026-10-10T13:58:27Z START B_first",
+  "2026-10-10T14:24:23Z END B_first rc=0",
+  "G200=<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791642159101906121-abd7b8fd56b24e1893381ceeb303e08d",
+  "2026-10-10T14:24:23Z START C0_refuse",
+  "2026-10-10T14:27:14Z END C0_refuse rc=1",
+  "2026-10-10T14:27:14Z START C_extend_killed",
+  "2026-10-10T14:44:22Z SIGKILL pid=350548 after root_step=300 VERIFIED",
+  "G300=<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791643459364388814-4b93b06c875a44d386593895f1be2f96",
+  "2026-10-10T14:44:25Z START D_resume",
+  "2026-10-10T15:02:23Z END D_resume rc=0",
+  "2026-10-10T15:02:24Z START A_control",
+  "2026-10-10T15:28:16Z END A_control rc=0",
+  "{\"control_files\": [\"wrfout_d01_2023-01-15_00:00:00\", \"wrfout_d01_2023-01-15_01:00:00\", \"wrfout_d01_2023-01-15_02:00:00\"], \"candidate_files\": [\"wrfout_d01_2023-01-15_00:00:00\", \"wrfout_d01_2023-01-15_01:00:00\", \"wrfout_d01_2023-01-15_02:00:00\"], \"file_set_equal\": true, \"variables_compared\": 1131, \"variables_different\": [], \"byte_exact\": true}",
+  "2026-10-10T15:28:18Z CHAIN_DONE"
+ ],
+ "comparison": {
+  "control_files": [
+   "wrfout_d01_2023-01-15_00:00:00",
+   "wrfout_d01_2023-01-15_01:00:00",
+   "wrfout_d01_2023-01-15_02:00:00"
+  ],
+  "candidate_files": [
+   "wrfout_d01_2023-01-15_00:00:00",
+   "wrfout_d01_2023-01-15_01:00:00",
+   "wrfout_d01_2023-01-15_02:00:00"
+  ],
+  "file_set_equal": true,
+  "files": {
+   "wrfout_d01_2023-01-15_00:00:00": {
+    "variables": 377,
+    "global_attrs_equal": true,
+    "variable_names_equal": true,
+    "different": []
+   },
+   "wrfout_d01_2023-01-15_01:00:00": {
+    "variables": 377,
+    "global_attrs_equal": true,
+    "variable_names_equal": true,
+    "different": []
+   },
+   "wrfout_d01_2023-01-15_02:00:00": {
+    "variables": 377,
+    "global_attrs_equal": true,
+    "variable_names_equal": true,
+    "different": []
+   }
+  },
+  "variables_compared": 1131,
+  "variables_different": [],
+  "byte_exact": true
+ },
+ "wrfout_sha256": {
+  "control": {
+   "wrfout_d01_2023-01-15_00:00:00": "b85581cf6b172c47449c4ce21659f03f2626519c81dfd20546821176e5ddce19",
+   "wrfout_d01_2023-01-15_01:00:00": "77043c99f38c3ae749f530fa4fa5a956d8066d1b97152749c9b46f71c83cf000",
+   "wrfout_d01_2023-01-15_02:00:00": "3b8d79ad33546dad58061e1d94880b8e37a25cd79a450c70fc20e000145eb9aa"
+  },
+  "stream": {
+   "wrfout_d01_2023-01-15_00:00:00": "b85581cf6b172c47449c4ce21659f03f2626519c81dfd20546821176e5ddce19",
+   "wrfout_d01_2023-01-15_01:00:00": "77043c99f38c3ae749f530fa4fa5a956d8066d1b97152749c9b46f71c83cf000",
+   "wrfout_d01_2023-01-15_02:00:00": "3b8d79ad33546dad58061e1d94880b8e37a25cd79a450c70fc20e000145eb9aa"
+  }
+ },
+ "payloads": {
+  "B_first": {
+   "verdict": "PIPELINE_GREEN",
+   "own_steps": {
+    "d01": 200
+   },
+   "wrfout_count": 2,
+   "wall_clock_total_s": 1454.1338014210341,
+   "restart": {
+    "checkpoints": [
+     {
+      "bytes": 69450046,
+      "evidence_bytes": 1319,
+      "path": "<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791641706058667437-b79d57c2371048a1beaa46c8f702a3e5",
+      "publication_peak_bytes": 69451365,
+      "removed": [],
+      "retained_bytes": 69451365,
+      "retained_count": 1,
+      "root_step": 100,
+      "wall_s": 0.7157157650217414
+     },
+     {
+      "bytes": 69449968,
+      "evidence_bytes": 1621,
+      "path": "<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791642159101906121-abd7b8fd56b24e1893381ceeb303e08d",
+      "publication_peak_bytes": 138901635,
+      "removed": [],
+      "retained_bytes": 138901635,
+      "retained_count": 2,
+      "root_step": 200,
+      "wall_s": 8.75911190896295
+     }
+    ],
+    "enabled": true
+   },
+   "cpu_affinity": [
+    8
+   ],
+   "device": "none"
+  },
+  "D_resume": {
+   "verdict": "PIPELINE_GREEN",
+   "own_steps": {
+    "d01": 400
+   },
+   "wrfout_count": 3,
+   "wall_clock_total_s": 1045.9432107119355,
+   "restart": {
+    "checkpoints": [
+     {
+      "bytes": 69450506,
+      "evidence_bytes": 1923,
+      "path": "<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791644511932827356-4558d58e857c47d18a8b465dd78dfda5",
+      "publication_peak_bytes": 138902722,
+      "removed": [
+       "<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791642159101906121-abd7b8fd56b24e1893381ceeb303e08d"
+      ],
+      "retained_bytes": 138902722,
+      "retained_count": 2,
+      "root_step": 400,
+      "wall_s": 1.409749445039779
+     }
+    ],
+    "enabled": true,
+    "end_time": {
+     "checkpoint_hours": 2.0,
+     "extended": false,
+     "hours": 2.0
+    },
+    "read_wall_s": 0.223321111057885,
+    "replayed_history": [],
+    "resume_to_first_segment_ready_s": 1043.4404316029977,
+    "resumed_from": "<USER_HOME>/wrf_gpu2_lanes/o1-restart/R03_cli/ck/generation-1791643459364388814-4b93b06c875a44d386593895f1be2f96"
+   },
+   "cpu_affinity": [
+    8
+   ],
+   "device": "none"
+  },
+  "A_control": {
+   "verdict": "PIPELINE_GREEN",
+   "own_steps": {
+    "d01": 400
+   },
+   "wrfout_count": 3,
+   "wall_clock_total_s": 1525.432524792035,
+   "restart": {
+    "checkpoints": [],
+    "enabled": false
+   },
+   "cpu_affinity": [
+    8
+   ],
+   "device": "none"
+  }
+ },
+ "C0_refusal": [
+  "gpuwrf: error: nested forecast failed (ValueError: restart forecast end differs from the checkpointed run (1 h -> 2 h); pass --extend-run to continue to the later end time)"
+ ],
+ "C_kill": [
+  "2026-10-10T14:44:22Z SIGKILL pid=350548 after root_step=300 VERIFIED"
+ ]
+}

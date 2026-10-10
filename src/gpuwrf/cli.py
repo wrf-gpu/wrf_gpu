@@ -236,7 +236,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--checkpoint-max-bytes", type=int, default=8 * 1024**3, help="Maximum retained checkpoint bytes (default 8 GiB).")
     run.add_argument("--checkpoint-max-generations", type=int, default=2, help="Maximum retained generations; at least 2 are needed to publish safe successors (default 2).")
     run.add_argument("--checkpoint-reserve-bytes", type=int, default=10 * 1024**3, help="Minimum free filesystem bytes after a checkpoint (default 10 GiB).")
-    run.add_argument("--resume-checkpoint", type=Path, default=None, help="Verified generation to resume in the same nested output stream.")
+    run.add_argument("--resume-checkpoint", type=Path, default=None, help="Verified generation to resume in the same output stream (native single-domain d01 or nested).")
+    run.add_argument("--extend-run", action="store_true", help="With --resume-checkpoint: continue to a LATER forecast end (--hours) than the run that wrote the checkpoint (WRF restart with a longer run length). Without it a changed end time is refused.")
     run.add_argument(
         "--dry-run",
         action="store_true",
@@ -845,8 +846,6 @@ def _cmd_run(args: argparse.Namespace) -> int:
         maxdom_source = "default"
     if max_dom < 1:
         return _fail(f"--max-dom must be >= 1, got {max_dom}")
-    if max_dom == 1 and (getattr(args, "checkpoint_dir", None) is not None or getattr(args, "resume_checkpoint", None) is not None):
-        return _fail("checkpoint/resume currently requires the live nested driver (--max-dom > 1)")
     if bool(getattr(args, "emit_initial_history", False)) and max_dom <= 1:
         return _fail("--emit-initial-history requires a nested run (--max-dom > 1)")
 
@@ -926,6 +925,49 @@ def _cmd_run(args: argparse.Namespace) -> int:
         max_dom == 1 and effective_domain == "d01"
         and _detect_init_mode_light(input_dir, effective_domain, max_dom) == "standalone_native_init"
     )
+    # Checkpoint/resume lives in the shared native driver (nested or native
+    # single-root d01). The CPU-WRF replay / non-d01 single-domain compatibility
+    # path has no restart store, so it refuses the flags instead of ignoring them.
+    restart_requested = (getattr(args, "checkpoint_dir", None) is not None
+                         or getattr(args, "resume_checkpoint", None) is not None)
+    if bool(getattr(args, "extend_run", False)) and getattr(args, "resume_checkpoint", None) is None:
+        return _fail("--extend-run requires --resume-checkpoint")
+    if restart_requested and max_dom == 1 and not native_single:
+        return _fail(
+            "checkpoint/resume requires the native driver: a nested run (--max-dom > 1) or a "
+            "single-domain d01 run initialized from wrfinput/wrfbdy; CPU-WRF replay and "
+            "non-d01 single-domain runs cannot checkpoint"
+        )
+    # Native roots read lateral forcing from wrfbdy_d01; refuse an end (incl. a
+    # resumed --extend-run) past its coverage instead of clamping the last record.
+    if max_dom > 1 or native_single:
+        from gpuwrf.io.wrfbdy_coverage import BoundaryCoverageError, require_wrfbdy_coverage
+
+        try:
+            require_wrfbdy_coverage(input_dir, effective_hours, domain="d01")
+        except BoundaryCoverageError as exc:
+            return _fail(str(exc))
+        except Exception as exc:  # noqa: BLE001 - unreadable boundary file: fail cleanly pre-JAX
+            return _fail(f"could not read the lateral boundary coverage of wrfbdy_d01: {type(exc).__name__}: {exc}")
+
+    # --- v0.3.4 P0 (o1-nlbind): every explicit &physics/&dynamics/&noah_mp value
+    # must be one the selected driver runs (<=v0.3.3 silently ran defaults). ----
+    try:
+        from gpuwrf.io.namelist_binding import (
+            NamelistNotHonouredError,
+            require_namelist_honoured,
+        )
+        from gpuwrf.io.namelist_check import _coerce_config
+
+        _run_domains = (
+            tuple(f"d{i:02d}" for i in range(1, max_dom + 1)) if max_dom > 1 else (effective_domain,)
+        )
+        for _warning in require_namelist_honoured(
+            _coerce_config(namelist), _run_domains, replay=not (max_dom > 1 or native_single)
+        ):
+            print(f"gpuwrf: warning: {_warning}", file=sys.stderr)
+    except NamelistNotHonouredError as exc:
+        return _fail(str(exc))
 
     # --- DRY RUN: print the effective plan as JSON and exit WITHOUT importing
     # the heavy JAX/GPU forecast pipeline or allocating a GPU. -----------------
@@ -950,6 +992,13 @@ def _cmd_run(args: argparse.Namespace) -> int:
             plan["aot_prefetch"] = bool(getattr(args, "aot_prefetch", True))
         if native_single or bool(getattr(args, "emit_initial_history", False)):
             plan["emit_initial_history"] = True
+        if restart_requested:
+            plan["restart"] = {
+                "checkpoint_dir": getattr(args, "checkpoint_dir", None),
+                "checkpoint_interval_steps": getattr(args, "checkpoint_interval_steps", 0),
+                "resume_checkpoint": getattr(args, "resume_checkpoint", None),
+                "extend_run": bool(getattr(args, "extend_run", False)),
+            }
         print(json.dumps(plan, indent=2, sort_keys=True, default=str))
         return 0
 
@@ -1023,6 +1072,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             checkpoint_max_generations=getattr(args, "checkpoint_max_generations", 2),
             checkpoint_reserve_bytes=getattr(args, "checkpoint_reserve_bytes", 10 * 1024**3),
             resume_checkpoint=getattr(args, "resume_checkpoint", None),
+            extend_end_time=bool(getattr(args, "extend_run", False)),
         )
         if nested_config.feedback:
             print(

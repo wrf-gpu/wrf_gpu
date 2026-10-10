@@ -1,0 +1,15 @@
+compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags=-w -ffree-form -ffree-line-length-none -fconvert=big-endian -frecord-marker=4 -O2 -I<USER_HOME>/src/wrf_pristine/WRF/phys -I<USER_HOME>/src/wrf_pristine/WRF/share -I<USER_HOME>/src/wrf_pristine/WRF/frame
+wrf_root=<USER_HOME>/src/wrf_pristine/WRF
+objects=prebuilt pristine-WRF objects (WRF REAL ABI, WRF FCOPTIM -O2 -ftree-vectorize -funroll-loops)
+253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a  <USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F
+d1f5c261770d9d89bda0e48e3c9c7f9d96ea8989271960fb66d7e3af8b7f0d68  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.F
+902050bd815678aad07757487bb68aa9bbd11341174a678b894f592f7d2d400e  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.F
+edb4a6bc27666918f9a3272c0fced4003e794a8ae22f755e2f640d875ade37c3  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_wv_saturation.F
+7f70e0dd9e384e9e1c03c08a4b6f968311e0e2ca8df8e4eaa1205ffc81b03c46  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_esinti.F
+8df8ef34644e32e864dcb3e77ced680d790b41467ab7f3988919133b91982128  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_gffgch.F
+d0ba65351dfd2b164152825d99b990e02a494cea9645eeb48368805207b9d834  <USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.o
+9dc8800c152857887215fd82ed46b0d8656ef53a8aa562d13eeff78356d5939f  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.o
+5cf24ec633b5a52b36fabf40fadf8501854686bf5681018ef0eefdeff099133f  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.o
+a35e421582448a9b6e2ee6dcd094048f920805b8d29fd88c38b211471292e49b  <USER_HOME>/src/wrf_gpu2_wt/o1-camuw/proofs/v034/camuw_oracle/camuw_oracle_v034.json
+1320300274a9778dfbd492901071378114b0e2afa90b91dde3748efe11ef473e  <USER_HOME>/src/wrf_gpu2_wt/o1-camuw/proofs/v034/camuw_oracle/camuw_oracle_v034_swiss.json

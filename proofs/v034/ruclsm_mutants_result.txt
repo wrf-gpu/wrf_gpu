@@ -1,0 +1,7 @@
+M1_no_melt_second_pass rc=1 src_ok=1 failed=2 asserts=4 errors=0 2 failed, 72 deselected in 17.12s
+M2_sfcevp_single_add rc=1 src_ok=1 failed=10 asserts=20 errors=0 10 failed, 1 passed, 63 deselected in 81.29s (0:01:21)
+M3_thin_snow_ilnb2 rc=1 src_ok=1 failed=3 asserts=6 errors=0 3 failed, 3 passed, 68 deselected in 46.58s
+M4_no_graupel_density rc=1 src_ok=1 failed=1 asserts=2 errors=0 1 failed, 73 deselected in 9.73s
+M5_freeze_keep_riw rc=0 src_ok=1 failed=0 asserts=0 errors=0 37 passed, 37 deselected in 288.22s (0:04:48)
+M6_rv_bottommelt_cap rc=1 src_ok=1 failed=4 asserts=8 errors=0 4 failed, 70 deselected in 32.93s
+M7_rv_conv_warm_liquid rc=1 src_ok=1 failed=3 asserts=6 errors=0 3 failed, 71 deselected in 20.79s

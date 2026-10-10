@@ -354,9 +354,9 @@ def test_ntiedtke_catalog_classification_implemented():
 
     assert_catalog_consistent()
     assert classify_scheme("cu_physics", 16).status is SupportStatus.IMPLEMENTED
-    # neighbours unchanged: cu=6 implemented, SAS family still reference-only.
+    # neighbours: cu=6 implemented, SAS 94 still reference-only (cu=4 graduated in v0.3.4).
     assert classify_scheme("cu_physics", 6).status is SupportStatus.IMPLEMENTED
-    assert classify_scheme("cu_physics", 4).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("cu_physics", 94).status is SupportStatus.REFERENCE_ONLY
     assert CU_SCAN_ADAPTERS[16] is ntiedtke_adapter
     assert CU_STATELESS_SCAN_ADAPTERS[16] is ntiedtke_adapter
     assert 16 in _SCAN_WIRED_OPTIONS["cu_physics"]

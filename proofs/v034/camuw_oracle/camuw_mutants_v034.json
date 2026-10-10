@@ -1,0 +1,30 @@
+{
+ "control": {
+  "verdict": "PASS",
+  "killed": false
+ },
+ "no_ke_dissipation_heating": {
+  "verdict": "GATE-FAIL camuw_oracle_v034.json:convective_clear#1:rublten err=3.991e-07 scale=5.354e-03",
+  "killed": true
+ },
+ "tauresx_sign": {
+  "verdict": "GATE-FAIL camuw_oracle_v034.json:convective_clear#1:tauresx2d err=4.140e-01 scale=1.394e-02",
+  "killed": true
+ },
+ "no_specific_humidity_conversion": {
+  "verdict": "GATE-FAIL camuw_oracle_v034.json:convective_clear#1:rublten err=4.537e-05 scale=5.354e-03",
+  "killed": true
+ },
+ "ricrit_0.25": {
+  "verdict": "GATE-FAIL camuw_oracle_v034_swiss.json:swiss_12z_j31_i12#1:rublten err=1.781e-02 scale=3.652e-03",
+  "killed": true
+ },
+ "ricrit_0.20": {
+  "verdict": "PASS",
+  "killed": false
+ },
+ "estbl_zero": {
+  "verdict": "GATE-FAIL camuw_oracle_v034.json:convective_clear#1:rublten err=6.311e-03 scale=5.354e-03",
+  "killed": true
+ }
+}

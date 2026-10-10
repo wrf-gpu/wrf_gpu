@@ -1,0 +1,24 @@
+{
+ "M1_no_jmin_search": {
+  "case": "g3_deep_r8",
+  "killed": false,
+  "worst_field": "XF_ENS",
+  "worst_rel": 1.8648930998218402e-12,
+  "note": "SURVIVED: the CUP_enss(_3d) keep_going downdraft-origin search never changes jmin/kdet on any staged case, nor on 80 probed tiles (G3+GD, deep/dry-upper/cold/marginal + cold-pool regimes, dt 54-300 s): coverage gap, branch ported line-faithfully but not oracle-verified"
+ },
+ "M2_no_neg_check": {
+  "case": "gd_r8_s2",
+  "killed": false,
+  "worst_field": "XF_ENS",
+  "worst_rel": 1.2023868932934141e-11,
+  "note": "SURVIVED: GD neg_check never fires on staged/probed tiles (output_ens already caps heating at 2*ddtes; the moisture limiter needs q+outq*dt<1e-10): coverage gap, ported line-faithfully but not oracle-verified"
+ },
+ "M3_no_subsidence_spreading": {
+  "case": "g3_highres_r8",
+  "killed": true,
+  "worst_field": "RTHCUTEN",
+  "worst_rel": 0.7306701698005511,
+  "note": "KILLED (cugd_avedx=3 spreading is load-bearing in g3_highres_r8)"
+ },
+ "probe": "<USER_HOME>/wrf_gpu2_lanes/o1-grell/probe_branches.py (normal vs mutant output diff count per tile, 0 everywhere)"
+}

@@ -194,6 +194,9 @@ def test_wsm7_catalog_classification_implemented():
     )
 
     assert_catalog_consistent()
-    assert classify_scheme("mp_physics", 24).status is SupportStatus.IMPLEMENTED
+    # v0.3.4 (o1-nlbind): scan-wired, but the release root lateral boundary has no
+    # qh record -> REFERENCE_ONLY (refused by gpuwrf run) with that named reason.
+    assert classify_scheme("mp_physics", 24).status is SupportStatus.REFERENCE_ONLY
+    assert "qh" in classify_scheme("mp_physics", 24).reason
     # default Thompson unchanged
     assert classify_scheme("mp_physics", 8).status is SupportStatus.IMPLEMENTED

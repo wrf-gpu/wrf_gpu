@@ -1,0 +1,156 @@
+{
+ "fp32_bounds": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "At line 6400 of file module_sf_ruclsm.F",
+    "Fortran runtime error: Index '7' of dimension 1 of array 'zshalf' above upper bound of 6",
+    "Error termination. Backtrace:"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -finit-integer=0 -fcheck=bounds,do,mem,pointer",
+  "n_values_different": 0,
+  "regimes_with_text_differences": []
+ },
+ "fp32_ilnb2": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -finit-integer=2",
+  "n_values_different": 131,
+  "regimes_with_text_differences": [
+   7,
+   12,
+   14
+  ]
+ },
+ "fp32_initinf": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -finit-integer=0 -finit-real=inf -finit-logical=true",
+  "n_values_different": 0,
+  "regimes_with_text_differences": []
+ },
+ "fp32_noinit": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch",
+  "n_values_different": 0,
+  "regimes_with_text_differences": []
+ },
+ "fp32_reference_fatal_regimes": [
+  15
+ ],
+ "fp64_O0": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O0 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=0",
+  "n_values_different": 20,
+  "regimes_with_text_differences": [
+   15
+  ]
+ },
+ "fp64_bounds": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "At line 6400 of file module_sf_ruclsm.F",
+    "Fortran runtime error: Index '7' of dimension 1 of array 'zshalf' above upper bound of 6",
+    "Error termination. Backtrace:"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=0 -fcheck=bounds,do,mem,pointer",
+  "n_values_different": 68,
+  "regimes_with_text_differences": [
+   15
+  ]
+ },
+ "fp64_ilnb2": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=2",
+  "n_values_different": 255,
+  "regimes_with_text_differences": [
+   7,
+   12,
+   14
+  ]
+ },
+ "fp64_initinf": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=0 -finit-real=inf -finit-logical=true",
+  "n_values_different": 0,
+  "regimes_with_text_differences": []
+ },
+ "fp64_noinit": {
+  "fatal_regimes": [
+   15
+  ],
+  "fatal_stderr_head": {
+   "15": [
+    "-------------- FATAL CALLED ---------------",
+    "  crash in surface energy budget",
+    "-------------------------------------------"
+   ]
+  },
+  "fflags": "-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8",
+  "n_values_different": 0,
+  "regimes_with_text_differences": []
+ },
+ "fp64_reference_fatal_regimes": [
+  15
+ ],
+ "note": "values compared as exact dump text (ES24.16E3); regimes listed have >=1 differing value"
+}

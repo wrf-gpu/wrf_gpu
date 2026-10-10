@@ -1,0 +1,229 @@
+{
+ "all_green": true,
+ "fields": {
+  "acrunoff": {
+   "max_abs": 4.0444499742412756e-19,
+   "max_rel": 4.166017019839567e-12,
+   "pass": true
+  },
+  "acsnow": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "alb": {
+   "max_abs": 1.2945200467129325e-13,
+   "max_rel": 2.0444756264908987e-13,
+   "pass": true
+  },
+  "canwat": {
+   "max_abs": 2.4297603313132635e-20,
+   "max_rel": 2.145844460414157e-11,
+   "pass": true
+  },
+  "chklowq": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "dew": {
+   "max_abs": 2.0974074329955825e-19,
+   "max_rel": 3.224064521194648e-11,
+   "pass": true
+  },
+  "emiss": {
+   "max_abs": 1.4876988529977098e-14,
+   "max_rel": 1.5300979563539226e-14,
+   "pass": true
+  },
+  "grdflx": {
+   "max_abs": 4.414718590695088e-12,
+   "max_rel": 2.100218751858078e-11,
+   "pass": true
+  },
+  "hfx": {
+   "max_abs": 1.101512978052277e-12,
+   "max_rel": 1.308524046039485e-10,
+   "pass": true
+  },
+  "keepfr3dflag": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "lai": {
+   "max_abs": 5.551115123125783e-17,
+   "max_rel": 3.5223943351561225e-16,
+   "pass": true
+  },
+  "lh": {
+   "max_abs": 7.646730471044805e-13,
+   "max_rel": 3.224056711743542e-11,
+   "pass": true
+  },
+  "mavail": {
+   "max_abs": 6.583622536027178e-14,
+   "max_rel": 6.81532702845331e-14,
+   "pass": true
+  },
+  "precipfr": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "qcg": {
+   "max_abs": 2.518228952187035e-18,
+   "max_rel": 7.709378636257491e-13,
+   "pass": true
+  },
+  "qfx": {
+   "max_abs": 2.6972705414129126e-19,
+   "max_rel": 3.224069998791493e-11,
+   "pass": true
+  },
+  "qsfc": {
+   "max_abs": 4.618701254788249e-17,
+   "max_rel": 3.823346739483561e-14,
+   "pass": true
+  },
+  "qsg": {
+   "max_abs": 4.640385298237959e-17,
+   "max_rel": 3.8366563388777335e-14,
+   "pass": true
+  },
+  "qvg": {
+   "max_abs": 4.640385298237959e-17,
+   "max_rel": 3.8366563388777335e-14,
+   "pass": true
+  },
+  "rhosnf": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "sfcevp": {
+   "max_abs": 1.8397555614363403e-16,
+   "max_rel": 4.2221834286336805e-12,
+   "pass": true
+  },
+  "sfcexc": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "sfcrunoff": {
+   "max_abs": 4.0444499742412756e-19,
+   "max_rel": 4.166017019839567e-12,
+   "pass": true
+  },
+  "sh2o": {
+   "max_abs": 2.0622392682412283e-14,
+   "max_rel": 7.365140243718672e-14,
+   "pass": true
+  },
+  "smavail": {
+   "max_abs": 2.2737367544323206e-13,
+   "max_rel": 4.54641571937767e-16,
+   "pass": true
+  },
+  "smfr3d": {
+   "max_abs": 2.2926105458509483e-14,
+   "max_rel": 8.633261469731605e-14,
+   "pass": true
+  },
+  "smmax": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "snoalb": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "snom": {
+   "max_abs": 1.3575945922994492e-14,
+   "max_rel": 2.558420068995583e-12,
+   "pass": true
+  },
+  "snow": {
+   "max_abs": 3.1710745140856034e-15,
+   "max_rel": 5.1872272107902407e-14,
+   "pass": true
+  },
+  "snowc": {
+   "max_abs": 2.020605904817785e-13,
+   "max_rel": 2.960568050162332e-13,
+   "pass": true
+  },
+  "snowfallac": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "snowh": {
+   "max_abs": 4.0800696154974503e-13,
+   "max_rel": 6.81296087508861e-13,
+   "pass": true
+  },
+  "soilmois": {
+   "max_abs": 3.7192471324942744e-15,
+   "max_rel": 8.536623612136574e-15,
+   "pass": true
+  },
+  "soilt": {
+   "max_abs": 4.547473508864641e-13,
+   "max_rel": 1.7524834628463705e-15,
+   "pass": true
+  },
+  "soilt1": {
+   "max_abs": 3.410605131648481e-13,
+   "max_rel": 1.2681665553004159e-15,
+   "pass": true
+  },
+  "tsnav": {
+   "max_abs": 5.684341886080802e-14,
+   "max_rel": 1.8921609538370506e-12,
+   "pass": true
+  },
+  "tso": {
+   "max_abs": 3.410605131648481e-13,
+   "max_rel": 1.2357264969740872e-15,
+   "pass": true
+  },
+  "udrunoff": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "vegfra": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass": true
+  },
+  "z0": {
+   "max_abs": 1.1102230246251565e-16,
+   "max_rel": 3.8675433343834835e-16,
+   "pass": true
+  },
+  "znt": {
+   "max_abs": 1.1102230246251565e-16,
+   "max_rel": 3.8675433343834835e-16,
+   "pass": true
+  }
+ },
+ "n_columns": 48,
+ "n_steps": 12,
+ "oracle": "proofs/v034/savepoints/ruclsm/fp64/ruclsm_v2_fp64.json",
+ "rel_tol": 1e-09,
+ "schema": "ruclsm-v2-fp64-step-parity",
+ "unsupported_flagged": [
+  "sea_ice_bare",
+  "sea_ice_snow"
+ ],
+ "worst_abs": 4.414718590695088e-12,
+ "worst_rel": 1.308524046039485e-10,
+ "wrf_fatal_skipped": [
+  "forest_snow"
+ ]
+}

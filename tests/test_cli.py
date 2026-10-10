@@ -144,7 +144,7 @@ def test_run_unsupported_namelist_fails_closed(
     [
         # cu=16 (New-Tiedtke) graduated to IMPLEMENTED in v0.23 F2; cu=4
         # (scale-aware SAS, reference-only) exercises the pre-JAX fail-closed path.
-        ("&physics\n cu_physics = 4,\n/\n", "cu_physics=1/2/3/6"),
+        ("&physics\n cu_physics = 4,\n/\n", "cu_physics=1/2/3/5/6/16/93"),
     ],
 )
 def test_run_rejects_reference_only_radiation_pre_jax(
@@ -348,7 +348,9 @@ def test_run_real_canary_cudt_namelist_proceeds_with_wrf_cadence(
     assert "Unsupported namelist" not in err
     # CUDT is implemented; the old approximation warning must no longer appear.
     assert "every dynamics step" not in err.lower()
-    assert "cudt" not in err.lower()
+    # Warning lines only: the scratch path printed on stderr contains this test's own
+    # tmp_path name ("..._cudt_...") once GPUWRF_SCRATCH no longer leaks from earlier tests.
+    assert not [line for line in err.lower().splitlines() if "warning" in line and "cudt" in line]
 
 
 # --------------------------------------------------------------------------- #

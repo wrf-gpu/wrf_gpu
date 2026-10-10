@@ -1735,12 +1735,26 @@ def root_scalar_bdy_rk1_enabled() -> bool:
     return os.environ.get("GPUWRF_ROOT_SCALAR_BDY_RK1", "0").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def root_scalar_rk1_split(config: BoundaryConfig, species) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """``(relaxed, flow_dep)`` root species, solve_em.F:2346-2347/:2426 and :2893-2895/:2995."""
+def root_scalar_rk1_split(config: BoundaryConfig, species, *, flow_only=()) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """``(relaxed, flow_dep)`` root species, solve_em.F:2346-2347/:2426 and :2893-2895/:2995.
+
+    ``flow_only`` (e.g. the NSSL mp=18 extras qh/qvolg/qvolh/Nc/Ns/Ng/Nh/Nn) maps species
+    without boundary records to WRF's flow_dep_bdy branch, which is what WRF does when
+    have_bcs_moist (qh) / have_bcs_scalar (scalar-array members) is .false.; a run whose
+    wrfbdy claims those boundary records fails closed.
+    """
 
     relaxed: list[str] = []
     flow: list[str] = []
     for name in species:
+        if name in flow_only:
+            have = config.have_bcs_moist if name == "qh" else config.have_bcs_scalar
+            if have is None or bool(have):
+                raise NotImplementedError(
+                    f"{name!r} has no lateral boundary records in this port; it needs "
+                    f"have_bcs_{'moist' if name == 'qh' else 'scalar'}=.false. (flow_dep_bdy)")
+            flow.append(name)
+            continue
         if name not in _ROOT_RK1_SCALAR_SPECIES:
             # QNWFA/QNIFA/QNBCA, ntu3m, ... have their own WRF boundary branches.
             raise NotImplementedError(

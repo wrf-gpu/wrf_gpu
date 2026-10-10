@@ -1,0 +1,53 @@
+{
+ "K1_cli_coverage_check_removed": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_boundary_coverage.py::test_cli_refuses_uncovered_end_before_any_model_work"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 5 passed in 3.98s"
+ },
+ "K2_driver_coverage_check_removed": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_boundary_coverage.py::test_driver_refuses_uncovered_end_before_loading[1]",
+   "tests/v025/restart/test_boundary_coverage.py::test_driver_refuses_uncovered_end_before_loading[2]"
+  ],
+  "setup_errors": [],
+  "killed": false,
+  "summary": "2 failed, 4 passed in 4.41s"
+ },
+ "K3_ignore_wrf_boundary_metadata": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_boundary_coverage.py::test_coverage_is_the_tighter_of_leaf_span_and_wrf_metadata[21600-24-25]"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 5 passed in 4.15s"
+ },
+ "K4_ignore_leaf_span": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_boundary_coverage.py::test_coverage_is_the_tighter_of_leaf_span_and_wrf_metadata[3600-8-9]"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 5 passed in 5.23s"
+ },
+ "K5_clamp_tolerated_one_record": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_boundary_coverage.py::test_swiss_coverage_matches_wrf_boundary_metadata",
+   "tests/v025/restart/test_boundary_coverage.py::test_coverage_is_the_tighter_of_leaf_span_and_wrf_metadata[21600-24-25]",
+   "tests/v025/restart/test_boundary_coverage.py::test_coverage_is_the_tighter_of_leaf_span_and_wrf_metadata[3600-8-9]",
+   "tests/v025/restart/test_boundary_coverage.py::test_cli_refuses_uncovered_end_before_any_model_work",
+   "tests/v025/restart/test_boundary_coverage.py::test_driver_refuses_uncovered_end_before_loading[1]",
+   "tests/v025/restart/test_boundary_coverage.py::test_driver_refuses_uncovered_end_before_loading[2]"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "6 failed in 4.08s"
+ }
+}

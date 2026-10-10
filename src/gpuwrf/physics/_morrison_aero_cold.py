@@ -190,6 +190,36 @@ _DERF_B = np.array([
     0.09084526782065478489e0], dtype=np.float64).reshape(5, 13)
 
 
+def polysvp_real(t, itype):
+    """``polysvp`` for any float dtype (WRF REAL in fp32).
+
+    fp64 inputs route to the base port's ``polysvp`` UNCHANGED (fp64 jaxpr
+    identity); other dtypes evaluate the same Flatau/Goff-Gratch expressions
+    with the LOG10 constants typed to the input dtype (the base helper's
+    ``jnp.log10(6.1071)`` would otherwise create a strong f64 under x64).
+    """
+    from gpuwrf.physics.microphysics_morrison import (
+        polysvp as _polysvp64, _flatau, _A_ICE, _A_LIQ)
+    f = t.dtype
+    if f == jnp.float64:
+        return _polysvp64(t, itype)
+    dt = t - 273.15
+    if itype == 1:
+        flat = _flatau(dt, _A_ICE)
+        gg = 10.0 ** (-9.09718 * (273.16 / t - 1.0)
+                      - 3.56654 * jnp.log10(273.16 / t)
+                      + 0.876793 * (1.0 - t / 273.16)
+                      + jnp.log10(jnp.asarray(6.1071, f))) * 100.0
+        return jnp.where(t >= 195.8, flat, gg)
+    flat = _flatau(dt, _A_LIQ)
+    gg = 10.0 ** (-7.90298 * (373.16 / t - 1.0)
+                  + 5.02808 * jnp.log10(373.16 / t)
+                  - 1.3816e-7 * (10.0 ** (11.344 * (1.0 - t / 373.16)) - 1.0)
+                  + 8.1328e-3 * (10.0 ** (-3.49149 * (373.16 / t - 1.0)) - 1.0)
+                  + jnp.log10(jnp.asarray(1013.246, f))) * 100.0
+    return jnp.where(t >= 202.0, flat, gg)
+
+
 def derf1_host(x):
     """Host/scalar DERF1 (same arithmetic as the traced version), for init."""
     w = abs(float(x))
@@ -382,6 +412,9 @@ def _mdm_hf(t_c, lnw, relhum, subgrid, na):
     regm = 6.07 * lnw - 55.0
 
     na_safe = jnp.maximum(na, REAL_TINY)
+    if t_c.dtype != jnp.float64:  # REAL: keep the literal select in-dtype
+        _f = t_c.dtype.type
+        a21_f, a22_f, b21_f, b22_f = _f(a21_f), _f(a22_f), _f(b21_f), _f(b22_f)
     a2f = jnp.where(t_c > -64.0, a21_f, a22_f)
     b2f = jnp.where(t_c > -64.0, b21_f, b22_f)
     k1_fast = jnp.exp(a2f + b2f * t_c + c2_f * lnw)
@@ -475,7 +508,7 @@ def _slope_generic(q, n, cmass, inv_pow, lammin, lammax, qsmall):
 def _cold_branch_aero(cold, t, qv, qc, qr, qi, qs, qg, nc, ni, ns, nr, ng,
                       qvs, qvi, qvqvs, qvqvsi, ab, abi, rho, dv, mu, sc, kap,
                       ain, arn, asn, agn, acn, dum_dc, xxlv, xxls, xlf, cpm,
-                      p, w, wvar, naer, dt):
+                      p, w, wvar, naer, dt, inuc=2):
     QSMALL = C.QSMALL
     PI = C.PI
     eps = _EPS
@@ -745,11 +778,20 @@ def _cold_branch_aero(cold, t, qv, qc, qr, qi, qs, qg, nc, ni, ns, nr, ng,
     # Same trigger as the base Cooper path; KC2 from mdm_prescribed_nucleati
     # with wbar = W + WVAR; NNUCCD floored at 0.
     nuc_cond = ((qvqvs >= 0.999) & (t <= 265.15)) | (qvqvsi >= 1.08)
-    wbar = w + wvar
-    kc2 = mdm_prescribed_nucleati(wbar, t, qvqvs, qvqvsi, qc, rho, naer)
-    do_nuc = nuc_cond & (kc2 > (ni + ns + ng))
-    nnuccd = jnp.where(do_nuc,
-                       jnp.maximum((kc2 - ni - ns - ng) / dt, 0.0), 0.0)
+    if inuc == 2:
+        wbar = w + wvar
+        kc2 = mdm_prescribed_nucleati(wbar, t, qvqvs, qvqvsi, qc, rho, naer)
+        do_nuc = nuc_cond & (kc2 > (ni + ns + ng))
+        nnuccd = jnp.where(do_nuc,
+                           jnp.maximum((kc2 - ni - ns - ng) / dt, 0.0), 0.0)
+    else:
+        # INUC=0 (aercu_opt=0; module init l.410 never overridden): Cooper
+        # curve, aero.F l.3498-3515 -- identical to the base port's
+        # _morrison_cold (no MAX(0,.) on NNUCCD: KC2 > NI+NS+NG gates it).
+        kc2 = jnp.minimum(0.005 * jnp.exp(0.304 * (273.15 - t)) * 1000.0, 500.0e3)
+        kc2 = jnp.maximum(kc2 / rho, 0.0)
+        do_nuc = nuc_cond & (kc2 > (ni + ns + ng))
+        nnuccd = jnp.where(do_nuc, (kc2 - ni - ns - ng) / dt, 0.0)
     mnuccd = jnp.where(do_nuc, nnuccd * C.MI0, 0.0)
 
     # ---- evap/sub/dep terms for qi, qni, qg, qr ----
@@ -902,7 +944,7 @@ def _cold_branch_aero(cold, t, qv, qc, qr, qi, qs, qg, nc, ni, ns, nr, ng,
 def _sedimentation_aero(qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
                         qc_ten, qi_ten, qni_ten, qr_ten, qg_ten,
                         nc_ten, ni_ten, ns_ten, nr_ten, ng_ten,
-                        t, p, rho, dz, dt, do_cell):
+                        t, p, rho, dz, dt, do_cell, iinum=0):
     QSMALL = C.QSMALL
     eps = _EPS
     ncol, kx = t.shape
@@ -915,7 +957,10 @@ def _sedimentation_aero(qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
     dumfnr = jnp.maximum(nr + nr_ten * dt, 0.0)
     dumc = qc + qc_ten * dt
     # iinum=0: DUMFNC = NC3D + NC3DTEN*DT (aero.F l.4312/4316-4318 skipped)
-    dumfnc = jnp.maximum(nc + nc_ten * dt, 0.0)
+    if iinum == 1:  # aercu_opt=0: DUMFNC = NC3D (aero.F l.4316-4318)
+        dumfnc = jnp.maximum(nc, 0.0)
+    else:
+        dumfnc = jnp.maximum(nc + nc_ten * dt, 0.0)
     dumg = qg + qg_ten * dt
     dumfng = jnp.maximum(ng + ng_ten * dt, 0.0)
 
@@ -1107,7 +1152,7 @@ def _finalize_aero(t, qv, qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
                    qc_ten, qi_ten, qni_ten, qr_ten, qg_ten,
                    t_ten, qv_ten,
                    nc_ten, ni_ten, ns_ten, nr_ten, ng_ten,
-                   xxlv, xxls, xlf, cpm, p, rho, dt, do_cell):
+                   xxlv, xxls, xlf, cpm, p, rho, dt, do_cell, iinum=0):
     QSMALL = C.QSMALL
     EP_2 = C.EP_2
     one = jnp.ones_like(t)
@@ -1136,8 +1181,8 @@ def _finalize_aero(t, qv, qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
     t = t + t_ten * dt
     qv = qv + qv_ten * dt
 
-    evs = jnp.minimum(0.99 * p, polysvp(t, 0))
-    eis = jnp.minimum(0.99 * p, polysvp(t, 1))
+    evs = jnp.minimum(0.99 * p, polysvp_real(t, 0))
+    eis = jnp.minimum(0.99 * p, polysvp_real(t, 1))
     eis = jnp.where(eis > evs, evs, eis)
     qvs = EP_2 * evs / (p - evs)
     qvi = EP_2 * eis / (p - eis)
@@ -1240,6 +1285,8 @@ def _finalize_aero(t, qv, qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
     # ice number upper bound; NC stays prognostic (iinum=0, IACT=4: no
     # constant reset and no (NANEW1+NANEW2)/RHO bound — aero.F l.4985-5001)
     ni = jnp.minimum(ni, 0.3e6 / rho)
+    if iinum == 1:  # aercu_opt=0: constant droplet reset (aero.F l.4997-5000)
+        nc = C.NDCNST * 1.0e6 / rho
 
     return (t, qv, qc, qi, qs, qr, qg, nc, ni, ns, nr, ng,
             effc, effi, effs, effr, effg)

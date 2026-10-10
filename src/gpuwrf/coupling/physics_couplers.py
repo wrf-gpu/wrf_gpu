@@ -3359,7 +3359,7 @@ def gsfc_sw_theta_tendency(
         radiation_static=radiation_static,
         land_state=land_state,
     )
-    out = solve_gsfc_sw_column(column)
+    out = solve_gsfc_sw_column(_gsfc_fp64_island(column, state))
     # (ncol, nz) heating rate -> (nz, ny, nx) dT/dt (K/s).
     heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
     exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
@@ -3877,3 +3877,16 @@ def _mynn_sgs_dry_mixing(specific, state):
     one = jnp.asarray(1.0, dtype=specific.dtype)
     sqv = qv / (one + qv)
     return specific / (one - sqv)
+
+
+def _gsfc_fp64_island(column, state):
+    """v0.3.4 (o1-nlbind): fp64 island for the GSFC SW kernel under the REAL32 carry.
+
+    The fp64-parity kernel's scan carry cannot trace on REAL32 inputs (release
+    defaults); widen its column inputs, the caller casts the rate back as before.
+    Defined at the end of the module so no release-path line moves.
+    """
+    if state.theta.dtype != jnp.float32:
+        return column
+    return jax.tree_util.tree_map(
+        lambda x: x.astype(jnp.float64) if getattr(x, "dtype", None) == jnp.float32 else x, column)

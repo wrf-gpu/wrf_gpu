@@ -1,0 +1,133 @@
+{
+ "schema": "o1-morraero-off-identity-v1",
+ "method": "E151: jax.make_jaxpr of runtime.operational_mode._physics_boundary_step (one full step: RK3/acoustic/advection/physics/radiation), source locations + name_and_src_info + addresses stripped, sha256 of text; CPU, fast defaults (release env), x64 on; v013 smoke grid 12x5x5; carry from _initial_carry_for_run (KF configs, rad_rk_tendf=1) or initial_operational_carry",
+ "base_commit": "99130f233 (main, v0.3.4 wave start)",
+ "candidate": "lane/o1-morraero working tree (kernel 297ceeed9 + mp binding 1e053fea5 + wiring)",
+ "tool": "<USER_HOME>/wrf_gpu2_lanes/o1-morraero/tools/step_jaxpr{,2,3}.py",
+ "results": {
+  "v1:release_mp8": {
+   "base": {
+    "error": "ValueError: MP_RE requires held Thompson radii seeded before radiation"
+   },
+   "candidate": {
+    "error": "ValueError: MP_RE requires held Thompson radii seeded before radiation"
+   },
+   "identical": false
+  },
+  "v1:mp10": {
+   "base": {
+    "error": "TypeError: scan body function carry input and carry output must have equal types, but they differ:\n\n  * the input carry component loop_carry[1][10] has type float32[25,12] but the corresponding output carry component has type float64[25,12], so the dtypes do not match;\n\n  * the input carry component loop_carry"
+   },
+   "candidate": {
+    "error": "TypeError: scan body function carry input and carry output must have equal types, but they differ:\n\n  * the input carry component loop_carry[1][10] has type float32[25,12] but the corresponding output carry component has type float64[25,12], so the dtypes do not match;\n\n  * the input carry component loop_carry"
+   },
+   "identical": false
+  },
+  "v1:mp16": {
+   "base": {
+    "sha": "55356e8e5f5b0c2b503bc2410900c41cd0b940a25619db32534f29a82d0343c6",
+    "len": 5108674,
+    "eqns": 19739
+   },
+   "candidate": {
+    "sha": "55356e8e5f5b0c2b503bc2410900c41cd0b940a25619db32534f29a82d0343c6",
+    "len": 5108674,
+    "eqns": 19739
+   },
+   "identical": true
+  },
+  "v1:mp28": {
+   "base": {
+    "error": "AttributeError: 'NoneType' object has no attribute 'dtype'"
+   },
+   "candidate": {
+    "error": "AttributeError: 'NoneType' object has no attribute 'dtype'"
+   },
+   "identical": false
+  },
+  "v2:release_kf_mp8": {
+   "base": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "candidate": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "identical": false
+  },
+  "v2:release_mp8_nokf": {
+   "base": {
+    "sha": "b8e98b7a6dd65b2a6e5409a20bbdcc364503d01dd3edcb653072dc962de3437a",
+    "len": 5259226,
+    "eqns": 19099
+   },
+   "candidate": {
+    "sha": "b8e98b7a6dd65b2a6e5409a20bbdcc364503d01dd3edcb653072dc962de3437a",
+    "len": 5259226,
+    "eqns": 19099
+   },
+   "identical": true
+  },
+  "v2:mp28_kf": {
+   "base": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "candidate": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "identical": false
+  },
+  "v2:mp40_kf": {
+   "base": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "candidate": {
+    "error": "ValueError: KF_TEND_RK_WRF requires source-leaf forcing and held KF rates"
+   },
+   "identical": false
+  },
+  "v3:release_kf_mp8": {
+   "base": {
+    "sha": "6191a7352ce909956eb2ebe98f8467cde3e37ae6e98752af14c4b820638ddefa",
+    "len": 6138796,
+    "eqns": 19297
+   },
+   "candidate": {
+    "sha": "6191a7352ce909956eb2ebe98f8467cde3e37ae6e98752af14c4b820638ddefa",
+    "len": 6138796,
+    "eqns": 19297
+   },
+   "identical": true
+  },
+  "v3:mp28_kf": {
+   "base": {
+    "sha": "e456e71419d7688203d7c9b2cd0c32945fe38aebcd46cb176080c11c047f5b14",
+    "len": 6016413,
+    "eqns": 20411
+   },
+   "candidate": {
+    "sha": "e456e71419d7688203d7c9b2cd0c32945fe38aebcd46cb176080c11c047f5b14",
+    "len": 6016413,
+    "eqns": 20411
+   },
+   "identical": true
+  },
+  "v3:mp40_kf": {
+   "base": {
+    "sha": "6b628d6834c3bd9653e198dbecababa66d5dcaf71181b02b0160de001dd82b08",
+    "len": 5520353,
+    "eqns": 18971
+   },
+   "candidate": {
+    "sha": "c99cbef89b2ff4258a811419e715faf5669e64f7bf3d574b7342220eb5c403a7",
+    "len": 5981694,
+    "eqns": 20900
+   },
+   "identical": false
+  }
+ },
+ "notes": [
+  "mp10 fails to TRACE identically in base and candidate (pre-existing fp32-theta crash, see lane notes)",
+  "mp40 differs by design (base had no mp=40 scan adapter)",
+  "v1 KF/MP_RE configs without a seeded carry error identically in both trees (harness limitation, superseded by v2/v3)"
+ ]
+}

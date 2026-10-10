@@ -271,8 +271,23 @@ def test_operational_set_is_consistent_with_adapter_tables() -> None:
     # explicitly in the step (not in MP_SCAN_ADAPTERS).
     assert set(MP_SCAN_ADAPTERS) | {DEFAULT_MP_PHYSICS, 28} >= set(OPERATIONAL_MP)
     assert set(MP_SCAN_ADAPTERS) <= set(OPERATIONAL_MP)
-    # PBL: bl=5 MYNN + bl=2 MYJ are routed explicitly in the step (not in the table).
-    assert set(PBL_SCAN_ADAPTERS) | {DEFAULT_BL_PBL_PHYSICS, 2} >= set(OPERATIONAL_BL)
+    # PBL: bl=5 MYNN + bl=2 MYJ are routed explicitly in the step (not in the table);
+    # bl=9 CAM-UW likewise (v0.3.4): operational_mode calls camuw_pbl_adapter
+    # explicitly and threads OperationalCarry.camuw_pbl -- assert that route exists.
+    import inspect
+
+    from gpuwrf.coupling.scan_adapters import camuw_pbl_adapter
+    from gpuwrf.runtime import operational_mode
+    from gpuwrf.runtime.operational_state import OperationalCarry
+
+    explicit_pbl = {DEFAULT_BL_PBL_PHYSICS, 2}
+    if 9 in OPERATIONAL_BL:
+        assert 9 not in PBL_SCAN_ADAPTERS
+        assert callable(camuw_pbl_adapter)
+        assert "camuw_pbl" in {f.name for f in dataclasses.fields(OperationalCarry)}
+        assert "camuw_pbl_adapter(" in inspect.getsource(operational_mode)
+        explicit_pbl |= {9}
+    assert set(PBL_SCAN_ADAPTERS) | explicit_pbl >= set(OPERATIONAL_BL)
     assert set(PBL_SCAN_ADAPTERS) <= set(OPERATIONAL_BL)
     # surface layer: sf=5 MYNN-sfclay (default) + sf=2 Janjic are routed explicitly.
     assert set(SFCLAY_SCAN_ADAPTERS) | {5, 2} >= set(OPERATIONAL_SF_SFCLAY)
@@ -329,8 +344,10 @@ def test_microphysics_operational_runs_and_mutates(mp: int) -> None:
 #    mp/cumulus/radiation disabled so the u/v change is attributable to the PBL.
 #    bl=2 (MYJ) is mandatorily paired with sf=2 (Janjic Eta); covered as a pair.
 # ============================================================================
-_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 9: 1, 11: 1, 12: 1, 99: 1}
-_PBL_TKE_SCHEMES = {2, 5, 8, 9, 11, 12}  # also carry a prognostic TKE (qke) update
+# bl=9 CAM-UW (v0.3.4) consumes surface-driver HFX/QFX/UST -> paired with sf=5 (fail-closed otherwise);
+# its TKE is WRF's diagnosed TKE_PBL (eddy_scheme='diag_TKE', OperationalCarry.camuw_pbl), not State.qke.
+_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 9: 5, 11: 1, 12: 1, 99: 1}
+_PBL_TKE_SCHEMES = {2, 5, 8, 11, 12}  # also carry a prognostic TKE (qke) update
 
 
 @pytest.mark.parametrize("bl", OPERATIONAL_BL)
@@ -420,7 +437,14 @@ def test_myj_pairing_fails_closed_when_unpaired(bl: int, sf: int) -> None:
 # flux-form path fails closed instead of advertising an inert scheme.
 # cu=16 (New-Tiedtke, v0.23 F2) shares the Tiedtke-family flux-form
 # moisture-advection requirement, so it also gets its own dedicated test below.
-_CU_TRIGGERING = tuple(o for o in OPERATIONAL_CU if o not in (6, 16))
+# cu=5/93 (Grell-3D / Grell-Devenyi) act only >= 4 points from the boundary
+# (WRF ibegc/iendc), so the 4x4 smoke grid has no active column: they get their
+# own 12x12 coupled smoke in tests/test_v034_grell_cumulus_wiring.py.
+# cu=4 (scale-aware SAS) reads WRF phy_prep p_hyd from mu_total + metrics; on this idealized
+# column pristine WRF itself rejects every column at the 200 hPa cloud-depth (cthk) filter
+# (verified with the proofs/v034/scalesas oracle), so its trigger/cadence test lives in
+# tests/test_v034_scalesas_wiring.py on an oracle-active column.
+_CU_TRIGGERING = tuple(o for o in OPERATIONAL_CU if o not in (4, 6, 16, 5, 93))
 
 
 @pytest.mark.parametrize("cu", _CU_TRIGGERING)

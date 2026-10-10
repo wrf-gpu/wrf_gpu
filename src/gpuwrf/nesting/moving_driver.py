@@ -404,6 +404,7 @@ _CARRY_FAIL_CLOSED_SUBTREES = (
     "noahclassic_land",
     "slab_land",
     "px_land",
+    "ruc_land",
     "cumulus_carry",
     "base_state",
 )

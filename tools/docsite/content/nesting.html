@@ -48,10 +48,11 @@ path</strong>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory
 <a href="dynamics.html#gwd">Dynamical Core</a>.</p>
 
 <h2 id="restart">Restart</h2>
-<p>Nested runs (<code>max_dom &gt; 1</code>) write verified, rotating checkpoint generations with
-<code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> and resume in the same output stream with
-<code>--resume-checkpoint GEN</code>. Single-domain runs refuse these flags with a named reason, and the
-namelist <code>restart</code>/<code>restart_interval</code> settings do not provide crash recovery. See <a href="running.html#restart">Running</a>.</p>
+<p>Nested runs (<code>max_dom &gt; 1</code>), like native single-domain d01 runs, write verified, rotating
+checkpoint generations with <code>--checkpoint-dir DIR --checkpoint-interval-steps N</code> (root-domain steps;
+all domains are captured at one synchronized time) and resume in the same output stream with
+<code>--resume-checkpoint GEN</code>. The namelist <code>restart</code>/<code>restart_interval</code> settings do
+not provide crash recovery. See <a href="running.html#restart">Running</a>.</p>
 
 <h2 id="two-way">Opt-in two-way feedback</h2>
 <p>Two-way nesting is <strong>opt-in</strong> via the <code>--feedback</code> flag (nested runs only).

@@ -1,0 +1,30 @@
+{
+ "what": "release-defaults Swiss d01 single-domain restart check, product CLI (gpuwrf.cli.main via gpu_cli.py, asserts platform gpu), snapshot 14253f8ca, ONE shared JAX/AOT cache",
+ "arms": {
+  "B": "--hours 1 --checkpoint-interval-steps 20, cold compile, external SIGKILL -9 after root_step=80 VERIFIED (2-s poll overshot the planned step 20; step-20 generation rotated away, max 2 generations)",
+  "D_first": "resume from G20 -> rc 1 FileNotFoundError manifest.json (generation rotated away; harness error, not product)",
+  "D80": "fresh process --resume-checkpoint G80 -> 1 h, rc 0",
+  "A": "uninterrupted 1 h control, rc 0 (warm, 13 s)"
+ },
+ "devices": {
+  "B": "cuda:0",
+  "D80": "cuda:0",
+  "A": "cuda:0"
+ },
+ "GPUWRF_FAST_DEFAULTS": "unset (release default 1)",
+ "comparison": {
+  "control_files": [
+   "wrfout_d01_2023-01-15_00:00:00",
+   "wrfout_d01_2023-01-15_01:00:00"
+  ],
+  "candidate_files": [
+   "wrfout_d01_2023-01-15_00:00:00",
+   "wrfout_d01_2023-01-15_01:00:00"
+  ],
+  "file_set_equal": true,
+  "variables_compared": 754,
+  "variables_different": [],
+  "byte_exact": true
+ },
+ "not_compared": "carry leaves (wrfout only, all 754 variables byte-compared)"
+}

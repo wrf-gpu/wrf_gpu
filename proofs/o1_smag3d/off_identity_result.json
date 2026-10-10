@@ -1,0 +1,49 @@
+{
+ "what": "location-stripped (E151) jaxpr of operational_mode._advance_chunk_fori (production loop, 1 step) on the real Swiss RD11 d01 case under GPUWRF_FAST_DEFAULTS=1 (release flags), base = main 99130f233 operational_mode.py vs candidate lane/o1-smag3d; tridiagonal_solve -> pure-JAX Thomas in both trees (E105), Pallas interpret only while building the carry",
+ "base": {
+  "src": "<USER_HOME>/wrf_gpu2_lanes/o1-smag3d/base_tree",
+  "om": "<USER_HOME>/wrf_gpu2_lanes/o1-smag3d/base_tree/src/gpuwrf/runtime/operational_mode.py",
+  "release_namelist": {
+   "diff_opt": 1,
+   "km_opt": 4,
+   "bl_pbl_physics": 5
+  },
+  "release": {
+   "sha": "2bf12cb8374d3a84a440e47dea4b77b0c7436108fc2ee2616bba6ec79b17962a",
+   "eqns": 1,
+   "chars": 13405317
+  },
+  "km2": {
+   "sha": "27d87c53a24bef54fa062fb9d3451437de751fd7af072d0f1d748470cb68fb66",
+   "eqns": 1,
+   "chars": 13555174
+  }
+ },
+ "candidate": {
+  "src": "<USER_HOME>/src/wrf_gpu2_wt/o1-smag3d",
+  "om": "<USER_HOME>/src/wrf_gpu2_wt/o1-smag3d/src/gpuwrf/runtime/operational_mode.py",
+  "release_namelist": {
+   "diff_opt": 1,
+   "km_opt": 4,
+   "bl_pbl_physics": 5
+  },
+  "release": {
+   "sha": "2bf12cb8374d3a84a440e47dea4b77b0c7436108fc2ee2616bba6ec79b17962a",
+   "eqns": 1,
+   "chars": 13405317
+  },
+  "km2": {
+   "sha": "27d87c53a24bef54fa062fb9d3451437de751fd7af072d0f1d748470cb68fb66",
+   "eqns": 1,
+   "chars": 13555174
+  },
+  "km3": {
+   "sha": "4d08c31a3da789a7606ad1a39ac8d0909ca27ea36334961e79243d96484bd609",
+   "eqns": 1,
+   "chars": 13913376
+  }
+ },
+ "release_identical": true,
+ "km2_scaffold_identical": true,
+ "km3_changes_program": true
+}

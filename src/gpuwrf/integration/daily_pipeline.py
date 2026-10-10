@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from gpuwrf.io.netcdf_lock import Dataset, NETCDF_LOCK
+from gpuwrf.io.namelist_binding import bind_namelist_options
 
 from gpuwrf.config import paths
 from gpuwrf.integration.d02_replay import build_replay_case
@@ -594,6 +595,26 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             else int(_domain_namelist_value(replay.run, "dynamics", "km_opt", config.domain, 0))
         ),
     )
+    # v0.3.4 P0 (o1-nlbind): bind every namelist.input scheme selection and the
+    # &dynamics knobs (absent keys keep the values above), plus radt/cudt/top_lid at
+    # this driver's own dt; <=v0.3.3 silently ran from_grid's suite, radiation every
+    # 180 steps and KF every step.  The replay harness's fixed dt/sound steps/land
+    # replay are reported by namelist_binding (CLI warnings).
+    namelist = bind_namelist_options(namelist, replay.run.namelist, config.domain)
+    _cadence: dict[str, Any] = {}
+    _radt = _domain_namelist_value(replay.run, "physics", "radt", config.domain, None)
+    if _radt is not None:
+        _cadence["radiation_cadence_steps"] = max(1, int(float(_radt) * 60.0 / float(namelist.dt_s) + 0.5))
+    _cudt = _domain_namelist_value(replay.run, "physics", "cudt", config.domain, None)
+    if _cudt is not None:
+        _cadence["cumulus_cadence_steps"] = max(1, int(float(_cudt) * 60.0 / float(namelist.dt_s) + 0.5))
+        _cadence["cudt_minutes"] = float(_cudt)
+    _top_lid = _domain_namelist_value(replay.run, "dynamics", "top_lid", config.domain, None)
+    if _top_lid is not None:
+        _cadence["top_lid"] = bool(_top_lid)
+    _cadence = {k: v for k, v in _cadence.items() if getattr(namelist, k) != v}
+    if _cadence:
+        namelist = replace(namelist, **_cadence)
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     writer_diagnostics, writer_static_latlon_meta = _load_static_latlon_writer_diagnostics(
         replay.run, config.domain, grid=replay.grid

@@ -23,7 +23,7 @@ import shutil
 from html.parser import HTMLParser
 from pathlib import Path
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 
 # ---- site structure: ordered groups -> pages -------------------------------
 # Each page: (id, nav_title, <title>, meta-description)

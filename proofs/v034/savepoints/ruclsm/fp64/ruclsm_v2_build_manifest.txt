@@ -1,0 +1,18 @@
+mode=fp64
+full_wrf_exe=false
+nreg=51 nsteps=12 (per-step full-state dump; one process per regime)
+regimes_wrf_fatal=RUN_RC[15]=1
+wrf_sources=<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_ruclsm.F <USER_HOME>/src/wrf_pristine/WRF/frame/module_wrf_error.F <USER_HOME>/src/wrf_pristine/WRF/share/module_model_constants.F (unmodified copies)
+wrf_tables=<USER_HOME>/src/wrf_pristine/WRF/run/VEGPARM.TBL <USER_HOME>/src/wrf_pristine/WRF/run/SOILPARM.TBL <USER_HOME>/src/wrf_pristine/WRF/run/GENPARM.TBL
+luse=USGS-RUC soil=STAS-RUC nlcat=24 nscat=19 iswater=16 isice=24
+compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=0
+determinism_flag=-finit-integer=0 (uninitialized sfctmp ilnb, thin snow; see script header)
+ilnb_sensitivity_twin_fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fallow-argument-mismatch -fdefault-real-8 -fdefault-double-8 -finit-integer=2
+libm=/usr/lib/x86_64-linux-gnu/libm.so.6 ldd (Ubuntu GLIBC 2.43-2ubuntu2.4) 2.43
+libgfortran=<USER_HOME>/miniconda3/envs/wrfbuild/lib/libgfortran.so.5
+cpu=AMD Ryzen 9 9950X 16-Core Processor
+pin=taskset -c 9 nice -n 19
+dump_sha256=e7dac5c5bcc689b65011cbb48ca8ccc8692de701789faf9f6f385c8a7a324872
+json_sha256=27a3a0f50ee1e1362b80e51dc9bdfdfb14a9878debc614b1326c5af62c25fc09
+built_utc=2026-10-10T16:12:45Z

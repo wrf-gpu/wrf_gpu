@@ -1,0 +1,28 @@
+{
+ "control_files": [
+  "wrfout_d01_2023-01-15_00:00:00",
+  "wrfout_d01_2023-01-15_01:00:00"
+ ],
+ "candidate_files": [
+  "wrfout_d01_2023-01-15_00:00:00",
+  "wrfout_d01_2023-01-15_01:00:00"
+ ],
+ "file_set_equal": true,
+ "files": {
+  "wrfout_d01_2023-01-15_00:00:00": {
+   "variables": 377,
+   "global_attrs_equal": true,
+   "variable_names_equal": true,
+   "different": []
+  },
+  "wrfout_d01_2023-01-15_01:00:00": {
+   "variables": 377,
+   "global_attrs_equal": true,
+   "variable_names_equal": true,
+   "different": []
+  }
+ },
+ "variables_compared": 754,
+ "variables_different": [],
+ "byte_exact": true
+}

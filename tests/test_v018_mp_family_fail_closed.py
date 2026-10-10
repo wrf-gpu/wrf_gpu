@@ -59,6 +59,9 @@ REFERENCE_WITH_ORACLE = {5, 7, 9, 18, 27, 29, 38, 40, 50, 51, 52, 53, 56, 95}
 # oracles (proofs/v022/f2_oracles/) and flipped to REFERENCE_ONLY: namelist-
 # accepted for oracle comparison, still NEVER scan-wired.
 V023_REFERENCE_ONLY_MP = {18, 40}
+# v0.3.4 O1: mp=40 graduated to IMPLEMENTED (aercu_opt=0 scan-wired); the v018
+# manifest/status JSONs are historical evidence and keep its old endpoint.
+V034_GRADUATED_MP = {18, 40}  # 18 NSSL (lane o1-nssl, physics.nssl2mom)
 PROVEN_IRRELEVANT = {11, 17, 19, 21, 22, 30, 32, 55, 96}
 STILL_OPEN: set[int] = set()
 STANDALONE_ORACLE = {5, 7, 38, 95}
@@ -116,15 +119,24 @@ def test_v018_mp_operational_set_is_preserved() -> None:
     # v0.23 F2: accepted = operational + the two reference-only oracle-backed
     # MP options (18 NSSL, 40 Morrison-aero); only OPERATIONAL_MP is scan-wired.
     assert set(ACCEPTED_MP_PHYSICS) == OPERATIONAL_MP | V023_REFERENCE_ONLY_MP
-    for mp in sorted(OPERATIONAL_MP):
-        assert classify_scheme("mp_physics", mp).status is SupportStatus.IMPLEMENTED
+    # v0.3.4 (o1-nlbind): scan-wired codes the CLI cannot run under the release
+    # defaults are demoted to REFERENCE_ONLY with the measured reason.
+    from gpuwrf.io.scheme_catalog import _RELEASE_CARRY_UNRUNNABLE
 
-    # Contract scope: WSM7/WDM7 were skipped in this sprint, and remain the
-    # already-existing operational hail schemes from trunk.
+    demoted = set(_RELEASE_CARRY_UNRUNNABLE.get("mp_physics", {}))
+    for mp in sorted(OPERATIONAL_MP - demoted):
+        assert classify_scheme("mp_physics", mp).status is SupportStatus.IMPLEMENTED
+    for mp in sorted(demoted):
+        support = classify_scheme("mp_physics", mp)
+        assert support.status is SupportStatus.REFERENCE_ONLY
+        assert "release defaults" in support.reason
+
+    # WSM7/WDM7 hail schemes: scan-wired, but the release root boundary has no qh
+    # record (v0.3.4 CLI probe) -> refused operationally with that reason.
     for mp in (24, 26):
         support = classify_scheme("mp_physics", mp)
-        assert support.status is SupportStatus.IMPLEMENTED
-        assert support.reason == "Operationally wired into the GPU scan."
+        assert support.status is SupportStatus.REFERENCE_ONLY
+        assert "qh" in support.reason
 
 
 @pytest.mark.parametrize("mp, expected_tokens", sorted(REQUESTED_FAIL_CLOSED.items()))
@@ -136,7 +148,8 @@ def test_v018_open_mp_family_fails_closed_with_named_reason(
     assert mp not in ACCEPTED_MP_PHYSICS
     for token in expected_tokens:
         assert token in support.reason
-    assert "mp_physics=0/1/2/3/4/6/8/10/13/14/16/24/26/28/97" in support.alternative
+    # v0.3.4: 24/26/28/40 are refused under the release defaults (o1-nlbind CLI probe); 18 NSSL is operational.
+    assert "mp_physics=0/1/2/3/4/6/8/10/13/14/16/18/97" in support.alternative
 
 
 def test_v018_open_mp_family_is_rejected_at_namelist_layer() -> None:
@@ -204,9 +217,24 @@ def test_v018_endpoint_manifest_covers_every_requested_mp_code() -> None:
 
 
 def test_v018_endpoint_manifest_matches_catalog_status() -> None:
+    from gpuwrf.io.scheme_catalog import _RELEASE_CARRY_UNRUNNABLE
+
+    demoted = set(_RELEASE_CARRY_UNRUNNABLE.get("mp_physics", {}))
     entries = _manifest_entries()
     for mp, entry in entries.items():
         support = classify_scheme("mp_physics", mp)
+        if mp in V034_GRADUATED_MP:
+            assert entry["endpoint"] == "reference_only_accepted"
+            # scan-wired in v0.3.4; refused by the CLI under the release defaults
+            # when the root boundary cannot carry its scalars (o1-nlbind demotion)
+            assert support.status is (SupportStatus.REFERENCE_ONLY if mp in demoted
+                                      else SupportStatus.IMPLEMENTED)
+            continue
+        if mp in demoted:
+            # v0.3.4 CLI-probe demotion supersedes this historical v0.18 manifest row.
+            assert entry["endpoint"] == "operational", mp
+            assert support.status is SupportStatus.REFERENCE_ONLY, mp
+            continue
         assert support.status.value == entry["catalog_status"], mp
 
         if entry["endpoint"] == "operational":
@@ -406,6 +434,10 @@ def test_v018_fail_closed_mp_reasons_are_source_backed() -> None:
     for mp, relative_path in SOURCE_BY_CODE.items():
         path = WRF_ROOT / relative_path
         assert path.exists(), f"mp={mp} missing WRF source {path}"
+        if mp in V034_GRADUATED_MP:  # scan-wired; may be CLI-demoted (o1-nlbind)
+            assert classify_scheme("mp_physics", mp).status in (SupportStatus.IMPLEMENTED,
+                                                                SupportStatus.REFERENCE_ONLY)
+            continue
         assert path.name in classify_scheme("mp_physics", mp).reason
 
     registry = (WRF_ROOT / "Registry/Registry.EM_COMMON").read_text()

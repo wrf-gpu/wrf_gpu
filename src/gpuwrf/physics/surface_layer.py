@@ -576,7 +576,20 @@ def _andreas_2002(visc, ustar):
             length((1.61, 0.351, 0.396), (0.0, -0.628, -0.512), (0.0, 0.0, -0.180)))
 
 
-def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayerDiagnostics:
+def surface_layer_with_exchange(state, *, first_timestep=False, snowh=None):
+    """``surface_layer_with_diagnostics`` plus the LSM exchange coefficients.
+
+    Returns ``(diag, flhc, flqc)`` with WRF ``FLHC``/``FLQC`` (module_sf_mynn.F:1051-1052)
+    for land models that consume them (RUC LSM, sf_surface_physics=3).  Same precision
+    dispatch as :func:`surface_layer_with_diagnostics`; the default entry is unchanged.
+    """
+
+    from gpuwrf.physics.fp32.surface_layer_real import native_real_enabled
+    F = jnp.float32 if native_real_enabled() else jnp.float64
+    return _surface_layer_impl(state, first_timestep, F, snowh=snowh, _return_exchange=True)
+
+
+def _surface_layer_impl(state, first_timestep, F, *, snowh=None, _return_exchange=False) -> SurfaceLayerDiagnostics:
     """Run one vectorized ``sf_sfclayrev_run`` solve over surface columns.
 
     ``state`` is a column-oriented view (trailing-z) carrying ``u, v, theta, qv,
@@ -1015,7 +1028,7 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
         xland=xland,
         wspd=wspd if mynn_sfc_wspd_enabled() else None,
     )
-    return SurfaceLayerDiagnostics(
+    diag = SurfaceLayerDiagnostics(
         fluxes=fluxes,
         hfx=hfx,
         lh=lh,
@@ -1037,6 +1050,9 @@ def _surface_layer_impl(state, first_timestep, F, *, snowh=None) -> SurfaceLayer
         # WRF's flux loop re-derives PSIQ2 with z_q in the numerator (module_sf_mynn.F:1024).
         cqs2=ustar * KARMAN / jnp.maximum(jnp.log((2.0 + z_q) / z_q) - psih2, 1.0),
     )
+    if _return_exchange:
+        return diag, flhc, flqc
+    return diag
 
 
 def _potential_to_temperature(theta, pressure_pa):

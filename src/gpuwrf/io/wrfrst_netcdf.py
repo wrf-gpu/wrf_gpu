@@ -275,11 +275,13 @@ OPTIONAL_CARRY_FIELDS: tuple[str, ...] = (
     "land_history", "energy_accumulators",
     "noahmp_precipitation",
     "o3rad",
+    "ruc_land", "ruc_rad",
+    "cam_abs",  # ra_lw_physics=3 held REAL absorptivities (WRF abstot/absnxt/emstot)
 )
 PYTREE_CARRY_FIELDS = OPTIONAL_CARRY_FIELDS[5:]
 # Pytree groups appended after the current schema: files written before them
 # carry no manifest entry and resume with the group absent.
-_LATE_PYTREE_CARRY_FIELDS: tuple[str, ...] = ("h_diabatic", "history_diagnostics")
+_LATE_PYTREE_CARRY_FIELDS: tuple[str, ...] = ("h_diabatic", "history_diagnostics", "ruc_land", "ruc_rad", "cam_abs")
 
 # ``OperationalCarry`` fields this schema has no variables for.  A populated
 # (non-``None``) unsupported field is REFUSED at write time instead of being

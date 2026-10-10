@@ -1,0 +1,461 @@
+{
+ "started_utc": "2026-10-10T18:03:23.061764+00:00",
+ "deadline_utc": "2026-10-10T18:57:00+00:00",
+ "source_rev": "14253f8ca8bc5916495a1226d1b6a15834bbedb5",
+ "git_status_dirty": false,
+ "cpu_dry_run": false,
+ "steps": 3,
+ "case": "<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/snap_main/examples/switzerland_d01",
+ "fast_defaults": "1 (default)",
+ "available": {
+  "bl9_camuw": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "mp40_morraero": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "km3_smag3d": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "sf3_ruc": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "cu5_grell3d": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "cu93_grelldev": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  },
+  "ra3_cam": {
+   "catalog_implemented": true,
+   "lane_merged": true,
+   "run": true
+  }
+ },
+ "schemes": {
+  "bl9_camuw": {
+   "wall_s": 292.3154947970761,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 74.48952885891777,
+   "step_s": [
+    209.88647625606973,
+    0.5608852719888091,
+    0.6004647089866921
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 209.88647625606973,
+   "namelist_edits": {
+    "bl_pbl_physics": 9
+   },
+   "t_skin_range": [
+    254.96389770507812,
+    281.69390869140625
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 40,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 400802498
+  },
+  "mp40_morraero": {
+   "wall_s": 86.42135288694408,
+   "rc": 1,
+   "timeout_s": 600.0,
+   "status": "loaded",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 69.96134287596215,
+   "step_s": null,
+   "finite": null,
+   "trace_eqns": null,
+   "nonfinite_leaves": null,
+   "compile_plus_first_step_s": null,
+   "namelist_edits": {
+    "mp_physics": 40
+   },
+   "t_skin_range": null,
+   "theta_range": null,
+   "own_steps": null,
+   "e41": {
+    "rc": 1
+   },
+   "cache_bytes": 9818228,
+   "failure": "NotImplementedError at trace time under release defaults: GPUWRF_ROOT_SCALAR_BDY_RK1 covers ('qv','qc','qr','qi','qs','qg','Ni','Nr'); 'Ns' is not represented (no step executed)"
+  },
+  "km3_smag3d": {
+   "wall_s": 323.517237099004,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 71.28320959908888,
+   "step_s": [
+    234.67989622801542,
+    0.6822222319897264,
+    0.4070224800379947
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 234.67989622801542,
+   "namelist_edits": {
+    "diff_opt": 2,
+    "km_opt": 3
+   },
+   "t_skin_range": [
+    254.96449279785156,
+    281.69390869140625
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 32,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 405364072
+  },
+  "sf3_ruc": {
+   "wall_s": 227.6920251970878,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 69.77215066400822,
+   "step_s": [
+    148.10764456703328,
+    1.3741758069954813,
+    0.3905199320288375
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 148.10764456703328,
+   "namelist_edits": {
+    "use_noahmp": false,
+    "sf_surface_physics": 3
+   },
+   "t_skin_range": [
+    258.2464904785156,
+    281.89471435546875
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 16,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 500195110
+  },
+  "cu5_grell3d": {
+   "wall_s": 288.88573474099394,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 71.68537330604158,
+   "step_s": [
+    208.53416813793592,
+    0.42724720505066216,
+    0.48350227100308985
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 208.53416813793592,
+   "namelist_edits": {
+    "cu_physics": 5,
+    "cumulus_cadence_steps": 1,
+    "cudt_minutes": 0.0
+   },
+   "t_skin_range": [
+    254.9644775390625,
+    281.69390869140625
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 8,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 403518294
+  },
+  "cu93_grelldev": {
+   "wall_s": 284.5222251219675,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 72.25997986609582,
+   "step_s": [
+    203.124019023031,
+    0.408211158006452,
+    0.42285647604148835
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 203.124019023031,
+   "namelist_edits": {
+    "cu_physics": 93,
+    "cumulus_cadence_steps": 1,
+    "cudt_minutes": 0.0
+   },
+   "t_skin_range": [
+    254.9649200439453,
+    281.69390869140625
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 8,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 400877182
+  },
+  "ra3_cam": {
+   "wall_s": 418.6817146529211,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 77.32292540499475,
+   "step_s": [
+    317.070179484901,
+    1.0089999730698764,
+    0.5910300199175254
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 317.070179484901,
+   "namelist_edits": {
+    "ra_lw_physics": 3,
+    "ra_sw_physics": 3
+   },
+   "t_skin_range": [
+    254.01373291015625,
+    281.6654357910156
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 2,
+    "hard_stack_gate": "FAIL",
+    "max_stack_B": 2144,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 564108368,
+   "e41_detail": "hard STACK gate FAIL: loop_add_convert_fusion 2144 B, loop_add_divide_exponential_log_multiply_sqrt_fusion_1 992 B, loop_add_fusion_66 864 B, 3 more 272-288 B (first-attempt cache scan; second run same max 2144 B)"
+  },
+  "cu4_sas": {
+   "wall_s": 290.5153905969346,
+   "rc": 0,
+   "timeout_s": 600.0,
+   "status": "ok",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 70.0249845709186,
+   "step_s": [
+    212.20240740198642,
+    0.4895500569837168,
+    0.4543095880653709
+   ],
+   "finite": true,
+   "trace_eqns": null,
+   "nonfinite_leaves": [],
+   "compile_plus_first_step_s": 212.20240740198642,
+   "namelist_edits": {
+    "cu_physics": 4
+   },
+   "t_skin_range": [
+    254.9649200439453,
+    281.69390869140625
+   ],
+   "theta_range": [
+    280.0914306640625,
+    493.3252258300781
+   ],
+   "own_steps": 3,
+   "e41": {
+    "rc": 0,
+    "hard_stack_gate": "PASS",
+    "max_stack_B": 16,
+    "conservative_flags": true,
+    "n_entries": 2,
+    "unscanned": []
+   },
+   "cache_bytes": 400622824,
+   "source": "8faa4a1b88e7757837e50952af67dfc6a40e7641 lane/o1-sas head (UNMERGED, git-archive snapshot)",
+   "merged_on_main": false
+  },
+  "mp18_nssl": {
+   "wall_s": 102.66769947309513,
+   "rc": 1,
+   "timeout_s": 549.449772,
+   "status": "loaded",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 72.534257257008,
+   "step_s": null,
+   "finite": null,
+   "trace_eqns": null,
+   "nonfinite_leaves": null,
+   "compile_plus_first_step_s": null,
+   "namelist_edits": {
+    "mp_physics": 18
+   },
+   "t_skin_range": null,
+   "theta_range": null,
+   "own_steps": null,
+   "e41": {
+    "rc": 1
+   },
+   "cache_bytes": 9814320,
+   "source": "ddd9dab1cae10e0ecbd07cbaa02e878f9bc8e308 lane/o1-nssl head (UNMERGED, git-archive snapshot)",
+   "merged_on_main": false,
+   "failure": "FileNotFoundError src/gpuwrf/physics/nssl2mom/data/init_constants.json: required asset is NOT committed on lane/o1-nssl (.gitignore:67 'data/' ignores it); works only inside the lane worktree"
+  }
+ },
+ "finished_utc": "2026-10-10T18:36:04.732104+00:00",
+ "first_attempt_6min_box": {
+  "run": "run_main (per-scheme 360 s, stopped after ra3_cam timeout + mp40 started)",
+  "ra3_cam": {
+   "wall_s": 360.51719736796804,
+   "rc": null,
+   "timeout_s": 360.0,
+   "status": "timeout (360 s)",
+   "platform": "gpu",
+   "device": "cuda:0",
+   "load_s": 74.10108674096409,
+   "step_s": null,
+   "finite": null,
+   "trace_eqns": null,
+   "nonfinite_leaves": null,
+   "compile_plus_first_step_s": null,
+   "namelist_edits": {
+    "ra_lw_physics": 3,
+    "ra_sw_physics": 3
+   },
+   "t_skin_range": null,
+   "theta_range": null,
+   "own_steps": null
+  }
+ },
+ "box_change": "6-min box infeasible: GPU load ~74 s + cold compile >286 s (ra3 timed out at 360 s); remaining schemes rerun with --per-scheme-s 600 (actual 3.5-7 min each)",
+ "restart_check": {
+  "what": "release-defaults Swiss d01 single-domain restart check, product CLI (gpuwrf.cli.main via gpu_cli.py, asserts platform gpu), snapshot 14253f8ca, ONE shared JAX/AOT cache",
+  "arms": {
+   "B": "--hours 1 --checkpoint-interval-steps 20, cold compile, external SIGKILL -9 after root_step=80 VERIFIED (2-s poll overshot the planned step 20; step-20 generation rotated away, max 2 generations)",
+   "D_first": "resume from G20 -> rc 1 FileNotFoundError manifest.json (generation rotated away; harness error, not product)",
+   "D80": "fresh process --resume-checkpoint G80 -> 1 h, rc 0",
+   "A": "uninterrupted 1 h control, rc 0 (warm, 13 s)"
+  },
+  "devices": {
+   "B": "cuda:0",
+   "D80": "cuda:0",
+   "A": "cuda:0"
+  },
+  "GPUWRF_FAST_DEFAULTS": "unset (release default 1)",
+  "comparison": {
+   "control_files": [
+    "wrfout_d01_2023-01-15_00:00:00",
+    "wrfout_d01_2023-01-15_01:00:00"
+   ],
+   "candidate_files": [
+    "wrfout_d01_2023-01-15_00:00:00",
+    "wrfout_d01_2023-01-15_01:00:00"
+   ],
+   "file_set_equal": true,
+   "variables_compared": 754,
+   "variables_different": [],
+   "byte_exact": true
+  },
+  "not_compared": "carry leaves (wrfout only, all 754 variables byte-compared)"
+ },
+ "gpu_lock": {
+  "acquired_first": "2026-10-10T17:56:23Z",
+  "released_final": "2026-10-10T18:48:48Z",
+  "note": "lock briefly released/re-acquired between runs (18:03, 18:36, 18:41, 18:42)"
+ },
+ "verdict": {
+  "pass_gpu_finite_and_e41": [
+   "bl9_camuw",
+   "km3_smag3d",
+   "sf3_ruc",
+   "cu5_grell3d",
+   "cu93_grelldev",
+   "cu4_sas (unmerged)"
+  ],
+  "fail": {
+   "mp40_morraero": "release-defaults trace failure (Ns not in ROOT_SCALAR_BDY_RK1)",
+   "ra3_cam": "E41 STACK 2144 B (finite on GPU)",
+   "mp18_nssl": "asset not committed (unmerged lane)"
+  },
+  "restart_release_defaults": "byte-exact 754/754 wrfout variables, 2 files (SIGKILL after step 80, fresh-process resume)"
+ }
+}

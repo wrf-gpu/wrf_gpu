@@ -98,13 +98,18 @@ def test_smagorinsky_and_constant_k_classification_is_honest() -> None:
     assert classify_scheme("diff_opt", 1).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("km_opt", 4).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("km_opt", 1).status is SupportStatus.IMPLEMENTED
-    for implemented in (2, 3, 5):
-        assert classify_scheme("km_opt", implemented).status is SupportStatus.IMPLEMENTED
+    assert classify_scheme("km_opt", 3).status is SupportStatus.IMPLEMENTED
+    # v0.3.4 (manager on rel034 18:08Z): km_opt=2/5 unqualified scaffolds, NaN under the
+    # release REAL carry -> refused with that reason.
+    for refused in (2, 5):
+        support = classify_scheme("km_opt", refused)
+        assert support.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
+        assert "NaN" in support.reason
+        with pytest.raises(UnsupportedSchemeError):
+            validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": refused}})
     validate_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
     validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 1}})
-    validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 2}})
     validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 3}})
-    validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 5}})
 
 
 # --------------------------------------------------------------------------- #
@@ -197,9 +202,14 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     (bl=2 / sf=2) are now operationally scan-wired (IMPLEMENTED)."""
 
     # v0.23 F2: cu=16 graduated to IMPLEMENTED (machine-precision kernel +
-    # ntiedtke_adapter scan wiring); the SAS family remains reference-only.
+    # ntiedtke_adapter scan wiring); v0.3.4: cu=4 scale-aware SAS too (bitwise vs the
+    # pristine WRF REAL build); SAS 94/95/96 remain reference-only.
     assert classify_scheme("cu_physics", 16).status is SupportStatus.IMPLEMENTED
-    for cu in (4, 93, 94, 95, 96, 99):
+    # v0.3.4 o1-grell: Grell-3D (5) and Grell-Devenyi (93) graduated. cu=4 stays
+    # reference-only (Python API): WRF ARW refuses it (check_a_mundo.F:671).
+    assert classify_scheme("cu_physics", 5).status is SupportStatus.IMPLEMENTED
+    assert classify_scheme("cu_physics", 93).status is SupportStatus.IMPLEMENTED
+    for cu in (4, 94, 95, 96, 99):
         assert classify_scheme("cu_physics", cu).status is SupportStatus.REFERENCE_ONLY
     assert classify_scheme("ra_lw_physics", 1).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("ra_sw_physics", 1).status is SupportStatus.IMPLEMENTED
@@ -207,29 +217,32 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     assert classify_scheme("bl_pbl_physics", 2).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_sfclay_physics", 2).status is SupportStatus.IMPLEMENTED
     # PBL reference endpoints: real WRF oracle evidence staged, operational scan
-    # still fail-closes until traceable JAX kernels land. CAM-UW(9) is the F3
-    # RED oracle case: namelist-accepted for future faithful-port comparisons,
-    # but explicitly not operational.
-    for pbl in (4, 9, 10, 16, 17):
+    # still fail-closes until traceable JAX kernels land. CAM-UW(9) graduated in
+    # v0.3.4 (faithful r8 port vs the fixed pristine oracle proofs/v034/camuw_oracle).
+    for pbl in (4, 10, 16, 17):
         assert classify_scheme("bl_pbl_physics", pbl).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("bl_pbl_physics", 9).status is SupportStatus.IMPLEMENTED
     # v0.13 Tier-3 batch2: GSFC/Goddard NUWRF longwave (ra_lw=5) is REFERENCE_ONLY
     # (fp64 pristine-WRF oracle staged; faithful JAX kernel = carry-over). It is
     # namelist-accepted (for a single-column reference comparison) and fail-closes
     # in the operational scan.
     assert classify_scheme("ra_lw_physics", 5).status is SupportStatus.REFERENCE_ONLY
-    # v0.17 Tier-3: RUC (sf_surface=3) + SSiB (sf_surface=8) are REFERENCE_ONLY (fp64
-    # pristine-WRF single-column oracle staged in proofs/v017/oracle/{ruclsm,ssib};
-    # faithful JAX column kernel = carry-over). Namelist-accepted for a single-column
-    # reference comparison, fail-closed in the operational scan.
-    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.REFERENCE_ONLY
+    # v0.17 Tier-3: SSiB (sf_surface=8) is REFERENCE_ONLY (fp64 pristine-WRF
+    # single-column oracle staged in proofs/v017/oracle/ssib; faithful JAX column
+    # kernel = carry-over). RUC (sf_surface=3) graduated to IMPLEMENTED in v0.3.4
+    # (physics.ruclsm + coupling.ruc_surface_hook, CPU-oracle-qualified).
+    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_surface_physics", 8).status is SupportStatus.REFERENCE_ONLY
     # v0.17/v0.18 radiation-longtail: CAM (3), new Goddard (5), FLG/UCLA (7) and
     # GFDL-Eta (99) LW+SW are accepted only for reference/oracle development. Each
     # has a real-WRF exact-driver oracle staged in proofs/v018/savepoints/ra_tail_wrf
     # (see tests/test_v018_ra_tail_oracle.py); none is operationally wired.
-    for code in (3, 5, 7, 99):
+    for code in (5, 7, 99):
         assert classify_scheme("ra_sw_physics", code).status is SupportStatus.REFERENCE_ONLY
         assert classify_scheme("ra_lw_physics", code).status is SupportStatus.REFERENCE_ONLY
+    # v0.3.4 (lane o1-camrad): CAM (3) LW+SW graduated to IMPLEMENTED (CPU-oracle-qualified).
+    assert classify_scheme("ra_sw_physics", 3).status is SupportStatus.IMPLEMENTED
+    assert classify_scheme("ra_lw_physics", 3).status is SupportStatus.IMPLEMENTED
     validate_namelist({"physics": {"cu_physics": [16, 4, 93, 94, 95, 96, 99]}})
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
     validate_namelist({"physics": {"bl_pbl_physics": [4, 9, 10, 16, 17]}})

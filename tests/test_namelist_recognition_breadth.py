@@ -61,7 +61,7 @@ REAL_WRF_NAMELIST = """\
  radt = 30, 30,
  bldt = 0, 0,
  cudt = 5, 5,
- icloud_bl = 1,
+ icloud_bl = 0,
  bl_mynn_tkeadvect = .true.,
  bl_mynn_edmf = 1,
  bl_mynn_mixqt = 0,
@@ -140,7 +140,8 @@ def test_real_wrf_namelist_yields_honest_per_key_verdicts() -> None:
     # NOT appear as a failure -- a naive user with a real WRF namelist must RUN.
     assert "cudt" not in by_key
 
-    # icloud_bl=1 and the MYNN TKE-advection logical -- recognized, not wired.
+    # icloud_bl=0 (the port runs WRF's default 1) and the MYNN TKE-advection
+    # logical -- recognized, not wired.
     assert "icloud_bl" in by_key
     assert "bl_mynn_tkeadvect" in by_key
     # Each named reason + the "NOT silently ignored" honesty phrase is present.
@@ -225,7 +226,8 @@ def test_unsupported_recognized_key_is_rejected_not_silently_accepted() -> None:
         "scalar_adv_opt": 4,
         "h_sca_adv_order": 6,
         "v_sca_adv_order": 5,
-        "icloud_bl": 1,
+        "icloud_bl": 0,
+        "bl_mynn_mixlength": 2,
         "bl_mynn_edmf": 0,
         "bl_mynn_mixqt": 1,
         "radt": 0,
@@ -402,9 +404,9 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
     * (b) moist_adv_opt=3 (WENO -- a still-unimplemented advection scheme) RAISES
       (the positive-definite=1 / monotonic=2 limiters ARE now wired, so the
       genuine-wrong-substitution example must use an UNWIRED value, WENO);
-    * (c) cu_physics=4 (scale-aware SAS, reference-only -> would silently become
+    * (c) cu_physics=94 (2015 GFS SAS, reference-only -> would silently become
       a different cumulus scheme on the operational scan) RAISES on the
-      operational path (cu=16 New-Tiedtke graduated to IMPLEMENTED in v0.23 F2);
+      operational path (cu=16 New-Tiedtke graduated in v0.23 F2, cu=4 in v0.3.4);
     * (d) grid_fdda=1 (out-of-scope feature) RAISES.
     """
 
@@ -419,7 +421,7 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
 
     # (c) reference-only scheme -> operational run still fail closed.
     with pytest.raises(UnsupportedSchemeError) as exc_c:
-        validate_operational_namelist({"physics": {"cu_physics": [4]}})
+        validate_operational_namelist({"physics": {"cu_physics": [94]}})
     assert any(s.key == "cu_physics" for s in exc_c.value.selections)
 
     # (d) out-of-scope feature -> still fail closed.
@@ -444,14 +446,14 @@ def test_wired_control_values_pass_silently() -> None:
             "physics": {
                 "mp_physics": [8],
                 "bl_pbl_physics": [5],
-                "icloud_bl": [0],
+                "icloud_bl": [1],
                 "bl_mynn_tkeadvect": [".false."],
                 "bl_mynn_edmf": [1],
                 "bl_mynn_edmf_mom": [1],
                 "bl_mynn_edmf_tke": [0],
                 "bl_mynn_mixscalars": [1],
                 "bl_mynn_mixqt": [0],
-                "bl_mynn_mixlength": [2],
+                "bl_mynn_mixlength": [1],
                 "radt": [15],
                 "bldt": [0],
                 "cudt": [0],

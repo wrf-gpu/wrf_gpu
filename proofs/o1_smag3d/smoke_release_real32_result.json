@@ -1,0 +1,54 @@
+{
+ "steps": 1,
+ "bl_pbl_physics": 5,
+ "dt": 18.0,
+ "fast_defaults": "1",
+ "pallas_interpret": "1",
+ "theta_dtype": "float32",
+ "u_dtype": "float32",
+ "km3": {
+  "wall_s": 623.3,
+  "nonfinite_values": 0,
+  "leaves": 182,
+  "guards_fired": {},
+  "guard_total": 0
+ },
+ "km4_release": {
+  "wall_s": 789.1,
+  "nonfinite_values": 0,
+  "leaves": 182,
+  "guards_fired": {},
+  "guard_total": 0
+ },
+ "km3_minus_km4": {
+  "u": {
+   "max_abs": 0.6043565198779106,
+   "rms": 0.007479034325891739
+  },
+  "v": {
+   "max_abs": 0.6521954536437988,
+   "rms": 0.007027346720721577
+  },
+  "w": {
+   "max_abs": 0.12930384278297424,
+   "rms": 0.001362952095210216
+  },
+  "theta": {
+   "max_abs": 2.2269287109375,
+   "rms": 0.02785147927593256
+  },
+  "qv": {
+   "max_abs": 0.0004069572314620018,
+   "rms": 4.036469923963518e-06
+  },
+  "qc": {
+   "max_abs": 0.0,
+   "rms": 0.0
+  },
+  "mu_total": {
+   "max_abs": 2.640625,
+   "rms": 0.3111861447701257
+  }
+ },
+ "qv_min_km3": 9.973872465707245e-07
+}

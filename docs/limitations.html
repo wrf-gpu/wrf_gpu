@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.3.3</span>
+          <span class="brand-sub">User's Guide · v0.3.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -101,7 +101,8 @@ fixes as current capabilities. Full history is default; native controls and SST 
 have explicit scope on their corresponding pages.</p>
 <h2 id="completion-roadmap">Beyond the validated configuration<a class="headerlink" href="#completion-roadmap" aria-label="Permalink">¶</a></h2><p>MPI/multi-GPU domain
 decomposition, moving nests, coupled chemistry/fire/hydrology and universal scheme pairing
-are outside the present operational scope. Checkpoint/resume is nested-only. Benchmark
+are outside the present operational scope. Checkpoint/resume covers native single-domain d01 and nested runs, not CPU-WRF replay; WRF
+<code>wrfrst</code> interchange is not supported. Benchmark
 and extrapolation assumptions are kept on <a href="performance.html">performance</a>.</p>
 <h2 id="v034-plan">Future v0.3.4 roadmap<a class="headerlink" href="#v034-plan" aria-label="Permalink">¶</a></h2><p>Standalone restart, actual cluster interfaces qualified through simulation, grid FDDA first, then RUC/NSSL and further schemes. Chem/Fire are separate program tracks. This is a future plan, not current support or v0.3.3 closure; real-cluster performance is unmeasured. <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/release/V0.3.4_ROADMAP.md">Ordered public roadmap and qualifications</a>.</p>
 

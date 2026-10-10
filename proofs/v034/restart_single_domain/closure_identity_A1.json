@@ -1,0 +1,17 @@
+{
+ "base_rev": "main",
+ "closure_files": 191,
+ "changed": [
+  "src/gpuwrf/cli.py",
+  "src/gpuwrf/integration/nested_pipeline.py",
+  "src/gpuwrf/io/wrfbdy_coverage.py",
+  "tests/test_cli_single_native_history.py",
+  "tests/v025/restart/test_boundary_coverage.py",
+  "tests/v025/restart/test_single_domain_restart.py"
+ ],
+ "changed_in_closure": [],
+ "closure_digest_base": "f432b984d4f36855fb9590e6990365c1884a434172a9e9411f07ae74ef0db3ed",
+ "closure_digest_candidate": "f432b984d4f36855fb9590e6990365c1884a434172a9e9411f07ae74ef0db3ed",
+ "identical": true,
+ "source_fingerprint_hash_candidate": "1b890e926666234836cbf6eb01e74bbfa5b3b80d59921a0273063242167f9ef1"
+}

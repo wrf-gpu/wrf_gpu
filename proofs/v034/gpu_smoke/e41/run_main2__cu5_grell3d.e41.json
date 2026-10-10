@@ -1,0 +1,107 @@
+{
+ "cache": "<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/run_main2/cu5_grell3d/cache/jax",
+ "tool": "scripts/gpu_smoke_e41.py (cuobjdump fallback; opus-a19 tools absent)",
+ "n_entries": 2,
+ "unscanned": [],
+ "hard_stack_gate": "PASS",
+ "max_stack_B": 8,
+ "conservative_flags": true,
+ "entries": [
+  {
+   "entry": "jit__advance_chunk_fori-84a81c39e6d9e3489fe8a93add3a31f73a9dff15d377cb12dfecbb9f545ed25c-cache",
+   "kind": "jax_cache",
+   "program": null,
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1322,
+     "max_stack_B": 8,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "loop_select_subtract_transpose_fusion",
+       3368,
+       6
+      ],
+      [
+       "input_select_transpose_fusion_4",
+       1080,
+       2
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_over500": [
+    [
+     "fused_transpose.393",
+     1633
+    ]
+   ],
+   "hlo_stats": {
+    "computations": 1751,
+    "kinput_fusions": 695,
+    "kinput_transpose_fusions": 525,
+    "max_kinput_transpose_instr": 1633
+   },
+   "kinput_transpose_status": "MEASURED_RICH_JIT_HLO"
+  },
+  {
+   "entry": "817693fa99f1b42c688a13d56b78198f1918fabd4d3cb9c5644e59c1668eb9f1.xlaexec",
+   "kind": "aot",
+   "program": "d01",
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1322,
+     "max_stack_B": 8,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "loop_select_subtract_transpose_fusion",
+       3368,
+       6
+      ],
+      [
+       "input_select_transpose_fusion_4",
+       1080,
+       2
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_status": "UNKNOWN_AOT_METADATA"
+  }
+ ]
+}

@@ -42,6 +42,8 @@ def _proof_module():
 def test_f2_bundle_oracle_gate_report_is_honest() -> None:
     report = _proof_module().build_report()
     assert report["gate_pass"] is True
+    # v0.3.4: NSSL mp=18 graduated (lane o1-nssl) but mp=40 is demoted under the release defaults (o1-nlbind),
+    # so the F2 bundle is not fully landed.
     assert report["full_bundle_landed"] is False
 
     schemes = report["schemes"]
@@ -53,38 +55,50 @@ def test_f2_bundle_oracle_gate_report_is_honest() -> None:
     assert schemes["new_tiedtke"]["oracle"]["file_count"] == 5
     assert schemes["new_tiedtke"]["oracle"]["nontrivial"] is True
 
-    assert schemes["ruc_lsm"]["coverage"] == "reference_only_oracle_present"
+    # v0.3.4 (lane o1-ruc): RUC graduated -- faithful physics.ruclsm port at machine
+    # precision vs the v2 per-step pristine oracle, scan-wired via the explicit land bundle.
+    assert schemes["ruc_lsm"]["coverage"] == "implemented_scan_wired"
+    assert schemes["ruc_lsm"]["catalog_status"] == "implemented"
+    assert schemes["ruc_lsm"]["scan_wired"] is True
     assert schemes["ruc_lsm"]["oracle"]["all_green"] is True
-    # v0.23 F2: the raw v017 fp64 oracle savepoint was restored from history
-    # (a922b3b5) alongside the integrated v018 RUC port, so it is present now.
     assert schemes["ruc_lsm"]["oracle"]["raw_savepoint_present"] is True
 
     # v0.23 F2: real single-column oracles landed for both MP schemes
     # (fp32 + fp64 x 6 regimes each), flipping them to reference-only.
-    for scheme_id in ("nssl_2mom", "morrison_aero"):
-        entry = schemes[scheme_id]
-        assert entry["coverage"] == "reference_only_oracle_present"
-        assert entry["catalog_status"] == "reference_only"
-        assert entry["accepted_by_reference_validator"] is True
-        assert entry["scan_wired"] is False
-        assert entry["oracle"]["file_count"] == 12
-        assert entry["oracle"]["all_finite"] is True
+    # v0.3.4 (lane o1-nssl): nssl_2mom graduated to implemented + scan-wired (physics.nssl2mom).
+    nssl = schemes["nssl_2mom"]
+    assert nssl["coverage"] == "implemented_scan_wired"
+    assert nssl["catalog_status"] == "implemented"
+    assert nssl["scan_wired"] is True
+    assert nssl["oracle"]["file_count"] == 12
+    assert nssl["oracle"]["all_finite"] is True
+    # v0.3.4 O1: Morrison-aerosol graduated (aercu_opt=0 scan-wired).
+    entry = schemes["morrison_aero"]
+    # v0.3.4: scan-wired, refused by gpuwrf run under the release defaults (o1-nlbind probe)
+    assert entry["coverage"] == "scan_wired_cli_refused"
+    assert entry["catalog_status"] == "reference_only"
+    assert entry["scan_wired"] is True
+    assert entry["oracle"]["file_count"] == 12
+    assert entry["oracle"]["all_finite"] is True
 
 
 def test_f2_catalog_and_scan_path_statuses() -> None:
     from gpuwrf.runtime.operational_mode import _SCAN_UNWIRED_REASON, _SCAN_WIRED_OPTIONS
 
     assert classify_scheme("cu_physics", 16).status is SupportStatus.IMPLEMENTED
-    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.REFERENCE_ONLY
-    assert classify_scheme("mp_physics", 18).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.IMPLEMENTED
+    # v0.3.4 (lane o1-nssl): NSSL mp=18 graduated to IMPLEMENTED + scan-wired (physics.nssl2mom); its root
+    # boundary species take WRF's flow_dep_bdy (root_scalar_rk1_split flow_only), so it is CLI-runnable.
+    assert classify_scheme("mp_physics", 18).status is SupportStatus.IMPLEMENTED
+    assert 18 in _SCAN_WIRED_OPTIONS["mp_physics"] and "mp_physics=18" not in _SCAN_UNWIRED_REASON
+    # v0.3.4 O1: mp=40 scan-wired (aercu_opt=0, tests/test_v034_*) but refused by the CLI
+    # under the release defaults (root boundary has no Ns/Ng/Nc record, o1-nlbind probe).
     assert classify_scheme("mp_physics", 40).status is SupportStatus.REFERENCE_ONLY
 
     assert 16 in _SCAN_WIRED_OPTIONS["cu_physics"]
     assert "cu_physics=16" not in _SCAN_UNWIRED_REASON
     for key, code in (
         ("sf_surface_physics", 3),
-        ("mp_physics", 18),
-        ("mp_physics", 40),
     ):
         assert code not in _SCAN_WIRED_OPTIONS.get(key, ())
         assert _SCAN_UNWIRED_REASON[f"{key}={code}"]
@@ -97,10 +111,11 @@ def test_f2_namelist_gate_accepts_only_reference_or_operational_paths() -> None:
     # cu16 is operationally wired in v0.23 F2 (like cu=6 it additionally
     # requires active flux-form moisture advection at runtime).
     validate_operational_namelist({"physics": {"cu_physics": [16]}})
-    with pytest.raises(NotOperationallyWiredError):
-        validate_operational_namelist({"physics": {"sf_surface_physics": [3]}})
+    # RUC is IMPLEMENTED (explicit ruc_static/ruc_land bundles are checked by the scan).
+    validate_operational_namelist({"physics": {"sf_surface_physics": [3]}})
 
-    for mp in (18, 40):
-        validate_namelist({"physics": {"mp_physics": [mp]}})
-        with pytest.raises(NotOperationallyWiredError):
-            validate_operational_namelist({"physics": {"mp_physics": [mp]}})
+    validate_namelist({"physics": {"mp_physics": [18]}})
+    validate_operational_namelist({"physics": {"mp_physics": [18]}})  # v0.3.4 NSSL port (o1-nssl)
+    validate_namelist({"physics": {"mp_physics": [40]}})
+    with pytest.raises(NotOperationallyWiredError):  # v0.3.4 CLI demotion (o1-nlbind)
+        validate_operational_namelist({"physics": {"mp_physics": [40]}})

@@ -76,9 +76,10 @@ def test_every_accepted_option_routes() -> None:
     # (RUC) + 7 (Pleim-Xiu) + 8 (SSiB) became accepted REFERENCE-ONLY in v0.17
     # (registry-accepted but no dispatch entry -> scheme_entry still raises).
     # Remaining genuinely out-of-matrix: bl_pbl_physics=4 (QNSE-EDMF),
-    # surface_layer=4 (QNSE), land_surface=5 (CLM4). (cumulus=5 Grell-3D is
-    # registry-accepted reference-only -> no dispatch entry, so it still raises.)
-    [("microphysics", 5), ("pbl", 4), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 5)],
+    # surface_layer=4 (QNSE), land_surface=5 (CLM4). (cumulus=14 KSAS is
+    # registry-accepted reference-only -> no dispatch entry, so it still raises;
+    # cumulus=5 Grell-3D graduated to a routed entry in v0.3.4.)
+    [("microphysics", 5), ("pbl", 4), ("surface_layer", 4), ("cumulus", 14), ("land_surface", 5)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):
@@ -99,29 +100,33 @@ def test_cumulus_gpu_readiness_flags() -> None:
     # New-Tiedtke (cu=16, v0.23 F2 machine-precision fp64 port) are operational
     # GPU cumulus options (scan-wired) -> gate-ready. GF (cu=3) is the
     # v0.9.0 GPU-batched jit/vmap scale-aware adapter (CU_SCAN_ADAPTERS[3]).
-    for cu in (1, 2, 3, 6, 16):
+    # v0.3.4: Grell-3D (cu=5) and Grell-Devenyi (cu=93) line-faithful JAX ports;
+    # scale-aware SAS (cu=4) is scan-wired for the programmatic API (the CLI refuses
+    # it pre-JAX like WRF ARW check_a_mundo, tested in tests/test_cli.py).
+    for cu in (1, 2, 3, 4, 5, 6, 16, 93):
         suite = resolve_physics_suite({"cu_physics": cu})
         assert suite.gpu_gate_ready is True
         assert suite.cumulus.gpu_runnable is True
-    # Reference-only cumulus options (v0.17 SAS-family 4/94/95/96,
-    # Grell-Devenyi cu=93, previous Kain-Fritsch cu=99) are accepted
+    # Reference-only cumulus options (v0.17 SAS-family 94/95/96,
+    # previous Kain-Fritsch cu=99) are accepted
     # at dispatch but fail-closed from the GPU gate until their distinct WRF source
     # paths pass parity.
-    for cu in (4, 93, 94, 95, 96, 99):
+    for cu in (94, 95, 96, 99):
         suite = resolve_physics_suite({"cu_physics": cu})
         assert suite.gpu_gate_ready is False
         assert suite.cumulus.gpu_runnable is False
 
 
-def test_camuw_is_reference_only_not_gpu_ready() -> None:
-    suite = resolve_physics_suite({"bl_pbl_physics": 9, "sf_sfclay_physics": 1})
+def test_camuw_is_gpu_runnable_with_a_wrf_flux_producer() -> None:
+    suite = resolve_physics_suite({"bl_pbl_physics": 9, "sf_sfclay_physics": 5})
 
     assert suite.pbl.option == 9
     assert suite.pbl.name == "CAM-UW"
-    assert suite.pbl.gpu_runnable is False
-    assert suite.gpu_gate_ready is False
-    assert "bl_pbl_physics=9 (CAM-UW)" in suite.non_gpu_schemes
-    assert "REFERENCE_ONLY" in suite.pbl.notes
+    assert suite.pbl.gpu_runnable is True
+    assert "bl_pbl_physics=9 (CAM-UW)" not in suite.non_gpu_schemes
+    assert "CPU-oracle-qualified" in suite.pbl.notes
+    with pytest.raises(UnsupportedSchemeSelection, match="CAM-UW"):
+        resolve_physics_suite({"bl_pbl_physics": 9, "sf_sfclay_physics": 1, "sf_surface_physics": 1})
 
 
 def test_kf_is_implemented_and_scan_wired() -> None:

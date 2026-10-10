@@ -1,0 +1,182 @@
+{
+ "cache": "<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/run_sas/cu4_sas/cache/jax",
+ "tool": "scripts/gpu_smoke_e41.py (cuobjdump fallback; opus-a19 tools absent)",
+ "n_entries": 2,
+ "unscanned": [],
+ "hard_stack_gate": "PASS",
+ "max_stack_B": 16,
+ "conservative_flags": true,
+ "entries": [
+  {
+   "entry": "jit__advance_chunk_fori-97d968fa93a7c0e95b504ca22469a75510fe89d76743ac98758530ca9af5a943-cache",
+   "kind": "jax_cache",
+   "program": null,
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1240,
+     "max_stack_B": 16,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "input_add_reduce_select_fusion",
+       1344,
+       4
+      ],
+      [
+       "input_add_convert_transpose_fusion",
+       1896,
+       8
+      ],
+      [
+       "input_convert_transpose_fusion_1",
+       2144,
+       16
+      ],
+      [
+       "input_and_divide_select_transpose_fusion",
+       1600,
+       5
+      ],
+      [
+       "input_transpose_fusion_126",
+       1136,
+       8
+      ],
+      [
+       "input_divide_multiply_reduce_select_fusion",
+       3152,
+       20
+      ],
+      [
+       "input_divide_maximum_minimum_multiply_select_transpose_fusion",
+       1952,
+       1
+      ],
+      [
+       "loop_select_fusion_60",
+       1216,
+       2
+      ],
+      [
+       "input_select_transpose_fusion_5",
+       1616,
+       2
+      ],
+      [
+       "input_select_subtract_transpose_fusion",
+       1576,
+       2
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_over500": [],
+   "hlo_stats": {
+    "computations": 1694,
+    "kinput_fusions": 608,
+    "kinput_transpose_fusions": 455,
+    "max_kinput_transpose_instr": 352
+   },
+   "kinput_transpose_status": "MEASURED_RICH_JIT_HLO"
+  },
+  {
+   "entry": "782dffb3cce3cbabf2b0aa8fc5bd9f6e9983cb0e5a89938b58fd8ff5c3108aa7.xlaexec",
+   "kind": "aot",
+   "program": "d01",
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "elfs": [
+    {
+     "elf": 0,
+     "kernels": 1240,
+     "max_stack_B": 16,
+     "stack_over256": [],
+     "nonleaf_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "input_add_reduce_select_fusion",
+       1344,
+       4
+      ],
+      [
+       "input_add_convert_transpose_fusion",
+       1896,
+       8
+      ],
+      [
+       "input_convert_transpose_fusion_1",
+       2144,
+       16
+      ],
+      [
+       "input_and_divide_select_transpose_fusion",
+       1600,
+       5
+      ],
+      [
+       "input_transpose_fusion_126",
+       1136,
+       8
+      ],
+      [
+       "input_divide_multiply_reduce_select_fusion",
+       3152,
+       20
+      ],
+      [
+       "input_divide_maximum_minimum_multiply_select_transpose_fusion",
+       1952,
+       1
+      ],
+      [
+       "loop_select_fusion_60",
+       1216,
+       2
+      ],
+      [
+       "input_select_transpose_fusion_5",
+       1616,
+       2
+      ],
+      [
+       "input_select_subtract_transpose_fusion",
+       1576,
+       2
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ]
+    }
+   ],
+   "kinput_transpose_status": "UNKNOWN_AOT_METADATA"
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "M1_cli_single_domain_refusal_restored": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_cli_native_single_domain_accepts_checkpoint_and_resume"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 10 passed in 24.03s"
+ },
+ "M2_hours_back_in_identity": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_identity_excludes_end_time_but_binds_the_stream"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 10 passed in 25.77s"
+ },
+ "M3_end_time_check_removed": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[kill_after_verified]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[capture]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[data_write]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[publish_rename]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[after_publish]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[history_after_link]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[history_intent]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_controlled_end_time_extension"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "8 failed, 3 passed in 27.59s"
+ },
+ "M4_forecast_hours_not_recorded": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[kill_after_verified]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[capture]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[data_write]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[publish_rename]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[after_publish]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[history_after_link]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[history_intent]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_controlled_end_time_extension"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "8 failed, 3 passed in 24.84s"
+ },
+ "M5_shortening_allowed": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_controlled_end_time_extension"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 10 passed in 30.23s"
+ },
+ "M6_extension_without_flag": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_controlled_end_time_extension"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "1 failed, 10 passed in 28.60s"
+ },
+ "M7_journal_recover_noop": {
+  "rc": 1,
+  "failed": [
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[capture]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[data_write]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[publish_rename]",
+   "tests/v025/restart/test_single_domain_restart.py::test_single_domain_crash_injection_resume_matches_uninterrupted[history_after_link]"
+  ],
+  "setup_errors": [],
+  "killed": true,
+  "summary": "4 failed, 7 passed in 23.61s"
+ }
+}

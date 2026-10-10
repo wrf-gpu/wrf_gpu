@@ -1,0 +1,335 @@
+PID 3913734 - process
+TID 3913734:
+#0  0x0000770c70734acd syscall
+#1  0x0000770c67d4c8d8 absl::lts_20260107::synchronization_internal::FutexWaiter::WaitUntil(std::atomic<int>*, int, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#2  0x0000770c67d4c977 absl::lts_20260107::synchronization_internal::FutexWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout)
+#3  0x0000770c67d4ca8b AbslInternalPerThreadSemWait_lts_20260107
+#4  0x0000770c67d4cead absl::lts_20260107::Mutex::Block(absl::lts_20260107::base_internal::PerThreadSynch*)
+#5  0x0000770c67d4d1d9 absl::lts_20260107::Mutex::LockSlowWithDeadline(absl::lts_20260107::MuHowS const*, absl::lts_20260107::Condition const*, absl::lts_20260107::synchronization_internal::KernelTimeout, int)
+#6  0x0000770c67d4f329 absl::lts_20260107::Notification::WaitForNotification() const
+#7  0x0000770c67ad460e tsl::BlockUntilReady(tsl::AsyncValue*)
+#8  0x0000770c680054fb xla::CpuPjRtRawLoadedExecutable::Execute(xla::ExecuteOptions const&, absl::lts_20260107::Span<tsl::RCReference<xla::CommonPjRtRawBuffer> const>, absl::lts_20260107::Span<tsl::RCReference<xla::CommonPjRtRawBuffer> const>, std::unique_ptr<xla::PjRtDeviceEventSet, std::default_delete<xla::PjRtDeviceEventSet> >, std::unique_ptr<xla::PjRtDeviceEventSet, std::default_delete<xla::PjRtDeviceEventSet> >, bool, bool) &&::$_0::operator()() const
+#9  0x0000770c680027ce xla::CpuPjRtRawLoadedExecutable::Execute(xla::ExecuteOptions const&, absl::lts_20260107::Span<tsl::RCReference<xla::CommonPjRtRawBuffer> const>, absl::lts_20260107::Span<tsl::RCReference<xla::CommonPjRtRawBuffer> const>, std::unique_ptr<xla::PjRtDeviceEventSet, std::default_delete<xla::PjRtDeviceEventSet> >, std::unique_ptr<xla::PjRtDeviceEventSet, std::default_delete<xla::PjRtDeviceEventSet> >, bool, bool) &&
+#10 0x0000770c6802570a xla::CommonPjRtLoadedExecutable::ExecuteLaunch(xla::CommonPjRtLoadedExecutable::ExecuteLaunchArgs&, bool) const
+#11 0x0000770c6802622d xla::CommonPjRtLoadedExecutable::ExecuteHelperOnSingleDevice(absl::lts_20260107::Span<xla::PjRtBuffer* const>, xla::RunId, int, int, xla::ExecuteOptions const&, bool, xla::PjRtDevice*) const
+#12 0x0000770c680067ad xla::PjRtCpuLoadedExecutable::Execute(absl::lts_20260107::Span<std::vector<xla::PjRtBuffer*, std::allocator<xla::PjRtBuffer*> > const>, xla::ExecuteOptions const&, std::optional<std::vector<tsl::Future<void>, std::allocator<tsl::Future<void> > > >&) const
+#13 0x0000770c644774ba xla::ifrt::PjRtLoadedExecutable::Execute(absl::lts_20260107::Span<tsl::RCReference<xla::ifrt::Array> >, xla::ifrt::ExecuteOptions const&, std::optional<xla::ifrt::RCReferenceWrapper<xla::ifrt::DeviceList> >)
+#14 0x0000770c643214cb jax::PyLoadedExecutable::ExecuteSharded(std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool)
+#15 0x0000770c64328ca8 xla::ValueOrThrowWrapper<absl::lts_20260107::StatusOr<jax::PyExecuteResults> (std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool), jax::PyLoadedExecutable>::operator()(jax::PyLoadedExecutable&, std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool) const
+#16 0x0000770c64328af5 nanobind::detail::func_create<false, true, xla::ValueOrThrowWrapper<absl::lts_20260107::StatusOr<jax::PyExecuteResults> (std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool), jax::PyLoadedExecutable>, jax::PyExecuteResults, jax::PyLoadedExecutable&, std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool, 0ul, 1ul, 2ul, nanobind::scope, nanobind::name, nanobind::is_method, nanobind::arg, nanobind::arg_v>(xla::ValueOrThrowWrapper<absl::lts_20260107::StatusOr<jax::PyExecuteResults> (std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool), jax::PyLoadedExecutable>&&, jax::PyExecuteResults (*)(jax::PyLoadedExecutable&, std::vector<jax::PyArray, std::allocator<jax::PyArray> >, bool), std::integer_sequence<unsigned long, 0ul, 1ul, 2ul>, nanobind::scope const&, nanobind::name const&, nanobind::is_method const&, nanobind::arg const&, nanobind::arg_v const&)::{lambda(void*, _object**, unsigned char*, nanobind::rv_policy, nanobind::detail::cleanup_list*)#1}::__invoke(void*, _object**, unsigned char*, nanobind::rv_policy, nanobind::detail::cleanup_list*)
+#17 0x0000770c643ec5e1 nanobind::detail::nb_func_vectorcall_complex(_object*, _object* const*, unsigned long, _object*)
+#18 0x00005c8616ae44ae PyObject_Vectorcall
+#19 0x00005c8616af393d _PyEval_EvalFrameDefault
+#20 0x00005c8616bb7551 _PyObject_VectorcallDictTstate
+#21 0x00005c8616c063e9 slot_tp_call
+#22 0x00005c8616bc5fd9 _PyObject_Call
+#23 0x00005c8616af6536 _PyEval_EvalFrameDefault
+#24 0x00005c8616b4705a method_vectorcall
+#25 0x00005c8616af6536 _PyEval_EvalFrameDefault
+#26 0x00005c8616ae44ae PyObject_Vectorcall
+#27 0x0000770c67f08c93 jax::(anonymous namespace)::PjitFunction::Call(nanobind::handle, _object* const*, unsigned long, _object*)
+#28 0x0000770c67f071af PjitFunction_tp_vectorcall
+#29 0x00005c8616bc60b6 _PyObject_Call
+#30 0x00005c8616af6536 _PyEval_EvalFrameDefault
+#31 0x00005c8616bb75c7 _PyObject_VectorcallDictTstate
+#32 0x00005c8616c06378 slot_tp_call
+#33 0x00005c8616ae229c _PyObject_MakeTpCall
+#34 0x00005c8616afb990 _PyEval_EvalFrameDefault
+#35 0x00005c8616bb938f PyEval_EvalCode
+#36 0x00005c8616bf79f3 run_eval_code_obj
+#37 0x00005c8616bf4b4c run_mod
+#38 0x00005c8616bf1926 pyrun_file
+#39 0x00005c8616bf15a3 _PyRun_SimpleFileObject
+#40 0x00005c8616bf13bc _PyRun_AnyFileObject
+#41 0x00005c8616befd74 Py_RunMain
+#42 0x00005c8616ba48c7 Py_BytesMain
+#43 0x0000770c7062a601 __libc_start_call_main
+#44 0x0000770c7062a718 __libc_start_main@@GLIBC_2.34
+#45 0x00005c8616ba3c8e _start
+TID 3913751:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c5edf812f blas_thread_server
+#5  0x0000770c706a3dfa start_thread
+#6  0x0000770c707375cc __clone3
+TID 3913802:
+#0  0x0000770c70734acd syscall
+#1  0x0000770c593cc598 absl::lts_20260107::synchronization_internal::FutexWaiter::WaitUntil(std::atomic<int>*, int, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#2  0x0000770c593cc637 absl::lts_20260107::synchronization_internal::FutexWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout)
+#3  0x0000770c593cc30b AbslInternalPerThreadSemWait_lts_20260107
+#4  0x0000770c593ca72d absl::lts_20260107::Mutex::Block(absl::lts_20260107::base_internal::PerThreadSynch*)
+#5  0x0000770c593caac2 absl::lts_20260107::Mutex::AwaitCommon(absl::lts_20260107::Condition const&, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#6  0x0000770c593ca2d1 absl::lts_20260107::BlockingCounter::Wait()
+#7  0x0000770c592d542e jax::ParallelBatchMap(xla::ffi::ThreadPool, long, long, absl::lts_20260107::FunctionRef<void (long, long)>)
+#8  0x0000770c5930dcdc jax::TridiagonalSolver<(xla::ffi::DataType)12, int>::Kernel(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >)
+#9  0x0000770c593a5dfe xla::ffi::Error jax::TridiagonalSolverKernel<(xla::ffi::DataType)12>(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >)
+#10 0x0000770c593a68d6 xla::ffi::Handler<(xla::ffi::ExecutionStage)3, xla::ffi::Error (*)(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >), xla::ffi::internal::CtxTag<xla::ffi::ThreadPool>, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> > >::Call(XLA_FFI_CallFrame*) const
+#11 0x0000770c5931c87c lapack_dgtsv_ffi
+#12 0x0000770c6449b331 absl::lts_20260107::StatusOr<XLA_FFI_Future*> xla::ffi::Invoke<XLA_FFI_Error* (*)(XLA_FFI_CallFrame*)>(XLA_FFI_Api const*, XLA_FFI_Error* (*&)(XLA_FFI_CallFrame*), xla::ffi::CallFrame&, xla::ffi::InvokeContext const&, xla::ffi::ExecutionStage)
+#13 0x0000770c6449b511 xla::ffi::InvokeAsync(XLA_FFI_Api const*, XLA_FFI_Error* (*)(XLA_FFI_CallFrame*), xla::ffi::CallFrame&, xla::ffi::InvokeContext const&, XLA_FFI_ExecutionStage)
+#14 0x0000770c69159082 xla::cpu::CustomCallThunk::CallTypedFFI(xla::cpu::Thunk::ExecuteParams const&)
+#15 0x0000770c691586fe xla::cpu::CustomCallThunk::Execute(xla::cpu::Thunk::ExecuteParams const&)
+#16 0x0000770c6df1908b xla::cpu::ThunkExecutor::TracedExecute(xla::cpu::Thunk&, xla::cpu::Thunk::ExecuteParams const&)
+#17 0x0000770c6df1c66f void xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)
+#18 0x0000770c6df1e0a6 xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}::operator()()
+#19 0x0000770c6df1ef13 tsl::AsyncValue::EnqueueWaiter<xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}>(xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}&&, tsl::AsyncValue::WaitersAndState)::Node::RunWaiterAndDeleteWaiterNode()
+#20 0x0000770c6832420a tsl::CountDownAsyncValueRef<tsl::Chain>::CountDown(unsigned long, absl::lts_20260107::Status const&)
+#21 0x0000770c698d771c void xla::cpu::Worker::Parallelize<xla::cpu::Kernel::Task<true> >(std::shared_ptr<xla::cpu::Worker::ParallelizeContext<xla::cpu::Kernel::Task<true> > >, unsigned short, unsigned short)
+#22 0x0000770c698d7e62 std::_Function_handler<void (), xla::cpu::Worker::Parallelize<xla::cpu::Kernel::Task<true> >(std::shared_ptr<xla::cpu::Worker::ParallelizeContext<xla::cpu::Kernel::Task<true> > >, unsigned short, unsigned short)::{lambda()#1}>::_M_invoke(std::_Any_data const&)
+#23 0x0000770c67bc4ba4 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#24 0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#25 0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#26 0x0000770c706a3dfa start_thread
+#27 0x0000770c707375cc __clone3
+TID 3913803:
+#0  0x0000770c70734acd syscall
+#1  0x0000770c593cc598 absl::lts_20260107::synchronization_internal::FutexWaiter::WaitUntil(std::atomic<int>*, int, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#2  0x0000770c593cc637 absl::lts_20260107::synchronization_internal::FutexWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout)
+#3  0x0000770c593cc30b AbslInternalPerThreadSemWait_lts_20260107
+#4  0x0000770c593ca72d absl::lts_20260107::Mutex::Block(absl::lts_20260107::base_internal::PerThreadSynch*)
+#5  0x0000770c593caac2 absl::lts_20260107::Mutex::AwaitCommon(absl::lts_20260107::Condition const&, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#6  0x0000770c593ca2d1 absl::lts_20260107::BlockingCounter::Wait()
+#7  0x0000770c592d542e jax::ParallelBatchMap(xla::ffi::ThreadPool, long, long, absl::lts_20260107::FunctionRef<void (long, long)>)
+#8  0x0000770c5930dcdc jax::TridiagonalSolver<(xla::ffi::DataType)12, int>::Kernel(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >)
+#9  0x0000770c593a5dfe xla::ffi::Error jax::TridiagonalSolverKernel<(xla::ffi::DataType)12>(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >)
+#10 0x0000770c593a68d6 xla::ffi::Handler<(xla::ffi::ExecutionStage)3, xla::ffi::Error (*)(xla::ffi::ThreadPool, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul>, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::Result<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> >), xla::ffi::internal::CtxTag<xla::ffi::ThreadPool>, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::ArgTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)12, 18446744073709551615ul> >, xla::ffi::internal::RetTag<xla::ffi::Buffer<(xla::ffi::DataType)4, 18446744073709551615ul> > >::Call(XLA_FFI_CallFrame*) const
+#11 0x0000770c5931c87c lapack_dgtsv_ffi
+#12 0x0000770c6449b331 absl::lts_20260107::StatusOr<XLA_FFI_Future*> xla::ffi::Invoke<XLA_FFI_Error* (*)(XLA_FFI_CallFrame*)>(XLA_FFI_Api const*, XLA_FFI_Error* (*&)(XLA_FFI_CallFrame*), xla::ffi::CallFrame&, xla::ffi::InvokeContext const&, xla::ffi::ExecutionStage)
+#13 0x0000770c6449b511 xla::ffi::InvokeAsync(XLA_FFI_Api const*, XLA_FFI_Error* (*)(XLA_FFI_CallFrame*), xla::ffi::CallFrame&, xla::ffi::InvokeContext const&, XLA_FFI_ExecutionStage)
+#14 0x0000770c69159082 xla::cpu::CustomCallThunk::CallTypedFFI(xla::cpu::Thunk::ExecuteParams const&)
+#15 0x0000770c691586fe xla::cpu::CustomCallThunk::Execute(xla::cpu::Thunk::ExecuteParams const&)
+#16 0x0000770c6df1908b xla::cpu::ThunkExecutor::TracedExecute(xla::cpu::Thunk&, xla::cpu::Thunk::ExecuteParams const&)
+#17 0x0000770c6df1c66f void xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)
+#18 0x0000770c6df1e0a6 xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}::operator()()
+#19 0x0000770c6df1ef13 tsl::AsyncValue::EnqueueWaiter<xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}>(xla::cpu::ThunkExecutor::Execute<xla::cpu::ThunkExecutor::FifoReadyQueue>(std::shared_ptr<xla::cpu::ThunkExecutor::ExecuteState>, xla::cpu::Thunk::ExecuteParams const&, xla::cpu::ThunkExecutor::FifoReadyQueue, std::shared_ptr<std::nullopt_t>)::{lambda()#2}&&, tsl::AsyncValue::WaitersAndState)::Node::RunWaiterAndDeleteWaiterNode()
+#20 0x0000770c6832420a tsl::CountDownAsyncValueRef<tsl::Chain>::CountDown(unsigned long, absl::lts_20260107::Status const&)
+#21 0x0000770c698d771c void xla::cpu::Worker::Parallelize<xla::cpu::Kernel::Task<true> >(std::shared_ptr<xla::cpu::Worker::ParallelizeContext<xla::cpu::Kernel::Task<true> > >, unsigned short, unsigned short)
+#22 0x0000770c698d7e62 std::_Function_handler<void (), xla::cpu::Worker::Parallelize<xla::cpu::Kernel::Task<true> >(std::shared_ptr<xla::cpu::Worker::ParallelizeContext<xla::cpu::Kernel::Task<true> > >, unsigned short, unsigned short)::{lambda()#1}>::_M_invoke(std::_Any_data const&)
+#23 0x0000770c67bc4ba4 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#24 0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#25 0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#26 0x0000770c706a3dfa start_thread
+#27 0x0000770c707375cc __clone3
+TID 3913804:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913805:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913806:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913807:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913808:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913809:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913810:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913811:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913812:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3913813:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3914013:
+#0  0x0000770c70734acd syscall
+#1  0x0000770c67d4c8d8 absl::lts_20260107::synchronization_internal::FutexWaiter::WaitUntil(std::atomic<int>*, int, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#2  0x0000770c67d4c977 absl::lts_20260107::synchronization_internal::FutexWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout)
+#3  0x0000770c67d4ca8b AbslInternalPerThreadSemWait_lts_20260107
+#4  0x0000770c67d4ece2 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout)
+#5  0x0000770c643bc6b5 xla::SlowOperationAlarm::AlarmLoop()
+#6  0x0000770c643bd359 void absl::lts_20260107::internal_any_invocable::LocalInvoker<false, void, xla::SlowOperationAlarm::ScheduleAlarm(xla::SlowOperationAlarm*)::$_0::operator()() const::{lambda()#1}&>(absl::lts_20260107::internal_any_invocable::TypeErasedState*)
+#7  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#8  0x0000770c706a3dfa start_thread
+#9  0x0000770c707375cc __clone3
+TID 3914014:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3914015:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3914016:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67b619eb llvm::StdThreadPool::processTasks(llvm::ThreadPoolTaskGroup*)
+#6  0x0000770c67b634e9 void* llvm::thread::ThreadProxy<std::tuple<llvm::StdThreadPool::grow(int)::$_0> >(void*)
+#7  0x0000770c706a3dfa start_thread
+#8  0x0000770c707375cc __clone3
+TID 3914017:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67b619eb llvm::StdThreadPool::processTasks(llvm::ThreadPoolTaskGroup*)
+#6  0x0000770c67b634e9 void* llvm::thread::ThreadProxy<std::tuple<llvm::StdThreadPool::grow(int)::$_0> >(void*)
+#7  0x0000770c706a3dfa start_thread
+#8  0x0000770c707375cc __clone3
+TID 3921145:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3921146:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770c6f065e78 _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE@GLIBCXX_3.4.11
+#5  0x0000770c67bc5eb2 Eigen::EventCount::CommitWait(Eigen::EventCount::Waiter*)
+#6  0x0000770c67bc55d1 Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WaitForWork(Eigen::EventCount::Waiter*, tsl::thread::EigenEnvironment::Task*)
+#7  0x0000770c67bc4bdb Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int)
+#8  0x0000770c67bc4a31 void std::__invoke_impl<void, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&>(std::__invoke_other, tsl::thread::EigenEnvironment::CreateThread(std::function<void ()>)::{lambda()#1}&)
+#9  0x0000770c67bb3d9f tsl::(anonymous namespace)::PThread::ThreadFn(void*)
+#10 0x0000770c706a3dfa start_thread
+#11 0x0000770c707375cc __clone3
+TID 3946732:
+#0  0x0000770c706ac802 __syscall_cancel_arch
+#1  0x0000770c706a030c __internal_syscall_cancel
+#2  0x0000770c706a06e7 __GI___futex_abstimed_wait_cancelable64
+#3  0x0000770c706a30c7 pthread_cond_wait@@GLIBC_2.3.2
+#4  0x0000770ab78393eb blas_thread_server
+#5  0x0000770c706a3dfa start_thread
+#6  0x0000770c707375cc __clone3

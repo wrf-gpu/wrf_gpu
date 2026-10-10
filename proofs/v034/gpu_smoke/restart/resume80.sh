@@ -1,0 +1,5 @@
+#!/bin/bash
+export PYTHONPATH=<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/snap_main/src GPUWRF_JAX_CACHE_DIR=<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/cache/jax JAX_COMPILATION_CACHE_DIR=<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/cache/jax GPUWRF_XLA_AUTOTUNE_CACHE_DIR=<USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/cache/autotune
+unset GPUWRF_FAST_DEFAULTS
+timeout 600 python <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart_tools/gpu_cli.py run --input-dir <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/snap_main/examples/switzerland_d01 --scratch-dir <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/scratch --output-dir <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/stream --hours 1 --checkpoint-dir <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/ck --checkpoint-interval-steps 20 --resume-checkpoint <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/ck/generation-1791657645014029653-07465ce29d2546ebaafb138b648ab667 > <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/D80.out 2> <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/D80.err
+echo "$(date -u +%FT%TZ) D80 rc=$?" >> <USER_HOME>/wrf_gpu2_lanes/o1-gpusmoke/restart/chain.log

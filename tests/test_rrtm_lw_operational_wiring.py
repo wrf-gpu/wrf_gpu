@@ -205,7 +205,7 @@ def test_default_ra4_ra4_matches_combined_rrtmg() -> None:
 
 def test_unwired_ra_lw_value_fails_closed() -> None:
     grid = _grid()
-    nml = _namelist(grid, ra_lw_physics=3)  # not a recognized/wired LW scheme
+    nml = _namelist(grid, ra_lw_physics=5)  # Goddard LW: reference-only, not scan-wired (3 = CAM is wired since v0.3.4)
     with pytest.raises((UnsupportedSchemeSelection, Exception)):
         _resolve_operational_suite(nml)
 

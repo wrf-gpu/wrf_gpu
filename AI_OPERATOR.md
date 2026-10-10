@@ -129,20 +129,32 @@ scripts/run_parallel_cases.sh --out-root runs/batch CASE_A CASE_B -- \
 The launcher admits work against both GPU and host budgets, and queues the
 rest. A throughput result is distinct from individual-case latency.
 
-## Verified nested checkpoint and resume
+## Verified checkpoint and resume
 
-Checkpoint/resume currently requires the live nested driver (`max_dom > 1`).
-Cadence is in root-domain steps, not seconds. Retention defaults to 8 GiB,
-at least two generations, with 10 GiB filesystem reserve. Resume authenticates
-the generation and continues the same output stream; preserve its inputs,
-namelist and provenance. A generic WRF-style history file is not a checkpoint.
+Checkpoint/resume works on the native drivers: nested runs (`max_dom > 1`) and
+single-domain d01 runs initialized from `wrfinput`/`wrfbdy`. CPU-WRF replay
+and non-d01 single-domain runs refuse the flags. Cadence is in root-domain
+steps, not seconds; a generation is also written at the forecast end.
+Retention defaults to 8 GiB, at least two generations, with 10 GiB filesystem
+reserve. Resume authenticates the generation and continues the same output
+stream; preserve its inputs, namelist and provenance. A generic WRF-style
+history file is not a checkpoint. To continue a run past its original end,
+resume with a larger `--hours` plus `--extend-run`; a changed end without the
+flag, or a shorter end, is refused. Any native run whose end lies past the
+`wrfbdy_d01` coverage (records x interval_seconds, and WRF's last boundary
+time) is refused before it starts.
 
 ```bash
 python -m gpuwrf.cli run --input-dir CASE --output-dir runs/case \
   --domains-from-namelist --hours 24 --checkpoint-dir runs/checkpoints \
   --checkpoint-interval-steps 200
 python -m gpuwrf.cli run --input-dir CASE --output-dir runs/case \
-  --domains-from-namelist --hours 24 --resume-checkpoint VERIFIED_GENERATION
+  --domains-from-namelist --hours 24 --checkpoint-dir runs/checkpoints \
+  --checkpoint-interval-steps 200 --resume-checkpoint VERIFIED_GENERATION
+# later end time from the final generation of a finished 24 h run
+python -m gpuwrf.cli run --input-dir CASE --output-dir runs/case \
+  --domains-from-namelist --hours 48 --checkpoint-dir runs/checkpoints \
+  --checkpoint-interval-steps 200 --resume-checkpoint VERIFIED_GENERATION --extend-run
 ```
 
 Check the actual installed release's restart evidence before making a

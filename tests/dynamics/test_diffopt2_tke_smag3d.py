@@ -289,7 +289,9 @@ def test_tke_rhs_is_finite_produces_shear_and_bounds_sink():
     assert np.min(np.asarray(sink) - lower) >= -1.0e-9
 
 
-@pytest.mark.parametrize("km_opt", [2, 3, 5])
+# km_opt=3 is the literal WRF path (gpuwrf.dynamics.les3d_smagorinsky), qualified against the
+# pristine-WRF oracle in tests/dynamics/test_les3d_smagorinsky.py; this fixture's phy_prep rho is 0.
+@pytest.mark.parametrize("km_opt", [2, 5])
 def test_diffopt2_turbulence_augment_is_finite_and_nonzero(km_opt):
     grid = _build_grid(ny=6, nx=8, nz=4, dx=1000.0)
     state = _build_state(grid)

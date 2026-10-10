@@ -138,8 +138,9 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="mp_physics",
         supported_values=frozenset(ACCEPTED_MP_PHYSICS),
         implemented="0=disabled/passive qv, 1=Kessler, 2=Purdue-Lin, 3=WSM3, 4=WSM5, 6=WSM6, "
-        "8=Thompson, 10=Morrison, 13=SBU-YLin, 14=WDM5, 16=WDM6, 24=WSM7, "
-        "26=WDM7, 28=aerosol-aware Thompson, 97=Goddard GCE",
+        "8=Thompson, 10=Morrison, 13=SBU-YLin, 14=WDM5, 16=WDM6, 18=NSSL 2-moment (v0.3.4 port, "
+        "single domains, cu_physics=0; kernel CPU-oracle-qualified, coupled path not GPU-run), 24=WSM7, "
+        "26=WDM7, 28=aerosol-aware Thompson, 40=Morrison-aerosol (aercu_opt=0), 97=Goddard GCE",
         action="Use one of the frozen accepted microphysics options; all other MP options remain unsupported.",
     ),
     "cu_physics": SupportedOption(
@@ -152,14 +153,16 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
             "shared JAX endpoint RED vs oracle; fail-closed in the GPU scan), "
             "6=Tiedtke (GPU-operational only with use_flux_advection=True and "
             "moist_adv_opt=1/2 so RQVFTEN is available); "
-            "5=Grell-3D, 14=KIM-SAS, 16=New Tiedtke, 93=Grell-Devenyi, "
+            "5=Grell-3D and 93=Grell-Devenyi (v0.3.4 line-faithful JAX ports, scan-wired; "
+            "CPU-oracle-qualified vs pristine WRF, GPU qualification pending; cudt=0 only), "
+            "14=KIM-SAS, 16=New Tiedtke, "
             "99=previous Kain-Fritsch (with 4/94/95/96=SAS family) are "
             "accepted/reference-only and fail-closed in the operational GPU scan"
         ),
         action=(
-            "Use cu_physics=0/1/2/3/6 for the operational GPU scan; cu=6 requires "
+            "Use cu_physics=0/1/2/3/5/6/93 for the operational GPU scan; cu=6 requires "
             "active flux-form moisture advection (use_flux_advection=True, moist_adv_opt=1/2); "
-            "4/5/14/16/93/94/95/96/99 remain reference-only until source-specific "
+            "4/14/16/94/95/96/99 remain reference-only until source-specific "
             "WRF parity and scan wiring land."
         ),
     ),
@@ -176,20 +179,21 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
             "11=Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port; "
             "12=GBM is the v0.18 JAX/vmap moist prognostic-TKE PBL port, fp64 "
             "parity-green vs the pristine-WRF savepoint oracle. "
-            "9=CAM-UW is F3 REFERENCE-ONLY: a WRF-Fortran CAM-UW oracle is "
-            "preserved under proofs/v023/feature_sprints/camuw_oracle, and the "
-            "former JAX scaffold is proven RED vs oracle; it fail-closes in the "
-            "operational GPU scan until the dedicated faithful-port milestone. "
+            "9=CAM-UW is the v0.3.4 faithful r8 port of module_bl_camuwpbl_driver, "
+            "parity-gated against the pristine-WRF oracle proofs/v034/camuw_oracle "
+            "(CPU-oracle-qualified; GPU/coupled-forecast qualification pending; coupling caveat: "
+            "it receives the held TOTAL RTHRATEN instead of WRF's LW-only RTHRATENLW, so daytime "
+            "cloud-top radiative forcing is biased, exact at night). "
             "4=QNSE, 10=TEMF, 16=EEPS, and 17=KEPS are accepted/reference-only "
             "v0.18 fp64 pristine-WRF oracle endpoints and fail-close in the "
             "operational GPU scan."
         ),
         action=(
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for the operational GPU scan; 2=MYJ MUST "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for the operational GPU scan; 2=MYJ MUST "
             "pair with sf_sfclay_physics=2. "
             "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, "
-            "Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
-            "Use bl_pbl_physics=4/9/10/16/17 only for single-column oracle/reference "
+            "Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1, CAM-UW<->Noah-MP or 5). "
+            "Use bl_pbl_physics=4/10/16/17 only for single-column oracle/reference "
             "comparisons."
         ),
     ),
@@ -215,20 +219,22 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         supported_values=frozenset(ACCEPTED_SF_SURFACE_PHYSICS),
         implemented="0=disabled; 1=thermal-diffusion slab LSM (explicit slab_static bundle); "
         "2=Noah classic (explicit static/land bundle); 4=Noah-MP (set use_noahmp=True); "
-        "7=Pleim-Xiu 2-layer ISBA LSM (explicit px_static bundle; pairs with sf_sfclay=7) "
-        "-- all GPU-operational, scan-wired; slab (1) + Pleim-Xiu (7) are fp64 pristine-WRF "
-        "oracle-validated (physics.lsm_slab / physics.lsm_pleim_xiu). 3=RUC and 8=SSiB are "
+        "7=Pleim-Xiu 2-layer ISBA LSM (explicit px_static bundle; pairs with sf_sfclay=7); "
+        "3=RUC LSM (explicit ruc_static/ruc_land bundles, MYNN-SL sf_sfclay=5; CPU-oracle-"
+        "qualified vs proofs/v034/oracle/ruclsm, GPU/coupled-forecast qualification pending) "
+        "-- all scan-wired; slab (1) + Pleim-Xiu (7) are fp64 pristine-WRF "
+        "oracle-validated (physics.lsm_slab / physics.lsm_pleim_xiu). 8=SSiB is "
         "namelist-accepted REFERENCE-ONLY (fp64 pristine-WRF single-column oracle staged in "
-        "proofs/v017/oracle/{ruclsm,ssib}; faithful JAX column kernel is a carry-over) and "
-        "fail-close in the operational scan. 5=CLM4 and 6=CTSM are documented v0.18->v1.0 "
+        "proofs/v017/oracle/ssib; faithful JAX column kernel is a carry-over) and "
+        "fails closed in the operational scan. 5=CLM4 and 6=CTSM are documented v0.18->v1.0 "
         "CAM/CLM/CTSM ARCHITECTURE-BOUNDARY options that fail closed with a named reason "
         "(CLM4 is ~61.5k-LOC with a global clmtype + external surface-dataset; CTSM is the "
         "external CESM land model via LILAC) -- a faithful oracle is multi-session, carried "
         "to the v1.0 ADR; never a silent substitution.",
         action="Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab, with an "
         "explicit slab_static SlabStaticBundle), or 7 (Pleim-Xiu, with an explicit "
-        "px_static PleimXiuStaticBundle) for the operational scan; 3 (RUC) and 8 (SSiB) are "
-        "reference-only (oracle staged, JAX kernel carry-over); 5 (CLM4) and 6 (CTSM) are "
+        "px_static PleimXiuStaticBundle), or 3 (RUC, with explicit ruc_static/ruc_land) for "
+        "the operational scan; 8 (SSiB) is reference-only (oracle staged, JAX kernel carry-over); 5 (CLM4) and 6 (CTSM) are "
         "documented v1.0 architecture-boundary (fail-closed, carried to the CAM/CLM/CTSM "
         "ADR); all other land-surface options remain unsupported.",
     ),
@@ -240,12 +246,14 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         "shortwave (multi-band delta-Eddington; GPU-operational, jit/vmap-traceable port of "
         "phys/module_ra_gsfcsw.F scan-wired via gsfc_sw_theta_tendency), 4=RRTMG shortwave "
         "(GPU-operational; the operational radiation slot runs RRTMG SW+LW), "
-        "3=CAM SW, 5=New Goddard SW, 7=FLG/UCLA SW, and 99=GFDL-Eta SW "
+        "3=CAM SW (v0.3.4: physics.ra_cam port of phys/module_ra_cam.F scan-wired via "
+        "coupling.cam_radiation; CPU-oracle-qualified, GPU qualification pending), "
+        "5=New Goddard SW, 7=FLG/UCLA SW, and 99=GFDL-Eta SW "
         "(v0.18 REFERENCE-ONLY: exact-driver real-WRF oracles staged, but no "
         "faithful JAX kernel or operational scan wiring yet)",
-        action="Use ra_sw_physics=4 (RRTMG SW+LW), 1 (Dudhia SW + RRTMG/RRTM LW) or 2 (GSFC SW + "
-        "RRTMG/RRTM LW) for the operational SW path, or 0 when radiation is disabled. "
-        "ra_sw=3/5/7/99 are accepted for reference/parity development only and fail-close in "
+        action="Use ra_sw_physics=4 (RRTMG SW+LW), 1 (Dudhia SW + RRTMG/RRTM LW), 2 (GSFC SW + "
+        "RRTMG/RRTM LW) or 3 (CAM) for the operational SW path, or 0 when radiation is disabled. "
+        "ra_sw=5/7/99 are accepted for reference/parity development only and fail-close in "
         "the operational scan; the surface SWDOWN/flux history diagnostics remain RRTMG-derived. "
         "ra_sw=14 (RRTMG-K) and 24 (fast RRTMG) are compiled-out of standard WRF "
         "(configure.wrf BUILD_RRTMK=0 / BUILD_RRTMG_FAST=0) and cannot run even in unmodified WRF.",
@@ -256,13 +264,15 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         implemented="0=disabled, 1=classic AER RRTM longwave (16-band k-distribution; "
         "GPU-operational, scan-wired held-rate RTHRATEN via the JAX-traceable "
         "physics.ra_lw_rrtm_jax port of phys/module_ra_rrtm.F), 4=RRTMG longwave "
-        "(GPU-operational, default), 3=CAM LW, 5=GSFC/Goddard NUWRF longwave, "
+        "(GPU-operational, default), 3=CAM LW (v0.3.4: physics.ra_cam port scan-wired via "
+        "coupling.cam_radiation; CPU-oracle-qualified, GPU qualification pending), "
+        "5=GSFC/Goddard NUWRF longwave, "
         "7=FLG/UCLA LW, and 99=GFDL-Eta longwave (v0.18 REFERENCE-ONLY: "
         "exact-driver real-WRF oracles staged; ra_lw=5 also retains the v0.13 "
         "single-column module_ra_goddard.F:lwrad oracle; no faithful JAX kernel or "
         "operational scan wiring yet)",
-        action="Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM) for the operational LW path, "
-        "or 0 when radiation is disabled. ra_lw=3/5/7/99 "
+        action="Use ra_lw_physics=4 (RRTMG), 1 (classic RRTM) or 3 (CAM) for the operational LW path, "
+        "or 0 when radiation is disabled. ra_lw=5/7/99 "
         "are reference-only and fail-close in the operational scan. SW and LW are "
         "selected independently; the surface GLW history diagnostic remains RRTMG-derived. "
         "ra_lw=14 (RRTMG-K) and 24 (fast RRTMG) are compiled-out of standard WRF "
@@ -297,13 +307,13 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     ),
     "km_opt": SupportedOption(
         key="km_opt",
-        supported_values=frozenset({0, 1, 2, 3, 4, 5}),
-        implemented="0=off, 1=constant-K coefficient, 2=prognostic 3-D TKE, "
-        "3=3-D Smagorinsky, 4=2-D Smagorinsky horizontal eddy viscosity, "
-        "5=SMS-3DTKE scale-adaptive closure",
+        supported_values=frozenset({0, 1, 3, 4}),
+        implemented="0=off, 1=constant-K coefficient (programmatic only; gpuwrf run refuses it), "
+        "3=3-D Smagorinsky, 4=2-D Smagorinsky horizontal eddy viscosity; "
+        "2 (prognostic 3-D TKE) and 5 (SMS-3DTKE) are refused in v0.3.4 "
+        "(unqualified v022 scaffolds, NaN under the release REAL carry)",
         action="Use km_opt=4 with diff_opt=1 for the real-data default 2-D "
-        "Smagorinsky, km_opt=1/2/3/5 with diff_opt=2 for physical-level "
-        "diffusion, or 0.",
+        "Smagorinsky, km_opt=3 with diff_opt=2 for 3-D Smagorinsky, or 0.",
     ),
     "w_damping": SupportedOption(
         key="w_damping",
@@ -416,7 +426,8 @@ def validate_namelist(config: Any) -> None:
     config_obj = _coerce_config(config)
     oos_failures = _out_of_scope_failures(config_obj)
     control_failures = _recognized_control_failures(config_obj)
-    extra_failures = oos_failures + control_failures + _cldovrlp_failures(config_obj)
+    extra_failures = (oos_failures + control_failures + _cldovrlp_failures(config_obj)
+                      + _aercu_opt_failures(config_obj))
     try:
         validate_supported_namelist(config_obj)
     except UnsupportedNamelistOption as exc:
@@ -487,10 +498,38 @@ def validate_operational_namelist(config: Any) -> None:
             raise UnsupportedSchemeError(failures)
     # First: the existing full support + out-of-scope check (unchanged behavior).
     validate_namelist(config_obj)
+    _refuse_nssl_with_cumulus(config_obj)
     # Then: the operational-only strictness -- reject reference-only selections.
     ref_only = _reference_only_failures(config_obj)
     if ref_only:
         raise NotOperationallyWiredError(ref_only)
+
+
+def _refuse_nssl_with_cumulus(config_obj: Any) -> None:
+    """mp_physics=18 (NSSL) with ANY cu_physics /= 0 is refused: WRF's NSSL driver then adds number
+    concentrations for cumulus-produced condensate (cu_used=1 -> calcnfromcuten, module_mp_nssl_2mom.F:3119-3136;
+    check_a_mundo.F:1851), which is not ported (lane o1-nssl, rv-nssl F3)."""
+
+    mp = _lookup(config_obj, "mp_physics")
+    cu = _lookup(config_obj, "cu_physics")
+    if mp is None or cu is None:
+        return
+    if not any(_normalize_value(v) == 18 for v in _domain_values(mp[1])):
+        return
+    bad = [_normalize_value(v) for v in _domain_values(cu[1]) if _normalize_value(v) != 0]
+    if bad:
+        raise NotOperationallyWiredError([
+            UnsupportedSelection(
+                key="cu_physics",
+                location=cu[0],
+                value=bad[0],
+                supported_values=(0,),
+                implemented="mp_physics=18 (NSSL 2-moment) runs only with cu_physics=0",
+                action="Set cu_physics=0 with mp_physics=18, or use another microphysics with cumulus.",
+                outcome="recognized_control_not_wired",
+                wrf_scheme="NSSL cu_used=1 calcnfromcuten (cumulus number sources)",
+            )
+        ])
 
 
 def collect_namelist_warnings(config: Any) -> list[str]:
@@ -745,6 +784,35 @@ def _cldovrlp_failures(config: Any) -> list[UnsupportedSelection]:
             outcome="recognized_control_not_wired",
             wrf_scheme="RRTMG McICA cloud overlap",
         )
+    ]
+
+
+def _aercu_opt_failures(config: Any) -> list[UnsupportedSelection]:
+    """CESM-NCSU prescribed aerosol (aercu_opt>0): fail closed, never ignored.
+
+    WRF share/module_check_a_mundo.F:1407 makes aercu_opt>0 fatal unless
+    cu_physics=11 (multi-scale KF, not ported) AND mp_physics=40; it also needs
+    the CESM_RCP4.5_Aerosol_Data.dat climatology (module_physics_init.F:5545).
+    The port runs mp_physics=40 at aercu_opt=0 (constant droplets) only.
+    """
+
+    found = _lookup(config, "aercu_opt")
+    if found is None:
+        return []
+    location, raw = found
+    return [
+        UnsupportedSelection(
+            key="aercu_opt",
+            location=location,
+            value=_normalize_value(value),
+            supported_values=(0,),
+            implemented="0=no CESM aerosol (mp_physics=40 runs constant-droplet Morrison-aerosol)",
+            action="Set aercu_opt=0; aercu_opt>0 needs cu_physics=11 (MSKF), not ported.",
+            outcome="recognized_control_not_wired",
+            wrf_scheme="CESM-NCSU prescribed aerosol (aercu_opt)",
+        )
+        for value in _domain_values(raw)
+        if _normalize_value(value) != 0
     ]
 
 

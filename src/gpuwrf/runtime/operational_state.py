@@ -136,6 +136,19 @@ class OperationalCarry:
     # climatology at its radiation calls, nests receive the parent's field at every force-down (Registry
     # rdf=(p2c)).  Seeded only for nested runs under GPUWRF_NEST_O3_FROM_PARENT=1 (nesting/nest_o3.py).
     o3rad: Any = field(default=None)
+    # bl_pbl_physics=9 CAM-UW carry (WRF KVM3D/KVH3D/TAURESX2D/TAURESY2D/TKE_PBL, REAL); None for
+    # every other PBL, so released configurations keep their carry leaves unchanged.
+    camuw_pbl: Any = field(default=None)
+    # --- v0.3.4 RUC LSM (sf_surface_physics=3) coupler (lane o1-ruc) ---------------
+    # ``ruc_land`` is the LSMRUC INOUT grid carry (a RucLandState pytree: TSK/SOILT1/
+    # TSLB/SMOIS/SH2O/SMFR3D/KEEPFR3DFLAG/SNOW/SNOWH/SNOWC/CANWAT/QVG/QSG/QCG/...);
+    # ``ruc_rad`` the held legacy downward radiation. ``None`` unless an explicit
+    # sf_surface_physics=3 run supplies a RucStaticBundle. Appended LAST.
+    ruc_land: Any = field(default=None)
+    ruc_rad: Any = field(default=None)
+    # ra_lw_physics=3 CAM held absorptivities (WRF state abstot_3d/absnxt_3d/emstot_3d, REAL, flat columns, a
+    # physics.ra_cam.CamHeld) recomputed only every cam_abs_freq_s; None for every other LW scheme.
+    cam_abs: Any = field(default=None)
 
 
     def replace(self, **updates) -> "OperationalCarry":
@@ -217,6 +230,8 @@ def initial_operational_carry(
     px_land: Any = None,
     px_rad: Any = None,
     base_state: BaseState | None = None,
+    ruc_land: Any = None,
+    ruc_rad: Any = None,
 ) -> OperationalCarry:
     """Build promoted carry from the initialized operational ``State``.
 
@@ -274,6 +289,8 @@ def initial_operational_carry(
         slab_rad=slab_rad,
         px_land=px_land,
         px_rad=px_rad,
+        ruc_land=ruc_land,
+        ruc_rad=ruc_rad,
     )
 
 

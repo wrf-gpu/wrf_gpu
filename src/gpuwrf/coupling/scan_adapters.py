@@ -88,11 +88,14 @@ from gpuwrf.coupling.physics_couplers import (
     _w_mass,
     _wrf_phy_prep_rho_from_state,
     _wrf_hydrostatic_pressure_profiles_from_state,
+    _wrf_phy_prep_p8w,
+    WRF_PHYSICS_G,
 )
 from gpuwrf.physics.microphysics_goddard import goddard_physics_tendency
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
 from gpuwrf.physics.microphysics_lin import lin_physics_tendency
 from gpuwrf.physics.microphysics_morrison import morrison_tendency
+from gpuwrf.physics.microphysics_morrison_aero import morrison_aero_tendency
 from gpuwrf.physics.microphysics_sbu_ylin import sbu_ylin_physics_tendency
 from gpuwrf.physics.microphysics_wdm5 import wdm5_physics_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
@@ -105,6 +108,7 @@ from gpuwrf.physics.microphysics_wsm7 import wsm7_physics_tendency
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
 from gpuwrf.physics.cumulus_ntiedtke_jax import ntiedtke_column_jax
+from gpuwrf.coupling.scalesas_adapter import scalesas_rates
 from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
@@ -113,7 +117,7 @@ from gpuwrf.physics.bl_mrf import mrf_columns
 from gpuwrf.physics.bl_gfs import gfs_columns
 from gpuwrf.physics.bl_gbm import gbm_columns
 from gpuwrf.physics.bl_shinhong import shinhong_columns
-from gpuwrf.physics.bl_camuw import CAMUW_REFERENCE_ONLY_REASON, CamUwReferenceOnlyError
+from gpuwrf.physics.bl_camuw import CamUwCarry, camuw_column, initial_camuw_carry
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
 from gpuwrf.physics.sfclay_old_mm5 import sfclay_old_mm5_columns
@@ -371,6 +375,32 @@ def morrison_adapter(state: State, dt: float, grid=None) -> State:
         mp(state.qi), mp(state.qs), mp(state.qg),
         mp(state.Ni), mp(state.Ns), mp(state.Nr), mp(state.Ng),
         mp(pii), mp(state.p), mp(dz), mp(_w_mass(state)), float(dt),
+    )
+    tend.validate_keys()
+    return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
+def morrison_aero_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=40 aerosol-aware Morrison scan adapter (WRF aercu_opt=0 point).
+
+    Same inputs as the mp=10 adapter plus the WRF ``qnc`` scalar (``Nc``),
+    which the scheme overwrites with its constant-droplet output (WRF
+    wrapper ``NC(i,k,j)=nc1d(k)``).  aercu_opt>0 is rejected upstream
+    (needs cu_physics=11 MSKF + CESM aerosol input, not ported).
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph / GRAVITY_M_S2
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    tend = morrison_aero_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs), mp(state.qg),
+        mp(state.Ni), mp(state.Ns), mp(state.Nr), mp(state.Ng), mp(state.Nc),
+        mp(pii), mp(state.p), mp(dz.astype(state.theta.dtype)),
+        mp(_w_mass(state).astype(state.theta.dtype)), float(dt),
     )
     tend.validate_keys()
     return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
@@ -1196,6 +1226,117 @@ def gf_adapter(state: State, dt: float, grid=None, *, ishallow_g3: int = 1,
     )
     return next_state
 
+def grell_cumulus_adapter(state: State, dt: float, grid=None, *, cu_physics: int,
+                          forcing_entry_state: State | None = None, rthblten=None,
+                          rqvblten=None, gsw=None, periodic_x: bool = False,
+                          periodic_y: bool = False, ishallow: int = 0, cugd_avedx: int = 1,
+                          ichoice: int = 0) -> State:
+    """cu=5 Grell-3D ensemble / cu=93 Grell-Devenyi ``State -> State`` scan adapter.
+
+    Calls the line-faithful JAX port of WRF ``G3DRV`` + ``conv_grell_spread3d``
+    (cu=5) or ``GRELLDRV`` (cu=93) in ``physics._grell_cup_jax`` on the whole
+    ``(ny, nx)`` tile (G3 is not column-local: 3x3 neighbour omega ensemble and
+    horizontal spreading/smoothing; both schemes act only on columns >= 4 points
+    from a non-periodic boundary, exactly like WRF). No persistent carry.
+
+    WRF cumulus_driver inputs (module_first_rk_step_part1.F:1379-1400), in the
+    State dtype (WRF REAL under the release carry): T = t_phy (dry theta x
+    pi_phy), RHO = phy_prep total density, W = staggered w_2, U/V = mass-point
+    winds, Q = qv.  P is the total mass-level pressure (the KF-default convention
+    here; WRF passes p_hyd) and the surface P8W is a hydrostatic extrapolation
+    over half the first layer -- a named coupling caveat.  Forcing RTHFTEN/RQVFTEN = this step's accumulated non-convective
+    increments (``state - forcing_entry_state``)/dt plus the source-leaf PBL
+    rates when given; the advective component is a named coupling carry-over
+    (zero), as for cu=3/16.  ``gsw`` (net surface shortwave) only feeds G3's
+    night cap test (``gsw < 1``).  Tendencies: dry-theta RTHCUTEN/RQVCUTEN are
+    converted to the theta_m tendency at the old state (conv_t_tendf_to_moist),
+    RQCCUTEN/RQICUTEN update qc/qi, RAINC += PRATEC*dt (physics_addtendc).
+    """
+
+    from gpuwrf.physics import _grell_cup_jax as grell
+
+    real = jnp.asarray(state.theta).dtype
+    nz, ny, nx = state.theta.shape
+    dt_f = float(dt)
+    dx = float(grid.projection.dx_m) if grid is not None else 3000.0
+    metrics = getattr(grid, "metrics", None)
+    theta_dry = jnp.asarray(_dry_theta_view(state), real)
+    pi_phy = (jnp.asarray(state.p, real) / jnp.asarray(1.e5, real)) ** jnp.asarray(2. / 7., real)
+    t_phy = theta_dry * pi_phy
+    if metrics is not None:
+        rho = _wrf_phy_prep_rho_from_state(state, metrics, output_dtype=real)
+    else:
+        rho = jnp.asarray(_rho_from_state(state), real) * (1.0 + jnp.asarray(state.qv, real))
+    rho = jnp.asarray(rho, real)
+    qv = jnp.asarray(state.qv, real)
+    # P: the total mass-level pressure (the KF-default convention of this port;
+    # WRF passes p_hyd -- they differ by the non-hydrostatic perturbation).
+    # P8W: only P8W(k=1) (surface, PSUR) is read; extrapolate it hydrostatically
+    # from the lowest mass level over half the first layer.
+    p_mass = jnp.asarray(state.p, real)
+    ph = jnp.asarray(state.ph, real)
+    g_ = jnp.asarray(9.81, real)
+    dz_half = (0.5 * (ph[1] + ph[0]) - ph[0]) / g_
+    tv0 = t_phy[0] * (1.0 + 0.608 * qv[0])
+    psfc = p_mass[0] * jnp.exp(g_ * dz_half / (jnp.asarray(287.0, real) * tv0))
+    p8w = jnp.concatenate([psfc[None], 0.5 * (p_mass[1:] + p_mass[:-1]), p_mass[-1:]], axis=0)
+    p_hyd = p_mass
+    zero3 = jnp.zeros_like(theta_dry)
+    if forcing_entry_state is not None:
+        thften = (theta_dry - jnp.asarray(_dry_theta_view(forcing_entry_state), real)) / dt_f
+        qvften = (qv - jnp.asarray(forcing_entry_state.qv, real)) / dt_f
+    else:
+        thften, qvften = zero3, zero3
+    rthbl = zero3 if rthblten is None else jnp.asarray(rthblten, real)
+    rqvbl = zero3 if rqvblten is None else jnp.asarray(rqvblten, real)
+    ht = jnp.asarray(state.ph, real)[0] / jnp.asarray(9.81, real)
+    xland = jnp.asarray(state.xland, real)
+    gsw2 = jnp.zeros((ny, nx), real) if gsw is None else jnp.asarray(gsw, real)
+    common = dict(u=jnp.asarray(_u_mass(state), real), v=jnp.asarray(_v_mass(state), real),
+                  w=jnp.asarray(state.w, real), t=t_phy, q=qv, p=p_hyd, pi=pi_phy, rho=rho,
+                  p8w=p8w, rthften=thften, rqvften=qvften, rthraten=zero3, rthblten=rthbl,
+                  rqvblten=rqvbl, ht=ht, xland=xland, gsw=gsw2, dt=dt_f,
+                  periodic_x=bool(periodic_x), periodic_y=bool(periodic_y))
+    if int(cu_physics) == 5:
+        z_mass = 0.5 * (jnp.asarray(state.ph, real)[1:] + jnp.asarray(state.ph, real)[:-1]) / 9.81
+        thv = theta_dry * (1.0 + 0.608 * jnp.maximum(qv, 0.0))
+        cols = lambda f: jnp.moveaxis(f, 0, -1).reshape(ny * nx, nz)
+        kpbl = _kpbl_bulk_richardson(cols(thv), cols(z_mass)).reshape(ny, nx)
+        out = grell.g3drv_tile(**common, kpbl=kpbl, dx=dx, cugd_avedx=int(cugd_avedx),
+                               ishallow=int(ishallow), ichoice=int(ichoice))
+    elif int(cu_physics) == 93:
+        out = grell.grelldrv_tile(**common)
+    else:
+        raise ValueError(f"grell_cumulus_adapter: cu_physics={cu_physics} is not 5 or 93")
+    rth, rqv = out["RTHCUTEN"], out["RQVCUTEN"]
+    theta_dtype = jnp.asarray(state.theta).dtype
+    theta_next = (
+        jnp.asarray(state.theta, theta_dtype)
+        + dt_f * _theta_m_tendency_from_dry(rth, rqv, state.theta, state.qv, theta_dtype)
+    ).astype(_output_dtype(state, "theta"))
+    return state.replace(
+        theta=theta_next,
+        qv=(state.qv + dt_f * rqv).astype(_output_dtype(state, "qv")),
+        qc=(state.qc + dt_f * out["RQCCUTEN"]).astype(_output_dtype(state, "qc")),
+        qi=(state.qi + dt_f * out["RQICUTEN"]).astype(_output_dtype(state, "qi")),
+        rainc_acc=(
+            jnp.asarray(state.rainc_acc) + dt_f * out["PRATEC"]
+        ).astype(_output_dtype(state, "rainc_acc")),
+    )
+
+
+def g3_adapter(state: State, dt: float, grid=None, **kwargs) -> State:
+    """cu=5 Grell-3D ensemble (WRF defaults ishallow=0, cugd_avedx=1, clos_choice=0)."""
+
+    return grell_cumulus_adapter(state, dt, grid, cu_physics=5, **kwargs)
+
+
+def gd_adapter(state: State, dt: float, grid=None, **kwargs) -> State:
+    """cu=93 Grell-Devenyi ensemble."""
+
+    return grell_cumulus_adapter(state, dt, grid, cu_physics=93, **kwargs)
+
+
 def bmj_adapter(state: State, dt: float, cldefi, *, grid=None):
     """cu=2 Betts-Miller-Janjic cumulus scan adapter.
 
@@ -1597,11 +1738,85 @@ def gbm_pbl_adapter(state: State, dt: float, grid=None) -> State:
     )
 
 
-def camuw_pbl_adapter(state: State, dt: float, grid=None) -> State:
-    """bl_pbl=9 CAM-UW reference-only adapter stub."""
+def camuw_pbl_adapter(state: State, dt: float, grid=None, *, camuw: CamUwCarry | None = None,
+                      rthraten=None, cldfra=None):
+    """bl_pbl=9 CAM-UW (UW moist turbulence) ``(State, CamUwCarry) -> (State, CamUwCarry)``.
 
-    del state, dt, grid
-    raise CamUwReferenceOnlyError(CAMUW_REFERENCE_ONLY_REASON)
+    Inputs follow WRF ``phy_prep``/``module_pbl_driver.F:2033``: mass-point winds, dry physics
+    temperature, ``rho=(1+qv)/alt`` (metrics) or EOS, ``p8w`` (fzm/fzp + extrapolated ends),
+    ``z_at_w=ph/g`` with WRF g, ``HFX/QFX/UST`` from the surface driver (State ``hfx/qfx/ustar``:
+    LSM-blended), ``CLDFRA`` = held radiation cloud fraction, ``QNC`` = 0 (only diffused, never
+    returned by WRF). Carry = WRF ``KVM3D/KVH3D/TAURESX2D/TAURESY2D`` (REAL, zero at itimestep 1,
+    which reproduces WRF's is_first_step branch). Tendencies are applied like WRF
+    ``update_phy_ten`` (CAMUWPBLSCHEME): RU/RV (a2c), RTH (dry -> theta_m), RQV, RQC, RQI, RQNI.
+
+    Known approximation: ``rthraten`` is the held TOTAL radiative heating; WRF passes the LW-only
+    RTHRATENLW (identical at night). PBLH is written to ``State.pblh`` (WRF PBLH2D).
+    """
+
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+    f32 = jnp.float32
+    if camuw is None:
+        camuw = initial_camuw_carry(state)
+
+    def cols(a, n=nz):
+        return jnp.moveaxis(jnp.asarray(a, f32), 0, -1).reshape(ncol, n)
+
+    def flat(a):
+        return jnp.asarray(a, f32).reshape(ncol)
+
+    theta_dry = _dry_theta_view(state)
+    p = jnp.asarray(state.p, jnp.float64)
+    exner = (jnp.maximum(p, 1.0) / 1.0e5) ** (287.0 / 1004.5)  # WRF phy_prep pi_phy (rcp = r_d/cp)
+    t_phy = jnp.asarray(theta_dry, jnp.float64) * exner
+    z_face = jnp.asarray(state.ph, jnp.float64) / WRF_PHYSICS_G
+    z_mass = 0.5 * (z_face[:-1] + z_face[1:])
+    metrics = getattr(grid, "metrics", None)
+    if metrics is not None:
+        p8w = _wrf_phy_prep_p8w(p, z_face, metrics.fnm, metrics.fnp)
+        rho = _wrf_phy_prep_rho_from_state(state, metrics, output_dtype=f32)
+    else:  # analytic callers without eta weights
+        p8w = jnp.concatenate([p[:1], 0.5 * (p[:-1] + p[1:]), p[-1:]], axis=0)
+        rho = _rho_from_state(state) * (1.0 + jnp.asarray(state.qv, jnp.float64))
+    zeros3 = jnp.zeros((nz, ny, nx), f32)
+    ni = state.Ni if state.Ni is not None else zeros3
+    rth = zeros3 if rthraten is None else rthraten
+    cf = zeros3 if cldfra is None else cldfra
+    hfx = state.hfx if getattr(state, "hfx", None) is not None else jnp.zeros((ny, nx), f32)
+    qfx = state.qfx if getattr(state, "qfx", None) is not None else jnp.zeros((ny, nx), f32)
+    out = jax.vmap(lambda *a: camuw_column(*a, first_step=False))(
+        jnp.full((ncol,), dt, f32), cols(_u_mass(state)), cols(_v_mass(state)), cols(theta_dry), cols(rho),
+        cols(state.qv), cols(state.qc), cols(state.qi), cols(zeros3), cols(ni), cols(p), cols(p8w, nz + 1),
+        cols(z_mass), cols(z_face, nz + 1), cols(t_phy), cols(cf), cols(rth), cols(exner), cols(zeros3),
+        flat(hfx), flat(qfx), flat(state.ustar), flat(z_face[0]), cols(camuw.kvm3d, nz + 1),
+        cols(camuw.kvh3d, nz + 1), flat(camuw.tauresx2d), flat(camuw.tauresy2d))
+
+    def back(a, n=nz):
+        return jnp.moveaxis(jnp.asarray(a).reshape(ny, nx, n), -1, 0)
+
+    dt_f = float(dt)
+    u_new = _add_a2c_u_increment(state.u, dt_f * back(out["rublten"])).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dt_f * back(out["rvblten"])).astype(_output_dtype(state, "v"))
+    rqv = back(out["rqvblten"])
+    theta_dtype = jnp.asarray(state.theta).dtype
+    theta_new = (jnp.asarray(state.theta, theta_dtype) + dt_f * _theta_m_tendency_from_dry(
+        back(out["rthblten"]), rqv, state.theta, state.qv, theta_dtype)).astype(_output_dtype(state, "theta"))
+    updates = dict(
+        u=u_new, v=v_new, theta=theta_new,
+        qv=(state.qv + dt_f * rqv).astype(_output_dtype(state, "qv")),
+        qc=(state.qc + dt_f * back(out["rqcblten"])).astype(_output_dtype(state, "qc")),
+        qi=(state.qi + dt_f * back(out["rqiblten"])).astype(_output_dtype(state, "qi")),
+    )
+    if state.Ni is not None:
+        updates["Ni"] = (state.Ni + dt_f * back(out["rqniblten"])).astype(_output_dtype(state, "Ni"))
+    if getattr(state, "pblh", None) is not None:
+        updates["pblh"] = out["pblh"].reshape(ny, nx).astype(_output_dtype(state, "pblh"))
+    next_carry = CamUwCarry(
+        kvm3d=back(out["kvm3d"], nz + 1), kvh3d=back(out["kvh3d"], nz + 1),
+        tauresx2d=out["tauresx2d"].reshape(ny, nx), tauresy2d=out["tauresy2d"].reshape(ny, nx),
+        tke_pbl=back(out["tke_pbl"], nz + 1))
+    return state.replace(**updates), next_carry
 
 
 # --- dispatch tables ----------------------------------------------------------
@@ -1617,6 +1832,8 @@ MP_SCAN_ADAPTERS = {
     6: wsm6_adapter,
     10: morrison_adapter,
     13: sbu_ylin_adapter,
+    # v0.3.4 O1: Morrison-aerosol at the WRF stand-alone point aercu_opt=0.
+    40: morrison_aero_adapter,
     14: wdm5_adapter,
     16: wdm6_adapter,
     # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
@@ -1625,6 +1842,18 @@ MP_SCAN_ADAPTERS = {
     26: wdm7_adapter,
     97: goddard_adapter,
 }
+
+
+def nssl2mom_scan_adapter(state, dt: float, grid=None):
+    """mp=18 NSSL 2-moment registry adapter (non-first step). The operational scan calls
+    ``physics.nssl2mom.adapter.nssl2mom_adapter`` directly with WRF's itimestep==1 flag."""
+    from gpuwrf.physics.nssl2mom.adapter import nssl2mom_adapter
+
+    return nssl2mom_adapter(state, dt, grid)
+
+
+# v0.3.4 NSSL 2-moment (mp=18): physics.nssl2mom port, CPU-oracle-qualified.
+MP_SCAN_ADAPTERS[18] = nssl2mom_scan_adapter
 
 # Surface-layer options whose adapter is threaded (sf_sfclay=5 MYNN-sfclay is the
 # existing surface_adapter; sf_sfclay=0 disables).
@@ -1648,6 +1877,12 @@ CU_SCAN_ADAPTERS = {
     6: tiedtke_adapter,
     # v0.23 F2: New-Tiedtke, machine-precision-proven column kernel.
     16: ntiedtke_adapter,
+    # v0.3.4 o1-grell: Grell-3D / Grell-Devenyi (proofs/v034, CPU-oracle-qualified).
+    5: g3_adapter,
+    93: gd_adapter,
+    # v0.3.4 o1-sas: scale-aware GFS SAS -- rates only; the held-rate cadence step is
+    # routed explicitly in the cumulus slot (coupling.scalesas_adapter), like KF.
+    4: scalesas_rates,
 }
 
 # Cumulus options that carry NO persistent cumulus state (plain State->State, like
@@ -1658,13 +1893,16 @@ CU_STATELESS_SCAN_ADAPTERS = {
     3: gf_adapter,
     6: tiedtke_adapter,
     16: ntiedtke_adapter,
+    5: g3_adapter,
+    93: gd_adapter,
 }
 
 # PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
 # physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7)/BouLac(8) are
 # v0.6.0 jax.lax.scan-traceable rewrites; MRF(99) is the v0.13 jit/vmap-traceable
 # port of phys/module_bl_mrf.F (savepoint-parity gated, proofs/v013/mrf_oracle.py).
-# CAM-UW(9) is reference-only after F3 and is deliberately absent.
+# CAM-UW(9) threads its own KVM/KVH/TAURES carry: operational_mode calls
+# camuw_pbl_adapter explicitly (like MYJ), so it is deliberately absent here.
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     3: gfs_pbl_adapter,
@@ -1676,6 +1914,50 @@ PBL_SCAN_ADAPTERS = {
 }
 
 
+# --------------------------------------------------------------------------- #
+# v0.3.4 (lane o1-nlbind): fp64 islands for MP/PBL adapters that cannot TRACE under the
+# release REAL32 carry.  Their column kernels are fp64-savepoint-parity ports; fed
+# mixed f32 State leaves and f64 metrics (dz from ph.astype(f64)) their internal
+# scan/cond/while carries change dtype and tracing fails (Swiss RD11 CLI probe,
+# proofs/o1_nlbind).  The island widens the State to f64 for the call and writes
+# every leaf back at its carry dtype.  Without the REAL carry (theta not f32,
+# e.g. the legacy fp64 path) it calls the adapter unchanged.  Not WRF REAL arithmetic: a
+# documented opt-in precision island for non-release schemes.
+# --------------------------------------------------------------------------- #
+def _fp64_island(adapter):
+    def island(state: State, dt: float, grid=None) -> State:
+        if state.theta.dtype != jnp.float32:  # not the REAL carry: original program
+            return adapter(state, dt, grid)
+        narrow = {
+            name: value.dtype
+            for name in state.__slots__
+            if (value := getattr(state, name, None)) is not None
+            and getattr(value, "dtype", None) == jnp.float32
+        }
+        wide = state.replace(_cast=False, **{n: getattr(state, n).astype(jnp.float64) for n in narrow})
+        out = adapter(wide, dt, grid)
+        # Leaves the scheme did not replace get their ORIGINAL object back: callers
+        # detect what a scheme changed by identity (operational_mode spec-zone
+        # restriction), and an untouched leaf must not round-trip.
+        return out.replace(_cast=False, **{
+            n: getattr(state, n) if getattr(out, n) is getattr(wide, n) else getattr(out, n).astype(d)
+            for n, d in narrow.items()})
+
+    island.__wrapped__ = adapter
+    island.__name__ = f"fp64_island_{getattr(adapter, '__name__', 'adapter')}"
+    return island
+
+
+FP64_ISLAND_MP_CODES: tuple[int, ...] = (1, 2, 3, 4, 6, 10, 13, 14, 16, 97)
+for _code in FP64_ISLAND_MP_CODES:
+    MP_SCAN_ADAPTERS[_code] = _fp64_island(MP_SCAN_ADAPTERS[_code])
+# Same failure class for three PBL column kernels (ACM2, BouLac _pbl_height scan, GBM).
+FP64_ISLAND_PBL_CODES: tuple[int, ...] = (7, 8, 12)
+for _code in FP64_ISLAND_PBL_CODES:
+    PBL_SCAN_ADAPTERS[_code] = _fp64_island(PBL_SCAN_ADAPTERS[_code])
+del _code
+
+
 __all__ = [
     "kessler_adapter",
     "lin_adapter",
@@ -1684,6 +1966,7 @@ __all__ = [
     "wsm5_adapter",
     "wsm6_adapter",
     "morrison_adapter",
+    "morrison_aero_adapter",
     "wdm5_adapter",
     "wdm6_adapter",
     "sfclay_revised_mm5_adapter",
@@ -1693,6 +1976,9 @@ __all__ = [
     "kf_adapter",
     "tiedtke_adapter",
     "gf_adapter",
+    "grell_cumulus_adapter",
+    "g3_adapter",
+    "gd_adapter",
     "bmj_adapter",
     "ysu_pbl_adapter",
     "gfs_pbl_adapter",
