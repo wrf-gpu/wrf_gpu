@@ -1,0 +1,113 @@
+{
+  "schema": "gpuwrf.optimize.cwp_constants_gate.v1",
+  "status": "READY_FOR_CR_W44_RC",
+  "source_commit": "8a46f7b9aa3172e2527c710da572c4de5c3c962f",
+  "base_commit": "0265f3e3d1edbd24d1ebbea5dab56c82e0418ada",
+  "change": "Use existing physics.surface_constants.R_D_OVER_CP; cp=7*Rd/2=1004.5,Rd=287. No new production literal/constant definition.",
+  "original_source": "WRF share/module_model_constants.F:19,20,31; B39b; frozen ALISIOS4V31e13cc207 note",
+  "synthetic_original_operator": {
+    "pressure_Pa": 80000,
+    "theta_K": 290,
+    "qv_kg_kg": 0.01,
+    "original_density": 1.0082522866792425,
+    "legacy_density_ratio": 1.0000317511516545,
+    "fixed_density_ratio": 1.0,
+    "legacy_CWP_ratio": 1.0000317511516554,
+    "fixed_CWP_ratio": 1.0
+  },
+  "reference": "independent exact2/7 exponent, same original dry-density formula",
+  "tests": {
+    "tests": 101,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_time_s": 54.86,
+  "full_collection": {
+    "tests": 21791,
+    "errors": 0,
+    "time_s": 49.97,
+    "ROOT_conftest": "unchanged"
+  },
+  "deletion_sensitive": {
+    "baseline_PASS": 1,
+    "old_exponent_reversion_genuine_ASSERT": 1,
+    "errors": 0,
+    "skips": 0,
+    "message": "AssertionError: \nNot equal to tolerance rtol=0, atol=2e-15\n\nMismatched elements: 4 / 4 (100%)\nMismatch at indices:\n [0, 0, 0]: 1.0000317511516545 (ACTUAL), 1.0 (DESIRED)\n [0, 0, 1]: 1.0000317511516545 (ACTUAL), 1.0 (DESIRED)\n [1, 0, 0]: 1.0000317511516545 (ACTUAL), 1.0 (DESIRED)\n [1, 0, 1]: 1.0000317511516545 (ACTUAL), 1.0 (DESIRED)\nMax absolute difference among violations: 3.17511517e-05\nMax relative difference among violations: 3.17511517e-05\n ACTUAL: array([[[1.000032, 1.000032]],\n\n       [[1.000032, 1.000032]]])\n DESIRED: array(1.)"
+  },
+  "optimize_audit": {
+    "wrong_1004_ep608_ep622": [],
+    "correct_1004_5": [
+      {
+        "file": "diagnostics.py",
+        "line": 159,
+        "value": 1004.5
+      },
+      {
+        "file": "diagnostics.py",
+        "line": 207,
+        "value": 1004.5
+      }
+    ],
+    "all_text_matches": [
+      {
+        "file": "diagnostics.py",
+        "line": 159,
+        "text": "exner = (pressure / 100000.) ** (287. / 1004.5)"
+      },
+      {
+        "file": "diagnostics.py",
+        "line": 207,
+        "text": "lambda *r: np.sum(mass * 1004.5 * exner * sum(r)))"
+      }
+    ]
+  },
+  "performance_memory": {
+    "warm_CPU_component": {
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "source": "same in-memory syntheticDataset operands;24alternating repeats/arm",
+      "old_median_CPU_s": 0.003591455000000021,
+      "fixed_median_CPU_s": 0.0035722500000000545,
+      "maxrss_kib": 786168,
+      "new_model_ops_transfers": 0,
+      "scope": "CPU postprocessor only, no kernel/GPU/forecast speed claim"
+    },
+    "interpretation": "3.591ms old vs3.572ms fixed is within noise; no speedup claim. Source AST proves no additional array arithmetic/allocations beyond exponent change; model kernels/transfers unchanged. Import/startup cost not benchmarked."
+  },
+  "scope": "offline CWP scoring; original model physics/constants module unchanged; no real W1a/MSG values read or skill claim",
+  "source_delta": "Only one import+one exponent; remaining production AST exact base (SOURCE_DELTA.json)",
+  "initial_audit_transport": "first AST probe inspected multiplication.right instead of power.right; no result counted; corrected proof PASS; no numerical test failure",
+  "cores": [
+    12,
+    28
+  ],
+  "GPU": false,
+  "cache": "NONE",
+  "cleanup": {
+    "removed": [
+      "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/archive",
+      "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/pytest"
+    ],
+    "cache": "NONE",
+    "full_DATA_archive": false,
+    "cores": [
+      12,
+      28
+    ]
+  },
+  "ADDENDUM2": "unrelated unfinished work retained refs/archive/v45-cloudscore-addendum2-pending-20261029; not part of this fix",
+  "receipt_sha256": {
+    "CLEANUP.json": "fa2751488bf4a506fd76c515f5d37030e142471bf61160d11eb17452febf8053",
+    "SOURCE_DELTA.json": "49f6671a009e49bab43a16f50e31c858922a05274bb2f82a6e8a86edef62a992",
+    "cwp_heat_capacity_baseline.xml": "ee63d12597979d76d9bedf2084130c677cf1ae2495633d52570765a6355b7ba2",
+    "OPERATOR_AUDIT_COST.json": "e59d7aed75cccdb0cdbec34b56c86bbea8b652970af1a059891b2eb7e43894d0",
+    "cwp_heat_capacity_mutant.xml": "c47b3c3160b05a5ddfe09c3590cce0769f80703731ce37d857db2e5c5cf4f55f",
+    "AFFECTED_TESTS.xml": "9d83c9e55972199d0e5bb132617ddfb433054f6356872ef21dd131df20059b84",
+    "ROOT_REVERSION.json": "9c1c6199ff0abcca941063ad4c59c8e2d54793559b8866ab09aeebc35160e477"
+  }
+}

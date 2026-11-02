@@ -1,0 +1,51 @@
+[
+  {
+    "by": "v45-bdyneg",
+    "engine": "wrf_gpu",
+    "event": "start",
+    "family": "research",
+    "forcing": "OTHER",
+    "issue": "20260110_18z",
+    "lead_h": 3,
+    "nests": "3",
+    "planned_retention": "raw_delete_after_extract",
+    "producer": "wrf_gpu2",
+    "purpose": "CPU_SEQ_SMOKE first root",
+    "run_dir": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/smoke/run_2026-10-28T183720Z_91fbc6/output",
+    "run_id": "v45-bdyneg:smoke:run_2026-10-28T183720Z_91fbc6:c881fa07",
+    "schema": "alisios.wrf_run_registry.v1",
+    "started_utc": "2026-10-28T18:37:20Z",
+    "tags": [
+      "v45-bdyneg",
+      "no-truth-scoring"
+    ],
+    "ts_utc": "2026-10-28T18:37:20Z"
+  },
+  {
+    "by": "v45-bdyneg",
+    "corpus": "held",
+    "ended_utc": "2026-10-28T18:54:53Z",
+    "event": "end",
+    "extracts": [
+      {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-28T183720Z_91fbc6/d01_actual_boundary_operands.npz",
+        "sha256": "1a6a0710df980fccbd8cc65899e60b3ab141f7b6a704b843ba6996c1bbf6db40"
+      },
+      {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-28T183720Z_91fbc6/d03_actual_boundary_operands.npz",
+        "sha256": "5d6cb561809d01f0c8fe2001aa5aea65c1dd33e91e16ac27aeb496662ea313d3"
+      },
+      {
+        "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-28T183720Z_91fbc6/d02_actual_boundary_operands.npz",
+        "sha256": "d3b7fe3f246522d1aaf6f1b61d935f4eeb23d86f4094ae5118e60b30fdc3201e"
+      }
+    ],
+    "notes": "diagnostic acquisition only; scientific gate remains open; actual cleanup=True",
+    "raw_deleted": true,
+    "rc": 0,
+    "run_id": "v45-bdyneg:smoke:run_2026-10-28T183720Z_91fbc6:c881fa07",
+    "schema": "alisios.wrf_run_registry.v1",
+    "status": "DONE_CLEAN",
+    "ts_utc": "2026-10-28T18:54:53Z"
+  }
+]

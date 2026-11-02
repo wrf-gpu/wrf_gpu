@@ -1,0 +1,7 @@
+{
+  "platform": "gpu",
+  "pid": 77904,
+  "source_file": "<DATA_ROOT>/wrf_gpu2/scratch/w44-rc/rc_bundle_3e5219bc8088/src/src/gpuwrf/cli.py",
+  "GPU_native_gates": "measured",
+  "scope": "same process as actual CLI forecast"
+}

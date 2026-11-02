@@ -1,0 +1,100 @@
+{
+  "scope": "deviceless E156 CompileOnly prescreen (autotune 0), identical harness/target/env; actual GPU E41 stays authoritative",
+  "case": "warmstart mini24 (3x24x24x44 WN3 crop, topo_shading=1), program fused_d02 (d02+d03)",
+  "before": {
+    "tree": "cd6753726c2409ba5682b86c2d2774035b2a3215",
+    "receipt": "<USER_HOME>/wrf_gpu2_lanes/w44-warmstart/E41_MINI_ATTRIB/DL_C_mini_WS41_fused/receipt.json",
+    "max_stack_B": 560,
+    "gate": "FAIL",
+    "kernels": 2679,
+    "flagged": [
+      {
+        "kernel": "input_add_divide_dynamic_update_slice_minimum_multiply_reduce_subtract_fusion",
+        "regs": 64,
+        "stack": 448,
+        "shared": 9344,
+        "local": 0,
+        "sass": 6776,
+        "calls": 0,
+        "callees": 0,
+        "stl": 249,
+        "callgraph_status": "PASS"
+      },
+      {
+        "kernel": "loop_and_atan2_fusion",
+        "regs": 255,
+        "stack": 560,
+        "shared": 1024,
+        "local": 0,
+        "sass": 20392,
+        "calls": 93,
+        "callees": 2,
+        "stl": 501,
+        "callgraph_status": "FAIL"
+      }
+    ]
+  },
+  "after": {
+    "tree": "f3cc329faafce01a4bb36555f589f21a6a32bfc3",
+    "max_stack_B": 448,
+    "gate": "FAIL",
+    "kernels": 2678,
+    "compile_s": 314.4002603130066,
+    "peak_rss_KiB": 7957364,
+    "flagged": [
+      {
+        "kernel": "input_add_divide_dynamic_update_slice_minimum_multiply_reduce_subtract_fusion",
+        "regs": 64,
+        "stack": 448,
+        "shared": 9344,
+        "local": 0,
+        "sass": 6776,
+        "calls": 0,
+        "callees": 0,
+        "stl": 249,
+        "callgraph_status": "PASS"
+      },
+      {
+        "kernel": "wrf_topographic_shadow__1",
+        "regs": 37,
+        "stack": 32,
+        "shared": 1024,
+        "local": 0,
+        "sass": 800,
+        "calls": 1,
+        "callees": 1,
+        "stl": 10,
+        "callgraph_status": "PASS"
+      },
+      {
+        "kernel": "wrf_topographic_shadow",
+        "regs": 37,
+        "stack": 32,
+        "shared": 1024,
+        "local": 0,
+        "sass": 800,
+        "calls": 1,
+        "callees": 1,
+        "stl": 10,
+        "callgraph_status": "PASS"
+      },
+      {
+        "kernel": "wrf_toposhad_solar",
+        "regs": 26,
+        "stack": 32,
+        "shared": 1024,
+        "local": 0,
+        "sass": 608,
+        "calls": 4,
+        "callees": 1,
+        "stl": 10,
+        "callgraph_status": "PASS"
+      }
+    ],
+    "optimized_hlo_sha256": "26355b7b5a8957a9a9adcfb6392afe28b6367ab62e1b4d9c145c4e33cf0162f5",
+    "shadow_frame_fusions": 0,
+    "atan2_in_shadow_fusions": 0,
+    "topographic_shadow_custom_call_lines": 10
+  },
+  "verdict": "topo loop_and_atan2_fusion (560 B, nonleaf callee FAIL) GONE; native topo kernels STACK 32 PASS; remaining 448 B kernel is the pre-existing diffusion/omega fusion (identical regs/sass/stack before and after), not topo"
+}

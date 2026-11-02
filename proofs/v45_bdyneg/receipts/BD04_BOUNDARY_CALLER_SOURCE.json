@@ -1,0 +1,56 @@
+{
+  "schema": "v45-bdyneg.boundary-callers-source.v1",
+  "commit": "53e90b8a680d0efecf7fc6f7144c873aa50d5d82",
+  "functions": [
+    {
+      "function": "_root_flow_dep",
+      "v044_identical": true,
+      "v044_sha256": "cf8e867db80d6137dfc476458d63112b87576f03177173af208c6ea126d1db7c",
+      "current_sha256": "cf8e867db80d6137dfc476458d63112b87576f03177173af208c6ea126d1db7c"
+    },
+    {
+      "function": "_root_sc_with_boundary",
+      "v044_identical": true,
+      "v044_sha256": "d605111dfc7001d1e2a882f5201b7652114c8ddfc8a93e0a4be566ebce9ba447",
+      "current_sha256": "d605111dfc7001d1e2a882f5201b7652114c8ddfc8a93e0a4be566ebce9ba447"
+    },
+    {
+      "function": "_root_scalar_stage_tendencies",
+      "v044_identical": true,
+      "v044_sha256": "8d03519fe9c7df78726c7e151e1ff3d0be61351499f7ff1e491b6406d44ff23b",
+      "current_sha256": "8d03519fe9c7df78726c7e151e1ff3d0be61351499f7ff1e491b6406d44ff23b"
+    },
+    {
+      "function": "_microphysics_spec_zone",
+      "v044_identical": true,
+      "v044_sha256": "c77bfeb983e8c9789cf1aa7a30c49270ac1c0f805253d6a8d810cd154989ada1",
+      "current_sha256": "c77bfeb983e8c9789cf1aa7a30c49270ac1c0f805253d6a8d810cd154989ada1"
+    },
+    {
+      "function": "_microphysics_interior_only",
+      "v044_identical": true,
+      "v044_sha256": "2bb7224bfc1ac889f63d5f58802ed6c4cbfab378f63f04bb2b004ad564167a4b",
+      "current_sha256": "2bb7224bfc1ac889f63d5f58802ed6c4cbfab378f63f04bb2b004ad564167a4b"
+    },
+    {
+      "function": "_apply_post_rk_microphysics",
+      "v044_identical": true,
+      "v044_sha256": "6faff98b854bf60c65b78221188d38eacf0863d81dcdb9bb58aa847eed09f81b",
+      "current_sha256": "6faff98b854bf60c65b78221188d38eacf0863d81dcdb9bb58aa847eed09f81b"
+    },
+    {
+      "function": "_apply_moisture_large_step",
+      "v044_identical": true,
+      "v044_sha256": "42a046fcda63906495106f235dae3d117080835c6efc521316963c9e387de0d4",
+      "current_sha256": "42a046fcda63906495106f235dae3d117080835c6efc521316963c9e387de0d4"
+    }
+  ],
+  "source_default_lines": [
+    "\"GPUWRF_ROOT_SCALAR_BDY_RK1\": \"1\",  # BD92 root lateral moist/scalar BC in the RK1 sc_tend (WRF solve_em, b-diff)",
+    "\"GPUWRF_NEST_SCALAR_SPEC_FINAL\": \"1\",  # BD95 WRF spec_bdy_final re-pins every nest moist/scalar spec zone each step (b-diff)"
+  ],
+  "actual_ALISIOS_selection": "UNKNOWN until resolved launcher/NL supplied; source default does not prove dispatch",
+  "current_production_diff_since_lane_base": "",
+  "implication": "B45 describes a historical defect, not the current shipped default root-boundary policy; source gates already select WRF flow species",
+  "cache": "NONE"
+}

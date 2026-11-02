@@ -1,0 +1,35 @@
+instructions: 333
+30 /gpuwrf/runtime/operational_mode.py:_advance_chunk:12169
+22 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:193
+13 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:181
+10 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:175
+10 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1352
+10 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1365
+9 /gpuwrf/dynamics/flux_advection.py:stage_omega_specified:269
+9 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:182
+9 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:183
+7 /gpuwrf/runtime/operational_mode.py:_diffopt1_dry_forward_tendencies:4753
+6 /gpuwrf/runtime/operational_mode.py:_diffopt1_dry_forward_tendencies:4748
+6 /gpuwrf/runtime/operational_mode.py:_diffopt1_dry_forward_tendencies:4743
+6 /gpuwrf/dynamics/explicit_diffusion.py:smag2d_horizontal_km:1478
+6 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:176
+6 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:191
+5 /gpuwrf/dynamics/explicit_diffusion.py:wrf_nested_horizontal_diffusion_momentum_tendency:1804
+5 /gpuwrf/dynamics/explicit_diffusion.py:smag2d_horizontal_km:1477
+5 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1355
+5 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1368
+5 /gpuwrf/dynamics/explicit_diffusion.py:smag2d_horizontal_km:1474
+4 /gpuwrf/runtime/operational_mode.py:_diffopt1_dry_forward_tendencies:4757
+4 /gpuwrf/dynamics/flux_advection.py:stage_omega_specified:268
+4 /gpuwrf/dynamics/explicit_diffusion.py:wrf_nonperiodic_diffusion_metrics:136
+4 /gpuwrf/dynamics/explicit_diffusion.py:wrf_nonperiodic_diffusion_metrics:132
+4 /gpuwrf/dynamics/explicit_diffusion.py:wrf_nonperiodic_diffusion_metrics:139
+--- chains
+30 /gpuwrf/runtime/operational_mode.py:_advance_chunk:12169
+22 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:193 <- /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:196
+13 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:181 <- /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:196
+10 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:175 <- /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:196
+10 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1352 <- /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1418
+10 /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1365 <- /gpuwrf/dynamics/explicit_diffusion.py:horizontal_deformation_2d:1418
+9 /gpuwrf/dynamics/flux_advection.py:stage_omega_specified:269 <- /gpuwrf/dynamics/flux_advection.py:stage_omega_specified:275
+9 /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:182 <- /gpuwrf/dynamics/explicit_diffusion.py:_vertical_face_average_pair:196

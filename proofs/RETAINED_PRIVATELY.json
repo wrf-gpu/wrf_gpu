@@ -1,7 +1,7 @@
 {
  "note": "proofs files of this release kept in the private repository (bytecode, dumps, raw case outputs, working archives, per-run logs, receipts > 1 MiB, raw data no public test reads); path, size and SHA-256 identify each one",
- "version": "0.4.5",
- "private_commit": "90ac3c58a5864d5f21b9a6d5b955c2134890bc7a",
+ "version": "0.4.6",
+ "private_commit": "65b9e97a9b6b067a7e20d4eee53477388aa89e0d",
  "files": {
   "proofs/o5-9nest/results/ring0_trace.json": {
    "bytes": 1213707,
@@ -14798,6 +14798,11 @@
    "sha256": "904a57708d6704e3a7077ada4635799c8ccbbf494b7cbe76ee8b64968972ecbd",
    "reason": "working archive or per-run log"
   },
+  "proofs/v45_bdyneg/launch/entry.sh.in": {
+   "bytes": 1384,
+   "sha256": "d9d4353a3bf2eadc5643123056dbb927855f1d9439f423e5d967542693323ad9",
+   "reason": "raw data no public test consumes"
+  },
   "proofs/v45_cloudscore/api_gate.xml": {
    "bytes": 1043,
    "sha256": "5cc7ad13b8d589b792fe4cdc138716e3a3268247caeeb45280355d8702204415",
@@ -14831,6 +14836,21 @@
   "proofs/v45_cloudscore/correlation/pre_prefetch_correlation_mutant.xml": {
    "bytes": 2142,
    "sha256": "3050ce20379567d6cceb5252692328327aa77d9722cffae73bb12a685af99887",
+   "reason": "working archive or per-run log"
+  },
+  "proofs/v45_cloudscore/cwp_constants/AFFECTED_TESTS.xml": {
+   "bytes": 13311,
+   "sha256": "9d83c9e55972199d0e5bb132617ddfb433054f6356872ef21dd131df20059b84",
+   "reason": "working archive or per-run log"
+  },
+  "proofs/v45_cloudscore/cwp_constants/cwp_heat_capacity_baseline.xml": {
+   "bytes": 379,
+   "sha256": "ee63d12597979d76d9bedf2084130c677cf1ae2495633d52570765a6355b7ba2",
+   "reason": "working archive or per-run log"
+  },
+  "proofs/v45_cloudscore/cwp_constants/cwp_heat_capacity_mutant.xml": {
+   "bytes": 3292,
+   "sha256": "c47b3c3160b05a5ddfe09c3590cce0769f80703731ce37d857db2e5c5cf4f55f",
    "reason": "working archive or per-run log"
   },
   "proofs/v45_cloudscore/legacy_gate.xml": {

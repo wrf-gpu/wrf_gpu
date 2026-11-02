@@ -1,0 +1,33 @@
+{
+  "root_conftest": true,
+  "baseline_reuse": "one exact-source baseline per selector",
+  "controls": [
+    {
+      "control": "cwp_heat_capacity",
+      "mode": "baseline",
+      "status": "PASS",
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "rc": 0,
+      "xml": "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/cwp_CP03/cwp_heat_capacity_baseline.xml"
+    },
+    {
+      "control": "cwp_heat_capacity",
+      "mode": "mutant",
+      "status": "ASSERT",
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "rc": 1,
+      "xml": "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/cwp_CP03/cwp_heat_capacity_mutant.xml"
+    }
+  ],
+  "pass": true
+}

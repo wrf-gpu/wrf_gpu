@@ -1,0 +1,11 @@
+{
+  "schema": "v45-bdyneg.paid-seed-preflight.v1",
+  "entries": 2082,
+  "unique_inodes": 2080,
+  "unique_read_bytes": 353737051,
+  "bad": [],
+  "verdict": "PASS",
+  "copies": 0,
+  "donor_writes": 0,
+  "mode": "CPU guarded read only"
+}

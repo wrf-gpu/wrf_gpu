@@ -1,0 +1,125 @@
+{
+ "cache": "<USER_HOME>/wrf_gpu2_lanes/v46-topo/DL_TS01_mini24_main_fused/scan_cache",
+ "entries": [
+  {
+   "entry": "fused_d02.xlaexec",
+   "path": "<USER_HOME>/wrf_gpu2_lanes/v46-topo/DL_TS01_mini24_main_fused/scan_cache/aot/captured/fused_d02.xlaexec",
+   "source_kind": "aot",
+   "program": "fused_d02",
+   "aliases": [],
+   "format": "xla-gpu-legacy-v1",
+   "blob_sha256": "ea7fc24e909b169938d61c798e27098c7cb63ac15617ec7f00e94e592e264f00",
+   "elfs": [
+    {
+     "elf": 0,
+     "sha256": "7327c376d3016a53bd9a90a79c393561a841fb90ef0c3b1dbbfd907f3fffb715",
+     "kernels": 2678,
+     "max_stack_B": 448,
+     "stack_over256": [
+      [
+       "input_add_divide_dynamic_update_slice_minimum_multiply_reduce_subtract_fusion",
+       448
+      ]
+     ],
+     "root_callers_over1k": [
+      [
+       "thompson_full_column__1",
+       19304,
+       67
+      ],
+      [
+       "input_concatenate_fusion_94",
+       1344,
+       2
+      ],
+      [
+       "loop_select_fusion_59",
+       4032,
+       10
+      ],
+      [
+       "nest_sint_sides__4",
+       1976,
+       24
+      ],
+      [
+       "nest_sint_sides__3",
+       2008,
+       24
+      ],
+      [
+       "nest_sint_sides__2",
+       2000,
+       24
+      ],
+      [
+       "nest_sint_sides__1",
+       2000,
+       24
+      ],
+      [
+       "nest_sint_sides",
+       2000,
+       24
+      ],
+      [
+       "thompson_full_column",
+       19312,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "input_concatenate_fusion_151",
+       1328,
+       2
+      ],
+      [
+       "loop_select_fusion_80",
+       1224,
+       2
+      ],
+      [
+       "input_divide_select_transpose_fusion",
+       1440,
+       2
+      ],
+      [
+       "input_select_transpose_fusion_3",
+       2288,
+       6
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ],
+     "nonleaf_over1k": [],
+     "callgraph_unknown": []
+    }
+   ],
+   "kinput_transpose_over500": [],
+   "kinput_transpose_status": "MEASURED_RICH_AOT_HLO"
+  }
+ ],
+ "n_entries": 1,
+ "e41_gate": "FAIL",
+ "hard_stack_gate": "FAIL",
+ "conservative_flags": false,
+ "coverage": {
+  "status": "PASS",
+  "aot_programs": [
+   "fused_d02"
+  ],
+  "required_run_programs": [
+   "fused_d02"
+  ],
+  "run_proofs": [],
+  "n_discovered": 1,
+  "n_scanned": 1
+ }
+}

@@ -1,0 +1,89 @@
+{
+ "schema": "alisios.ic_variant_admission.v2",
+ "status": "ISSUED",
+ "issued_by": "alisios_mgr",
+ "policy": "A1_THETA_QV_REBALANCE_V1",
+ "contract_sha256": "c466dd3415c42a1761f77a57b2b30065515fab1b8459e2bebfb4e3a54c17887f",
+ "issued_utc": "<date -u, e.g. 2026-10-31T09:00:00Z>",
+ "valid_until_utc": "<date -u>",
+ "variant_id": "SND1SHARP_v1",
+ "truth_allowed": false,
+ "GPU_launch_authorized": false,
+ "base_case": {
+  "case_id": "20260530_18z",
+  "case_admission": {
+   "path": "<DATA_ROOT>/alisios/state/manager/cross/TO_WRF_GPU2_ADMISSION_v45-waveops_20261030T102042.json",
+   "sha256": "c6958ba81d2059e7f05d580e8813a385a5ef6a822a34ce6ea61c9c6257b78819"
+  },
+  "model_init_utc": "2026-05-31T00:00:00Z",
+  "model_end_utc": "2026-05-31T18:00:00+00:00"
+ },
+ "files": [
+  {
+   "target_relative_name": "wrfinput_d01",
+   "path": "<regular file under your run dir>",
+   "sha256": "<64 hex>",
+   "size_bytes": 0,
+   "base_sha256": "0170d11de91663b5a06b82bd137809306f1fe758f8cc5b463b5bc609e90dc489",
+   "changed_variables": [
+    "AL",
+    "P",
+    "PH",
+    "PSFC",
+    "P_HYD",
+    "QVAPOR",
+    "T",
+    "THM"
+   ]
+  },
+  {
+   "target_relative_name": "wrfinput_d02",
+   "path": "<...>",
+   "sha256": "<...>",
+   "size_bytes": 0,
+   "base_sha256": "a9578c094669670f9fea51b622d00531db86bdc6a80e519ab12f0ccb648cb07c",
+   "changed_variables": [
+    "<exact sorted subset of AL P PH PSFC P_HYD QVAPOR T THM>"
+   ]
+  },
+  {
+   "target_relative_name": "wrfinput_d03",
+   "path": "<...>",
+   "sha256": "<...>",
+   "size_bytes": 0,
+   "base_sha256": "e0c04b36b0d31eea6fb9fc4210593b487d576cb79efa6ff4a0a21c90b3d10238",
+   "changed_variables": [
+    "<exact sorted subset of AL P PH PSFC P_HYD QVAPOR T THM>"
+   ]
+  }
+ ],
+ "provenance": {
+  "receipt": {
+   "path": "<build receipt json>",
+   "sha256": "<...>"
+  },
+  "retrospective_sources": [
+   {
+    "role": "retrospective input, not truth",
+    "path": "<SND1 ...>",
+    "sha256": "<...>"
+   }
+  ]
+ },
+ "balance": {
+  "operator": "assimilation.letkf.state_io.rebalance_increment",
+  "receipt": {
+   "path": "<balance receipt json>",
+   "sha256": "<...>"
+  }
+ },
+ "runtime_pins": {
+  "bundle_sha256": "32ea753a8080ea271515e71845fba02ef63a9f4c7915915ddbebdbc45957c2f7",
+  "programs": {
+   "d01": "bff015d2c6b9a0236e9e4886ccfe09bf5973f214d58c789731e31861e031a7dd",
+   "fused/d02": "aedca60f07b7d939db1814a617516d3fd93d638d56c650bc7922ed386511eb33"
+  },
+  "namelist_sha256": "a46f7f722b6bef288203da4ca1774c43096156a977a48b5efadf572a2fdfa560",
+  "note": "informative; the validator re-derives every pin. wrfbdy_d01/namelist/wrflowinp/tables are never replaced under A1."
+ }
+}

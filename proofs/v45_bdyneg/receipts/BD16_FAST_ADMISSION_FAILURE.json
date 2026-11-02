@@ -1,0 +1,19 @@
+{
+  "failure_utc": "2026-10-28T22:37:41Z",
+  "entry_rc": 1,
+  "cause": "unconditional ROOT23GiB gate on GPU path, before input admission or any GPU/registry/DATA work",
+  "source_line": "launch_v3/tools/control.py:150",
+  "ROOT_free_now_bytes": 23257489408,
+  "required_bytes": 24696061952,
+  "source_log": "<USER_HOME>/wrf_gpu2_lanes/manager/night_seq_20261028T223739Z.log.v45-bdyneg",
+  "source_log_sha256": "1ddb0381f762407d0809d8492fc07809800ff4a49ed7780f76b4793a95b57c64",
+  "same_plan_possible": true,
+  "same_plan_conditions": "ROOT>=23GiB, new manager GA/CPU/GPU lease coverage afterRC; unchanged sealed helpers",
+  "GPU_attempt_consumed": false,
+  "source_changed": false,
+  "unchanged_hashes": {
+    "plan": "f40bfd8d69e66d93feae9c6af1447bf96f351629a73ccd68dde2fc426ffcd8dc",
+    "entry": "d8a3467d5e03455b17d91c10510a7d934a38aa200e1c5e26a4deee80a9153e0a",
+    "seal": "73fc3ba95afc52a562de25968390b94562eaa738c7db9247940403e082c556a8"
+  }
+}

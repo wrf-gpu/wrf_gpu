@@ -1,0 +1,177 @@
+{
+  "rows": [
+    {
+      "domain": "d02",
+      "results": [
+        {
+          "species": "qv",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 2.705568476812914e-06,
+          "port_min": 2.705568476812914e-06,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qc",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qi",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qs",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qg",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Ni",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Nr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        }
+      ]
+    },
+    {
+      "domain": "d03",
+      "results": [
+        {
+          "species": "qv",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 2.799112280627014e-06,
+          "port_min": 2.799112280627014e-06,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qc",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qi",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qs",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qg",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Ni",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Nr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        }
+      ]
+    }
+  ],
+  "wall_s": 1.6088311620405875,
+  "scope": "CPU first-root operand fixture and unchanged comparator plumbing only; not a GPU fidelity result",
+  "normal_mismatches": 0
+}

@@ -1,0 +1,24 @@
+{
+  "supervisor_pid": 180399,
+  "setsid_calls": 1,
+  "cap_s": 840,
+  "arm_pid": 180548,
+  "pgid": 180548,
+  "sid": 180548,
+  "original_rc": 1,
+  "timed_out": false,
+  "signal": 0,
+  "cleanup": {
+    "signalled_pids": [],
+    "groups_seen": [],
+    "remaining_pids": [],
+    "live_remaining": [],
+    "lock_file": "/tmp/wrf_gpu2_gpu.lock",
+    "observed_owned_lock_fds": [],
+    "owned_lock_fds_after": [],
+    "all_children_reaped": true
+  },
+  "rc": 1,
+  "elapsed_s": 8.991165564977564,
+  "supervisor_peak_rss_KiB": 187596
+}

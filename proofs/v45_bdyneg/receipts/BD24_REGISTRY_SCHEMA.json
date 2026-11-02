@@ -1,0 +1,12 @@
+{
+  "schema": "v45-bdyneg.native-registry-schema.v1",
+  "verdict": "PASS",
+  "seal_sha256": "4652583ebb2fb07f6790012b4e6dc156343bf816fc20b4beea7af3f867772eb9",
+  "controller_sha256": "6e5f9ccdeb748f1d0af642e02fb42f75759dd8495115fb13af38d26dfb2be2f7",
+  "register_sha256": "0fff78baad1298592a532834161459c63565a814f05a72c0bae7e870127f82a2",
+  "measured": "Native start + success/failure terminal, exact sealed AST expressions",
+  "storage_appends_intercepted": 3,
+  "production_writes": 0,
+  "invalid_forcing_mutant": "REFUSED_BEFORE_APPEND",
+  "state_transitions": "Covered separately by actual private-atlas exact SEQ_SMOKE"
+}

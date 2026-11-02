@@ -1,0 +1,77 @@
+{
+  "schema": "v45-bdyneg.ALISIOS-packet.v1",
+  "status": "PROPOSED_NOT_GO",
+  "document_commit": "fe71a34d50",
+  "document_sha256": "c7d91e7f72f4ff7e0a08ed80591f598ff5e911b8a623b95ac19fd24c49654ccd",
+  "authority": "manager MAILBOX 2026-10-31T01:09:45Z",
+  "HYPOTHESIS": {
+    "id": "H1",
+    "domain": "d02",
+    "frame": "2026-01-11_03:00:00",
+    "variable": "QCLOUD",
+    "index_kji": [
+      0,
+      62,
+      266
+    ],
+    "original_value": -2.4461745563170156e-12,
+    "prediction": "nonnegative actual records produce negative REAL4 endpoint numerator; positive mass; same-operand pristine WRF agrees at frozen normal-byte gate",
+    "inherited_record_refutes_creation": true,
+    "exact_target_reproduction_required": true,
+    "root_PD": "OPEN"
+  },
+  "STOP_RULE": {
+    "arms": 1,
+    "forecast_hours": 3,
+    "own_steps": [
+      400,
+      1200,
+      3600
+    ],
+    "entry_cap_s": 1200,
+    "model_cap_s": 840,
+    "flow_cap_s": 1170,
+    "retry": false,
+    "physics_changes": false,
+    "sealed_hard_end_utc": "2026-10-31T18:45:00Z",
+    "ALISIOS_GPU_end_strictly_before_utc": "2026-10-31T19:15:00Z",
+    "outcomes": [
+      "H1_SUPPORTED",
+      "INHERITED_RECORD",
+      "ORACLE_MISMATCH",
+      "EVENT_NOT_REPRODUCED",
+      "FAILED_INCOMPLETE"
+    ]
+  },
+  "RAW_DISPOSITION": {
+    "owner": "v45-bdyneg",
+    "native_tree": "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261031_v6",
+    "delete_after": "own verified compact extraction via existing sealed controller",
+    "journal": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/RAW_DISPOSITION_JOURNAL.jsonl",
+    "journal_granularity": "one owned tree, retained per-file SHA256",
+    "journal_actor": "worker CPU verification after controller cleanup",
+    "failure_policy": "hold if successful model lacks verified extraction; accurately journal failed/incomplete controller deletion; no verified-success claim",
+    "native_observed": false
+  },
+  "CPU_journal_rehearsal": {
+    "run_id": "v45-bdyneg:smoke:run_2026-10-30T235426Z_bb7b3e:9ead84c1",
+    "row_sha256": "14b9f31c3a7dea57647761871686685d66f7c6a62bcbb4605c440991a1ad9a27",
+    "journal_sha256": "e32fc06550f0e8f51f3c890b3761d67bb3886f6ebb1e27a58618bb902998e044",
+    "new_deletions": 0
+  },
+  "GPU_runs": 0,
+  "base_packet_sha256": "18e0ec3f3cba362ba3df89566295357fe32dc4a184e19dfa773efa098fe25755",
+  "binding_delta_commit": "ed87701fa4b51bfa5ff44e4b44c47d4dbb468b96",
+  "affinity_policy": {
+    "native_entry_controller_lease_wrapper": "3,19,13,29",
+    "CPU_only": "24,25,28",
+    "nice": 19,
+    "authority": "manager MAILBOX2026-10-31T01:23:44Z"
+  },
+  "sealed_file_bindings": {
+    "plan.json": "d2c3a80260de5fed4eddd4186772c2953b231a4d8701a31235a20bf548c3d015",
+    "seal.json": "fcc8349217210e3a9e8f2b8269de410dedd2ef286add2bdf35812911e21da2ba",
+    "entry.sh": "867664b3631881ccb4318f7a578fe89ab69fd4cfee43779045749da9a2e87445"
+  },
+  "affinity_delta_proof": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/BD31_AFFINITY_KEY_PROOF.json"
+}

@@ -1,0 +1,15 @@
+{
+  "source_commit": "5cf95c2cc7",
+  "source_sha256": "f9b55fcaee284a1449458d92a6d30687fa0d15617250c2e5b12044aa71d5549f",
+  "source_snapshot": "git archive subset (helper + exact prior reference receipt only)",
+  "checks": 40,
+  "files": 5,
+  "negative_total": 422,
+  "interior_ge_1": 0,
+  "protected_root_refusals": 3,
+  "missing_field_refusals": 1,
+  "wall_s": 1.7440999279497191,
+  "peak_rss_KiB": 81812,
+  "cache": "NONE; no JAX imports or model steps",
+  "work": "Original CPU-WRF Swiss BL9 h0..4, eight species; helper verification only, January event OPEN"
+}

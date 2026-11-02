@@ -1,0 +1,34 @@
+{
+  "schema": "v45-bdyneg.carry-mass-comparison.v1",
+  "rows": [
+    {
+      "domain": "d01",
+      "max_mass_delta_Pa": 0.296875,
+      "ring0_delta_max_Pa": 0.296875,
+      "ring0_different": 376,
+      "whole_different": 2391,
+      "positive_denominator_min_Pa": 63186.59765625,
+      "source_sha256": "1a6a0710df980fccbd8cc65899e60b3ab141f7b6a704b843ba6996c1bbf6db40"
+    },
+    {
+      "domain": "d02",
+      "max_mass_delta_Pa": 0.015625,
+      "ring0_delta_max_Pa": 0.015625,
+      "ring0_different": 576,
+      "whole_different": 8302,
+      "positive_denominator_min_Pa": 50375.73828125,
+      "source_sha256": "d3b7fe3f246522d1aaf6f1b61d935f4eeb23d86f4094ae5118e60b30fdc3201e"
+    },
+    {
+      "domain": "d03",
+      "max_mass_delta_Pa": 0.015625,
+      "ring0_delta_max_Pa": 0.015625,
+      "ring0_different": 305,
+      "whole_different": 2797,
+      "positive_denominator_min_Pa": 40508.87109375,
+      "source_sha256": "5d6cb561809d01f0c8fe2001aa5aea65c1dd33e91e16ac27aeb496662ea313d3"
+    }
+  ],
+  "scope": "Actual C FIRST-ROOT CPU only; not January event-time carry",
+  "scientific_gate": "OPEN"
+}

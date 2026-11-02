@@ -1,0 +1,9 @@
+{
+  "tests": 17,
+  "failures": 0,
+  "errors": 0,
+  "source_commit": "01e6309b6fbe7f553b5244d110db4fc41260a58c",
+  "readonly_semantic_mutant": "1 genuine AssertionError(child42),0 setup errors",
+  "fd_positive_and_closed_negative": "PASS",
+  "full_collection": 21810
+}

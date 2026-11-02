@@ -1,0 +1,88 @@
+{
+  "schema": "v46-graupel-captured-threshold-oracle-v1",
+  "artifact": "<USER_HOME>/wrf_gpu2_lanes/v45-graupel/V046/G30b/REPLAY.npz",
+  "sha256": "e878ec27db50432505b9a6505fc03121720c175fff8573233ccf716a3a994b87",
+  "columns": 124,
+  "levels": 44,
+  "dt_s": 6,
+  "scope": "real18s-boundary columns; not actual pre-microphysics GPU savepoints",
+  "axis_order": "column,z",
+  "units": {
+    "qg": "kg/kg",
+    "rho": "kg/m^3",
+    "rqg": "kg/m^3"
+  },
+  "input_positive_cells": 222,
+  "pristine_erased_input_positive_cells": 17,
+  "erased_sites_also_in_observed_18s_losses": 17,
+  "source_run": "<DATA_ROOT>/wrf_gpu2/scratch/v45-graupel/localization_v4/runs/20261029T064920Z-3534823",
+  "capture_manifest_sha256": "44886984336440a40c3dbefca24540aec88f281d7decd21059afc972be41b1a0",
+  "reference_driver_sha256": "336a471d073efdbb0d5ad84ee675e3af0bbb6795a014d0ec0d0e102480d63fda",
+  "pristine_source_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802",
+  "threshold_source_lines": {
+    "mass_value": 3120,
+    "mass_zero_tendency": 3158,
+    "final_mixing_ratio_zero": 4060
+  },
+  "passive_trace_original_output_all13_BYTE": true,
+  "passive_trace_sha256": "2d940fa204115f9e704a2fed434f2eab43d406a51fc6f67ce9729f3e69242701",
+  "mass_witness_indices": [
+    6,
+    64,
+    94
+  ],
+  "density_cut_witnesses": [
+    {
+      "index": 6,
+      "step": 42105,
+      "y": 48,
+      "x": 46,
+      "k": 10,
+      "input_qg": 1.5077873845303902e-12,
+      "rho": 0.8332086205482483,
+      "xrg": 9.999999960041972e-13,
+      "raw_rqg": 9.427985735860345e-13,
+      "prg_gde": -5.247697570833483e-14,
+      "prg_rfz": 2.2649263949667324e-16,
+      "T": 267.65374755859375
+    },
+    {
+      "index": 64,
+      "step": 42606,
+      "y": 50,
+      "x": 44,
+      "k": 11,
+      "input_qg": 1.6017406585105975e-12,
+      "rho": 0.8574540019035339,
+      "xrg": 9.999999960041972e-13,
+      "raw_rqg": 9.578255072764663e-13,
+      "prg_gde": -6.954477271152965e-14,
+      "prg_rfz": 2.7920342028361956e-16,
+      "T": 268.6962585449219
+    },
+    {
+      "index": 94,
+      "step": 42639,
+      "y": 49,
+      "x": 45,
+      "k": 10,
+      "input_qg": 1.3628629474959908e-12,
+      "rho": 0.8578671216964722,
+      "xrg": 9.999999960041972e-13,
+      "raw_rqg": 9.989923385050892e-13,
+      "prg_gde": -2.8360502604407044e-14,
+      "prg_rfz": 0.0,
+      "T": 268.15704345703125
+    }
+  ],
+  "deletion_mismatches": {
+    "mass": 4,
+    "final": 115
+  },
+  "gate": "exact qg zero/nonzero pattern plus unchanged test_mixed_phase_wrf_oracle increment rule; all fields finite",
+  "producer_scripts": [
+    "proofs/v46_graupel/analyze_r5g.py",
+    "proofs/v46_graupel/replay_captured_columns.py",
+    "proofs/v46_graupel/pristine_threshold_trace.py"
+  ]
+}

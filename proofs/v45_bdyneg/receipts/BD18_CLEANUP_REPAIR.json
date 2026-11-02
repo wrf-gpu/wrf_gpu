@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-28T23:15:51.338377+00:00",
+  "authorized_by": "manager2026-10-28T23:14:01Z",
+  "path": "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261029_v1",
+  "chmod_owned_dirs": [
+    "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261029_v1/layer/work/work"
+  ],
+  "all_owned_children_reaped": true,
+  "raw_deleted": true,
+  "original_ALISIOS_and_bundle_modified": false,
+  "model_started": false,
+  "lock_bootstrap_only": true
+}

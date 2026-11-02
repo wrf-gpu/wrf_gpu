@@ -279,9 +279,94 @@ def test_compile_bundle_seal_is_deterministic_and_check_detects_compiles_outside
     assert cb.main(check) == 1 and "changed=1" in capsys.readouterr().out
     (cache / "xla_gpu_per_fusion_autotune_cache_dir/t.textproto").write_text("tune")
     assert cb.main(check) == 0
+    capsys.readouterr()
     shutil.copytree(cache, tmp_path / "moved")  # identical bytes elsewhere: JAX/AOT keys pin the absolute path
     moved = ["check", "--cache", str(tmp_path / "moved"), "--manifest", str(tmp_path / "b1/BUNDLE_MANIFEST.json")]
-    assert cb.main(moved) == 1 and "moved=True" in capsys.readouterr().out
+    assert cb.main(moved) == 2  # bytes verified, but never rc 0: a relocated copy is not runnable at its own path
+    out = capsys.readouterr().out
+    assert out.startswith("BUNDLE_RELOCATED_OK missing=0 changed=0 new=0 ") and "moved=True" in out
+    assert f"sealed_path={cache} sealed_path_hardlinked=False" in out
+
+
+def _hardlink_copy(src, dst):
+    """cp -al: the publication copy of release_bundles/v0.4.4 (same inodes as the sealed cache)."""
+    for d, _dirs, files in os.walk(src):
+        (dst / Path(d).relative_to(src)).mkdir(parents=True, exist_ok=True)
+        for f in files:
+            os.link(Path(d) / f, dst / Path(d).relative_to(src) / f)
+
+
+@pytest.mark.parametrize("where", ["sealed", "relocated", "hardlinked"])
+@pytest.mark.parametrize("mutant", [None, "changed_byte", "missing_file", "extra_file", "extra_alias_half",
+                                    "file_symlink_same_bytes", "dir_symlink_extra", "fifo"])
+def test_compile_bundle_relocated_copy_keeps_tamper_detection(toy_repo, tmp_path, capsys, where, mutant):
+    """v0.4.4 incident: release_bundles/v0.4.4 (hardlink copy) reported moved=True, ALISIOS' check of the sealed path
+    moved=False. A byte-intact relocated copy is BUNDLE_RELOCATED_OK (rc 2, never 0); every tamper is BUNDLE_BROKEN
+    (rc 1) at the sealed path and at a copy alike."""
+    cb = _load("compile_bundle")
+    cache, blob, meta = _toy_cache(tmp_path / "sealed")
+    seal = ["seal", "--cache", str(cache), "--commit", "HEAD", "--source", str(toy_repo), "--repo", str(toy_repo)]
+    assert cb.main(seal + ["--out", str(tmp_path / "b")]) == 0
+    capsys.readouterr()
+    target = cache
+    if where == "relocated":
+        target = tmp_path / "copy/jax"
+        shutil.copytree(cache, target)
+    elif where == "hardlinked":
+        target = tmp_path / "copy/jax"
+        _hardlink_copy(cache, target)
+    d01 = target / "aot/0.4.0-cuda_sm120/d01"
+    if mutant == "changed_byte":  # replaced, not rewritten in place: a hardlink copy must not edit the sealed inode
+        data = bytearray((target / "jit_f-00-cache").read_bytes())
+        data[0] ^= 1
+        (target / "jit_f-00-cache").unlink()
+        (target / "jit_f-00-cache").write_bytes(bytes(data))
+    elif mutant == "missing_file":
+        (target / "xla_gpu_per_fusion_autotune_cache_dir/t.textproto").unlink()
+    elif mutant == "extra_file":
+        (target / "jit_g-11-cache").write_bytes(b"compiled outside")
+    elif mutant == "extra_alias_half":
+        (d01 / "k_z.xlaexec").write_bytes(blob)
+    elif mutant == "file_symlink_same_bytes":  # identical bytes, but owned by another file: still a swap
+        twin = tmp_path / "twin_entry"
+        twin.write_bytes((target / "jit_f-00-cache").read_bytes())
+        (target / "jit_f-00-cache").unlink()
+        (target / "jit_f-00-cache").symlink_to(twin)
+    elif mutant == "dir_symlink_extra":  # rglob never descends into it: invisible to the file scan alone
+        (tmp_path / "hidden").mkdir()
+        (tmp_path / "hidden/jit_h-00-cache").write_bytes(b"compiled outside")
+        (target / "extra_dir").symlink_to(tmp_path / "hidden", target_is_directory=True)
+    elif mutant == "fifo":
+        os.mkfifo(target / "jit_p-00-cache")
+    report = tmp_path / "rep.json"
+    rc = cb.main(["check", "--cache", str(target), "--manifest", str(tmp_path / "b/BUNDLE_MANIFEST.json"),
+                  "--out", str(report)])
+    out, rep = capsys.readouterr().out, json.loads(report.read_text())
+    if mutant is None:
+        if where == "sealed":
+            assert rc == 0 and out.startswith("BUNDLE_OK missing=0 changed=0 new=0 aliases=0 moved=False\n")
+        else:
+            assert rc == 2 and out.startswith("BUNDLE_RELOCATED_OK missing=0 changed=0 new=0 aliases=0 moved=True ")
+            assert rep["relocated"] and not rep["ok"] and rep["sealed_path"] == str(cache)
+            assert rep["sealed_path_exists"] and rep["sealed_path_hardlinked"] == (where == "hardlinked")
+        return
+    assert rc == 1 and out.startswith("BUNDLE_BROKEN ") and not rep["ok"] and not rep["relocated"], (mutant, out)
+    key = {"changed_byte": "changed", "missing_file": "missing", "extra_file": "new", "extra_alias_half": "new",
+           "file_symlink_same_bytes": "irregular", "dir_symlink_extra": "irregular", "fifo": "irregular"}[mutant]
+    assert rep[key], (mutant, rep)
+    assert (f"moved={where != 'sealed'}") in out
+    if key == "irregular":
+        assert f"irregular={len(rep['irregular'])}" in out
+
+
+def test_compile_bundle_seal_refuses_links_in_the_cache(toy_repo, tmp_path, capsys):
+    cb = _load("compile_bundle")
+    cache, _blob, _meta = _toy_cache(tmp_path)
+    (tmp_path / "elsewhere").mkdir()
+    (cache / "linked").symlink_to(tmp_path / "elsewhere", target_is_directory=True)
+    seal = ["seal", "--cache", str(cache), "--commit", "HEAD", "--source", str(toy_repo), "--repo", str(toy_repo)]
+    assert cb.main(seal + ["--out", str(tmp_path / "b")]) == 1
+    assert "linked: symlink or special file in the cache" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize("defect", ["untracked_src", "foreign_source", "no_blob", "meta_mismatch", "outside_tunes",
@@ -443,6 +528,21 @@ def test_bundle_consumer_refuses_layers_that_reach_the_bundle(sealed_bundle, tmp
     assert _tree_bytes(bundle) == sealed and not (bundle / "sub/layer").exists()
     if entries is not None:  # refused before creating anything in an existing layer
         assert sorted(os.listdir(layer)) == entries
+
+
+def test_bundle_consumer_refuses_a_relocated_copy_before_running(sealed_bundle, tmp_path):
+    """--bundle on a copy (release_bundles/v0.4.4 class): bundle.env and the AOT keys name the sealed path, so the
+    command would write the sealed bundle outside the overlay -> refused (125) before the command starts."""
+    bundle, _ = sealed_bundle
+    copy = tmp_path / "copy"
+    shutil.copytree(bundle, copy, symlinks=True)
+    marker = tmp_path / "ran"
+    r = _consume(copy, tmp_path / "layer", "touch", str(marker))
+    assert r.returncode == 125 and not marker.exists(), r.stdout + r.stderr
+    assert f"is a relocated copy; its cache is sealed at {bundle / 'jax'}" in r.stderr
+    assert not (tmp_path / "layer").exists()  # refused before any layer component is created
+    ok = _consume(bundle, tmp_path / "layer", "touch", str(marker))
+    assert ok.returncode == 0 and marker.exists(), ok.stdout + ok.stderr
 
 
 @pytest.mark.parametrize("part", ["meta", "blob"])

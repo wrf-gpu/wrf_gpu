@@ -1,0 +1,196 @@
+{
+  "schema": "gpuwrf.resume-journal-review-fix.v1",
+  "candidate": "cc83f6087c2e8f5171bdc9e172b3cd1dfa2a74f7",
+  "frozen_base": "01f1bb77d3205c0ce014fea915998801e59f13c1",
+  "reviewed_parent": "38bfea598505ee259bf65f8bcc8f0eff0a0b5e23",
+  "critic": {
+    "path": "<USER_HOME>/wrf_gpu2_lanes/cr-v05pre/VERDICT_v45-contrasts_38bfea598505ee259bf65f8bcc8f0eff0a0b5e23.md",
+    "sha256": "6a556b9266b6b5c9e71436bb874f671c5beb56bece873a1e3172f0b271fdaca8"
+  },
+  "commits": {
+    "F1_source_tests": "4c3dc4eac8",
+    "F2_registry_only": "cc83f6087c"
+  },
+  "F1": "Existing coverage-first refusal precedes journal preflight for ordinary resumes; invalid coverage wins over absent/valid-copied generations without weakening either check",
+  "F2": {
+    "registered_exact_sites": [
+      "integration/nested_pipeline.py:<module>.execute_nested_pipeline:call:d6c6632b6a4857586b02bd9b7527b345e275600a61ca930c5ff76b75c1d4aff5:1",
+      "runtime/restart_store.py:<module>.HistoryJournal.__init__:call:48613a14dbfaf17e3a472ff21312acc767d31b12135caa82a79964b44c1538f6:1",
+      "runtime/restart_store.py:<module>.require_resume_history:path:history-*/owner.json"
+    ],
+    "own_unbound": [],
+    "binding": "case_and_restart",
+    "registry_commit_changes_only_JSON": true
+  },
+  "entire_restart_suite": {
+    "passed": 257,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 4,
+    "failures": [
+      {
+        "node": "tests.v025.restart.test_runtime_data_identity::test_reader_registry_covers_actual_package_and_runtime_extractor",
+        "message": "ValueError: runtime data reader lacks a reviewed content binding: ens/workflows.py:<module>.prepare:call:c4b629495a6e643da3774e82f742688d4a24128b1ff8b4448236e96c64f51421:2; ens/workflows.py:<module>:path:runtime_parameters.json; optimize/cli.py:<module>._optimize:path:best.json; optimize/cloud.py:<module>._inventory:call:576dac4b3c6fbb9aa2f7adbe13a0e4fd564c41ff431441fe9c4ce15b1f42fedc:1; optimize/cloud.py:<module>._inventory:call:b576df39568de6d3cb277691d08e13cb4d426adc5e2960c6fa3ba295b7e74085:1; optimize/cloud.py:<module>._read_native:call:d4840bc99d70db262958bac55d6c26f6103d6b64045deaebec68b95b105fea3c:1; optimize/cloud.py:<module>.evaluate:path:gpuwrf.optimize.result.v1; optimize/cloud.py:<module>.read_truth:call:b576df39568de6d3cb277691d08e13cb4d426adc5e2960c6fa3ba295b7e74085:1"
+      }
+    ],
+    "skip_reasons": [
+      {
+        "node": "tests.v025.restart.test_cpu_wrfrst_ozone_hydration::test_original_ozone_survives_restart_import[d01]",
+        "message": "requires native release carries; set GPUWRF_FAST_DEFAULTS=1"
+      },
+      {
+        "node": "tests.v025.restart.test_cpu_wrfrst_ozone_hydration::test_original_ozone_survives_restart_import[d02]",
+        "message": "requires native release carries; set GPUWRF_FAST_DEFAULTS=1"
+      },
+      {
+        "node": "tests.v025.restart.test_cpu_wrfrst_ozone_hydration::test_original_ozone_survives_restart_import[d03]",
+        "message": "requires native release carries; set GPUWRF_FAST_DEFAULTS=1"
+      },
+      {
+        "node": "tests.v025.restart.test_cpu_wrfrst_ozone_hydration::test_original_file_gate_rejects_old_ppmv_conversion",
+        "message": "requires native release carries; set GPUWRF_FAST_DEFAULTS=1"
+      }
+    ],
+    "boundary_cases": [
+      {
+        "node": "tests.v025.restart.test_boundary_coverage::test_driver_refuses_uncovered_end_before_loading[1]",
+        "status": "passed"
+      },
+      {
+        "node": "tests.v025.restart.test_boundary_coverage::test_driver_refuses_uncovered_end_before_loading[2]",
+        "status": "passed"
+      },
+      {
+        "node": "tests.v025.restart.test_restart_store::test_alisios_resume_preserves_coverage_refusal_first",
+        "status": "passed"
+      }
+    ],
+    "own_binding_cases": [
+      {
+        "node": "tests.v025.restart.test_runtime_data_identity::test_resume_journal_readers_have_reviewed_binding_and_cannot_be_deleted[integration/nested_pipeline.py:<module>.execute_nested_pipeline:call:d6c6632b6a4857586b02bd9b7527b345e275600a61ca930c5ff76b75c1d4aff5:1]",
+        "status": "passed"
+      },
+      {
+        "node": "tests.v025.restart.test_runtime_data_identity::test_resume_journal_readers_have_reviewed_binding_and_cannot_be_deleted[runtime/restart_store.py:<module>.HistoryJournal.__init__:call:48613a14dbfaf17e3a472ff21312acc767d31b12135caa82a79964b44c1538f6:1]",
+        "status": "passed"
+      },
+      {
+        "node": "tests.v025.restart.test_runtime_data_identity::test_resume_journal_readers_have_reviewed_binding_and_cannot_be_deleted[runtime/restart_store.py:<module>.require_resume_history:path:history-*/owner.json]",
+        "status": "passed"
+      }
+    ]
+  },
+  "suite_seconds": 50.62,
+  "suite_peak_rss_kib": 1358700,
+  "global_registry": {
+    "branch_status": "FAIL_PREEXISTING_BASELINE",
+    "baseline_unbound_count": 132,
+    "candidate_unbound_count": 132,
+    "sets_exactly_equal": true,
+    "candidate_branch_not_claimed_globally_green": true,
+    "approved_RC_registry_commit": "cb71b00696",
+    "private_reviewed_RC_composition": {
+      "reader_sites": 2993,
+      "registered": 3019,
+      "unbound": []
+    },
+    "composition_scope": "Private audit only; union of previously approved base registry, approved RC registry exception and exactly our three bindings, not a branch-wide debt sweep"
+  },
+  "deletion_sensitivity": {
+    "F1_exact_prior_wrapper_swap": {
+      "exit": 1,
+      "failed": 1,
+      "errors": 0,
+      "assertions": 1
+    },
+    "F2": "All three own-site deletion tests pass using actual changed module bytes and unchanged checker; global gate remains enabled"
+  },
+  "full_collection": {
+    "count": 21793,
+    "errors": 0,
+    "seconds": 18.66
+  },
+  "AOT": {
+    "AOT_closure_files": 541,
+    "AOT_digest_base": "fbcc2e78aac016c83fc799cdda3cc878455b2f00eea828fb2f9874a3c58369a3",
+    "AOT_digest_candidate": "fbcc2e78aac016c83fc799cdda3cc878455b2f00eea828fb2f9874a3c58369a3",
+    "changed_Python_in_AOT_closure": []
+  },
+  "unchanged_authentication": "RestartStore all methods and nested_identity AST exact; frozen-source checkpoint compatibility is NOT claimed or waived",
+  "candidate_whole_source_sha256": "08e1d80637388f480185f53f31c9e01397ad7c9fa29d413211d9b7f560c81017",
+  "cost": {
+    "extra_coverage_admission_ns_median": 32883889.5,
+    "traced_peak_bytes": 140593,
+    "scope": "One extra coverage metadata check per ordinary resume; existing in-driver check retained, no model/timestep/compile work",
+    "normal_and_branch": "No extra public coverage check outside ordinary resume"
+  },
+  "artifacts": {
+    "RJ05.xml": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ05.xml",
+      "sha256": "21d34258b102717fc664a957464e9771d0dc1958c2aafe84f6319f6694409fc9"
+    },
+    "RJ05.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ05.log",
+      "sha256": "e8020fd1df4aac914614b66ee8eb7456bc14dccb69a9bcec226d686ce79f15ee"
+    },
+    "RJ05.time": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ05.time",
+      "sha256": "c91220b5e4021e5de7a37c3476069a9226397448847fce476103df687bfbe5b2"
+    },
+    "RJ05_archive.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ05_archive.json",
+      "sha256": "5c79fb27cb14886b5448256fbf312effc1f35b4452eaf39c2b39c2c2d0e5867b"
+    },
+    "RJ05_summary.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ05_summary.json",
+      "sha256": "c9fe165dec5b319989680552815d7ba902aa15e6703148066e33f2a7c60ca10e"
+    },
+    "RJ06-registry.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ06-registry.json",
+      "sha256": "de8990329ffaa01eff69fa7e780612037ca8671007e430fc5551c30becf2e936"
+    },
+    "RJ06-private-approved-RC-composition.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ06-private-approved-RC-composition.json",
+      "sha256": "39fe4ee7fc80e6d465bece8f5f32aaf843ba85fea965cfa4d5648e4abbeab900"
+    },
+    "RJ06-08.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ06-08.log",
+      "sha256": "ecdb6ac18e47a59dc2a23754d1a4996f75c0d9c47a95381053457afeb435ab91"
+    },
+    "RJ07-order-mutant.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ07-order-mutant.log",
+      "sha256": "cbc209b0f25b1fd0e7c2bc7a0b5687e5894c69af1d95f146a0ef1e3dc0cccadf"
+    },
+    "RJ07-order-mutant.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ07-order-mutant.json",
+      "sha256": "fdae83a627b30d8d42e9e181bd425b160c378f3a34702d706da031ba54f30692"
+    },
+    "RJ08-cost.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ08-cost.json",
+      "sha256": "f3008ed4691008e2f0a96d021d0120a63c60684906c6198f8bf94e3ad9c07a20"
+    },
+    "RJ09-collect.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ09-collect.log",
+      "sha256": "27fa75aa2fb4fdf4a8000321b8ee2ec82aec25dba848ef0658f4bf4b57da223e"
+    },
+    "resume_review_fix_probe.py": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/resume_review_fix_probe.py",
+      "sha256": "9d49c1d63100a19a0af31a98a2a333d2023a677fc36daec231fe29ce897b6051"
+    },
+    "RJ_FIX_CLEANUP_sizes.txt": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ_FIX_CLEANUP_sizes.txt",
+      "sha256": "c3de4d4e7a76b5f39bc26f09512525f5ea0cf21f43693fc2b76ab781ee301b80"
+    }
+  },
+  "cleanup": {
+    "snapshot": false,
+    "pytest": false,
+    "attachment_cache": false
+  },
+  "limits": [
+    "Whole restart suite has one frozen-base registry failure, plus four unchanged native scope skips; disclosed without waiver",
+    "Approved RC registry composition scan is green, but RC integration/inclusion remains manager-owned",
+    "Source and package-data identity changes still require matching checkpoints; authentication unchanged",
+    "No GPU/ALISIOS data/model lowering or forecast skill claims"
+  ]
+}

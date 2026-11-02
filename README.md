@@ -1,6 +1,6 @@
 # wrf_gpu
 
-[![Version](https://img.shields.io/badge/version-v0.4.5-2ea44f)](release_notes/RELEASE_NOTES_v0.4.5.md)
+[![Version](https://img.shields.io/badge/version-v0.4.6-2ea44f)](release_notes/RELEASE_NOTES_v0.4.6.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-user%20guide-informational)](https://wrf-gpu.github.io/wrf_gpu/)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
@@ -12,32 +12,26 @@ It reads WPS/`real.exe` inputs and `namelist.input`, and writes WRF NetCDF
 history for your existing tools. The goal is faster regional forecasting
 with less energy per forecast hour.
 
-v0.4.5 passes its real-world release checks with a disclosed final-frame
-graupel trace difference. The regular 72-hour rain-floor check passes, and the
-matched timing shows no resolved speed change from v0.4.4. The cause of the
-graupel trajectory difference remains open.
-[Measurements and limits](release_notes/RELEASE_NOTES_v0.4.5.md).
+v0.4.6 improves WRF initialization and graupel entry handling. Its 72-hour
+rain-floor check passes with a disclosed final-frame graupel trace difference;
+matched timings show no resolved speed change from v0.4.5. [Measurements and
+limits](release_notes/RELEASE_NOTES_v0.4.6.md).
 
 [First forecast](#your-first-forecast-in-three-steps) ·
 [User guide](https://wrf-gpu.github.io/wrf_gpu/) ·
 [Published support matrix (v0.4.4)](docs/release/SUPPORT_MATRIX_v0.4.4.md) ·
 [Validation](docs/release/VALIDATION_v0.4.0.md) ·
-[Release notes](release_notes/RELEASE_NOTES_v0.4.5.md)
+[Release notes](release_notes/RELEASE_NOTES_v0.4.6.md)
 
 `wrf_gpu` is an independent project, not WRF itself, and is not affiliated
 with or endorsed by UCAR/NCAR.
 
-## What's new in v0.4.5
+## What's new in v0.4.6
 
-- **Regional studies in waves:** joint cloud/wind/temperature/humidity scores,
-  forcing contrasts, and bounded pause/resume. Real-station improvement is unproven.
-- **Corrected graupel sedimentation:** the fix is active on the GPU. Its final-hour
-  trace cause remains open; pristine WRF also gives zero on the tested RC inputs.
-- **MYNN cloud PDF modes 0/1:** CPU-qualified development options; coupled GPU
-  qualification is pending. Default mode 2 is unchanged.
-- **Still refused:** diffusion overrides including `c_s`, and nine new LSM controls.
+- **Emissivity at start:** Noah-MP now begins with the same seasonal land-use emissivity as WRF for the first radiation step.
+- **Graupel:** the Thompson scheme now keeps WRF's small incoming graupel amounts below the threshold. The cause of the final-hour trace difference remains open.
 
-[Release notes](release_notes/RELEASE_NOTES_v0.4.5.md) · [Known issues](KNOWN_ISSUES.md)
+[Release notes](release_notes/RELEASE_NOTES_v0.4.6.md) · [Known issues](KNOWN_ISSUES.md)
 
 ## Tune WRF for your region: inverse modelling
 
@@ -101,17 +95,18 @@ Measured on an **RTX 5090** with a **Ryzen 9 9950X** host. A fair version
 comparison uses the same case, session and timing window. Stepping excludes
 startup; time to the last output includes it.
 
-**v0.4.5:** stepping N/O 0.9965, S=0.0181, upper bound 1.0146<1.10: no
-resolved speed change. VRAM 0.9735×; RSS 0.9995×. Cold-minus-warm compile
-proxy: 489.9 versus 473.420 s (+3.48%), separate from forecast speed.
+**v0.4.6:** stepping N/O 1.0020, S=0.0416, upper bound 1.0436<1.10: no
+resolved speed change. VRAM 0.9959×; RSS 1.0003×. Cold-minus-warm compile
+proxy: 473.13 versus 489.90 s, separate from forecast speed.
 
 | Same-session comparison | Earlier version | Later version | What it shows |
 |---|---:|---:|---|
+| Tenerife 9/3/1 km, three 24-hour pairs, stepping | v0.4.5: 5.7870 s per forecast hour | v0.4.6: 5.7987 s | N/O 1.0020; upper 1.0436; no resolved speed change |
+| Same Tenerife pairs, process start to last output | v0.4.5: 6.9017 s per forecast hour | v0.4.6: 6.9484 s | N/O 1.0068; whole-run statistic |
 | Tenerife 9/3/1 km, two 24-hour pairs, stepping | v0.4.4: 5.7625 s per forecast hour | v0.4.5: 5.7425 s | N/O 0.9965; upper 1.0146; no resolved speed change |
 | Same Tenerife pairs, process start to last output | v0.4.4: 6.8102 s per forecast hour | v0.4.5: 6.8593 s | N/O 1.0072; whole-run statistic |
 | Canary Islands 9/3 km, 3-hour probe, stepping | v0.3.2: 2.904 s per forecast hour | v0.4.3: 3.131 s | Inconclusive: v0.3.2 repeat spread 8.71% exceeded the 5% noise limit |
 | Tenerife 9/3/1 km, three 24-hour pairs, stepping | v0.4.3: 5.920 s per forecast hour | v0.4.4: 5.911 s | No resolved speed change; repeat spread 2.79% |
-| Same Tenerife pairs, process start to last output | v0.4.3: 7.289 s per forecast hour | v0.4.4: 7.184 s | Disclosed total, not a speedup claim |
 
 The old 3.3- and 4.8-second whole-run figures used different memory allocation
 and shared-host conditions; their gap is not a measured version regression.
@@ -307,6 +302,7 @@ shows the largest parts of a time step.
 
 | Version | Highlights |
 |---|---|
+| v0.4.6 | WRF emissivity initialization and graupel entry mass; disclosed trace |
 | v0.4.4 | Initialization/clock fixes, nested shading, experimental MYNN coefficients; 72-hour gate passes with disclosed exceptions |
 | v0.4.3 | The v0.4.2 model with identical compiled programs, a three-nest qualification table, answers to user reports, host-suspend detection |
 | v0.4.2 | Shortwave fix confirmed against WRF, faster WDM6, four boundary layers validated inside nests, radiation without clouds |

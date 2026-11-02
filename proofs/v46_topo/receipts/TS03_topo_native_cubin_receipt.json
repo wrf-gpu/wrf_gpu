@@ -1,0 +1,264 @@
+{
+  "source": "f3cc329faafce01a4bb36555f589f21a6a32bfc3",
+  "scope": "CPU isolated native kernel compile (sm_120); not actual GPU/E41",
+  "shapes": {
+    "mini24_d01": {
+      "ny": 24,
+      "nx": 24,
+      "dx": 9000.0,
+      "nested": false,
+      "steps": 3,
+      "compile_s": 22.12,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "88f1d2003caf50fc42ccc135eabca9404031ac5ec6de38468eaba75ea3766e45",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 36,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 840,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 10752,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11600,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    },
+    "mini24_d02": {
+      "ny": 24,
+      "nx": 24,
+      "dx": 3000.0,
+      "nested": true,
+      "steps": 9,
+      "compile_s": 25.16,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "7afe24377ff6a01baa97a9ed9ed3ace430dac06c961f069aef0d4d7fd50e49f5",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 40,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 896,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11600,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 12448,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    },
+    "mini24_d03": {
+      "ny": 24,
+      "nx": 24,
+      "dx": 1000.0,
+      "nested": true,
+      "steps": 26,
+      "compile_s": 18.37,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "0ee7f475a132f6f91eeee26cf06f42e49ee089db220697ba33d6370309af8a3f",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 40,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 896,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11600,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 12448,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    },
+    "PROD_d01": {
+      "ny": 69,
+      "nx": 119,
+      "dx": 9000.0,
+      "nested": false,
+      "steps": 3,
+      "compile_s": 24.41,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "3c6e902323ab9ffb6a99dedee4535ef071e08788c88b661c21d9909dafd18827",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 36,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 840,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 10752,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11600,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    },
+    "PROD_d02": {
+      "ny": 116,
+      "nx": 266,
+      "dx": 3000.0,
+      "nested": true,
+      "steps": 9,
+      "compile_s": 24.67,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "f924676e1ba3d5629304bb0ff4d187784189cf931ef7db4a7427eebd2f0716fc",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 40,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 896,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11648,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 12496,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    },
+    "WN3_d03": {
+      "ny": 93,
+      "nx": 111,
+      "dx": 1000.0,
+      "nested": true,
+      "steps": 26,
+      "compile_s": 27.29,
+      "n_regs": null,
+      "n_spills": null,
+      "scf_while": 1,
+      "atan_tokens": 1,
+      "cubin_sha256": "9baea8f80fe5208a419662efdc42781f5cdfc11c2a788cbfbbeb250f19515104",
+      "native": [
+        {
+          "kernel": "wrf_topographic_shadow",
+          "regs": 40,
+          "stack": 32,
+          "shared": 1024,
+          "local": 0,
+          "sass": 896,
+          "calls": 3,
+          "callees": 2,
+          "stl": 10,
+          "callee_rows": [
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 11648,
+              "instructions": 53,
+              "nested_calls": 0
+            },
+            {
+              "function": "wrf_topographic_shadow",
+              "target_pc": 12496,
+              "instructions": 106,
+              "nested_calls": 0
+            }
+          ],
+          "nonleaf_over1k": [],
+          "callgraph_unknown": [],
+          "callgraph_status": "PASS"
+        }
+      ]
+    }
+  }
+}

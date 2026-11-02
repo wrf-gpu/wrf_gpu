@@ -1,0 +1,134 @@
+{
+  "schema": "v45-bdyneg.BD07.inferred-numerators.v1",
+  "rows": [
+    {
+      "file": "wrfout_d01_2026-01-11_02:00:09",
+      "field": "QCLOUD",
+      "index_kji": [
+        0,
+        0,
+        74
+      ],
+      "q": -2.267794969756089e-31,
+      "mass": 96145.21875,
+      "inferred_numerator": -2.180376413068691e-26,
+      "inferred_numerator_is_power_of_two": false,
+      "inverse_division_byte_exact": true,
+      "dt_s": 27.0,
+      "own_step_from_XTIME": 267,
+      "child_position_if_ratio3": 3,
+      "same_frame_first_interior_value": 0.0,
+      "same_frame_south_face_v": -5.112605571746826
+    },
+    {
+      "file": "wrfout_d02_2026-01-11_03:00:00",
+      "field": "QCLOUD",
+      "index_kji": [
+        0,
+        62,
+        266
+      ],
+      "q": -2.4461745563170156e-12,
+      "mass": 97465.890625,
+      "inferred_numerator": -2.384185791015625e-07,
+      "inferred_numerator_is_power_of_two": true,
+      "inverse_division_byte_exact": true,
+      "dt_s": 9.0,
+      "own_step_from_XTIME": 1200,
+      "child_position_if_ratio3": 3,
+      "same_frame_first_interior_value": 0.0
+    },
+    {
+      "file": "wrfout_d02_2026-01-11_15:00:00",
+      "field": "QRAIN",
+      "index_kji": [
+        0,
+        116,
+        69
+      ],
+      "q": -7.646203684314248e-14,
+      "mass": 97441.5625,
+      "inferred_numerator": -7.450580152834618e-09,
+      "inferred_numerator_is_power_of_two": false,
+      "inverse_division_byte_exact": true,
+      "dt_s": 9.0,
+      "own_step_from_XTIME": 6000,
+      "child_position_if_ratio3": 3,
+      "same_frame_first_interior_value": 0.0
+    },
+    {
+      "file": "wrfout_d02_2026-01-11_11:00:00",
+      "field": "QCLOUD",
+      "index_kji": [
+        0,
+        0,
+        197
+      ],
+      "q": -9.489056367609749e-23,
+      "mass": 97500.3046875,
+      "inferred_numerator": -9.251858814269842e-18,
+      "inferred_numerator_is_power_of_two": false,
+      "inverse_division_byte_exact": true,
+      "dt_s": 9.0,
+      "own_step_from_XTIME": 4400,
+      "child_position_if_ratio3": 2,
+      "same_frame_first_interior_value": 4.5305842633069915e-08
+    },
+    {
+      "file": "wrfout_d02_2026-01-11_11:00:00",
+      "field": "QRAIN",
+      "index_kji": [
+        7,
+        116,
+        31
+      ],
+      "q": -3.780692596553996e-14,
+      "mass": 98534.6015625,
+      "inferred_numerator": -3.725290298461914e-09,
+      "inferred_numerator_is_power_of_two": true,
+      "inverse_division_byte_exact": true,
+      "dt_s": 9.0,
+      "own_step_from_XTIME": 4400,
+      "child_position_if_ratio3": 2,
+      "same_frame_first_interior_value": 2.384941240052285e-07
+    },
+    {
+      "file": "wrfout_d02_2026-01-11_11:00:00",
+      "field": "QC_RAD",
+      "index_kji": [
+        1,
+        76,
+        266
+      ],
+      "q": -1.2209674460708642e-12,
+      "mass": 97644.8984375,
+      "inferred_numerator": -1.1922124087959673e-07,
+      "inferred_numerator_is_power_of_two": false,
+      "inverse_division_byte_exact": true,
+      "dt_s": 9.0,
+      "own_step_from_XTIME": 4400,
+      "child_position_if_ratio3": 2
+    },
+    {
+      "file": "wrfout_d03_2026-01-11_10:00:00",
+      "field": "QCLOUD",
+      "index_kji": [
+        7,
+        68,
+        110
+      ],
+      "q": -3.0314363215835916e-13,
+      "mass": 98310.8984375,
+      "inferred_numerator": -2.9802322387695312e-08,
+      "inferred_numerator_is_power_of_two": true,
+      "inverse_division_byte_exact": true,
+      "dt_s": 3.0,
+      "own_step_from_XTIME": 12000,
+      "child_position_if_ratio3": 3,
+      "same_frame_first_interior_value": 0.0
+    }
+  ],
+  "method": "RN32 mu=MU+MUB; mass=RN32(RN32(c1h*mu)+c2h); inferred=RN32(q*mass). This infers a possible numerator from output, NOT a retained original boundary record.",
+  "limits": "Cancellation fingerprint only, not causal proof or pristine same-input validation; current mass differs from producer mass for held QC_RAD. History MU+MUB reconstructs mass; its equality to authoritative carried mu_total is unproven. Inverse preimages must not be described as actual retained operator inputs.",
+  "cache": "NONE"
+}

@@ -1,0 +1,121 @@
+{
+  "source": "<DATA_ROOT>/wrf_gpu2/scratch/v46-topo/snap_f3cc",
+  "source_commit": "f3cc329faafce01a4bb36555f589f21a6a32bfc3",
+  "source_dirty": "",
+  "case": "<USER_HOME>/wrf_gpu2_lanes/w44-warmstart/E41_MINI_ATTRIB/cases/mini24",
+  "domain": "fused_d02",
+  "physical_backend": "cpu",
+  "lowering_platform": "cuda",
+  "gpu_executed": false,
+  "scope": "deviceless CompileOnly prescreen (autotune 0); actual GPU E41 scan stays authoritative",
+  "target_sha256": "b753abdddbace1e913de3767a1afbdfeba2b272e77f2be93658c766968e4960f",
+  "harness_sha256": "79a80db28490145a18ea4ed0ef98bb8fc00747deef3ad9f6b0a32b31da4af772",
+  "environment": {
+    "GPUWRF_NESTED_PARALLEL_COMPILE": "0",
+    "GPUWRF_CENSUS": "1",
+    "GPUWRF_JAX_CACHE": "0",
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "GPUWRF_FAST_DEFAULTS": "1"
+  },
+  "phase": "done",
+  "wall_s": 433.94887269096216,
+  "peak_rss_KiB": 7957364,
+  "input_sha256": {
+    "wrfinput_d02": "56e4a8c25364a456fb1c95c69411140d7397d462c38545c301308cd13a988403",
+    "namelist.input": "08ded77e23652c6169dd5542186a71329dee0956206131b8447e64f288900e2c",
+    "wrfbdy_d01": "24ef5b4caed685d7d82288ab2d8a72b0cad6669a5947d4374a3fbb4cdb03a471",
+    "wrflowinp_d01": "8cd6165db1caefa49c065238f559d2d9b0b15467853a8069e34c65bb51f99728",
+    "wrflowinp_d02": "8b51f195ff9edb5119ee57142cba54e716244db33b523a09fe877e091c9cafb3",
+    "wrfinput_d03": "b69183b8cacd3a3e8f1bf43eabf7d390c2bad9e6c30703e144ea00de858b7ee2",
+    "wrfinput_d01": "c53dd72f2d660ff3301d41ee398ad076b67183f6f62d0dddda6ebceb91e61c40",
+    "wrflowinp_d03": "2ba895652aeb0e8d69d4569300630b916e54793b0b4cc22dce8776b25f4dbace"
+  },
+  "gpuwrf_file": "<DATA_ROOT>/wrf_gpu2/scratch/v46-topo/snap_f3cc/src/gpuwrf/__init__.py",
+  "fused_lookup": "recursive closure cells (w44 patch)",
+  "fused_children": [
+    "d03"
+  ],
+  "static_kwargs": {},
+  "traced_pallas_calls": 331,
+  "stablehlo_sha256": "525c80fc624661f09e53c919b59f13562c7d68f551b6fd7c667aecfc5126ab4b",
+  "stablehlo_bytes": 502612451,
+  "compile_s": 314.4002603130066,
+  "optimized_hlo_sha256": "26355b7b5a8957a9a9adcfb6392afe28b6367ab62e1b4d9c145c4e33cf0162f5",
+  "n_fusions": 5724,
+  "transpose_fusions": 891,
+  "kinput_transpose_over500": [],
+  "any_transpose_over500": [
+    [
+      "loop_add_divide_power_select_fusion",
+      "kLoop",
+      555
+    ]
+  ],
+  "top_transpose": [
+    [
+      555,
+      "kLoop",
+      "loop_add_divide_power_select_fusion"
+    ],
+    [
+      412,
+      "kInput",
+      "input_multiply_select_transpose_fusion"
+    ],
+    [
+      407,
+      "kLoop",
+      "loop_divide_maximum_minimum_multiply_select_fusion"
+    ],
+    [
+      405,
+      "kInput",
+      "input_add_transpose_fusion.4"
+    ],
+    [
+      405,
+      "kInput",
+      "input_add_transpose_fusion.3"
+    ],
+    [
+      369,
+      "kInput",
+      "input_add_multiply_transpose_fusion.1"
+    ],
+    [
+      369,
+      "kInput",
+      "input_add_multiply_transpose_fusion"
+    ],
+    [
+      362,
+      "kLoop",
+      "loop_broadcast_clamp_compare_log_select_slice_fusion"
+    ],
+    [
+      360,
+      "kInput",
+      "input_multiply_select_transpose_fusion.1"
+    ],
+    [
+      356,
+      "kInput",
+      "input_select_transpose_fusion.3"
+    ],
+    [
+      325,
+      "kInput",
+      "input_divide_power_select_transpose_fusion"
+    ],
+    [
+      297,
+      "kInput",
+      "input_clamp_compare_transpose_fusion"
+    ]
+  ],
+  "native_gate": "FAIL",
+  "hard_stack_gate": "FAIL",
+  "max_stack_B": 448,
+  "kernels": 2678
+}

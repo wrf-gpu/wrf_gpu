@@ -1,0 +1,109 @@
+{
+  "status": "ACTUAL_NATIVE_WATER_GUARD_FAIL",
+  "source": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d01_2026-01-11_02:00:09",
+  "domain": "d01",
+  "native_time": "2026-01-11_02:00:09",
+  "passed_prior_frames": 1,
+  "findings": [
+    {
+      "variable": "QVAPOR",
+      "min": 7.169242621785088e-07,
+      "max": 0.010195814073085785,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QCLOUD",
+      "min": -2.267794969756089e-31,
+      "max": 0.0005775833269581199,
+      "negative_count": 1,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set",
+      "min_index": [
+        0,
+        0,
+        0,
+        74
+      ],
+      "sum_abs_negative_mixing_ratios": 2.267794969756089e-31
+    },
+    {
+      "variable": "QICE",
+      "min": 0.0,
+      "max": 0.0,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QRAIN",
+      "min": 0.0,
+      "max": 3.357302375661675e-06,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QSNOW",
+      "min": 0.0,
+      "max": 0.0,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QGRAUP",
+      "min": 0.0,
+      "max": 0.0,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QC_RAD",
+      "min": 0.0,
+      "max": 0.0005698325112462044,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QI_RAD",
+      "min": 0.0,
+      "max": 1.78645223058993e-06,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QS_RAD",
+      "min": 0.0,
+      "max": 0.0,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    },
+    {
+      "variable": "QG_RAD",
+      "min": 0.0,
+      "max": 0.0,
+      "negative_count": 0,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set"
+    }
+  ],
+  "raw_deleted": false,
+  "no_guard_change_or_clipping": true,
+  "timestamp": "2026-10-28T14:11:15.177645+00:00"
+}

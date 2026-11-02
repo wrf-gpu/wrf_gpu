@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-29T10:06:56.392363+00:00",
+  "status": "PASS",
+  "scope": "documentation syntax and immutable pin/hash verification only; invocation not executed on real or synthetic model files",
+  "evaluator_commit": "adb4c33b8caa6e1cbb480660b8d2be06a94eca22",
+  "tested_source_commit": "8a46f7b9aa3172e2527c710da572c4de5c3c962f",
+  "hashes": {
+    "src/gpuwrf/optimize/cloud.py": "a630ae06aff0a76d3907af30446554cfdb81c2396618aecec337519289bc1645",
+    "src/gpuwrf/physics/surface_constants.py": "970cf54ab0b1eed596e48ae3b5047a5972b6bc7dcb707fb1e6a3eb332d0833a6",
+    "proofs/v45_cloudscore/CWP_CONSTANTS_GATE.json": "6b5654a4941c08bcc5c589a8c310d09e8cd406cbf6b6d3e596051725c9cfb360",
+    "proofs/v45_cloudscore/cwp_constants/ROOT_REVERSION.json": "9c1c6199ff0abcca941063ad4c59c8e2d54793559b8866ab09aeebc35160e477"
+  },
+  "source_tests_scripts_byte_identical": true,
+  "invocation_python_syntax": "PASS",
+  "GPU": false,
+  "truth_or_model_value_reads": false,
+  "bundle_reads_or_writes": false,
+  "cache": "NONE",
+  "snapshot": "NONE"
+}

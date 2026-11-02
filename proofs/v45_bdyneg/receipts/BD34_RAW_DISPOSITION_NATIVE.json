@@ -1,0 +1,41 @@
+{
+  "schema": "v45-bdyneg.raw-disposition.v1",
+  "recorded_utc": "2026-10-31T02:03:28Z",
+  "owner": "v45-bdyneg",
+  "run_id": "v45-bdyneg:gpu:diagnostic_20261031_v6:5080da4a",
+  "mode": "gpu",
+  "action": "OWNED_RAW_TREE_REMOVAL_CONFIRMED",
+  "deletion_executor": "sealed controller remove_own_run",
+  "verification": "authenticated checkpoint + all-array BYTE readback + retained NPZ SHA readback + teardown + exact raw tree absent",
+  "raw_tree": "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261031_v6",
+  "raw_deleted": true,
+  "model_rc": 0,
+  "post_rc": 0,
+  "seal_sha256": "fcc8349217210e3a9e8f2b8269de410dedd2ef286add2bdf35812911e21da2ba",
+  "plan_sha256": "d2c3a80260de5fed4eddd4186772c2953b231a4d8701a31235a20bf548c3d015",
+  "evidence_sha256": {
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/RESULT.json": "60871afe2ecc8537339ee7354563fd01ac7d93cf7011495fb38d06273d9cb0f9",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/POST.json": "b0fc1200fb8c1f7e0e08b0db7de2a2f2fa7b9d5699fbaa287aa49c6dcbb65fbf",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/CHECKPOINT_MANIFEST.json": "e03ec2a5de57416ee5fb1ad9fe07cb49ff6603920aaaeaecea7cd15f532a265f",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/MODEL_LIFECYCLE.json": "a4c0ec5f7aa7a8e4f5f1c2a413668a4c25a732ecded736143094770a12e72b2b",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/POST_LIFECYCLE.json": "04b5c3e6f5b5b2420fa2f0a90cb03f336d04d318d44ce08841498d081a99c2df"
+  },
+  "retained": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d01_actual_boundary_operands.npz",
+      "sha256": "4fbe76d174993e4944cb1a20553d62ebc9bdfeb493981879d510e3a4869073df",
+      "bytes": 2592202
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d02_actual_boundary_operands.npz",
+      "sha256": "2b590b2da8c9f4dd148df4d5847b9cd63ce5adc1863fc50d647e209c15178dbd",
+      "bytes": 6074000
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d03_actual_boundary_operands.npz",
+      "sha256": "9d78d6549e79358eda672e98e32936e1029afdf3de036faf07303bafe311ddd9",
+      "bytes": 2157966
+    }
+  ],
+  "scope": "Actual completed native diagnostic; recording UTC is not asserted unlink UTC; E41 INCOMPLETE and scientific unresolved causes stay OPEN"
+}

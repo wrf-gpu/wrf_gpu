@@ -1,0 +1,74 @@
+{
+  "schema": "v45-bdyneg.root-PD-disposition.v1",
+  "verdict": "OPEN_NO_SAME_STEP_PD_OPERANDS",
+  "reported_event": {
+    "domain": "d01",
+    "frame": "2026-01-11_02:00:09",
+    "root_step": 267,
+    "QCLOUD": -2.267794969756089e-31
+  },
+  "captured_state": {
+    "domain": "d01",
+    "frame": "2026-01-11_03:00:00",
+    "root_step": 400,
+    "QCLOUD_negatives": [
+      {
+        "index_kji": [
+          0,
+          0,
+          73
+        ],
+        "value": -7.568344935325776e-24,
+        "ring": 0
+      }
+    ]
+  },
+  "retained_NPZ_leaves": [
+    "Ni",
+    "Ni_bdy",
+    "Nr",
+    "Nr_bdy",
+    "c1h",
+    "c2h",
+    "mu_total",
+    "muts",
+    "qc",
+    "qc_bdy",
+    "qg",
+    "qg_bdy",
+    "qi",
+    "qi_bdy",
+    "qr",
+    "qr_bdy",
+    "qs",
+    "qs_bdy",
+    "qv",
+    "qv_bdy"
+  ],
+  "normal_checkpoint_scratch_fields": [
+    "t_2ave",
+    "ww",
+    "mudf",
+    "muave",
+    "muts",
+    "ph_tend",
+    "u_save",
+    "v_save",
+    "w_save",
+    "t_save",
+    "ph_save",
+    "mu_save",
+    "ww_save",
+    "rthraten"
+  ],
+  "serializer_source": "<DATA_ROOT>/wrf_gpu2/scratch/w44-rc/rc_bundle_3e5219bc8088/src/src/gpuwrf/io/restart.py",
+  "serializer_sha256": "4c415f77cb71afc94e42809a08714c1b3b62928fa61022a3e1f50af6d8ac8ea1",
+  "missing_same_step": [
+    "step267 pre/post-PD scalar and tendencies with complete stencil",
+    "step267 acoustic transport ru_m/rv_m and flow-copy source",
+    "step267 pre-microphysics/after-final-boundary water"
+  ],
+  "disposition": "Do not claim root-PD attribution or WRF faithfulness of this root event; no clipping/physics change. Retain captured operands and original history strips. A future separately admitted capture must retain actual before/after-PD and acoustic-flow operands at the same step.",
+  "root_boundary_leaf_warning": "Leaf presence alone does not establish that a root species uses a specified-boundary pin; preserve the configured flow-dependent policy.",
+  "new_GPU_runs": 0
+}

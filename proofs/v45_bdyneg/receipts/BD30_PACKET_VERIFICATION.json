@@ -1,0 +1,13 @@
+{
+  "verdict": "PASS",
+  "unchanged_bindings": {
+    "plan.json": "fe42ac3c520c8e884a49fc2f0b5f7a8c0d12454c8c02d9a4c4cd6de2ccf0a9e8",
+    "seal.json": "4652583ebb2fb07f6790012b4e6dc156343bf816fc20b4beea7af3f867772eb9",
+    "entry.sh": "92526edf588ad8f4eb7d6a5a3872308ed7f8b90f740a3637d094c87b95f62650"
+  },
+  "proposal_document_sha256": "dae75f3bff43300058a945de9e41d0757c8e4c046ddfc8a1cfa66f609c450dec",
+  "proposal_packet_sha256": "18e0ec3f3cba362ba3df89566295357fe32dc4a184e19dfa773efa098fe25755",
+  "actual_CPU_row_sha256": "14b9f31c3a7dea57647761871686685d66f7c6a62bcbb4605c440991a1ad9a27",
+  "new_deletions": 0,
+  "new_GPU_runs": 0
+}

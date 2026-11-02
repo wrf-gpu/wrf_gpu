@@ -1,0 +1,67 @@
+{
+  "mode": "smoke",
+  "checkpoint_verified": true,
+  "own_steps": {
+    "d01": 1,
+    "d02": 3,
+    "d03": 9
+  },
+  "rows": [
+    {
+      "domain": "d01",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "own_step": 1,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT"
+    },
+    {
+      "domain": "d02",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "own_step": 3,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT"
+    },
+    {
+      "domain": "d03",
+      "shape": [
+        44,
+        93,
+        111
+      ],
+      "own_step": 9,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT"
+    }
+  ],
+  "exact_operand_artifacts": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d01_actual_boundary_operands.npz",
+      "sha256": "1a6a0710df980fccbd8cc65899e60b3ab141f7b6a704b843ba6996c1bbf6db40",
+      "bytes": 2567384
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d02_actual_boundary_operands.npz",
+      "sha256": "d3b7fe3f246522d1aaf6f1b61d935f4eeb23d86f4094ae5118e60b30fdc3201e",
+      "bytes": 6003746
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d03_actual_boundary_operands.npz",
+      "sha256": "5d6cb561809d01f0c8fe2001aa5aea65c1dd33e91e16ac27aeb496662ea313d3",
+      "bytes": 2148693
+    }
+  ],
+  "all_array_readback": "BYTE_EXACT",
+  "saved_C_boundary_identity": null,
+  "identity_scope": "GPU regression/determinism only",
+  "GPU_native_gates": "NOT-APPLICABLE",
+  "scientific_gate": "OPEN: root PD amplitude and unobserved events remain unclassified",
+  "nested_spec_final_debug_gate": "NOT-APPLICABLE"
+}

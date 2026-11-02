@@ -1,0 +1,240 @@
+{
+  "mode": "gpu",
+  "checkpoint_verified": true,
+  "own_steps": {
+    "d01": 400,
+    "d02": 1200,
+    "d03": 3600
+  },
+  "rows": [
+    {
+      "domain": "d01",
+      "shape": [
+        44,
+        70,
+        120
+      ],
+      "own_step": 400,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT"
+    },
+    {
+      "domain": "d02",
+      "shape": [
+        44,
+        117,
+        267
+      ],
+      "own_step": 1200,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT",
+      "pristine_spec_final": [
+        {
+          "species": "qv",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 2.6972786599799292e-06,
+          "port_min": 2.6972786599799292e-06,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qc",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 1,
+          "port_negative": 1,
+          "pristine_min": -2.4461745563170156e-12,
+          "port_min": -2.4461745563170156e-12,
+          "blanket_clip_mutant_disagreements": 1
+        },
+        {
+          "species": "qr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qi",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qs",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qg",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Ni",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Nr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        }
+      ]
+    },
+    {
+      "domain": "d03",
+      "shape": [
+        44,
+        93,
+        111
+      ],
+      "own_step": 3600,
+      "carried_mass_equals_muts": false,
+      "PD_pre_MP_operands": "NOT_RETAINED_BY_NORMAL_CHECKPOINT",
+      "pristine_spec_final": [
+        {
+          "species": "qv",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 2.795597765725688e-06,
+          "port_min": 2.795597765725688e-06,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qc",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qi",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qs",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "qg",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Ni",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        },
+        {
+          "species": "Nr",
+          "normal_mismatches": 0,
+          "subnormal_reference": 0,
+          "pristine_negative": 0,
+          "port_negative": 0,
+          "pristine_min": 0.0,
+          "port_min": 0.0,
+          "blanket_clip_mutant_disagreements": 0
+        }
+      ]
+    }
+  ],
+  "exact_operand_artifacts": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d01_actual_boundary_operands.npz",
+      "sha256": "4fbe76d174993e4944cb1a20553d62ebc9bdfeb493981879d510e3a4869073df",
+      "bytes": 2592202
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d02_actual_boundary_operands.npz",
+      "sha256": "2b590b2da8c9f4dd148df4d5847b9cd63ce5adc1863fc50d647e209c15178dbd",
+      "bytes": 6074000
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/diagnostic_20261031_v6/d03_actual_boundary_operands.npz",
+      "sha256": "9d78d6549e79358eda672e98e32936e1029afdf3de036faf07303bafe311ddd9",
+      "bytes": 2157966
+    }
+  ],
+  "all_array_readback": "BYTE_EXACT",
+  "saved_C_boundary_identity": {
+    "QCLOUD": true,
+    "QRAIN": true,
+    "QVAPOR": true
+  },
+  "identity_scope": "GPU regression/determinism only",
+  "GPU_native_gates": "see actual BACKEND + oracle rows",
+  "scientific_gate": "OPEN: root PD amplitude and unobserved events remain unclassified",
+  "nested_spec_final_debug_gate": "PASS",
+  "E41": {
+    "verdict": "INCOMPLETE",
+    "rc": 2,
+    "hard_stack_gate": "PASS"
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema": "gpuwrf.resume-journal-refusal.v1",
+  "request": "ALISIOS P0-RETRY3, manager 2026-10-28T09:41:38Z",
+  "branch": "lane/v45-contrasts-resume-journal",
+  "base_main": "01f1bb77d3205c0ce014fea915998801e59f13c1",
+  "tested_candidate": "1e50d23c44af2a6dd7a81bca1fb024b18de1dca4",
+  "behavior": "Missing journal owner raises ValueError naming exact owner.json, parent --checkpoint-dir/history-<stream>/, --branch-from for a new directory",
+  "early_preflight": "Copied generation(s) with no history owner metadata refuse before CAMMG admission/DFI/domain loading/device lookup; verified snapshot read is host-only on this error path to recover its stream UUID",
+  "healthy_resume": "Metadata-only lookup; no preliminary checkpoint payload read; existing exact owner/identity check remains at restoration",
+  "default_and_branch": "Helper not called without ordinary resume, or for --branch-from",
+  "gate": {
+    "passed": 38,
+    "failed": 0,
+    "errors": 0,
+    "skips": 0,
+    "seconds": 21.34,
+    "test_peak_rss_kib": 1101084,
+    "collection_count": 21789,
+    "collection_errors": 0,
+    "collection_seconds": 39.28
+  },
+  "deletion_sensitivity": [
+    {
+      "mutant": "early-preflight-deleted",
+      "exit": 1,
+      "failed": 1,
+      "errors": 0,
+      "assertions": 1
+    },
+    {
+      "mutant": "actionable-message-deleted",
+      "exit": 1,
+      "failed": 1,
+      "errors": 0,
+      "assertions": 1
+    }
+  ],
+  "host_cost": {
+    "healthy_resume_preflight_ns_median": 115941.0,
+    "traced_peak_bytes": 4435,
+    "payload_reads": 0,
+    "scope": "host metadata lookup once per ordinary resume; no step/compile/device/model timing",
+    "default_run": "preflight not called without ordinary resume",
+    "branch": "preflight not called for --branch-from"
+  },
+  "unchanged_AST": {
+    "_execute_nested_pipeline": true,
+    "_restart_end_time": true,
+    "_branch_end_time": true,
+    "RestartStore(all methods incl read/save/verification)": true,
+    "HistoryJournal._write": true,
+    "HistoryJournal.publish": true,
+    "HistoryJournal.recover": true,
+    "HistoryJournal._target": true,
+    "HistoryJournal._signature": true
+  },
+  "artifacts": {
+    "RJ01.xml": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ01.xml",
+      "sha256": "f172d0ec5d6ac3730f7bc70d083af420e6b6e314bf36d1c703dcdec9f8b24dd4"
+    },
+    "RJ01.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ01.log",
+      "sha256": "dec23e141ea944b2777ab671fcf851bafc12ce30607dc21a234b2b4e7ea7813f"
+    },
+    "RJ01.time": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ01.time",
+      "sha256": "5cc44f808c59fc2cf3af26ad2cac185ff22f6454483fd7cb144eeb8b30707402"
+    },
+    "RJ01_archive.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ01_archive.json",
+      "sha256": "c56bcca242516fd4946d83782f3b8013ba078d1a36703525fc2c9abd7ea44f4a"
+    },
+    "RJ02-collect.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ02-collect.log",
+      "sha256": "0b98c7237b240143bdd0b7772879e383c390815675cf03d75159ec0cdba09f69"
+    },
+    "RJ03-mutants.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ03-mutants.json",
+      "sha256": "4e61855b486c7dabaae2d954088323bd8c18d2423a1f2567706ddbb6b5f45eb0"
+    },
+    "RJ03-early-preflight-deleted.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ03-early-preflight-deleted.log",
+      "sha256": "4cf48196cdb5473f52facaf7b0f626dbcf20a462259821a46ee042bca5daff10"
+    },
+    "RJ03-actionable-message-deleted.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ03-actionable-message-deleted.log",
+      "sha256": "fc4c5453b2205d3dfefd0b47a4a4c2ad1e4c7b1d4d7849a27c98c26f23276517"
+    },
+    "RJ04-cost.json": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ04-cost.json",
+      "sha256": "3287255b7038d9e7a2dada587357b366d73da4ad6adcf966faf70245b2eab3b8"
+    },
+    "RJ03-04.log": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ03-04.log",
+      "sha256": "a2128e3a2962484c21fbe1abc9fbb41850a01d023318e3da493faaccc111c896"
+    },
+    "resume_journal_probe.py": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/resume_journal_probe.py",
+      "sha256": "269cca47cadef38efa01248676b09c8bb997c5683c85f27002e7d1748d8c4a0b"
+    },
+    "RJ_CLEANUP_sizes.txt": {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-contrasts/RJ_CLEANUP_sizes.txt",
+      "sha256": "6524e9ba6b79bf09d456d748509637008715f32daf028c8f2b308ef52c1d7bea"
+    }
+  },
+  "cleanup": {
+    "snapshot_exists": false,
+    "pytest_exists": false,
+    "cache": "NONE"
+  },
+  "scope": [
+    "Source change after freeze on new branch based on main; cr-v05pre review requested; manager alone decides RC inclusion",
+    "CPU actual RestartStore/HistoryJournal with private small structural three-domain carries; no ALISIOS data/GPU/forecast-fidelity claim",
+    "No new timestep kernels/device transfers/carry arrays; compile/readiness/VRAM not remeasured"
+  ]
+}

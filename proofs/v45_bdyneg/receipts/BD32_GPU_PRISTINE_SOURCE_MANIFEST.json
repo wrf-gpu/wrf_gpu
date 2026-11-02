@@ -1,0 +1,52 @@
+{
+  "source_sha256": {
+    "dyn_em/module_bc_em.F": "6cfb52b849e3dd0b24769709cf502faa75886da454d9b668af725cccdc56d47f",
+    "share/module_bc.F": "61b9235004b2a7799faabaa928276af8a7ef2e4672619c8ad120c857461301ad",
+    "dyn_em/module_em.F": "11105cbf8255f30ca6a44cd7429a92cedce1fb91db6ce90fd7217002a72fb7fa"
+  },
+  "routine_sha256": {
+    "relax_bdy_dry": "ed1e9c5416d9d2744e532363bc93c08460cbd583d67c386a4f39ad67cdeea4d3",
+    "relax_bdy_scalar": "f8cc7108cd279b3530cc237ec33c67e96b8d575278306e78699badbabd112d16",
+    "spec_bdy_dry": "85369f24401a40bb83cf5f169ad4bdf35a87f1fed0d35455cea30a31d240c6d0",
+    "spec_bdyupdate_ph": "cb640494a0bca54206af59b7f8cd90ae8aed6ef4df9c0abb3c13af1e5d3de92e",
+    "mass_weight": "aa89d47f2dccaa7bee0a3480b715b8c2fadc6d4ca98d2b8d1902cd1882d26ac9",
+    "lbc_fcx_gcx": "c7e7c9cf9c83546ca5b537af79b5001e2d8d6dfdf3e0b47932a075c0be57e77f",
+    "spec_bdy_scalar": "f9f2d7342ed9b93ad2dddfde4a2ab6adcd4fb509ea73e803a0e00cd583212477",
+    "relax_bdytend": "aaa25c92bd3f43e3bfa826889a031860d4cd82460f92336217342bae2f03a1af",
+    "relax_bdytend_tile": "8aa8f1a134bbb2897428d55a7e5050655af64464e8d03fed510b4caaf03fbc34",
+    "relax_bdytend_core": "76563625f5704b055ddc107e717bcde2290c96a87feecf83f82bbea55f737884",
+    "spec_bdytend": "97c7cdfc7f34fa2cfc9e3c8c8c38fc74402548cc737ffe411bc99a425077206a",
+    "spec_bdyupdate": "6a559fc657eae909b34e204e91ba8cc57cedf615e658e973b0cc21c66e6d01c5",
+    "flow_dep_bdy": "6b891ba659290da2860f9f6fa128e60d0352b015cad2efb79db24e35752ef7e7",
+    "spec_bdy_final": "71170237cb88ae10fb2d26e12f01c6e34e5536b7d6d23af9eabcd3a93a886635",
+    "rk_update_scalar": "263739307e23fee7f1933074851554c147351741d8ccf59603b367f4fa698387"
+  },
+  "caller_sha256": "de58116cf306e40e60f9c9bb1aa74ed5090fbe8631e122ec73e77487ef55e271",
+  "REAL_bytes": 4,
+  "command": [
+    "<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran",
+    "-O2",
+    "-cpp",
+    "-shared",
+    "-fPIC",
+    "-ffree-line-length-none",
+    "-ffp-contract=off",
+    "-fcheck=bounds",
+    "-J",
+    "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261031_v6/oracle_build",
+    "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261031_v6/oracle_build/oracle.f90",
+    "-o",
+    "<DATA_ROOT>/wrf_gpu2/scratch/v45-bdyneg/diagnostic_20261031_v6/oracle_build/oracle.so"
+  ],
+  "variables": [
+    "u",
+    "v",
+    "ph",
+    "t",
+    "w",
+    "mu",
+    "scalar"
+  ],
+  "mapping": "separate Fortran BX/BY leading strides; boundary two axes value/tendency; shared wrapper widths5/spec1/relax4",
+  "limitations": "specified/nested nonperiodic operators; actual operand conventions recorded in probe"
+}

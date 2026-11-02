@@ -1,0 +1,68 @@
+{
+  "schema": "v45-bdyneg.V046-CPU-readiness.v1",
+  "verdict": "READY_FOR_CRITIC",
+  "native_status": "NOT_ARMED: proposed calendar/floor, fresh manager GO and critic delta required",
+  "native_plan_sha256": "fe42ac3c520c8e884a49fc2f0b5f7a8c0d12454c8c02d9a4c4cd6de2ccf0a9e8",
+  "native_seal_sha256": "4652583ebb2fb07f6790012b4e6dc156343bf816fc20b4beea7af3f867772eb9",
+  "runtime_commit": "3062cceca6",
+  "exact_smoke": "launch_v5 original seal9961b834, entryb18dd54a, CPU plandfc41312",
+  "exact_sequencer_receipt": "<USER_HOME>/wrf_gpu2_lanes/manager/SEQ_SMOKE_CPU_SMOKE_PLAN_20261030T235426Z.json",
+  "exact_sequencer_step_rc": 0,
+  "controller_wall_s": 3504.856794004969,
+  "backend": "cpu",
+  "own_steps": {
+    "d01": 1,
+    "d02": 3,
+    "d03": 9
+  },
+  "checkpoint_verified": true,
+  "all_array_readback": "BYTE_EXACT",
+  "model_post_rc": [
+    0,
+    0
+  ],
+  "private_registry_events": 2,
+  "private_registry_terminal": "DONE_CLEAN",
+  "all_owned_children_reaped": true,
+  "raw_work_cache_snapshots_pytest_deleted": true,
+  "peak_sampled_named_bytes": 1723596800,
+  "full_default_collected": 21793,
+  "own_host_passed": 27,
+  "registry_native_schema": "PASS",
+  "unchanged_CPU_program_proof": "BD26_CPU_CARRY_PROOF.json; exact v5 receipt carried, not relabelled as exact v6",
+  "paid_C_seed": "2082 hashes PASS/353737051 unique bytes, readonly, no copies",
+  "scientific_gate": "OPEN; see MECHANISM.md/BD23/28/29; actual h3 nested operands and root PD still absent",
+  "GPU_native_gates": "NOT-APPLICABLE",
+  "worker_GPU_runs": 0,
+  "DATA_model_writes": 0,
+  "model_post_cleanup": {
+    "MODEL": {
+      "signalled_pids": [],
+      "groups_seen": [],
+      "remaining_pids": [],
+      "live_remaining": [],
+      "lock_file": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/smoke/run_2026-10-30T235426Z_bb7b3e/private.lock",
+      "observed_owned_lock_fds": [],
+      "owned_lock_fds_after": [],
+      "all_children_reaped": true
+    },
+    "POST": {
+      "signalled_pids": [],
+      "groups_seen": [],
+      "remaining_pids": [],
+      "live_remaining": [],
+      "lock_file": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/smoke/run_2026-10-30T235426Z_bb7b3e/private_post.lock",
+      "observed_owned_lock_fds": [],
+      "owned_lock_fds_after": [],
+      "all_children_reaped": true
+    }
+  },
+  "CPU_v3_v5_regression": {
+    "scope": "CPU-vs-CPU regression only, not WRF fidelity",
+    "NPZ_bytes_identical": {
+      "d01_actual_boundary_operands.npz": true,
+      "d02_actual_boundary_operands.npz": true,
+      "d03_actual_boundary_operands.npz": true
+    }
+  }
+}

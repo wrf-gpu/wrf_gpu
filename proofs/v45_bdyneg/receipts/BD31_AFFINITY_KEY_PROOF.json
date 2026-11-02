@@ -1,0 +1,52 @@
+{
+  "schema": "v45-bdyneg.affinity-delta.v1",
+  "verdict": "PASS",
+  "runtime_commit": "ed87701fa4b51bfa5ff44e4b44c47d4dbb468b96",
+  "entry_mode_transport": [
+    {
+      "mode": "native",
+      "selected": "3,19,13,29|16G|1200"
+    },
+    {
+      "mode": "CPU_smoke",
+      "selected": "24,25,28|32G|3900"
+    }
+  ],
+  "native_entry_controller_lease_wrapper_cpus": "3,19,13,29",
+  "CPU_only_cpus": "24,25,28",
+  "nice": 19,
+  "sealed_tools_BYTE_identical": 12,
+  "trace_env_hash_equal_for_absent_old_new_selector": true,
+  "memory_plan_flags_equal_for_absent_old_new_selector": true,
+  "affinity_selector_in_hashed_key_environment": false,
+  "unknown_trace_knob_negative_control": "changes both projections",
+  "source_files_sha256": {
+    "<DATA_ROOT>/wrf_gpu2/scratch/w44-rc/rc_bundle_3e5219bc8088/src/src/gpuwrf/runtime/aot_cheap_key.py": "0a1fbea36a237a9cb6bf72e859407d1f4d5a8352ca06327e6a90280ae8a10cf0",
+    "<DATA_ROOT>/wrf_gpu2/scratch/w44-rc/rc_bundle_3e5219bc8088/src/src/gpuwrf/runtime/gpu_allocator.py": "fc2b0d3e097b060b2d0c30e64a9897632996657b38e47855d4702da5b5f25f28"
+  },
+  "source_model_tree": "a22dea711202a48d00c86eafa34391ff2cb60fe2",
+  "scope": "Actual original-v044 key functions and actual memory-plan flag expression on real model env builder; no key override/no lowering/backend startup/GPU",
+  "CPU_probe_affinity": [
+    24,
+    25,
+    28
+  ],
+  "full_numerical_rerun": false,
+  "prior_CPU_carry": "accepted cr-w44-launchers 01:23:33Z",
+  "base_bindings": {
+    "plan.json": "fe42ac3c520c8e884a49fc2f0b5f7a8c0d12454c8c02d9a4c4cd6de2ccf0a9e8",
+    "seal.json": "4652583ebb2fb07f6790012b4e6dc156343bf816fc20b4beea7af3f867772eb9",
+    "entry.sh": "92526edf588ad8f4eb7d6a5a3872308ed7f8b90f740a3637d094c87b95f62650"
+  },
+  "new_bindings": {
+    "plan.json": "d2c3a80260de5fed4eddd4186772c2953b231a4d8701a31235a20bf548c3d015",
+    "seal.json": "fcc8349217210e3a9e8f2b8269de410dedd2ef286add2bdf35812911e21da2ba",
+    "entry.sh": "867664b3631881ccb4318f7a578fe89ab69fd4cfee43779045749da9a2e87445"
+  },
+  "packet_document_sha256": "c7d91e7f72f4ff7e0a08ed80591f598ff5e911b8a623b95ac19fd24c49654ccd",
+  "packet_json_sha256": "10a92c017230c85080556794889cf4289d16017f82b915c865268abc10ce5bc8",
+  "scientific_protocol_unchanged": true,
+  "source_hypothesis_stop_raw_equal": true,
+  "obsolete_unarmed_candidate_deleted": true,
+  "preparation_snapshot_deleted": true
+}

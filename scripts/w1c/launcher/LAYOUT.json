@@ -1,0 +1,45 @@
+{
+ "schema": "wrf_gpu2.w1c.layout.v1",
+ "output_root": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031",
+ "journal": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/RAW_DELETE_JOURNAL_W1C_1L.jsonl",
+ "raw_wrfout_dir_rule": "<output_root>/<our_id>/wrfout",
+ "members": [
+  {
+   "ordinal": 1,
+   "our_id": "c82c4a1e9554542bb3660d9595f5c30b",
+   "row_id": "W1C_1L_V1.20260530_18z.C.det0",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/c82c4a1e9554542bb3660d9595f5c30b",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/c82c4a1e9554542bb3660d9595f5c30b/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/MEMBER_1_DONE.json"
+  },
+  {
+   "ordinal": 2,
+   "our_id": "ac28415e7f8451c6889e3de7eb1a4380",
+   "row_id": "W1C_1L_V1.20260530_18z.SIC_1L.det0",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/ac28415e7f8451c6889e3de7eb1a4380",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/ac28415e7f8451c6889e3de7eb1a4380/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/MEMBER_2_DONE.json"
+  },
+  {
+   "ordinal": 3,
+   "our_id": "85e97483ee3a51f7887f8ab1855c0f7e",
+   "row_id": "W1C_1L_V1.20260219_18z.C.det0",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/85e97483ee3a51f7887f8ab1855c0f7e",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/85e97483ee3a51f7887f8ab1855c0f7e/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/MEMBER_3_DONE.json"
+  },
+  {
+   "ordinal": 4,
+   "our_id": "0c5d3972bda252bf9da69034f2525f44",
+   "row_id": "W1C_1L_V1.20260219_18z.SIC_1L.det0",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/0c5d3972bda252bf9da69034f2525f44",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/0c5d3972bda252bf9da69034f2525f44/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/W1C_1L_20261031/MEMBER_4_DONE.json"
+  }
+ ],
+ "ids_source": {
+  "path": "<DATA_ROOT>/alisios/state/manager/runs/mgr_wave_20261009/re-wave-optimizer-v1/W1C_GO_DRAFT_UNISSUED_v5_ADDENDUM11.json",
+  "note": "proposed IDs; final IDs/order are the signed GO members, re-checked by w1c.validate"
+ },
+ "enforced_by": "w1c.py OUTPUT_ROOT (admission output_root and GO raw_wrfout_dir must equal it); w1c_raw_release.py raw_wrfout_dir hard rule"
+}

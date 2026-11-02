@@ -1,0 +1,38 @@
+{
+  "schema": "v45-bdyneg.all-history-fingerprint.v1",
+  "groups": {
+    "d01/QCLOUD": {
+      "samples": 1,
+      "inferred_power_of_two": 0,
+      "within_one_ulp_of_power_of_two": 0,
+      "inverse_division_exact": 1
+    },
+    "d02/QCLOUD": {
+      "samples": 2,
+      "inferred_power_of_two": 1,
+      "within_one_ulp_of_power_of_two": 1,
+      "inverse_division_exact": 2
+    },
+    "d02/QRAIN": {
+      "samples": 96,
+      "inferred_power_of_two": 28,
+      "within_one_ulp_of_power_of_two": 37,
+      "inverse_division_exact": 96
+    },
+    "d02/QC_RAD": {
+      "samples": 4,
+      "inferred_power_of_two": 0,
+      "within_one_ulp_of_power_of_two": 0,
+      "inverse_division_exact": 4
+    },
+    "d03/QCLOUD": {
+      "samples": 1,
+      "inferred_power_of_two": 1,
+      "within_one_ulp_of_power_of_two": 1,
+      "inverse_division_exact": 1
+    }
+  },
+  "input_sha256": "6743c5b664e908623beefd7c1fad5884110804ff2c0ec84a87201bc2ccf57366",
+  "interpretation": "INFERRED inverse numerators, not retained boundary or PD operands. Power-of-two residuals are consistent with cancellation but do not identify an operator. QC_RAD is a held diagnostic.",
+  "scientific_gate": "OPEN"
+}

@@ -1,0 +1,51 @@
+{
+ "schema": "wrf_gpu2.screen7.layout.v1",
+ "output_root": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031",
+ "journal": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/RAW_DELETE_JOURNAL_SCREEN7.jsonl",
+ "raw_wrfout_dir_rule": "<output_root>/<our_id>/wrfout",
+ "members": [
+  {
+   "ordinal": 1,
+   "our_id": "5bcfa2436e9f5c278a2f9a95f0eedaf4",
+   "row_id": "W1A_TECH_ALP1_V1.20260530_18z.C_new.det0",
+   "arm_id": "C_new",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/5bcfa2436e9f5c278a2f9a95f0eedaf4",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/5bcfa2436e9f5c278a2f9a95f0eedaf4/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/MEMBER_1_DONE.json",
+   "metrics_before_unlink": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/5bcfa2436e9f5c278a2f9a95f0eedaf4/S7_METRICS_BEFORE_UNLINK.json"
+  },
+  {
+   "ordinal": 2,
+   "our_id": "b03780c304965460a666a54bd9771073",
+   "row_id": "W1A_TECH_ALP1_V1.20260530_18z.alp1_low.det0",
+   "arm_id": "alp1_low",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/b03780c304965460a666a54bd9771073",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/b03780c304965460a666a54bd9771073/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/MEMBER_2_DONE.json",
+   "metrics_before_unlink": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/b03780c304965460a666a54bd9771073/S7_METRICS_BEFORE_UNLINK.json"
+  },
+  {
+   "ordinal": 3,
+   "our_id": "656281dfe97a51b9b5f4602cc7657737",
+   "row_id": "W1A_TECH_ALP1_V1.20260530_18z.alp1_high.det0",
+   "arm_id": "alp1_high",
+   "raw_run_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/656281dfe97a51b9b5f4602cc7657737",
+   "raw_wrfout_dir": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/656281dfe97a51b9b5f4602cc7657737/wrfout",
+   "member_receipt": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/MEMBER_3_DONE.json",
+   "metrics_before_unlink": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/656281dfe97a51b9b5f4602cc7657737/S7_METRICS_BEFORE_UNLINK.json"
+  }
+ ],
+ "result": "<DATA_ROOT>/wrf_gpu2/scratch/v46-icvariant/SCREEN7_20261031/SCREEN7_RESULT.json",
+ "ids_source": {
+  "path": "<USER_HOME>/wrf_gpu2_lanes/v45-waveops/SCREEN7_0530_MEMBER_BINDINGS_PROPOSED_FULL_20261031.json",
+  "sha256": "da1f13b8a788ac373df501c76dc946b34f950f76abd0ae811fca972ac488b701",
+  "note": "ALISIOS-confirmed IDs (cross ..._SCREEN7_0530_IDS_CONFIRMED_20261031T0031Z.md 71009a0d); the signed GO must list the same identities in the same order (s7.identities, s7_raw_release.contract)"
+ },
+ "raw_release": {
+  "directive": "cross/TO_WRF_GPU2_W1A_SCREEN6_RAW_DISPOSITION_<our_id>.md (W1c pattern: SCREEN6 watch prefix, SCREEN7 content; binds row_id, our_id, standing SHA and the evidence/inventory SHAs)",
+  "standing_schema": "alisios.screen7.standing_raw_disposition.v1 (ISSUED by alisios_mgr, 0444, window, members == these 3 rows)",
+  "extract_evidence": "<extract_output_dir of the signed GO row>/{EXTRACT_DONE,SHA_READBACK,READER_PROOF,POST_GATE_RESULT,RAW_WRFOUT_RELEASE_INVENTORY}.json (W1c contract)",
+  "metrics_before_unlink": "s7_metrics.export of the 18 raw d03 frames (ALISIOS definitions: analyse_compact.py 36abc15f, cloud.py binding bec74fe3, masks d1e99270) read back before the first unlink; each journal line carries its SHA"
+ },
+ "enforced_by": "s7.py OUTPUT_ROOT (admission output_root and GO raw_wrfout_dir must equal it); s7_raw_release.py raw_wrfout_dir hard rule + metrics-before-unlink"
+}

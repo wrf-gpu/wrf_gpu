@@ -239,6 +239,36 @@ def test_dry_density_not_moist_density(tmp_path):
     assert value[0, 1] == pytest.approx(20/(1+.1/(287/461.6)))
 
 
+def test_cwp_density_uses_original_wrf_heat_capacity(tmp_path):
+    """Original WRF cp=7*Rd/2; ALISIOS4V control from the W1a operator note.
+
+    The reference uses the independent exact ratio2/7, not the imported product
+    constant. Reverting only the production exponent to287/1004 must fail.
+    """
+    from gpuwrf.io.netcdf_lock import Dataset
+
+    path = history(tmp_path)
+    pressure, theta, qv = 80000., 290., .01
+    with Dataset(path, "a") as ds:
+        ds.variables["P"][:] = 0.
+        ds.variables["PB"][:] = pressure
+        ds.variables["T"][:] = theta-300.
+        ds.variables["QVAPOR"][:] = qv
+        ds.variables["QCLOUD"][:] = 1.e-5
+        ds.variables["QICE"][:] = 2.e-5
+    # WRF share/module_model_constants.F:19-20,31; ALISIOS4V frozen reader31e13cc207.
+    original_temperature = theta*(pressure/100000.)**(2./7.)
+    original_density = pressure/(287.*original_temperature*(1.+qv/(287./461.6)))
+    legacy_temperature = theta*(pressure/100000.)**(287./1004.)
+    legacy_density = pressure/(287.*legacy_temperature*(1.+qv/(287./461.6)))
+    assert legacy_density/original_density == pytest.approx(1.000031751, abs=5.e-10, rel=0)
+    with Dataset(path) as ds:
+        column, density, dz = cloud.wrf_columns(ds, 0, return_geometry=True)
+    np.testing.assert_allclose(density/original_density, 1., rtol=0, atol=2.e-15)
+    original_cwp = 1000.*(1.e-5+2.e-5)*original_density*np.sum(dz, axis=0)
+    np.testing.assert_allclose(column/original_cwp, 1., rtol=0, atol=2.e-15)
+
+
 def test_fss_excludes_invalid_neighbours_and_undefined_centroid():
     # The invalid middle pixel cannot dilute either fraction at a 120-km radius.
     r, *_ = cloud.verify([[1, 1, 0]], [[1, 255, 0]], np.ones((1, 3), bool), [1, 1000, 1],

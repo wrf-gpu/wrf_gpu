@@ -1,0 +1,52 @@
+{
+  "schema": "v45-bdyneg.host-delta-carry.v1",
+  "verdict": "PASS",
+  "old_seal_sha256": "9961b834b45943effc341a089069bcb069bccb875d79b0525cf6d8cd7bc65fa4",
+  "new_seal_sha256": "4652583ebb2fb07f6790012b4e6dc156343bf816fc20b4beea7af3f867772eb9",
+  "byte_identical_tools": [
+    "post.py",
+    "bdyneg_registry.py",
+    "bdyneg_supervisor.py",
+    "bdyneg_bundle_consumer.py",
+    "bdyneg_pristine.py",
+    "wave_cubin_gate.py",
+    "e41/cubin_scan.py",
+    "e41/hlo_scan.py"
+  ],
+  "ast_identical_functions": [
+    "model.py:main",
+    "control.py:model_command",
+    "control.py:verify_inputs",
+    "control.py:seed_layer",
+    "control.py:logged_phase",
+    "bdyneg_common.py:seal_read",
+    "bdyneg_common.py:clean_environment",
+    "bdyneg_common.py:remove_own_run",
+    "bdyneg_common.py:admit_root_space",
+    "bdyneg_common.py:allocated",
+    "bdyneg_common.py:check_disk",
+    "bdyneg_common.py:sha",
+    "bdyneg_common.py:stamp",
+    "bdyneg_common.py:utc",
+    "bdyneg_common.py:write"
+  ],
+  "CPU_control_body": "AST_IDENTICAL after removing native-only branches and error-label change",
+  "CPU_model_argv": "EXACT",
+  "exact_model_seal_keys": [
+    "model_commit",
+    "model_src_tree",
+    "bundle",
+    "input_dir",
+    "input_sha256",
+    "hours",
+    "checkpoint_interval_steps",
+    "model_seconds",
+    "total_seconds",
+    "CPU_model_seconds",
+    "CPU_total_seconds",
+    "CPU_cache",
+    "cache_seed",
+    "precision"
+  ],
+  "limitation": "New entry whitelist tested separately; old exact SEQ receipt is carried, not relabelled as a new exact call. Native calendar/floor require critic delta."
+}

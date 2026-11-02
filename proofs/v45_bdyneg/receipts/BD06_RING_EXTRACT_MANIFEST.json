@@ -1,0 +1,1757 @@
+[
+  {
+    "original": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d01_2026-01-11_02:00:09",
+    "staged_source": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/raw_stage_20261028/root2/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d01_2026-01-11_02:00:09",
+    "attributes": {
+      "DT": "27.0",
+      "GRID_ID": "1",
+      "PARENT_GRID_RATIO": "1",
+      "SIMULATION_START_DATE": "2026-01-11_00:00:00"
+    },
+    "fields": {
+      "QCLOUD": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QRAIN": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QC_RAD": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QVAPOR": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QICE": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QSNOW": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QGRAUP": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNICE": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNRAIN": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "U": {
+        "shape": [
+          44,
+          70,
+          121
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "V": {
+        "shape": [
+          44,
+          71,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "W": {
+        "shape": [
+          45,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MU": {
+        "shape": [
+          70,
+          120
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MUB": {
+        "shape": [
+          70,
+          120
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "C1H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C2H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C1F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "C2F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "MAPFAC_M": {
+        "shape": [
+          70,
+          120
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MX": {
+        "shape": [
+          70,
+          120
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MY": {
+        "shape": [
+          70,
+          120
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "T": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "P": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PB": {
+        "shape": [
+          44,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PH": {
+        "shape": [
+          45,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PHB": {
+        "shape": [
+          45,
+          70,
+          120
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      }
+    },
+    "arrays": 100,
+    "output": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/event_ring_operands_20261028/wrfout_d01_2026-01-11_02:00:09.npz",
+    "bytes": 3348630,
+    "sha256": "ff72cb64338dec24adf848b557e3f181280456458d30b189ddf31b8c157211f8",
+    "all_array_byte_readback": true
+  },
+  {
+    "original": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_03:00:00",
+    "staged_source": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/raw_stage_20261028/root2/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_03:00:00",
+    "attributes": {
+      "DT": "9.0",
+      "GRID_ID": "2",
+      "PARENT_GRID_RATIO": "3",
+      "SIMULATION_START_DATE": "2026-01-11_00:00:00"
+    },
+    "fields": {
+      "QCLOUD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QC_RAD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QVAPOR": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QSNOW": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QGRAUP": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "U": {
+        "shape": [
+          44,
+          117,
+          268
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "V": {
+        "shape": [
+          44,
+          118,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "W": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MU": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MUB": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "C1H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C2H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C1F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "C2F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "MAPFAC_M": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MX": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MY": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "T": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "P": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PB": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PH": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PHB": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      }
+    },
+    "arrays": 100,
+    "output": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/event_ring_operands_20261028/wrfout_d02_2026-01-11_03:00:00.npz",
+    "bytes": 6404471,
+    "sha256": "b5212ca9b37f2cafac9fc0e6b9076e59e5b39104c932f5562c2cfe70e3148c51",
+    "all_array_byte_readback": true
+  },
+  {
+    "original": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_15:00:00",
+    "staged_source": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/raw_stage_20261028/root2/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_15:00:00",
+    "attributes": {
+      "DT": "9.0",
+      "GRID_ID": "2",
+      "PARENT_GRID_RATIO": "3",
+      "SIMULATION_START_DATE": "2026-01-11_00:00:00"
+    },
+    "fields": {
+      "QCLOUD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QC_RAD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QVAPOR": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QSNOW": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QGRAUP": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "U": {
+        "shape": [
+          44,
+          117,
+          268
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "V": {
+        "shape": [
+          44,
+          118,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "W": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MU": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MUB": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "C1H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C2H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C1F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "C2F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "MAPFAC_M": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MX": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MY": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "T": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "P": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PB": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PH": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PHB": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      }
+    },
+    "arrays": 100,
+    "output": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/event_ring_operands_20261028/wrfout_d02_2026-01-11_15:00:00.npz",
+    "bytes": 6452402,
+    "sha256": "29524910dd6d344a2cf11de26752ab8731208777950bc34f42a453ccd898745f",
+    "all_array_byte_readback": true
+  },
+  {
+    "original": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_11:00:00",
+    "staged_source": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/raw_stage_20261028/root2/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d02_2026-01-11_11:00:00",
+    "attributes": {
+      "DT": "9.0",
+      "GRID_ID": "2",
+      "PARENT_GRID_RATIO": "3",
+      "SIMULATION_START_DATE": "2026-01-11_00:00:00"
+    },
+    "fields": {
+      "QCLOUD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QC_RAD": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QVAPOR": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QSNOW": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QGRAUP": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNICE": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNRAIN": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "U": {
+        "shape": [
+          44,
+          117,
+          268
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "V": {
+        "shape": [
+          44,
+          118,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "W": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MU": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MUB": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "C1H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C2H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C1F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "C2F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "MAPFAC_M": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MX": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MY": {
+        "shape": [
+          117,
+          267
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "T": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "P": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PB": {
+        "shape": [
+          44,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PH": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PHB": {
+        "shape": [
+          45,
+          117,
+          267
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      }
+    },
+    "arrays": 100,
+    "output": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/event_ring_operands_20261028/wrfout_d02_2026-01-11_11:00:00.npz",
+    "bytes": 6498053,
+    "sha256": "0ccea9980683d3d29c93fde2de3816eec86e58b4ce5721cc5a4ed53a4a105ce6",
+    "all_array_byte_readback": true
+  },
+  {
+    "original": "<DATA_ROOT>/alisios/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d03_2026-01-11_10:00:00",
+    "staged_source": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/raw_stage_20261028/root2/scratch/re-wrf-cr2-v044-20261027/runs/20260110_18z/C/wrfout_d03_2026-01-11_10:00:00",
+    "attributes": {
+      "DT": "3.0",
+      "GRID_ID": "3",
+      "PARENT_GRID_RATIO": "3",
+      "SIMULATION_START_DATE": "2026-01-11_00:00:00"
+    },
+    "fields": {
+      "QCLOUD": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QRAIN": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QC_RAD": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QVAPOR": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QICE": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QSNOW": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QGRAUP": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNICE": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "QNRAIN": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "U": {
+        "shape": [
+          44,
+          93,
+          112
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "V": {
+        "shape": [
+          44,
+          94,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 9
+      },
+      "W": {
+        "shape": [
+          45,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MU": {
+        "shape": [
+          93,
+          111
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MUB": {
+        "shape": [
+          93,
+          111
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "C1H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C2H": {
+        "shape": [
+          44
+        ],
+        "dimensions": [
+          "bottom_top"
+        ],
+        "dtype": "<f4"
+      },
+      "C1F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "C2F": {
+        "shape": [
+          45
+        ],
+        "dimensions": [
+          "bottom_top_stag"
+        ],
+        "dtype": "<f4"
+      },
+      "MAPFAC_M": {
+        "shape": [
+          93,
+          111
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MX": {
+        "shape": [
+          93,
+          111
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "MAPFAC_MY": {
+        "shape": [
+          93,
+          111
+        ],
+        "dimensions": [
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "T": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "P": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PB": {
+        "shape": [
+          44,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PH": {
+        "shape": [
+          45,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      },
+      "PHB": {
+        "shape": [
+          45,
+          93,
+          111
+        ],
+        "dimensions": [
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "<f4",
+        "width": 8
+      }
+    },
+    "arrays": 100,
+    "output": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/event_ring_operands_20261028/wrfout_d03_2026-01-11_10:00:00.npz",
+    "bytes": 3267948,
+    "sha256": "17a1bef05f7e76573ba6ae6e6fcf3981d81ba6e2f4aff01b729f1cd99a14540d",
+    "all_array_byte_readback": true
+  }
+]

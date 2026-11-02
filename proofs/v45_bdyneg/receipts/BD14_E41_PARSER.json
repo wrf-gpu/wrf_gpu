@@ -1,0 +1,23 @@
+{
+  "e41_gate": "INCOMPLETE",
+  "hard_stack_gate": "PASS",
+  "conservative_flags": false,
+  "n_entries": 2,
+  "coverage": {
+    "status": "PASS",
+    "aot_programs": [
+      "d01",
+      "fused_d02"
+    ],
+    "required_run_programs": [
+      "d01",
+      "fused_d02"
+    ],
+    "run_proofs": [],
+    "n_discovered": 2,
+    "n_scanned": 2
+  },
+  "wall_s": 10.247891339007765,
+  "scope": "real C cached GPU executable parser on CPU; not a new GPU result",
+  "input_copies": 0
+}

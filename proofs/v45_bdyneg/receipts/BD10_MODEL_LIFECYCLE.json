@@ -1,0 +1,27 @@
+{
+  "supervisor_pid": 532941,
+  "setsid_calls": 1,
+  "cap_s": 840,
+  "arm_pid": 532988,
+  "pgid": 532988,
+  "sid": 532988,
+  "original_rc": -15,
+  "timed_out": false,
+  "signal": 15,
+  "cleanup": {
+    "signalled_pids": [
+      532989,
+      532990
+    ],
+    "groups_seen": [],
+    "remaining_pids": [],
+    "live_remaining": [],
+    "lock_file": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/smoke/run_2026-10-28T174251Z_ad2fa0/private.lock",
+    "observed_owned_lock_fds": [],
+    "owned_lock_fds_after": [],
+    "all_children_reaped": true
+  },
+  "rc": 143,
+  "elapsed_s": 604.4033015110181,
+  "supervisor_peak_rss_KiB": 169608
+}

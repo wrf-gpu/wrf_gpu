@@ -1,0 +1,43 @@
+{
+  "schema": "v45-bdyneg.source-audit.v1",
+  "base_commit": "7b7346352af4de52de7df1ff18d3e6222125c4e1",
+  "utc": "2026-10-28T15:01:37.839257+00:00",
+  "v044_identity": {
+    "src/gpuwrf/coupling/boundary_apply.py": true,
+    "src/gpuwrf/kernels/dyn_ring_relax_fp32.py": true,
+    "src/gpuwrf/nesting/boundary_construction.py": true,
+    "src/gpuwrf/nesting/interp.py": true,
+    "src/gpuwrf/nesting/sint_kernel.py": true,
+    "src/gpuwrf/runtime/operational_mode.py": false
+  },
+  "pristine_source_sha256": {
+    "share/module_bc.F": "61b9235004b2a7799faabaa928276af8a7ef2e4672619c8ad120c857461301ad",
+    "dyn_em/module_bc_em.F": "6cfb52b849e3dd0b24769709cf502faa75886da454d9b668af725cccdc56d47f",
+    "dyn_em/solve_em.F": "de58116cf306e40e60f9c9bb1aa74ed5090fbe8631e122ec73e77487ef55e271",
+    "phys/module_microphysics_driver.F": "68acf025323b643ae976b89f40691675557cb9787fdc558fee6cb77472a6e518",
+    "share/interp_fcn.F": "680881db48904396f38856ca1dd2578a84e8eb0a9cdd05d49f4c63cd8ce9bdaa",
+    "share/sint.F": "5df841aea44c53c745a90fe96d2b9b8404097b457cceb1321faed592b727af1c"
+  },
+  "existing_original_wrf_counterexample": {
+    "path": "proofs/t_camuw/f2_successor/ORIGINAL_WRF_NEGATIVES.json",
+    "sha256": "b377f6ae6bf7f5e00ad673db2ce0c696903d6f3af3e93c2d84bf9718175a3b47",
+    "coverage": "hourly endpoints h0..4, not internal-stage or every-step coverage",
+    "negative_counts": {
+      "mass": 246,
+      "number": 176
+    },
+    "total": 422,
+    "interior_count": 0,
+    "nonfinite_count": 0,
+    "qc_min_kg_per_kg": -1.5718027236821916e-15
+  },
+  "reported_january_event": {
+    "scope": "cross summary only; facade payload and actual operands requested",
+    "birth_operator": "UNKNOWN",
+    "domain_lead_ring": "UNKNOWN"
+  },
+  "production_changes": 0,
+  "runtime_cost_added": 0,
+  "cache": "NONE",
+  "backend": "CPU source/retained evidence analysis only; no JAX/model run"
+}

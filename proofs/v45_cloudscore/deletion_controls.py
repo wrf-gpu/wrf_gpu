@@ -101,6 +101,8 @@ def main():
          "test_invalid_night_uncovered_and_pixel_region_counts", {}),
         ("dry_density", "rho = p/(287.*temperature*(1+vapor/(287./461.6)))",
          "rho = p*(1+vapor)/(287.*temperature*(1+vapor/(287./461.6)))", "test_dry_density_not_moist_density", {}),
+        ("cwp_heat_capacity", "temperature = theta*(p/100000.)**R_D_OVER_CP",
+         "temperature = theta*(p/100000.)**(287./1004.)", "test_cwp_density_uses_original_wrf_heat_capacity", {}),
         ("protected", 'refuse_protected_inputs("cloud truth (stage ALISIOS facade)", paths)', "pass",
          "test_protected_truth_refused_before_payload_open", {}),
         ("frozen_day", "if time.tz is None or time.value % 10**9", "if time.value % 10**9",

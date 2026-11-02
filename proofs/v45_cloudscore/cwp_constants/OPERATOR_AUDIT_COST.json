@@ -1,0 +1,64 @@
+{
+  "source_commit": "8a46f7b9aa3172e2527c710da572c4de5c3c962f",
+  "base_commit": "0265f3e3d1edbd24d1ebbea5dab56c82e0418ada",
+  "constants_module": "gpuwrf.physics.surface_constants",
+  "constants": {
+    "R_D": 287.0,
+    "CP_D": 1004.5,
+    "R_D_OVER_CP": 0.2857142857142857
+  },
+  "synthetic_control": {
+    "pressure_Pa": 80000,
+    "theta_K": 290,
+    "qv_kg_kg": 0.01,
+    "original_density": 1.0082522866792425,
+    "legacy_density_ratio": 1.0000317511516545,
+    "fixed_density_ratio": 1.0,
+    "legacy_CWP_ratio": 1.0000317511516554,
+    "fixed_CWP_ratio": 1.0
+  },
+  "optimize_numeric_literal_audit": {
+    "wrong_1004_ep608_ep622": [],
+    "correct_1004_5": [
+      {
+        "file": "diagnostics.py",
+        "line": 159,
+        "value": 1004.5
+      },
+      {
+        "file": "diagnostics.py",
+        "line": 207,
+        "value": 1004.5
+      }
+    ],
+    "all_text_matches": [
+      {
+        "file": "diagnostics.py",
+        "line": 159,
+        "text": "exner = (pressure / 100000.) ** (287. / 1004.5)"
+      },
+      {
+        "file": "diagnostics.py",
+        "line": 207,
+        "text": "lambda *r: np.sum(mass * 1004.5 * exner * sum(r)))"
+      }
+    ]
+  },
+  "CPU_component_cost": {
+    "shape": [
+      44,
+      70,
+      120
+    ],
+    "source": "same in-memory syntheticDataset operands;24alternating repeats/arm",
+    "old_median_CPU_s": 0.003591455000000021,
+    "fixed_median_CPU_s": 0.0035722500000000545,
+    "maxrss_kib": 786168,
+    "new_model_ops_transfers": 0,
+    "scope": "CPU postprocessor only, no kernel/GPU/forecast speed claim"
+  },
+  "cache": "NONE",
+  "GPU": false,
+  "real_MSG_values": false,
+  "source_sha256": "a630ae06aff0a76d3907af30446554cfdb81c2396618aecec337519289bc1645"
+}

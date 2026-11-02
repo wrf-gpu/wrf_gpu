@@ -1,0 +1,180 @@
+{
+ "cache": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/e41_real_cache_probe/cache",
+ "entries": [
+  {
+   "entry": "4d3dae7616c7e78285be3fd06d4b1b5221313153cf4487439d689891179f8165.xlaexec",
+   "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/e41_real_cache_probe/cache/aot/0.4.4-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/4d3dae7616c7e78285be3fd06d4b1b5221313153cf4487439d689891179f8165.xlaexec",
+   "source_kind": "aot",
+   "program": "d01",
+   "aliases": [
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/e41_real_cache_probe/cache/aot/0.4.4-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_0597721d824e4e98479005bede5dd6bedd3785bc3d0bd80cbfb9c02d272ef93a.xlaexec"
+   ],
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "blob_sha256": "f6f6c5611914985d78a701bedf83232c4cca66f15d780c7d7ad2090c511ff84c",
+   "elfs": [
+    {
+     "elf": 0,
+     "sha256": "ffb0e97b3c00fa1ef5b9b3b92e4d7dbe955cccdd1cda2bf38b19894188cfd15a",
+     "kernels": 1118,
+     "max_stack_B": 32,
+     "stack_over256": [],
+     "root_callers_over1k": [
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "gwdo_column_fp32",
+       1568,
+       1
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "loop_select_fusion_32",
+       1472,
+       4
+      ],
+      [
+       "input_multiply_power_select_subtract_transpose_fusion",
+       3688,
+       6
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ],
+     "nonleaf_over1k": [],
+     "callgraph_unknown": []
+    }
+   ],
+   "kinput_transpose_status": "UNKNOWN_AOT_METADATA",
+   "kinput_transpose_over500": null
+  },
+  {
+   "entry": "98018ff148db6fbdcfe18a2861d183e03fb1e4006a5b3b2e68426af4cff7427a.xlaexec",
+   "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/e41_real_cache_probe/cache/aot/0.4.4-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/98018ff148db6fbdcfe18a2861d183e03fb1e4006a5b3b2e68426af4cff7427a.xlaexec",
+   "source_kind": "aot",
+   "program": "fused_d02",
+   "aliases": [
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/e41_real_cache_probe/cache/aot/0.4.4-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_e8de7d05e462cfc0e794a96c0191a950a892b572bf572be0b9145929378717f5.xlaexec"
+   ],
+   "format": "xla-gpu-thunks-riegeli-v1",
+   "blob_sha256": "cd2de3cc659501a37ffee829b2bd2c7109c62ac6a0f5688794251310c6f04695",
+   "elfs": [
+    {
+     "elf": 0,
+     "sha256": "dc41194f54db6c0a0d28b8fa8888131778bf9420c9fbf7d86e1896ccd3cf45b0",
+     "kernels": 1243,
+     "max_stack_B": 32,
+     "stack_over256": [],
+     "root_callers_over1k": [
+      [
+       "thompson_full_column__1",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real__1",
+       2224,
+       87
+      ],
+      [
+       "input_add_multiply_transpose_fusion",
+       1064,
+       2
+      ],
+      [
+       "loop_select_fusion_55",
+       4056,
+       10
+      ],
+      [
+       "loop_or_select_fusion_1",
+       2224,
+       6
+      ],
+      [
+       "nest_sint_sides__4",
+       1976,
+       24
+      ],
+      [
+       "nest_sint_sides__3",
+       2000,
+       24
+      ],
+      [
+       "nest_sint_sides__2",
+       2000,
+       24
+      ],
+      [
+       "nest_sint_sides__1",
+       2000,
+       24
+      ],
+      [
+       "nest_sint_sides",
+       2000,
+       24
+      ],
+      [
+       "thompson_full_column",
+       19304,
+       67
+      ],
+      [
+       "mynn_tridiag2_real",
+       2224,
+       87
+      ],
+      [
+       "input_add_multiply_transpose_fusion_1",
+       1064,
+       2
+      ],
+      [
+       "loop_maximum_select_fusion",
+       4112,
+       10
+      ],
+      [
+       "loop_or_select_fusion",
+       2224,
+       6
+      ]
+     ],
+     "nonleaf_over1k": [],
+     "callgraph_unknown": []
+    }
+   ],
+   "kinput_transpose_status": "UNKNOWN_AOT_METADATA",
+   "kinput_transpose_over500": null
+  }
+ ],
+ "n_entries": 2,
+ "e41_gate": "INCOMPLETE",
+ "hard_stack_gate": "PASS",
+ "conservative_flags": false,
+ "coverage": {
+  "status": "PASS",
+  "aot_programs": [
+   "d01",
+   "fused_d02"
+  ],
+  "required_run_programs": [
+   "d01",
+   "fused_d02"
+  ],
+  "run_proofs": [],
+  "n_discovered": 2,
+  "n_scanned": 2
+ }
+}

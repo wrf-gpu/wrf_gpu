@@ -1,0 +1,13 @@
+{
+  "source_commit": "8a46f7b9aa3172e2527c710da572c4de5c3c962f",
+  "base_commit": "0265f3e3d1edbd24d1ebbea5dab56c82e0418ada",
+  "only_production_delta": "one named R_D_OVER_CP import + one power exponent substitution; remaining AST exactly base",
+  "new_constant_literals_in_production": 0,
+  "constants_module_and_ROOT_guard_BYTE_unchanged": true,
+  "compiled_source_sha_matches_CPU_measurement": true,
+  "root_revert_control": "baseline1PASS/mutant1genuineASSERT0ERROR0SKIP",
+  "audit_transport_correction": "first probe inspected multiplication.right instead of nested power.right; no numeric result inferred; corrected AST comparison PASS",
+  "source_sha256": "a630ae06aff0a76d3907af30446554cfdb81c2396618aecec337519289bc1645",
+  "cache": "NONE",
+  "GPU": false
+}

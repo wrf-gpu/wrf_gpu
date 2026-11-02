@@ -14,6 +14,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from gpuwrf.physics.surface_constants import R_D_OVER_CP
+
 FORMAT = "alisios.msg3.v1"
 LEGACY_MAX_OBSERVATIONS = 2048  # each old observation-space f64 matrix <=32MiB
 
@@ -265,7 +267,7 @@ def wrf_columns(ds, index, species=("QCLOUD", "QICE"), *, return_geometry=False)
     vapor = read("QVAPOR", {"kg kg-1", "kg/kg", "kg kg^-1"})
     if (p <= 0).any() or (theta <= 0).any() or (vapor < 0).any():
         raise ValueError("invalid WRF thermodynamic state")
-    temperature = theta*(p/100000.)**(287./1004.)
+    temperature = theta*(p/100000.)**R_D_OVER_CP
     rho = p/(287.*temperature*(1+vapor/(287./461.6)))
     height = (read("PH", {"m2 s-2", "m2 s^-2", "m^2 s^-2"})+
               read("PHB", {"m2 s-2", "m2 s^-2", "m^2 s^-2"}))/9.81

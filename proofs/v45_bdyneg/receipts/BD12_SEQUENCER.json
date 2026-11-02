@@ -1,0 +1,12 @@
+[
+ {
+  "lane": "v45-bdyneg",
+  "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/launch_v3/entry.sh",
+  "sha256": "d8a3467d5e03455b17d91c10510a7d934a38aa200e1c5e26a4deee80a9153e0a",
+  "cap_min": 65,
+  "args": "",
+  "rc": 0,
+  "gpu_processes_in_step_pgid": 0,
+  "exact_call": "setsid bash <path> <args> via night_seq_v9 SEQ_SMOKE=1"
+ }
+]

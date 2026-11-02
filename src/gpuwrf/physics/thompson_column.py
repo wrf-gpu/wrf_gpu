@@ -845,6 +845,21 @@ def _snow_terminal_velocity_wrf(rhof, xds, active_snow):
     return jnp.where(active_snow, vts, 0.0)
 
 
+def _graupel_working_mass(qg, rho):
+    """WRF entry spectral mass (kg/m3), distinct from its later tendency floor.
+
+    mp_gt_driver :1268-1276 and mp_thompson :1915-1918 test existence on
+    qg > R1, then use RAW qg*rho.  With rho < 1 that active mass can be below
+    R1; flooring it here biases the spectrum and sublimation before WRF's
+    separate post-source mass test.  Inactive/invalid-density work keeps a
+    safe denominator. The retained non-WRF/OFF route stays unchanged.
+    """
+    mass = qg * rho
+    if _native_real_enabled() and _mixed_phase_wrf_enabled():
+        return jnp.where((qg > R1) & (rho > 0.0), mass, R1)
+    return jnp.maximum(mass, R1)
+
+
 def _default_mp8_graupel_number(qg, rho):
     """WRF mp=8 diagnostic graupel number when ``NG`` is not present.
 
@@ -854,7 +869,7 @@ def _default_mp8_graupel_number(qg, rho):
     (module_mp_thompson.F:1265-1276).  This helper returns that per-kg number.
     """
 
-    rg = jnp.maximum(qg * rho, R1)
+    rg = _graupel_working_mass(qg, rho)
     ygra1 = jnp.log10(jnp.maximum(1.0e-9, rg))
     zans1 = jnp.clip(3.0 + (2.0 / 7.0) * (ygra1 + 8.0), 2.0, 6.0)
     n0_exp = 10.0**zans1
@@ -870,7 +885,7 @@ def _graupel_distribution(qg, Ng, rho):
     default; positive ``Ng`` is treated as a prognostic working number.
     """
 
-    rg = jnp.maximum(qg * rho, R1)
+    rg = _graupel_working_mass(qg, rho)
     if Ng is None:
         Ng_eff = _default_mp8_graupel_number(qg, rho)
     else:

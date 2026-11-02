@@ -1,0 +1,31 @@
+{
+  "rows": [
+    {
+      "file": "d01_actual_boundary_operands.npz",
+      "compressed_bytes": 2567384,
+      "raw_bytes": 25524192,
+      "conservative_all_8byte_bytes": 51048384
+    },
+    {
+      "file": "d02_actual_boundary_operands.npz",
+      "compressed_bytes": 6003746,
+      "raw_bytes": 59328536,
+      "conservative_all_8byte_bytes": 118657072
+    },
+    {
+      "file": "d03_actual_boundary_operands.npz",
+      "compressed_bytes": 2148693,
+      "raw_bytes": 20925560,
+      "conservative_all_8byte_bytes": 41851120
+    }
+  ],
+  "raw_total": 105778288,
+  "all_8byte_total": 211556576,
+  "native_ROOT_reserve_bytes": 268435456,
+  "global_ROOT_floor_bytes": 21474836480,
+  "CPU_ROOT_threshold_unchanged_bytes": 24696061952,
+  "native_plan_cap_min": 20,
+  "tests": 24,
+  "source_commit": "6d00d5570d",
+  "sealed_v3_unchanged": true
+}

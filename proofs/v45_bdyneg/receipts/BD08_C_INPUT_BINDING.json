@@ -1,0 +1,21 @@
+{
+  "source": "<DATA_ROOT>/alisios/state/manager/runs/mgr_wave_20261009/re-wrf-opt-plan-v1/ab_20261027/B/input3/PREPARED_INPUTS.json",
+  "source_sha256": "cb6d0bbd507126239b2d5a5e9253c59588b45d3f8232b708bdca2a77018fa444",
+  "C": {
+    "input_dir": "<DATA_ROOT>/alisios/state/manager/runs/mgr_wave_20261009/re-wrf-opt-plan-v1/ab_20261027/B/input3/20260110_18z/C",
+    "namelist_sha256": "5963ad194e0d6b2948d45f50fc2226d70ba3ca7317945e91057a93521e0d8c2d",
+    "max_dom": 3,
+    "root_dt_s": 27,
+    "icloud": 1,
+    "rad_diag": 1,
+    "input_data_sha256": {
+      "wrfinput_d01": "d386047650a111940042e99cf89033b6f2824953040adaba2bf72cb694f2eed2",
+      "wrfinput_d02": "51e4d4b3b8d3a8b86e7d1db4c3110f459a3c3a0f58f88c67bc3b181ef19d36f1",
+      "wrfinput_d03": "8df24f3301fae774035f7ef0269ee588f7e15b4633bfa9863ce1f19ff49b08c9",
+      "wrfbdy_d01": "c53275ede0f21958cb0f8d609d519379c919260d21ec460fd95b10e03e29de24",
+      "wrflowinp_d01": "4007eafee3856928935791a0550c324473aef773c6a994f724b4163c77227a1f",
+      "wrflowinp_d02": "c0330e13bf9de6bbd2366337f500b3a560f36d7f667b4f3245b62290e103a960",
+      "wrflowinp_d03": "184abab4b7bf3da2f38287cf88eb559d8e930f0a26b5d9c63aff997d11fdaf75"
+    }
+  }
+}

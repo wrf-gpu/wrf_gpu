@@ -1,0 +1,10 @@
+{
+  "observed_utc": "2026-10-31T00:52:48Z",
+  "values": {
+    "memory.max": "34359738368",
+    "memory.swap.max": "0",
+    "memory.peak": "25119821824",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "scope": "last observed cgroup counters; peak may precede final teardown"
+}

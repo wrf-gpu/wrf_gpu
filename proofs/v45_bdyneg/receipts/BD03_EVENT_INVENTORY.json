@@ -1,0 +1,118 @@
+{
+  "schema": "v45-bdyneg.event-inventory.v1",
+  "source_sha256": {
+    "WATER_INVENTORY.json": "a974a89e89cebe74aeb92055eddf07a22576a0d59902f29e91b4298ad91682bb",
+    "NEGATIVE_WATER_FINDING.json": "5b5b66685b70afcb351f188dbcff8674ca80c6da53127dde06e8b14056a0be3a"
+  },
+  "source_scope": "manager-provided local read-only copies; source paths/dates retained in originals",
+  "files_checked": 54,
+  "negative_values": 793,
+  "negative_records": 66,
+  "by_domain": {
+    "d01": 125,
+    "d02": 663,
+    "d03": 5
+  },
+  "by_domain_field": [
+    {
+      "domain": "d01",
+      "field": "QCLOUD",
+      "frames": 12,
+      "count": 28,
+      "worst_min": -7.568344935325776e-24,
+      "worst_frame": "wrfout_d01_2026-01-11_03:00:00",
+      "first_frame": "wrfout_d01_2026-01-11_02:00:09"
+    },
+    {
+      "domain": "d01",
+      "field": "QC_RAD",
+      "frames": 12,
+      "count": 25,
+      "worst_min": -5.313128012948329e-30,
+      "worst_frame": "wrfout_d01_2026-01-11_06:00:00",
+      "first_frame": "wrfout_d01_2026-01-11_03:00:00"
+    },
+    {
+      "domain": "d01",
+      "field": "QRAIN",
+      "frames": 14,
+      "count": 72,
+      "worst_min": -9.675352039516488e-28,
+      "worst_frame": "wrfout_d01_2026-01-11_15:00:00",
+      "first_frame": "wrfout_d01_2026-01-11_04:00:18"
+    },
+    {
+      "domain": "d02",
+      "field": "QCLOUD",
+      "frames": 7,
+      "count": 11,
+      "worst_min": -2.4461745563170156e-12,
+      "worst_frame": "wrfout_d02_2026-01-11_03:00:00",
+      "first_frame": "wrfout_d02_2026-01-11_03:00:00"
+    },
+    {
+      "domain": "d02",
+      "field": "QRAIN",
+      "frames": 14,
+      "count": 644,
+      "worst_min": -7.646203684314248e-14,
+      "worst_frame": "wrfout_d02_2026-01-11_15:00:00",
+      "first_frame": "wrfout_d02_2026-01-11_04:00:00"
+    },
+    {
+      "domain": "d02",
+      "field": "QC_RAD",
+      "frames": 3,
+      "count": 8,
+      "worst_min": -1.2209674460708642e-12,
+      "worst_frame": "wrfout_d02_2026-01-11_11:00:00",
+      "first_frame": "wrfout_d02_2026-01-11_07:00:00"
+    },
+    {
+      "domain": "d03",
+      "field": "QCLOUD",
+      "frames": 2,
+      "count": 2,
+      "worst_min": -3.0314363215835916e-13,
+      "worst_frame": "wrfout_d03_2026-01-11_10:00:00",
+      "first_frame": "wrfout_d03_2026-01-11_10:00:00"
+    },
+    {
+      "domain": "d03",
+      "field": "QRAIN",
+      "frames": 2,
+      "count": 3,
+      "worst_min": -2.38000799827171e-15,
+      "worst_frame": "wrfout_d03_2026-01-11_13:00:00",
+      "first_frame": "wrfout_d03_2026-01-11_12:00:00"
+    }
+  ],
+  "first_reported_event": {
+    "domain": "d01",
+    "native_time": "2026-01-11_02:00:09",
+    "QCLOUD": {
+      "variable": "QCLOUD",
+      "min": -2.267794969756089e-31,
+      "max": 0.0005775833269581199,
+      "negative_count": 1,
+      "elements": 369600,
+      "units": "kg kg-1",
+      "fill_value": "not set",
+      "min_index": [
+        0,
+        0,
+        0,
+        74
+      ],
+      "sum_abs_negative_mixing_ratios": 2.267794969756089e-31
+    }
+  },
+  "limits": [
+    "outer-five-only proven; every ring index unknown except first root minimum j=0 (ring0)",
+    "QC_RAD held solver input may come from earlier producer call",
+    "history endpoints alone do not retain birth-operator inputs"
+  ],
+  "raw_frame_request_mailbox": "2026-10-28T15:08:48Z v45-bdyneg RAW-FRAME REQUEST",
+  "production_changes": 0,
+  "cache": "NONE"
+}

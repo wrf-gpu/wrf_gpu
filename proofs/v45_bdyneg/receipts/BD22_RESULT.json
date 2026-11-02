@@ -1,0 +1,15 @@
+{
+  "model_rc": 0,
+  "post_rc": 0,
+  "raw_deleted": true,
+  "disk": {
+    "peak_sampled_named_bytes": 1723596800,
+    "accounting": "allocated named inodes, sampled; not unlinked-file attribution",
+    "last_named_bytes": 592785408
+  },
+  "wall_s": 3504.856794004969,
+  "mode": "smoke",
+  "GPU_native_gates": "NOT-APPLICABLE",
+  "verdict": "ACQUISITION_OK",
+  "scientific_gate": "OPEN until actual pristine comparisons and root PD disposition"
+}

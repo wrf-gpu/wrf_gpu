@@ -1,0 +1,9 @@
+{
+  "source_commit": "3931ca24ff2a7a3c1bb435848e8e8eaee9e13f26",
+  "collected": 21819,
+  "errors": 0,
+  "wall_s": 30.25,
+  "log_sha256": "aeb2ba4bad08838336f72649c608cbfd973044edcbc58d12b67f1a91b538a40a",
+  "extra_files_manifest": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/COLLECT_EXTRA_FILES.json",
+  "archive_cleaned": true
+}

@@ -1,0 +1,14 @@
+{
+  "requested_hours": 3,
+  "full_steps": {
+    "d01": 400,
+    "d02": 1200,
+    "d03": 3600
+  },
+  "executed_steps": {
+    "d01": 1,
+    "d02": 3,
+    "d03": 9
+  },
+  "science": "CPU launch/checkpoint smoke only"
+}

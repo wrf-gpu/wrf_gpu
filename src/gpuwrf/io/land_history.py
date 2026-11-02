@@ -129,6 +129,18 @@ def wrf_initial_albedo(ds, table_dir: Path, *, field_overrides=None) -> np.ndarr
     return _landuse_init(ds, table_dir, ivgtyp, snowc)[1]
 
 
+def wrf_initial_emissivity(ds, table_dir: Path, *, field_overrides=None) -> np.ndarray:
+    """EMISS entering WRF's first step: landuse_init EMISS = SFEM(IS,ISN) (physics_init.F:1970-1971).
+
+    The first radiation call (first_rk_step_part1) precedes the first Noah-MP call, so RRTMG sees
+    this table value, not a Noah-MP emissivity.
+    """
+    overrides = field_overrides or {}
+    snowc = overrides.get("SNOWC", np.asarray(ds["SNOWC"][0]) if "SNOWC" in ds.variables else 0)
+    ivgtyp = overrides.get("IVGTYP", np.asarray(ds["IVGTYP"][0]))
+    return _landuse_init(ds, table_dir, ivgtyp, snowc)[2]
+
+
 def land_history_diagnostics(land, initial, inputs, *, own_step: int, history=None, water_sst=None):
     """WRF land outputs on land; retain initialized fields on the water tile.
 

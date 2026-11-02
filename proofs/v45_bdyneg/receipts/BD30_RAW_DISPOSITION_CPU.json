@@ -1,0 +1,41 @@
+{
+  "schema": "v45-bdyneg.raw-disposition.v1",
+  "recorded_utc": "2026-10-31T01:16:24Z",
+  "owner": "v45-bdyneg",
+  "run_id": "v45-bdyneg:smoke:run_2026-10-30T235426Z_bb7b3e:9ead84c1",
+  "mode": "smoke",
+  "action": "OWNED_RAW_TREE_REMOVAL_CONFIRMED",
+  "deletion_executor": "sealed controller remove_own_run",
+  "verification": "authenticated checkpoint + all-array BYTE readback + retained artifact SHA readback + owned-child teardown + exact tree absent",
+  "raw_tree": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/smoke/run_2026-10-30T235426Z_bb7b3e",
+  "raw_deleted": true,
+  "model_rc": 0,
+  "post_rc": 0,
+  "seal_sha256": "9961b834b45943effc341a089069bcb069bccb875d79b0525cf6d8cd7bc65fa4",
+  "plan_sha256": "dfc41312bad8dd25bf8dd47da432912fd5c2a0f899b27b6c071754d5fd732673",
+  "evidence_sha256": {
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/RESULT.json": "ec586b31b7f44c4521472bdceca50399a8a20cf4a5009404efd29ef449ee4a6b",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/POST.json": "0a5bdb57a8dba8d284094131b00a81c2593c255d4c61ceb6c96df2ded02eceb1",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/CHECKPOINT_MANIFEST.json": "699920c4f78271eff18efa1b16bae96f9f169de930928eed0d9ea40e69532a81",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/MODEL_LIFECYCLE.json": "7bb266cc30a941e3be50b01f30e8c780c320a13122c35fc3f21156e7b1dbcbd7",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/POST_LIFECYCLE.json": "fc06dbe8602505ca418e3530ee558c5241fe85a78ca6aadab457a223f10dcc14"
+  },
+  "retained": [
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d01_actual_boundary_operands.npz",
+      "sha256": "1a6a0710df980fccbd8cc65899e60b3ab141f7b6a704b843ba6996c1bbf6db40",
+      "bytes": 2567384
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d02_actual_boundary_operands.npz",
+      "sha256": "d3b7fe3f246522d1aaf6f1b61d935f4eeb23d86f4094ae5118e60b30fdc3201e",
+      "bytes": 6003746
+    },
+    {
+      "path": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/receipts/run_2026-10-30T235426Z_bb7b3e/d03_actual_boundary_operands.npz",
+      "sha256": "5d6cb561809d01f0c8fe2001aa5aea65c1dd33e91e16ac27aeb496662ea313d3",
+      "bytes": 2148693
+    }
+  ],
+  "scope": "Actual completed BD22 CPU disposition; native deletion NOT observed; recorded UTC is not asserted unlink UTC"
+}

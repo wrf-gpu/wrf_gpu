@@ -1,0 +1,23 @@
+{
+  "experiment": "FC05",
+  "registered_utc": "2026-10-03T14:43:55Z",
+  "snapshot_commit": "e296edcde40e47e863ec61cb73a378bb1ada3d22",
+  "baseline_commit": "691b6a51fe36a8b5d3d164d337d5390d5a4bb34c",
+  "only_src_change": "4 SGS names added to non-dry RK replacement list; default path",
+  "baseline_outputs": "<USER_HOME>/wrf_gpu2_lanes/wn3/W6/bench24_p3/<case>/wrfout first7frames",
+  "cases": [
+    "20260227_18z_a1",
+    "20260614_18z_a1"
+  ],
+  "hours": 24,
+  "timebox_s": 1200,
+  "flags": "snapshot scripts/bench/flags_lw9.env; runtime follows W6/arm.sh",
+  "cache_dirs": [
+    "<USER_HOME>/wrf_gpu2_lanes/fid-cloud/FC03/cache/jax",
+    "<USER_HOME>/wrf_gpu2_lanes/fid-cloud/FC03/cache/autotune",
+    "<USER_HOME>/wrf_gpu2_lanes/fid-cloud/FC03/cache/cuda",
+    "<USER_HOME>/wrf_gpu2_lanes/fid-cloud/FC03/cache/triton"
+  ],
+  "gate": "Daytime SWDOWN and T2tau12-24 towards CPU; pinned twin freeze scorer (attrshim diagnostics); gate3 combinedPROD pending; full staticFAILinherited remains disclosed",
+  "setup": "reuse FC03 source/cache; no source orphysicsflagchange; no new cold compile"
+}

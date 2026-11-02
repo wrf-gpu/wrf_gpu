@@ -1,0 +1,12 @@
+{
+  "source_commit": "3062cceca6",
+  "full_default_collection": 21793,
+  "own_host_tests_passed": 27,
+  "combined_unique_tests": 21820,
+  "errors": 0,
+  "wall_s": 68.11,
+  "log_sha256": "ea87e92dea29340884cc34286d8a79ae8a4a50897567e739ba0824b9585db76a",
+  "extra_files_manifest": "<USER_HOME>/wrf_gpu2_lanes/v45-bdyneg/COLLECT_EXTRA_FILES.json",
+  "archive_cleaned": true,
+  "scope": "Default full suite plus separately executed unique host controls, not a joint collect count"
+}

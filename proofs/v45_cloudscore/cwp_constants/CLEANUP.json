@@ -1,0 +1,12 @@
+{
+  "removed": [
+    "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/archive",
+    "<USER_HOME>/wrf_gpu2_lanes/v45-cloudscore/pytest"
+  ],
+  "cache": "NONE",
+  "full_DATA_archive": false,
+  "cores": [
+    12,
+    28
+  ]
+}

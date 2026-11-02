@@ -71,7 +71,8 @@ For each WRF mass cell, CWP in g/m² is
 `1000 * sum((QCLOUD + QICE) * rho_dry * dz)` over levels. Additional condensate
 species are opt-in. WRF mixing ratios are per kg dry air: dry density is
 `p / (287*Tair*(1 + QVAPOR/(287/461.6)))`, with `p=P+PB`,
-`Tair=(T+300)*(p/100000)^(287/1004)`, and interface heights
+`Tair=(T+300)*(p/100000)^R_D_OVER_CP`, with WRF's shared
+`R_D_OVER_CP = R_d/cp`, `R_d=287` and `cp=7*R_d/2=1004.5`, and interface heights
 `(PH+PHB)/9.81`. Native signed condensate is integrated without clipping.
 Positive pressure, density, temperature and layer thickness, correct dimensions
 and recognized units are required. Nonfinite candidate/reference values fail

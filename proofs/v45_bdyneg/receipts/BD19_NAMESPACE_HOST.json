@@ -1,0 +1,7 @@
+{
+  "tests": 26,
+  "failures": 0,
+  "errors": 0,
+  "wall_s": 1.56,
+  "includes": "real consumer single namespace positive, original nested denial negative, opaque token passthrough, readonly write denial, FD inheritance, mode000 cleanup and marker retention"
+}

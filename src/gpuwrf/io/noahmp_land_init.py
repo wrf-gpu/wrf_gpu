@@ -322,14 +322,17 @@ def _build_noahmp_land_state(
     t_skin = tsk
     qsfc = jnp.zeros((ny, nx), dtype=jnp.float64)   # OUTPUT diagnostic; recomputed each step
     znt = jnp.full((ny, nx), 0.05, dtype=jnp.float64)
-    emiss = jnp.full((ny, nx), 0.97, dtype=jnp.float64)
     # WRF's ALBEDO entering the first step (landuse_init, physics_init.F:1958-1965), which the driver
     # keeps until NOAHMP_SFLX returns a valid SALB (module_sf_noahmpdrv.F:1230-1232); not ALBOLD.
-    from gpuwrf.io.land_history import wrf_initial_albedo
+    # EMISS likewise: landuse_init SFEM (physics_init.F:1970-1971) is what the first radiation call
+    # sees (it precedes the first Noah-MP call); a uniform 0.97 seed made step-1 RTHRATEN differ.
+    from gpuwrf.io.land_history import wrf_initial_albedo, wrf_initial_emissivity
     with run._read_dataset(run.wrfinput_file(domain)) as ds:
         albedo = jnp.asarray(wrf_initial_albedo(ds, tdir, field_overrides=field_overrides), dtype=jnp.float64)
+        emiss = jnp.asarray(wrf_initial_emissivity(ds, tdir, field_overrides=field_overrides), dtype=jnp.float64)
         cycled = "GPUWRF_LAND_CYCLE" in ds.ncattrs()
     provenance["albedo"] = "WRF landuse_init ALBEDO (LANDUSE.TBL season, SNOWC>0.5 x (1+SCFX))"
+    provenance["emiss"] = "WRF landuse_init EMISS = SFEM (LANDUSE.TBL season)"
     sfcrunoff = jnp.zeros((ny, nx), dtype=jnp.float64)
     udrunoff = jnp.zeros((ny, nx), dtype=jnp.float64)
 
