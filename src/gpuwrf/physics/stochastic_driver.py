@@ -2,6 +2,8 @@
 from datetime import datetime
 from typing import Any, NamedTuple
 
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 
@@ -51,7 +53,9 @@ def initial_stochastic(config, grid, dt, start, *, tiles_ready=False):
     start_em calls INITIALIZE_STOCH at line330, BEFORE set_tiles at992. Its
     nominal ten R spin calls therefore execute zero UPDATE_STOCH tile bodies.
     The complete original CPU-WRF seed proof confirms the first step consumes
-    exactly one R innovation plane. A standalone already-tiled caller differs.
+    exactly one R innovation plane. A standalone already-tiled caller differs,
+    and so does every later start_domain(d01) call that med_nest_initial makes
+    for a d01 child (``config.nest_init_rounds``; share/mediation_integrate.F:845).
     """
     nx, ny, nz = grid.nx+1, grid.ny+1, grid.nz+1
     dx,dy = grid_spacing(grid)
@@ -87,11 +91,18 @@ def initial_stochastic(config, grid, dt, start, *, tiles_ready=False):
                    else jnp.zeros(8,jnp.int32)) if enabled else None
                   for seed,enabled,produced in zip(config.seeds,enabled_seeds,seed_produced))
     result = StochasticCarry(tuple(patterns),seeds,vertical,jnp.zeros(7,jnp.int32),jnp.int32(1))
-    if tiles_ready and config.root and patterns[3] is not None:
+    rounds = int(tiles_ready) + int(getattr(config,"nest_init_rounds",0))
+    if rounds and config.root and patterns[3] is not None and config.produce[3]:
         # INITIALIZE_STOCH spins RAND_PERT_UPDATE('R') TEN times. Those consume
         # AR updates but have no T/U/V spectral projection; the first RK call
         # projects it correctly as T. Do not substitute a first-step update.
-        patterns[3],next_seed = _spin_random(patterns[3],seeds[2])
+        # Nested runs: med_nest_initial re-calls start_domain(d01) per d01
+        # child after set_tiles. Each call re-seeds the stream (rand_seed) but
+        # SETUP_RAND_PERTURB keeps SPFORCS/SPFORCC, so every round spins ten
+        # more AR updates from the evolved coefficients with the SAME draws.
+        initial_seed = seeds[2]
+        for _round in range(rounds):
+            patterns[3],next_seed = _spin_random(patterns[3],initial_seed)
         seeds = list(seeds)
         seeds[2] = next_seed
         result = result._replace(patterns=tuple(patterns),seeds=tuple(seeds))
@@ -133,6 +144,15 @@ def advance_stochastic(carry, config, *, dx, dy):
         patterns[index] = p._replace(sine=sine,cosine=cosine,field=tuple(fields) if index==0 else fields[0])
         counts = counts.at[index].add(clips)
     return carry._replace(patterns=tuple(patterns),seeds=tuple(seeds),clip_counts=counts)
+
+
+@partial(jax.jit, static_argnums=(1, 2, 3))
+def lead_zero_advance(carry, config, dx, dy):
+    """One jitted (E41-scannable) advance for the child lead-zero history phase only.
+
+    ``config`` is static by its layout hash/eq, which is all advance_stochastic reads (vertical/produce/root).
+    """
+    return advance_stochastic(carry, config, dx=dx, dy=dy)
 
 
 def field(carry, variable, *, levels=None, component=0, mass_only=True):

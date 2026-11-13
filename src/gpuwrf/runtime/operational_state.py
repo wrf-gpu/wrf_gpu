@@ -220,6 +220,8 @@ class OperationalCarry:
     taod5502d: Any = field(default=None)
     # Optional MYNN history only; no physical kernel ever reads these arrays.
     mynn_budget: Any = field(default=None)
+    # &afwa afwa_severe_opt=1: resident WSPD10MAX maximum (diagnostics.afwa); None has no leaves.
+    afwa_diagnostics: Any = field(default=None)
 
 
     # SSiB WRF soil/canopy + complete multilayer snow and held radiation.
@@ -232,7 +234,7 @@ class OperationalCarry:
     def tree_flatten(self):
         values = tuple(getattr(self, name) for name in self.__dataclass_fields__)
         # Drop only trailing inactive appended groups, preserving the main prefix.
-        for name in ('mynn_budget','taod5502d','aerod','cu_forcing','noahmp_tile_drain','noahmp_groundwater','noahmp_carbon',
+        for name in ('afwa_diagnostics','mynn_budget','taod5502d','aerod','cu_forcing','noahmp_tile_drain','noahmp_groundwater','noahmp_carbon',
                      'noahmp_irrigation','sst_skin','gfdl_radiation','noahmp_mmf'):
             if getattr(self,name) is not None:
                 break

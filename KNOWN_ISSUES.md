@@ -1,6 +1,44 @@
-# Known issues — v0.4.5 candidate
+# Known issues — v0.5.0
 
-**v0.4.5: real-world checks pass with the disclosed graupel trace disposition below.**
+**v0.5.0: the new experiment options are off by default; their limits are listed first. Older items below still apply.**
+
+## v0.5.0: limits of the new options
+
+- **Static-field patches (`gpuwrf patch`)** are checked on CPU against real cases; a patched forecast has not been
+  compared with CPU-WRF. Categorical patches (land-use class, soil class, land/sea flip) and terrain patches change
+  compile constants, so each variant gets new compile keys and one cold compile. This is confirmed on the GPU for one
+  land-use patch on the 1 km nest (3 hours, finite output; domain-1 and domain-2 keys unchanged, nest keys new); for
+  soil class, land/sea and terrain it is derived from the code. The `z0` control (`gpuwrf patch z0`) and soil-state or
+  vegetation-fraction edits are traced inputs and reuse the compiled program; a `z0` file made by `gpuwrf patch z0` has not
+  run on the GPU.
+- **AFWA `WSPD10MAX`** matches the original WRF code bit for bit on real columns and passed its GPU check (warm cost
+  on/off 0.998), but has not been compared with a full CPU-WRF forecast. Its program carries one larger input-transpose
+  fusion (664 HLO instructions), accepted and disclosed. Switching it on makes a new compiled program: other fields then
+  differ from an AFWA-off run (in the 3-hour check up to 0.87 K in 2 m temperature and 0.78 m/s in 10 m wind), so compare
+  AFWA-on runs only with an AFWA-on twin. It is a model wind maximum, not an observed gust. Only Thompson (with or without KF),
+  MYNN surface layer and Noah-MP, `bldt=0`, one member are supported; the other AFWA products are refused.
+- **Stochastic physics in nests:** `rand_perturb=1` has no CPU-WRF reference (WRF 4.7.1 GNU dmpar crashes before
+  its first history). Nests that open later than domain 1, nests with another number of levels, two-way feedback
+  and batched members are refused with stochastic physics on. The stochastic-on program has one larger
+  input-transpose fusion (600 optimized HLO instructions, rule 500), accepted and disclosed; its runtime share is
+  unmeasured.
+- **Branch series** supports one-way nesting only; the parallel launcher refuses branches; seeds cannot vary
+  between branches.
+- **In-run extract:** batched members and branches are refused; a 15-minute d03 cadence that differs from the
+  history interval is not built; GPU wall-clock and host-memory cost were not measured separately.
+- **Shared compile store (experimental, off by default):** runs from two builds are not byte-identical even when the forecast
+  programs are shared, because about 4,100 small start-up and output programs recompile and the GPU autotuner
+  picks differently. Compare runs of one build or measure a same-build noise band.
+- **85 vertical levels** are a research setting: the Thompson column kernel needs 600 B of stack (registers spill)
+  above 64 levels, and a step costs 1.7× the 45-level step at equal time step.
+- Combinations of the new options (for example stochastic physics + AFWA + extract in one run) are not GPU-tested
+  together; each option was GPU-checked on its own.
+- **Cold compile time:** measured on the same basis (empty cache, same host, same day) v0.5.0 and v0.4.6 need the same
+  cold compile time (624.42 s and 623.17 s for the WN3 three-hour proxy, ratio 1.002). A WN3 run that starts from an empty
+  cache compiles about 150 s more than one that follows the Swiss and two-domain runs, because those already compiled many
+  of its small start-up programs and autotuning results; compare cold times only from the same starting cache.
+- **72-hour Tenerife check:** six floor-limited rows (d03 accumulated rain at hours 67–72; v0.4.6 had five), 0 real
+  failures, and the known d03 graupel trace at hour 72 (next item).
 
 ## v0.4.5: final-frame d03 graupel trace remains open
 

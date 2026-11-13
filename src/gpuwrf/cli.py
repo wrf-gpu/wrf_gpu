@@ -235,6 +235,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Nested runs only: emit the authenticated initialized state as the "
         "lead-zero wrfout before the first numerical advance. Default off.",
     )
+    run.add_argument("--extract-spec", choices=("v1",), default=None,
+                     help="Output option: host-side in-run extract (ALISIOS EXTRACT_SPEC V1) from every history "
+                     "frame; default off. Needs --extract-config, --extract-dir and --emit-initial-history. "
+                     "No model/AOT-key change; bound at run start (a resume must keep it).")
+    run.add_argument("--extract-config", type=Path, default=None, metavar="JSON",
+                     help="Extract request (schema gpuwrf.extract.request.v1: run_id, member, issue_utc, "
+                     "optional arm, seed, domains, points_csv (absolute paths of frozen point CSVs -> "
+                     "profiles_*.nc + points.csv), max_distance_m {dNN: m} (default 1.5*dx), "
+                     "raw_history on|off (off: extract only, no wrfout written)).")
+    run.add_argument("--extract-dir", type=Path, default=None, metavar="DIR",
+                     help="Fresh directory for extract NetCDF files + manifest.json.")
     run.add_argument(
         "--aot-prefetch",
         action=argparse.BooleanOptionalAction,
@@ -388,6 +399,8 @@ def build_parser() -> argparse.ArgumentParser:
     register_cycle(subparsers)
     from gpuwrf.override_cli import register as register_override
     register_override(subparsers)
+    from gpuwrf.patch_cli import register as register_patch
+    register_patch(subparsers)
     from gpuwrf.assimilation.letkf.cli import register as register_da
     register_da(subparsers)
     from gpuwrf.surface_params.cli import register as register_surface_params
@@ -1091,6 +1104,26 @@ def _cmd_run(args: argparse.Namespace) -> int:
             return _fail(f"--surface-controls: entries for domains outside this run: {unused}")
         run_metadata["surface_controls"] = {"path": str(Path(surface_controls).resolve()),
                                             "domains": {d: e["digest"] for d, e in _sc_manifest["domains"].items()}}
+    extract_request = None
+    extract_args = [getattr(args, k, None) for k in ("extract_spec", "extract_config", "extract_dir")]
+    if any(v is not None for v in extract_args):
+        if any(v is None for v in extract_args):
+            return _fail("--extract-spec, --extract-config and --extract-dir must be given together")
+        if decompose or not (max_dom > 1 or native_single):
+            return _fail("--extract-spec needs the native driver (nested or native single-domain d01); "
+                         "--decompose and CPU-WRF replay runs are not supported")
+        if not (native_single or bool(getattr(args, "emit_initial_history", False))):
+            return _fail("--extract-spec needs the lead-0 frame: add --emit-initial-history")
+        try:
+            if int(os.environ.get("GPUWRF_BATCH_ENSEMBLE", "1")) != 1:
+                raise ValueError("currently supports B=1 only")
+            from gpuwrf.extract.request import load_request
+
+            extract_request = load_request(*extract_args)
+        except (OSError, ValueError) as exc:
+            return _fail(f"--extract-spec: {exc}")
+        run_metadata["extract"] = {**extract_request.policy(), "run_id": extract_request.run_id,
+                                   "member": extract_request.member}
     runtime_parameters = getattr(args, "runtime_parameters", None)
     if runtime_parameters is not None:
         if decompose or not (max_dom > 1 or native_single):
@@ -1357,6 +1390,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             extend_end_time=bool(getattr(args, "extend_run", False)),
             surface_controls=getattr(args, "surface_controls", None),
             runtime_parameters=getattr(args, "runtime_parameters", None),
+            extract=extract_request,
         )
         if nested_config.feedback:
             print(

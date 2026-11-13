@@ -391,6 +391,15 @@ def _read_payload(path: str | Path, *, namelist=None) -> dict[str, Any]:
     validate_cu_forcing(getattr(payload.get('runtime_state'),'cu_forcing',None),payload.get('namelist'),
         fields['theta'].shape,payload.get('cu_forcing_schema_version'))
     _validate_spectral_fdda_checkpoint(payload, requested=namelist)
+    if namelist is not None:
+        # Value-blind step programs: the saved stochastic controls must equal the requested ones (critic FIX finding 5).
+        from collections.abc import Mapping
+        from gpuwrf.io.stochastic_config import restart_controls_digest
+        def _cfg(source):
+            return (source.get("stochastic_config") if isinstance(source, Mapping)
+                    else getattr(source, "stochastic_config", None))
+        if restart_controls_digest(_cfg(payload.get("namelist"))) != restart_controls_digest(_cfg(namelist)):
+            raise ValueError("checkpoint stochastic controls (selection/nens/seeds/scales) differ from the request (E78)")
     from gpuwrf.io.ocean_schema import validate as validate_ocean
     runtime=payload.get("runtime_state")
     validate_ocean(getattr(runtime,"ocean",None),getattr(runtime,"hurricane_ustm",None),payload.get("namelist"),payload.get("ocean_schema_version"),shape=payload["state_fields"]["t_skin"].shape,history=getattr(runtime,"history_diagnostics",None),require_history=True)

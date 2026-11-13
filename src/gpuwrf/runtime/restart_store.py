@@ -57,7 +57,10 @@ def _diagnostic_restart_config(namelist):
     """Host-only selections/cadences, bound to the native per-domain identity."""
     from gpuwrf.diagnostics.online import configuration
     from gpuwrf.diagnostics.precipitation import configured_interval
-    return {**configuration(namelist), "prec_acc_dt": configured_interval(namelist)}
+    from gpuwrf.diagnostics.afwa import configuration as afwa_configuration
+    config = {**configuration(namelist), "prec_acc_dt": configured_interval(namelist)}
+    # Only an active selection enters the identity: OFF stores keep the released key set.
+    return {**config, **{k: v for k, v in afwa_configuration(namelist).items() if v}}
 
 
 def _grid_fdda_restart_config(namelist):
@@ -148,6 +151,8 @@ def _nested_output_policy(config, bundles):
             "compression": None if subset is None else dict(writer._SUBSET_STREAM_COMPRESSION),
         },
         "regional_streams": regional,
+        # Opt-in extract: absent == OFF so OFF identities stay byte-for-byte stable.
+        **({"extract": config.extract.policy()} if getattr(config, "extract", None) is not None else {}),
         "writer": {
             "format": "NETCDF4", "colonfree_filenames": colonfree_output_enabled(),
             "rvovrd_real": bool(writer._WRITER_RVOVRD_REAL),
@@ -285,6 +290,10 @@ def nested_identity(config, bundles, run_start):
     # Manifests and history-journal owners use JSON. Canonicalize here so
     # resolved tuples (irrigation, BATS tables) have the same list form before
     # publication and after readback; keep all reader comparisons exact.
+    if any(getattr(bundle.namelist, "stochastic_config", None) is not None for bundle in bundles.values()):
+        from gpuwrf.io.stochastic_config import restart_controls
+        identity["stochastic_config"] = {name: restart_controls(bundle.namelist.stochastic_config)
+                                         for name, bundle in bundles.items()}
     if any(getattr(bundle.namelist, "rad_diag", 0) for bundle in bundles.values()):
         identity["rad_diag_config"] = {name: int(bundle.namelist.rad_diag) for name, bundle in bundles.items()}
     return json.loads(json.dumps(identity, allow_nan=False))
@@ -677,7 +686,7 @@ def _validate_snapshot(snapshot, manifest) -> None:
         validate_mmf_land(payload['extra_fields'].get('noahmp_mmf'),payload.get('noahmp_land_fields'),
                           payload['state_fields']['t_skin'].shape)
         recorded = tuple(payload.get('carry_field_order', ()))
-        compatible = tuple(n for n in expected if n not in ('noahmp_mmf','mynn_budget') or n in recorded)
+        compatible = tuple(n for n in expected if n not in ('noahmp_mmf','mynn_budget','afwa_diagnostics') or n in recorded)
         if recorded != compatible:
             raise ValueError("restart carry schema differs from executable")
         order = tuple(payload["state_field_order"])
@@ -694,8 +703,40 @@ def _validate_snapshot(snapshot, manifest) -> None:
         if 'noahmp_mmf' not in recorded:
             expected_extra.remove('noahmp_mmf')
         if 'mynn_budget' not in recorded:expected_extra.remove('mynn_budget')
+        if 'afwa_diagnostics' not in recorded:expected_extra.remove('afwa_diagnostics')
         if set(payload["extra_fields"]) != expected_extra:
             raise ValueError("restart optional carry schema differs from executable")
+        stochastic_ids = manifest["identity"].get("stochastic_config")
+        stochastic_group = payload["extra_fields"].get("stochastic")
+        if stochastic_ids is None:
+            if stochastic_group is not None:
+                raise ValueError("restart stochastic carry lacks authenticated controls (E78)")
+        else:
+            if not isinstance(stochastic_ids, Mapping) or set(stochastic_ids) != set(names):
+                raise ValueError("restart stochastic control domains differ (E78)")
+            if (stochastic_ids[name] is None) != (stochastic_group is None):
+                raise ValueError(f"{name}: restart stochastic carry presence differs from its controls (E78)")
+            if stochastic_group is not None:
+                seeds = tuple(getattr(stochastic_group, "seeds", ()) or ())
+                patterns = tuple(getattr(stochastic_group, "patterns", ()) or ())
+                active = tuple(p is not None for p in stochastic_ids[name]["patterns"])
+                if len(patterns) != 7 or len(seeds) != 6 or tuple(p is not None for p in patterns) != active:
+                    raise ValueError(f"{name}: restart stochastic pattern layout differs from its controls (E78)")
+                from gpuwrf.io.stochastic_schema import validate_stochastic
+                recorded = stochastic_ids[name]
+                try:  # the recorded per-domain controls decide root vs child coefficient layout and vertical
+                    view = SimpleNamespace(stochastic_config=SimpleNamespace(
+                        root=bool(recorded["root"]), produce=tuple(bool(x) for x in recorded["produce"]),
+                        patterns=tuple(None if p is None else SimpleNamespace(vertical=int(p["vertical"]))
+                                       for p in recorded["patterns"])))
+                except (KeyError, TypeError, ValueError):
+                    raise ValueError(f"{name}: restart stochastic controls malformed (E78)") from None
+                if len(view.stochastic_config.produce) != 7:
+                    raise ValueError(f"{name}: restart stochastic controls malformed (E78)")
+                try:  # seeds per active stream, ranks, dtypes, finiteness, counters, layout, vertical plans
+                    validate_stochastic(stochastic_group, view, required=True)
+                except ValueError as exc:
+                    raise ValueError(f"{name}: {exc}") from None
         group = payload["extra_fields"].get("temf")
         if temf_config is None:
             # Legacy unbound default stores remain readable. An active group
@@ -798,8 +839,16 @@ def _validate_diagnostic_snapshot(payload, config):
         config = {"prec_acc_dt": 0., "nwp_diagnostics": 0, "do_radar_ref": 0,
                   "history_interval": 60.}
     required = {"prec_acc_dt", "nwp_diagnostics", "do_radar_ref", "history_interval"}
-    if not isinstance(config, dict) or set(config) != required:
+    if not isinstance(config, dict) or set(config) - {"afwa_severe_opt"} != required:
         raise ValueError("restart online diagnostic configuration is incomplete (E78)")
+    from gpuwrf.diagnostics.afwa import validate_restart_afwa
+    afwa = config.get("afwa_severe_opt", 0)
+    if afwa not in (0, 1) or ("afwa_severe_opt" in config and afwa != 1):
+        raise ValueError("restart AFWA selection is invalid (E78)")
+    validate_restart_afwa(payload["extra_fields"].get("afwa_diagnostics"), afwa,
+                          payload.get("afwa_diagnostics_schema_version"),
+                          payload["state_fields"]["t_skin"].shape,
+                          history=payload["extra_fields"].get("history_diagnostics"), check_history=True)
     if (config["nwp_diagnostics"] not in (0, 1) or config["do_radar_ref"] not in (0, 1)
             or not math.isfinite(config["prec_acc_dt"]) or config["prec_acc_dt"] < 0
             or not math.isfinite(config["history_interval"]) or config["history_interval"] <= 0):

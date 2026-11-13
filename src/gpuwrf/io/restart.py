@@ -274,6 +274,8 @@ def _carry_to_payload(carry: OperationalCarry, *, mynn_config=None) -> dict[str,
         validate_schema(carry.regional_streams, SCHEMA_VERSION)
         payload["regional_streams_schema_version"] = SCHEMA_VERSION
     payload["precipitation_buckets_schema_version"] = 1
+    if carry.afwa_diagnostics is not None:
+        payload["afwa_diagnostics_schema_version"] = 1
     payload["online_diagnostics_schema_version"] = 1
     payload["solar_interpolation_schema_version"] = 1
     from gpuwrf.io.feedback_restart import configuration
@@ -394,6 +396,9 @@ def write_restart(
     validate_restart_buckets(carry.precipitation_buckets, configured_interval(namelist), 1, carry.state.t_skin.shape)
     from gpuwrf.diagnostics.online import configuration, validate_restart
     validate_restart(carry.nwp_diagnostics,carry.radar_reflectivity,configuration(namelist),1,carry.state.qv.shape)
+    from gpuwrf.diagnostics.afwa import configuration as afwa_configuration, validate_restart_afwa
+    validate_restart_afwa(carry.afwa_diagnostics, afwa_configuration(namelist)["afwa_severe_opt"], 1,
+                          carry.state.t_skin.shape, history=carry.history_diagnostics, check_history=True)
     from gpuwrf.diagnostics.solar_config import validate_options as solar_options, validate_restart as validate_solar_restart
     solar_config = solar_options(namelist)
     validate_solar_restart(carry.solar_interpolation, solar_config, 1, carry.state.t_skin.shape, requested=namelist)
@@ -578,6 +583,16 @@ def _read_payload(path: str | Path, *, namelist=None, feedback_schema=None) -> d
     validate_restart(carry.get("extra_fields",{}).get("nwp_diagnostics"),
                      carry.get("extra_fields",{}).get("radar_reflectivity"),configuration(payload["namelist"]),
                      carry.get("online_diagnostics_schema_version"),carry["state_fields"]["qv"].shape)
+    from gpuwrf.diagnostics.afwa import (configuration as afwa_configuration, history_interval as afwa_interval,
+                                         validate_restart_afwa)
+    for afwa_namelist in (payload["namelist"],) + (() if namelist is None else (namelist,)):
+        # The maximum's window is the saved history cadence: a changed cadence is refused (critic FIX 6).
+        validate_restart_afwa(carry.get("extra_fields", {}).get("afwa_diagnostics"),
+                              afwa_configuration(afwa_namelist)["afwa_severe_opt"],
+                              carry.get("afwa_diagnostics_schema_version"), carry["state_fields"]["t_skin"].shape,
+                              history=carry.get("extra_fields", {}).get("history_diagnostics"), check_history=True,
+                              saved_interval=afwa_interval(payload["namelist"]),
+                              requested_interval=afwa_interval(afwa_namelist))
     from gpuwrf.diagnostics.mynn_budget import validate_payload as validate_mynn_payload
     validate_mynn_payload(carry,payload['namelist'])
     if namelist is not None:validate_mynn_payload(carry,namelist)
@@ -650,7 +665,7 @@ def _read_payload(path: str | Path, *, namelist=None, feedback_schema=None) -> d
         recorded_carry = tuple(carry.get("carry_field_order", ()))
         # Only the newly appended, inactive group can be absent in older files.
         expected_carry = tuple(name for name in _CARRY_FIELD_ORDER
-                               if name not in ("camuw_pbl","lake","obs","regional_streams", "precipitation_buckets", "nwp_diagnostics", "radar_reflectivity", "solar_interpolation", "temf", "urban_bep", "feedback_history", "windfarm_power", "tracer_tendencies", "ocean", "hurricane_ustm", "qnse", "osas_rng_key", "cuplus", "noahmp_mmf", "gfdl_radiation", "sst_skin", "noahmp_irrigation", "noahmp_carbon", "noahmp_groundwater", "noahmp_tile_drain", "cu_forcing", "aerod", "taod5502d", "mynn_budget") or name in recorded_carry)
+                               if name not in ("camuw_pbl","lake","obs","regional_streams", "precipitation_buckets", "nwp_diagnostics", "radar_reflectivity", "solar_interpolation", "temf", "urban_bep", "feedback_history", "windfarm_power", "tracer_tendencies", "ocean", "hurricane_ustm", "qnse", "osas_rng_key", "cuplus", "noahmp_mmf", "gfdl_radiation", "sst_skin", "noahmp_irrigation", "noahmp_carbon", "noahmp_groundwater", "noahmp_tile_drain", "cu_forcing", "aerod", "taod5502d", "mynn_budget", "afwa_diagnostics") or name in recorded_carry)
         if recorded_carry != expected_carry:
             raise ValueError("restart OperationalCarry field order does not match current schema")
         expected_extra = set(_V1_UNSUPPORTED_CARRY_FIELDS)
@@ -664,7 +679,7 @@ def _read_payload(path: str | Path, *, namelist=None, feedback_schema=None) -> d
             expected_extra.remove('regional_streams')
         if "precipitation_buckets" not in recorded_carry:
             expected_extra.remove("precipitation_buckets")
-        for group in ("nwp_diagnostics","radar_reflectivity","solar_interpolation","windfarm_power", "tracer_tendencies", 'sst_skin', 'noahmp_irrigation', 'noahmp_carbon', 'noahmp_groundwater', 'noahmp_tile_drain', 'cu_forcing', 'aerod', 'taod5502d', 'mynn_budget'):
+        for group in ("nwp_diagnostics","radar_reflectivity","solar_interpolation","windfarm_power", "tracer_tendencies", 'sst_skin', 'noahmp_irrigation', 'noahmp_carbon', 'noahmp_groundwater', 'noahmp_tile_drain', 'cu_forcing', 'aerod', 'taod5502d', 'mynn_budget', 'afwa_diagnostics'):
             if group not in recorded_carry:
                 expected_extra.remove(group)
         if 'temf' not in recorded_carry:

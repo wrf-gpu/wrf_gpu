@@ -391,6 +391,14 @@ def bound_options(wrf_namelist: Mapping[str, Any], domain: str) -> dict[str, Any
     if out["nwp_diagnostics"]==1:
         out["do_radar_ref"]=1
     out["diagnostic_history_interval"]=60. if history is None else float(history)
+    from gpuwrf.io.afwa_options import afwa_refusals, severe_selected
+    # Native entry: the same &afwa refusals as the CLI (critic FIX 5), before anything is bound.
+    afwa_errors = afwa_refusals(wrf_namelist, (domain,))
+    if afwa_errors:
+        raise NamelistNotHonouredError(afwa_errors)
+    if severe_selected(wrf_namelist, domain):
+        # Only the AFWA severe WSPD10MAX is bound; afwa_refusals rejects the rest.
+        out["afwa_severe_opt"] = 1
     # WRF check_a_mundo: this switch is reset outside QNSE, even if supplied.
     if out.get('bl_pbl_physics',5) != 4:
         out['mfshconv'] = 0
@@ -540,17 +548,20 @@ def namelist_honour_report(
                 errors.append("online NWP/radar diagnostics require fixed time_step")
             if nwp and (wrf_namelist.get("bdy_control") or {}).get("periodic_x",False):
                 errors.append("nwp_diagnostics helicity requires a specified/nested nonperiodic domain")
-    for key in ("afwa_diag_opt", "afwa_severe_opt", "afwa_radar_opt"):
-        if any(_raw_value(wrf_namelist, "afwa", key, i) not in (None, 0) for i in range(len(domains))):
-            errors.append(f"&afwa {key}: AFWA diagnostics are not implemented; REFD is a separate AFWA radar product and severe gusts use WSPD10MAX, not AFWA_GUST")
+    from gpuwrf.io.afwa_options import afwa_refusals
+    errors.extend(afwa_refusals(wrf_namelist, domains, replay=replay))
     if wrf_namelist.get("stoch"):
         from gpuwrf.io.stochastic_config import stochastic_refusals
         errors.extend(stochastic_refusals(wrf_namelist,domains))
     from gpuwrf.io.nesting_options import resolve_nesting_options
     try:
-        resolve_nesting_options(wrf_namelist)
+        nesting = resolve_nesting_options(wrf_namelist)
     except ValueError as exc:
         errors.append(str(exc))
+    else:
+        if wrf_namelist.get("stoch"):
+            from gpuwrf.io.stochastic_config import stochastic_nesting_refusals
+            errors.extend(stochastic_nesting_refusals(wrf_namelist, domains, feedback=nesting["feedback"], batch_size=1))
     for domain in domains:
         shcu=namelist_value(wrf_namelist,"shcu_physics",domain)
         if shcu not in (None,0):

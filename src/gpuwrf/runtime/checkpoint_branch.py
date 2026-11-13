@@ -87,6 +87,9 @@ def branch_identity(parent_manifest, current, changes, generation):
     if parent_manifest.get("branch_schema_version") != SCHEMA_VERSION:
         raise ValueError("checkpoint predates branch schema (E78); write a new checkpoint")
     parent = parent_manifest["identity"]
+    for side, ident in (("parent", parent), ("branch", current)):
+        if ident.get("feedback") or ident.get("feedback_schema") is not None:
+            raise ValueError(f"{side} uses two-way feedback: checkpoint branching supports one-way nesting only")
     expected = {k: v for k, v in parent.items() if k != "branch"}
     if current["output_dir"] == parent["output_dir"]:
         raise ValueError("branch requires a new output directory")
@@ -124,12 +127,16 @@ def resumed_identity(current, generation):
     return {**current, "branch": branch}
 
 
-def validate_paths(generation, output_dir, checkpoint_dir):
+def validate_paths(generation, output_dir, checkpoint_dir, scratch_dir=None):
+    """``scratch_dir``: this run's own transient scratch (the CLI default ``<output-dir>/.scratch`` exists
+    before the driver re-checks); that one directory is the only entry an empty branch output may hold."""
     parent = json.loads((Path(generation) / "manifest.json").read_text())["identity"]
     output, old = Path(output_dir).resolve(), Path(parent["output_dir"]).resolve()
     if output == old or output.is_relative_to(old) or old.is_relative_to(output):
         raise ValueError("branch output must be separate from the parent stream")
-    if output.exists() and any(output.iterdir()):
+    own = None if scratch_dir is None else Path(scratch_dir).resolve()
+    if output.exists() and any(not (entry.is_dir() and not entry.is_symlink() and entry.resolve() == own)
+                               for entry in output.iterdir()):
         raise ValueError("branch output directory must be empty")
     if checkpoint_dir is not None and Path(checkpoint_dir).resolve().is_relative_to(Path(generation).resolve().parent):
         raise ValueError("branch checkpoint directory must be separate from the parent store")

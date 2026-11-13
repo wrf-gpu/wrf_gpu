@@ -134,4 +134,7 @@ the gpuwrf protocol/waivers are not CPU-WRF configuration. Keep both models'
 unchanged controls and use identical forcing. A host check does not prove
 that either model improves against observations.
 
+To change a land-use class with its dependent fields, flip land and sea, patch
+roughness on a mask or change terrain, use [static-field patches](static_patch.md).
+
 Return to [Tune WRF for your region](regional_optimization.md).

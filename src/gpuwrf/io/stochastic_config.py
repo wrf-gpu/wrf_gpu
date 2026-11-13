@@ -1,5 +1,5 @@
 """Pure-host WRF stochastic binding; this module stays outside physics imports."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from numbers import Integral
 
@@ -64,6 +64,12 @@ class StochasticConfig:
     nens: int
     produce: tuple
     apply_pbl: bool
+    # Host-only init count: med_nest_initial (share/mediation_integrate.F:845)
+    # re-calls start_domain(parent) once per d01 child opened at t0, after
+    # d01's tiles exist, so INITIALIZE_STOCH re-seeds and spins RAND ten more
+    # times per child. Initial carry values only; never a step-program switch.
+    # Set only by the nested loader from the executed tree (with_executed_d01_children).
+    nest_init_rounds: int = 0
 
     def _layout(self):
         # All varying numerical controls live in device carry after init. Only
@@ -167,7 +173,109 @@ def bind_stochastic(wrf_namelist, domain):
             raise ValueError(f"&stoch {variable}: invalid finite/positive stochastic scales")
         patterns.append(pattern)
     seeds = tuple(integer(key,default) for key,default in zip(SEED_KEYS,SEED_DEFAULTS))
-    return StochasticConfig(number==1,tuple(patterns),seeds,integer("nens",1),selected,selected[5])
+    # nest_init_rounds stays 0 here: the namelist alone cannot know which nests the run opens (a d01-only
+    # run may use a max_dom=3 namelist). The nested loader sets it from the EXECUTED d01 edges.
+    return StochasticConfig(number==1,tuple(patterns),seeds,integer("nens",1),selected,selected[5],0)
+
+
+def restart_controls(config):
+    """JSON controls a stochastic restart is bound to (critic FIX v50-stoch finding 5).
+
+    The step program is value-blind (seeds, nens and scales live in carry), so restart identity must name
+    them explicitly: a resume with another nens/seed/scale would silently continue the saved streams.
+    nest_init_rounds is initial-value only and is not part of a continuation.
+    """
+    if config is None:
+        return None
+    return {"root": bool(config.root), "nens": int(config.nens), "seeds": [int(s) for s in config.seeds],
+            "produce": [bool(x) for x in config.produce], "apply_pbl": bool(config.apply_pbl),
+            "patterns": [None if p is None else {k: (v if isinstance(v, str) else float(v) if isinstance(v, float) else int(v))
+                                                 for k, v in sorted(vars(p).items())} for p in config.patterns]}
+
+
+def restart_controls_digest(config):
+    import hashlib, json
+    controls = restart_controls(config)
+    return None if controls is None else hashlib.sha256(
+        json.dumps(controls, sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def with_executed_d01_children(config, domain, children):
+    """d01 config whose RAND nest-init count equals the d01 children the run actually opens."""
+    if config is None:
+        return None
+    rounds = len(tuple(children)) if str(domain) == "d01" else 0
+    return config if rounds == config.nest_init_rounds else replace(config, nest_init_rounds=rounds)
+
+
+def _domain_list(group,key,max_dom,default=None):
+    # Missing max_domains entries keep their Registry default in WRF; unknown
+    # here (None) so that comparisons fail closed instead of guessing.
+    raw = group.get(key)
+    raw = list(raw) if isinstance(raw,(list,tuple)) else [raw]
+    return [raw[i] if i < len(raw) and raw[i] is not None else default for i in range(max_dom)]
+
+
+def _max_dom(namelist):
+    value = (namelist.get("domains") or {}).get("max_dom",1)
+    return int(value[0] if isinstance(value,(list,tuple)) else value)
+
+
+def d01_children(namelist):
+    """Domain numbers whose parent_id is 1 (WRF opens each with med_nest_initial)."""
+    max_dom = _max_dom(namelist)
+    parents = _domain_list(namelist.get("domains") or {},"parent_id",max_dom,0)  # Registry default 0
+    return tuple(i+1 for i in range(1,max_dom) if int(parents[i]) == 1)
+
+
+_CLOCK = ("start_year","start_month","start_day","start_hour","start_minute","start_second")
+
+
+def _nest_refusals(namelist):
+    """Nested layouts whose original-WRF stochastic behaviour the port does not reproduce."""
+    max_dom = _max_dom(namelist)
+    if max_dom < 2:
+        return []
+    errors = []
+    clock = namelist.get("time_control") or {}
+    starts = list(zip(*(_domain_list(clock,key,max_dom) for key in _CLOCK)))
+    for child in d01_children(namelist):
+        if starts[child-1] != starts[0]:
+            # A late d01 child re-runs INITIALIZE_STOCH on d01 mid-run
+            # (start_em.F:322-328 with hrrr_cycling, module_stoch.F:145-160):
+            # every d01 stream is re-seeded from iseed_* at that time.
+            errors.append(f"d{child:02d}: a d01 child that opens after the d01 start re-seeds every d01 "
+                          "stochastic stream in original WRF; nest start times must equal d01")
+    levels = _domain_list(namelist.get("domains") or {},"e_vert",max_dom)
+    if len(set(levels)) > 1:
+        # check_a_mundo.F:1242-1250 sizes every domain's patterns by e_vert(1).
+        errors.append("stochastic patterns use e_vert(1) levels on every domain; nests with a different "
+                      "e_vert are not qualified")
+    return errors
+
+
+def stochastic_nesting_refusals(namelist, names, *, feedback, batch_size):
+    """Stochastic + nesting combinations the port does not reproduce (critic FIX v50-stoch finding 4).
+
+    Original WRF feeds child stochastic-forced fields back only through the regular feedback of the
+    forced state, and the port's stochastic carry is qualified for one-way nesting at B=1 only: the
+    two-way feedback path and the batched (B>1) domain tree never apply the parent pattern force-down
+    or the lead-zero child phase. Refused before loading/JAX when any executed domain is active.
+    """
+    active = False
+    for name in names:
+        try:
+            active = active or bind_stochastic(namelist, name) is not None
+        except (ValueError, TypeError, OverflowError):
+            return []  # reported by stochastic_refusals
+    if not active:
+        return []
+    errors = []
+    if len(tuple(names)) > 1 and feedback:
+        errors.append("stochastic physics with two-way nest feedback is not qualified (use feedback=0)")
+    if int(batch_size) > 1:
+        errors.append("stochastic physics with batched members (B>1) is not qualified; run members as separate B=1 runs")
+    return errors
 
 
 def stochastic_refusals(namelist,domains=None):
@@ -186,6 +294,7 @@ def stochastic_refusals(namelist,domains=None):
         if isinstance(max_dom,(list,tuple)):
             max_dom = max_dom[0]
         domains = tuple(f"d{i:02d}" for i in range(1,int(max_dom)+1))
+    active = False
     for domain in domains:
         try:
             cfg = bind_stochastic(namelist,domain)
@@ -194,6 +303,7 @@ def stochastic_refusals(namelist,domains=None):
             continue
         if cfg is None:
             continue
+        active = True
         physics = namelist.get("physics") or {}
         index = int(domain.removeprefix("d"))-1
         def physical(key,default):
@@ -207,4 +317,9 @@ def stochastic_refusals(namelist,domains=None):
             errors.append(f"{domain}: SPPT requires raw WRF RK tendencies (PBL0/5, CU0/1; GWDO with MYNN)")
         if cfg.apply_pbl and physical("gwd_opt",0)==3:
             errors.append(f"{domain}: SPP with GSL GWDO (gwd_opt=3) is not qualified")
+    if active:
+        try:
+            errors.extend(_nest_refusals(namelist))
+        except (ValueError,TypeError,IndexError) as exc:
+            errors.append(f"nested stochastic layout unreadable: {exc}")
     return errors

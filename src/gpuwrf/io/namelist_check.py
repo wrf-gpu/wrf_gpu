@@ -498,6 +498,20 @@ def validate_operational_namelist(config: Any) -> None:
             action="Use the qualified stochastic controls and WRF RK source-coupling profile.",
             outcome="recognized_control_not_wired",wrf_scheme="WRF stochastic physics")
             for reason in stochastic_refusals(config_obj))
+        from gpuwrf.io.nesting_options import resolve_nesting_options
+        from gpuwrf.io.stochastic_config import stochastic_nesting_refusals
+        try:
+            _feedback = resolve_nesting_options(config_obj)["feedback"]
+        except ValueError:
+            _feedback = False  # the nesting-option check reports the invalid value itself
+        _max = (config_obj.get("domains") or {}).get("max_dom", 1)
+        _max = int(_max[0] if isinstance(_max, (list, tuple)) else _max)
+        failures.extend(UnsupportedSelection(key="stoch",location="&stoch",value="nested",
+            supported_values=(0,1),implemented=reason,
+            action="Use one-way nesting (feedback=0) and B=1 members for stochastic physics.",
+            outcome="recognized_control_not_wired",wrf_scheme="WRF stochastic physics")
+            for reason in stochastic_nesting_refusals(config_obj, tuple(f"d{i:02d}" for i in range(1, _max+1)),
+                                                      feedback=_feedback, batch_size=1))
     from gpuwrf.io.windfarm import windfarm_errors
     selected_wind = _lookup(config_obj,'windfarm_opt')
     if selected_wind is not None:

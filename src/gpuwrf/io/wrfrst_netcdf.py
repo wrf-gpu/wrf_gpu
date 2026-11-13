@@ -345,13 +345,14 @@ OPTIONAL_CARRY_FIELDS: tuple[str, ...] = (
     "aerod",  # aer_opt=1 nested runs: held REAL Tegen per-layer AOD (6, z, y, x)
     "taod5502d",  # aer_opt=3 (mp28): held REAL TAOD5502D (y, x)
     "mynn_budget",  # optional history only, schema 1, exact resident groups
+    "afwa_diagnostics",  # afwa_severe_opt=1: exact REAL WSPD10MAX maximum since the last history write
 )
 PYTREE_CARRY_FIELDS = OPTIONAL_CARRY_FIELDS[5:]
 # Pytree groups appended after the current schema: files written before them
 # carry no manifest entry and resume with the group absent.
 _LATE_PYTREE_CARRY_FIELDS: tuple[str, ...] = ("h_diabatic", "history_diagnostics", "ruc_land", "ruc_rad", "cam_abs", "camuw_pbl",
                                                "fdda", "urban_slucm", "lake", "obs", "regional_streams", "precipitation_buckets", "nwp_diagnostics", "radar_reflectivity", "solar_interpolation", "temf", "urban_bep", "stochastic", "feedback_history", "windfarm_power", "tracer_tendencies", "ocean", "hurricane_ustm", "ssib_land", "ssib_rad", "qnse", "osas_rng_key", "cuplus", "noahmp_mmf", "gfdl_radiation", "sst_skin", "noahmp_irrigation", "noahmp_carbon", "noahmp_groundwater", "noahmp_tile_drain",
-                                               "cu_forcing", "aerod", "taod5502d", "mynn_budget")
+                                               "cu_forcing", "aerod", "taod5502d", "mynn_budget", "afwa_diagnostics")
 
 # ``OperationalCarry`` fields this schema has no variables for.  A populated
 # (non-``None``) unsupported field is REFUSED at write time instead of being
@@ -1051,6 +1052,10 @@ def _write_wrfrst(
         validate_restart(carry.nwp_diagnostics,carry.radar_reflectivity,configuration(namelist),1,carry.state.qv.shape)
     from gpuwrf.diagnostics.mynn_budget import configuration as mynn_configuration,validate_restart as validate_mynn_restart
     validate_mynn_restart(None if carry is None else carry.mynn_budget,mynn_configuration(namelist),1,state.theta.shape)
+    from gpuwrf.diagnostics.afwa import configuration as afwa_configuration, validate_restart_afwa
+    validate_restart_afwa(None if carry is None else carry.afwa_diagnostics,
+                          afwa_configuration(namelist)["afwa_severe_opt"], 1, state.t_skin.shape,
+                          history=None if carry is None else carry.history_diagnostics, check_history=True)
     from gpuwrf.io.restart_schema import validate_spectral_fdda
     validate_spectral_fdda(None if carry is None else carry.fdda, namelist)
     from gpuwrf.diagnostics.solar_config import validate_options as solar_options, validate_restart as validate_solar_restart
@@ -1176,6 +1181,10 @@ def _write_wrfrst(
             dataset.GPUWRF_MYNN_BUDGET_CONFIG=json.dumps(mynn_config,sort_keys=True)
         if carry is not None and carry.mynn_budget is not None:
             dataset.GPUWRF_MYNN_BUDGET_SCHEMA_VERSION=1
+        if carry is not None and carry.afwa_diagnostics is not None:
+            dataset.GPUWRF_AFWA_SEVERE_OPT = 1
+            dataset.GPUWRF_AFWA_DIAGNOSTICS_SCHEMA_VERSION = 1
+            dataset.GPUWRF_AFWA_HISTORY_INTERVAL = float(namelist.diagnostic_history_interval)
         dataset.GPUWRF_SOLAR_INTERPOLATION_CONFIG=json.dumps(solar_config,sort_keys=True)
         dataset.GPUWRF_SOLAR_INTERPOLATION_SCHEMA_VERSION=1
         if getattr(namelist, "rad_diag", 0):
@@ -1183,6 +1192,12 @@ def _write_wrfrst(
             dataset.GPUWRF_RAD_DIAG = 1
         if carry is not None and carry.stochastic is not None:
             dataset.GPUWRF_STOCHASTIC_SCHEMA_VERSION = 1
+            from gpuwrf.io.stochastic_config import restart_controls_digest
+            _stoch_cfg = (namelist.get("stochastic_config") if isinstance(namelist, Mapping)
+                          else getattr(namelist, "stochastic_config", None))
+            if _stoch_cfg is None:
+                raise ValueError("wrfrst stochastic carry needs its stochastic controls to be written (E78)")
+            dataset.GPUWRF_STOCHASTIC_CONTROLS = restart_controls_digest(_stoch_cfg)
         dataset.GPUWRF_TRACER_CONFIG=json.dumps(tracer_config,sort_keys=True)
         dataset.GPUWRF_TRACER_SCHEMA_VERSION=1
         if carry is not None and carry.cuplus is not None:
@@ -2016,11 +2031,27 @@ def _read_optional_carry_groups(dataset: Dataset, *, namelist=None, feedback_gro
     validate_spectral_fdda(carry_fields["fdda"], namelist,
                           required=hasattr(dataset, "GPUWRF_SPECTRAL_FDDA_SCHEMA_VERSION"))
     from gpuwrf.io.stochastic_schema import validate_stochastic
+    if carry_fields["stochastic"] is not None and not hasattr(dataset,"GPUWRF_STOCHASTIC_SCHEMA_VERSION"):
+        raise ValueError("wrfrst holds stochastic state without its schema marker (E78)")
+    if hasattr(dataset,"GPUWRF_STOCHASTIC_SCHEMA_VERSION") and namelist is not None and (
+            namelist.get("stochastic_config") if isinstance(namelist,Mapping)
+            else getattr(namelist,"stochastic_config",None)) is None:
+        raise ValueError("wrfrst is an active stochastic restart but the request has stochastic physics off (E78)")
     validate_stochastic(carry_fields["stochastic"], namelist,
                         required=hasattr(dataset,"GPUWRF_STOCHASTIC_SCHEMA_VERSION"))
     if (hasattr(dataset,"GPUWRF_STOCHASTIC_SCHEMA_VERSION")
             and dataset.GPUWRF_STOCHASTIC_SCHEMA_VERSION != 1):
         raise ValueError("wrfrst stochastic schema mismatch (E78)")
+    if hasattr(dataset,"GPUWRF_STOCHASTIC_SCHEMA_VERSION"):
+        saved = getattr(dataset,"GPUWRF_STOCHASTIC_CONTROLS",None)
+        if saved is None:
+            raise ValueError("wrfrst stochastic restart lacks its bound controls digest (E78)")
+        _cfg = (namelist.get("stochastic_config") if isinstance(namelist,Mapping)
+                else getattr(namelist,"stochastic_config",None)) if namelist is not None else None
+        if _cfg is not None:
+            from gpuwrf.io.stochastic_config import restart_controls_digest
+            if restart_controls_digest(_cfg) != str(saved):
+                raise ValueError("wrfrst stochastic controls (nens/seeds/scales) differ from the restart (E78)")
     from gpuwrf.assimilation.fdda_surface import validate_surface_restart,SurfaceGridFddaCarry
     surface_version=getattr(dataset,'GPUWRF_SURFACE_FDDA_SCHEMA_VERSION',None)
     if isinstance(carry_fields['fdda'],SurfaceGridFddaCarry) and surface_version!=1:
@@ -2144,6 +2175,20 @@ def _read_optional_carry_groups(dataset: Dataset, *, namelist=None, feedback_gro
         requested=mynn_configuration(namelist)
         validate_mynn_restart(carry_fields['mynn_budget'],requested,mynn_marker,mass_shape)
         if requested!=mynn_config:raise ValueError('wrfrst MYNN budget/EDMF selection differs (E78)')
+    from gpuwrf.diagnostics.afwa import configuration as afwa_configuration, validate_restart_afwa
+    afwa_saved = int(getattr(dataset, "GPUWRF_AFWA_SEVERE_OPT", 0))
+    afwa_marker = getattr(dataset, "GPUWRF_AFWA_DIAGNOSTICS_SCHEMA_VERSION", None)
+    afwa_marker = None if afwa_marker is None else int(afwa_marker)
+    afwa_saved_interval = getattr(dataset, "GPUWRF_AFWA_HISTORY_INTERVAL", None)
+    if carry_fields["afwa_diagnostics"] is not None and afwa_saved_interval is None:
+        raise ValueError("wrfrst AFWA WSPD10MAX lacks its history cadence (E78)")
+    from gpuwrf.diagnostics.afwa import history_interval as afwa_interval
+    validate_restart_afwa(carry_fields["afwa_diagnostics"], afwa_saved, afwa_marker, mass_shape[-2:],
+                          history=carry_fields.get("history_diagnostics"), check_history=True,
+                          saved_interval=afwa_saved_interval,
+                          requested_interval=None if namelist is None else afwa_interval(namelist))
+    if namelist is not None and afwa_configuration(namelist)["afwa_severe_opt"] != afwa_saved:
+        raise ValueError("wrfrst AFWA WSPD10MAX selection differs (E78)")
     from gpuwrf.diagnostics.solar_config import validate_restart as validate_solar_restart
     solar_raw = getattr(dataset, "GPUWRF_SOLAR_INTERPOLATION_CONFIG", None)
     try:

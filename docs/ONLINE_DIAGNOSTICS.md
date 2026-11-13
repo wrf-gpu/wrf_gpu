@@ -15,7 +15,8 @@ opt-in features, checked on the CPU against the original WRF code. NWP currently
 supports complete specified/nested
 nonperiodic domains with at least three levels and a 3×3 horizontal grid.
 Radar and NWP require `mp_physics=8`, WRF-order microphysics, fixed positive
-time steps and the native pipeline. AFWA remains refused.
+time steps and the native pipeline. Of the AFWA package only the severe-weather
+`WSPD10MAX` is available (see below).
 Like WRF's `check_a_mundo`, namelist binding forces `do_radar_ref=1` whenever
 NWP diagnostics are enabled. Direct Python callers must set both selectors.
 
@@ -114,12 +115,92 @@ publication and restoration, binding the selections and cadences per domain.
 History metadata, including descriptions and coordinates, matches the
 original CPU-WRF output exactly.
 
-## Remaining diagnostics
+## AFWA severe 10 m maximum wind (`WSPD10MAX`)
 
-This pristine WRF Registry has no `AFWA_GUST` variable. AFWA's severe package
-enhances `WSPD10MAX` using precipitation and winds near 1 km AGL; selecting
-`afwa_diag_opt=1` alone does not request that severe diagnostic. No AFWA gust
-support is claimed here.
+**Status: Experimental (v0.5.0 item 0.g).** Checked bit for bit against the original WRF code on real
+columns, and GPU-checked on the two-domain 9/3 km Canary Islands case (12 November 2026, 3 hours, three on/off
+pairs; cost below); not yet compared with a full CPU-WRF forecast. Switching it on makes a different compiled
+program: other fields then differ from an AFWA-off run (in that check up to 0.87 K in 2 m temperature and
+0.78 m/s in 10 m wind after 3 hours), so compare AFWA-on runs only with an AFWA-on twin.
+
+WRF 4.7.1 has no `AFWA_GUST` field. The AFWA severe-weather package instead keeps
+`WSPD10MAX`, the maximum 10 m wind speed since the last history write, and raises it
+where precipitation is heavy (`phys/module_diag_afwa.F`, "surface wind gust
+potential"). It is a model wind maximum, **not an observed gust**; please do not label it as a gust.
+
+> **What `WSPD10MAX` is (agreed with ALISIOS, 2026-11-11):** the maximum of the model-time-step 10 m wind speed
+> since the last history output — not a measured 3-second gust. Above 50 mm/h step precipitation it is blended
+> towards the 1 km AGL wind (step 2 below); this is WRF's AFWA behaviour and is reported, not corrected.
+> The history cadence defines the window of the maximum, so use hourly history output on d03 and finer nests
+> (`history_interval = 60` there). A gust estimate of your own (for example `U10 + k·UST`) needs `U10`, `V10` and
+> `UST` from the same frames.
+
+```fortran
+&afwa
+ afwa_diag_opt   = 1, 1,
+ afwa_severe_opt = 1, 1,
+/
+```
+
+Both switches are per domain and both must be 1, as in WRF (the AFWA driver only runs
+under `afwa_diag_opt=1`). Every own step, after microphysics:
+
+1. `wind = sqrt(U10² + V10²)` with this step's surface-layer winds.
+2. Step rate `prate = (RAINCV + RAINNCV) / dt * 3600` (mm/h). If `prate > 50`, WRF
+   interpolates the wind to 1 km above ground from the first model level at or above
+   1 km and blends it into the 10 m wind:
+   `factor = max((150 - prate)/100, 0)`, `blend = U10*factor + U1km*(1-factor)`; the larger
+   of `wind` and `|blend|` is kept. WRF divides by the level height above ground instead of
+   the layer depth in this interpolation; the port reproduces that literally. Winds aloft are
+   the step-start winds. Heights are those WRF's driver sees: the heights after the dynamics step and
+   before microphysics inside the microphysics zone, and the step-start heights on the boundary ring,
+   where WRF does not refresh them.
+3. `WSPD10MAX = max(WSPD10MAX, wind)`.
+
+The maximum is reset on step 1 and on the step that **starts** at the first step time at or
+after each history time (WRF's history alarm). The value written at a history time therefore
+covers the steps since the previous history write. With `dt=54 s` and hourly history the
+reset falls on step 68, not on step 67 as for `nwp_diagnostics`. The reset uses the same exact
+step schedule as the history writer. Set `history_interval` explicitly for every domain with AFWA on.
+The other history alarm controls (`history_interval_d/h/m/s`, `history_begin*`, `history_end*`) move
+WRF's alarm and are refused. A time step whose decimal value is not a short exact fraction of the
+history interval is also refused. An example is `54/81 s = 0.666… s`, a fourth nest level at ratio 3.
+
+| Field | Units | Description (Registry) |
+| --- | --- | --- |
+| `WSPD10MAX` | m s-1 | WIND SPD MAX 10 M |
+
+Supported: Thompson `mp_physics=8` with `cu_physics=0` or KF `cu_physics=1`, MYNN surface layer
+`sf_sfclay_physics=5` with Noah-MP `sf_surface_physics=4` (these produce `U10`/`V10` every step), `bldt=0`,
+fixed time step, native pipeline with one member (B=1). Omitted per-domain `&afwa` entries are off, as in
+WRF; they are not copied from the last value given. Refused: other surface/land suites, `bldt>0`,
+batched runs (B>1), all other AFWA products (`afwa_ptype/vil/radar/icing/vis/cloud/therm/turb/buoy_opt`),
+`afwa_diag_opt=1` without `afwa_severe_opt=1` (AFWA_MSLP etc. are not implemented),
+`afwa_bad_data_check=1`, `nwp_diagnostics=1` together with AFWA (both own `WSPD10MAX` but reset at
+different steps), CPU-history replay and adaptive time steps. The other AFWA severe fields
+(`W_UP_MAX`, `AFWA_HAIL`, `AFWA_CAPE`, ...) are not produced.
+
+Cost: one REAL surface plane per domain (`4*ny*nx` bytes, 125 KB on a 267×117 nest) and one GPU kernel per own
+step that reads five surface planes. Only tiles with a column above 50 mm/h read the 3-D winds and geopotential up
+to 1 km. While AFWA is on, the step keeps two extra values alive until the end of the step: the step-start winds
+and one pre-microphysics geopotential field (`4*(nz+1)*ny*nx` bytes, 5.6 MB on the 267×117×44 nest). Measured on
+that case (two warm on/off pairs, 12 November 2026): the GPU allocator's peak memory grew by 283,512 bytes
+(0.27 MiB) in both pairs, well below that upper bound.
+Measured on the lowered PROD programs (CPU, native CUDA lowering; independent critic rerun of this version):
+each step program gets +1 Triton kernel and +2 LayoutConstraints. The HLO instruction count grows by +100 on d01
+(56643 to 56743) and by +97 on d02 (49140 to 49237); these are the reset clock, the precipitation total and the
+boundary-ring height merge. The nest force-down keeps its kernels and gains one parameter.
+Measured whole-run cost on the 9/3 km case (3 hours, release check of 12 November 2026): warm seconds per
+forecast hour with AFWA on vs off 0.998 (median of two warm pairs) and the peak-memory change above. After
+optimization the domain-1 step program carries one input-transpose fusion of 664 HLO instructions (rule 500),
+accepted and disclosed. Not measured: the GPU time of the AFWA kernel or of that fusion on their own, the
+optimized fusion count against the off program, and the compile time.
+With the option off the three PROD programs are byte-identical to the previous release tree (full-constant HLO,
+all kernel bodies) and history files are byte-identical.
+The plane is saved exactly in both restart formats and in native checkpoints. A restart is refused if the plane
+is missing or mismatched, if the `U10`/`V10` history operands are missing or not in the surface-history carry
+(`HistoryDiagnostics`), or if the history cadence differs from the saved one.
+Oracle and generator: `proofs/v50_gust/`.
 
 ## WRF-Solar surface interpolation
 

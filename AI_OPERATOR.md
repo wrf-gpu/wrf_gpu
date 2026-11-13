@@ -205,6 +205,21 @@ installed syntax. These workflows supplement the forecast:
 | Station and regional outputs | `gpuwrf tslist-export`, `gpuwrf stream-check`; [stream qualification](proofs/u2_streams/QUALIFICATION.json) |
 | Regional optimisation / land cycling | [Optimisation](docs/regional_optimization.md), [cycling](docs/cycling.md) |
 
+### v0.5.0 experiment options (all off by default)
+
+| Need | Switch | Guide and limits |
+| --- | --- | --- |
+| Many surface variants from one spin-up | `gpuwrf run --surface-controls`, `scripts/branch_series.py` | [Branch series](docs/checkpoint-branching.md#branch-series-many-value-variants-from-one-spin-up) (one-way nests only) |
+| Stochastic physics in nests | WRF `&stoch` per domain (full vectors) | [Stochastic](docs/stochastic.md) (`rand_perturb=1` has no CPU-WRF reference) |
+| Reproducible θ/qv noise in inputs | `gpuwrf perturb --thermo-config` | [Seeded noise](docs/stochastic.md#seeded-boundary-layer-temperature-and-moisture-noise) |
+| Land use, roughness, terrain edits | `gpuwrf patch land/z0/geo-em/check-real/verify` | [Patches](docs/static_patch.md) (no GPU forecast with a patched case yet) |
+| Evaluation files during the run | `gpuwrf run --extract-spec v1 --extract-config REQ.json --extract-dir DIR --emit-initial-history` | [Extract](docs/extract.md) |
+| AFWA 10 m wind maximum | `&afwa afwa_diag_opt=1, afwa_severe_opt=1` | [WSPD10MAX](docs/ONLINE_DIAGNOSTICS.md#afwa-severe-10-m-maximum-wind-wspd10max) (Thompson/MYNN/Noah-MP only) |
+| Several members per GPU | `scripts/parallel_cases.py --max-parallel N` | [Measured N=1/2/3](docs/ensemble.md#several-members-on-one-gpu-measured-with-v050-development-code) |
+| Shared compile store across builds | `GPUWRF_AOT_HLO_STORE`, `GPUWRF_AOT_HLO_SEEDS` | [Experimental store](docs/aot_content_store.md) (not byte-identical across builds) |
+
+Read [known issues](KNOWN_ISSUES.md#v050-limits-of-the-new-options) before combining these options.
+
 Product definitions distinguish instantaneous samples from interval totals
 and extrema. A finite smoke, a matching header or an analysis tool does not
 establish station skill. Selected large runtime tables must match the installed

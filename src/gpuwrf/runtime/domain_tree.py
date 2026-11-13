@@ -646,8 +646,13 @@ def run_domain_tree_callbacks(
         # evolved Noah-MP land carry for writer-side land diagnostics) opt in via
         # a truthy ``wants_carry`` attribute and receive the FULL carry; default
         # callbacks keep the historical state-only payload.
+        # A carry-reading callback CLASS may also define ``history_view`` to build
+        # the frame from the whole tree at this instant (original-WRF child history
+        # phase: v50 stochastic leaves). It returns a view; carries are untouched.
+        # Looked up on the type so mocks/functions never opt in by accident.
+        view = getattr(type(output), "history_view", None)
         payload = (
-            out[name]
+            (view(output, name, current_step, out, own_steps) if view is not None else out[name])
             if getattr(output, "wants_carry", False)
             else _state_from_carry(out[name])
         )
@@ -1014,6 +1019,69 @@ def _reset_nested_aot_status(*, enabled: bool, verify: bool) -> None:
             "load_metrics": {},
         }
     )
+
+
+def _content_store_prepare(name: str, lowered: Any, hlo_sha256: str | None) -> Any | None:
+    """Miss-path hook of the content-addressed AOT store (``aot_hlo_store``; default off).
+
+    Off: returns ``None`` without touching the lowering. On: keys the lowered
+    program and, on a store hit, places the shared executable at this cache's
+    exact-HLO address so the lookup that follows loads it. The returned key goes
+    to ``_serialize_domain_blob`` so a compile after a miss is published.
+    """
+    try:
+        from gpuwrf.runtime import aot_hlo_store
+
+        if not aot_hlo_store.enabled():
+            return None
+        from gpuwrf.runtime import aot_executable as _aotx_export
+
+        key, status = aot_hlo_store.prepare(
+            name, lowered, hlo_sha256,
+            compile_options=step_compile_options(_aotx_export.export_compile_options()),
+        )
+        if status is not None:
+            store = NESTED_AOT_STATUS.setdefault("content_store", {})
+            if isinstance(store, dict):
+                store[name] = dict(status)  # last lookup per name; every event: aot_hlo_store.report()
+            sys.stderr.write(
+                f"[gpuwrf:nested-aot] domain={name} content_store={status.get('state')} "
+                f"key={str(status.get('key'))[:12]} program={str(status.get('program_sha256'))[:12]} "
+                f"blob={str(status.get('blob_sha256'))[:12]} key_s={status.get('key_seconds')}\n"
+            )
+            sys.stderr.flush()
+        return key
+    except Exception:  # noqa: BLE001 - the store is an optimisation only
+        return None
+
+
+def _content_store_winner(content_key: Any | None) -> Any | None:
+    """Executable of the binary that already held this program in the content store.
+
+    Only set when this process compiled the program and another valid binary was
+    published first. The caller then runs that binary, not its own compile, so every
+    live call of one program runs one executable (two cold compiles differ, E99).
+    """
+    if content_key is None:
+        return None
+    try:
+        from gpuwrf.runtime import aot_hlo_store
+
+        return aot_hlo_store.take_winner(content_key)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _content_store_local_hit(name: str, content_key: Any | None) -> None:
+    """Log a program that ran from this cache's own exact-HLO address without a store hit."""
+    if content_key is None:
+        return
+    try:
+        from gpuwrf.runtime import aot_hlo_store
+
+        aot_hlo_store.note_local_hit(name, content_key)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _nested_aot_key_token(
@@ -1614,6 +1682,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
         n_steps: int,
         cadence: int,
         cheap_key: str | None = None,
+        content_key: Any | None = None,
     ) -> OperationalCarry:
         """Compile the exact variant, serialize it best-effort, then execute it.
 
@@ -1673,6 +1742,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                         lowered=lowered,
                         cheap_key=cheap_key,
                         key_schema=key_schema,
+                        **({"content_key": content_key} if content_key is not None else {}),
                     )
                     capture_status.update(ser)
                     if ser.get("aot_written"):
@@ -1683,6 +1753,13 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                     capture_status["error"] = f"{type(exc).__name__}: {exc}"
             _record_aot_status(name, capture_status)
             _log_aot_status(name, capture_status)
+            winner = _content_store_winner(content_key)
+            if winner is not None:
+                compiled = winner
+                for memo_key in ((name, hlo_sha256), (name, cheap_key)):
+                    if memo_key[1]:
+                        _aot_calls[memo_key] = winner
+                        _aot_loaded_keys.add(memo_key)
             from gpuwrf.runtime.gpu_allocator import record_executable
 
             record_executable(name, compiled, cheap_key or hlo_sha256 or "compiled")
@@ -1848,6 +1925,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                         # HLO is identical (for example a non-semantic namespace
                         # path under an older schema). Dual-address writes make that
                         # exact artifact available: retry it before paying compile.
+                        content_key = _content_store_prepare(name, lowered, hlo_sha256)
                         if hlo_sha256:
                             hlo_call = _aot_advance_for(name, hlo_sha256)
                             if hlo_call is not None:
@@ -1878,6 +1956,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                                     # over-fragmented cheap key too. Otherwise
                                     # every later step in this process would miss
                                     # that key and pay another lower-only pass.
+                                    _content_store_local_hit(name, content_key)
                                     _aot_attempted.add((name, ckey))
                                     _aot_calls[(name, ckey)] = hlo_call
                                     _aot_loaded_keys.add((name, ckey))
@@ -1896,6 +1975,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                             n_steps=int(n_steps),
                             cadence=int(cadence),
                             cheap_key=ckey,
+                            content_key=content_key,
                         )
                     # lower-error -> drop through to the plain jitted path below.
                     return _advance_chunk(
@@ -1927,8 +2007,10 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                     _record_aot_status(name, status)
                     _log_aot_status(name, status)
                 elif hlo_sha256:
+                    content_key = _content_store_prepare(name, lowered, hlo_sha256)
                     aot_call = _aot_advance_for(name, hlo_sha256)
                     if aot_call is not None:
+                        _content_store_local_hit(name, content_key)
                         try:
                             return aot_call(
                                 carry,
@@ -1960,6 +2042,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                         clock_base,
                         n_steps=int(n_steps),
                         cadence=int(cadence),
+                        content_key=content_key,
                     )
                 else:
                     status = {
@@ -2016,7 +2099,7 @@ def nested_aot_report() -> dict[str, object]:
     cache_hit_count = sum(
         int(item.get("cache_hit_count", 0)) for item in domains.values()
     )
-    return {
+    report: dict[str, object] = {
         "enabled": bool(NESTED_AOT_STATUS.get("enabled")),
         "verify": bool(NESTED_AOT_STATUS.get("verify")),
         "load_count": load_count,
@@ -2024,6 +2107,17 @@ def nested_aot_report() -> dict[str, object]:
         "cache_hit_count": cache_hit_count,
         "domains": domains,
     }
+    content_store = NESTED_AOT_STATUS.get("content_store")
+    if isinstance(content_store, dict) and content_store:  # only with aot_hlo_store on
+        from gpuwrf.runtime import aot_hlo_store
+
+        report["content_store"] = {
+            "last_lookup": {str(k): dict(v) for k, v in content_store.items()},
+            # Every lookup and publication of the process (all variants, init
+            # kernels included) with the blob each call runs.
+            **aot_hlo_store.report(),
+        }
+    return report
 
 
 def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
@@ -2476,6 +2570,7 @@ def _build_fused_cascade_program(
         # A cheap-key miss does not imply a program miss. Once exact lowering is
         # available, retry the HLO address emitted by dual-address capture before
         # compiling the giant fused cascade again.
+        content_key = _content_store_prepare(aot_name, lowered, hlo_sha256)
         try:
             from gpuwrf.runtime import aot_precompile as _aotp
 
@@ -2516,6 +2611,7 @@ def _build_fused_cascade_program(
                     _record_nested_aot_status(aot_name, hlo_status)
                     _log_nested_aot_status(aot_name, hlo_status)
                 else:
+                    _content_store_local_hit(aot_name, content_key)
                     _store_cached_call(sig, hlo_call, ckey)
                     if ckey:
                         alias = _aotp.alias_cheap_key_to_hlo(aot_name, ckey, hlo_sha256)
@@ -2560,6 +2656,7 @@ def _build_fused_cascade_program(
                         lowered=lowered,
                         cheap_key=ckey,
                         key_schema=_ck.KEY_SCHEMA,
+                        **({"content_key": content_key} if content_key is not None else {}),
                     )
                     status.update(ser)
                     if ser.get("aot_written"):
@@ -2570,6 +2667,10 @@ def _build_fused_cascade_program(
                     status["error"] = f"{type(exc).__name__}: {exc}"
             _record_nested_aot_status(aot_name, status)
             _log_nested_aot_status(aot_name, status)
+            winner = _content_store_winner(content_key)
+            if winner is not None:
+                compiled = winner
+                _store_cached_call(sig, winner, ckey)
             return compiled(*args)
         except BaseException as exc:  # noqa: BLE001 - preserve normal fused fallback
             cached_calls.pop(sig, None)
@@ -3273,5 +3374,11 @@ def nested_defuse_env_help() -> str:
         "GPUWRF_AOT_VERIFY=1 (default OFF) lowers ONCE per (domain,cheap_key) per "
         "process and asserts the loaded blob's HLO matches its recorded digest, "
         "failing CLOSED (loud fallback + fresh compile) on any mismatch -- run it "
-        "for the first warm-start of each new version, then off in production."
+        "for the first warm-start of each new version, then off in production. "
+        "EXPERIMENTAL, default OFF, not GPU-qualified: GPUWRF_AOT_HLO_STORE=<dir> "
+        "(read/write) and GPUWRF_AOT_HLO_SEEDS=<dir>[:<dir>] (read-only) name a "
+        "content-addressed executable store keyed by the lowered program, so builds "
+        "with the same program share one binary after a cheap-key miss; "
+        "GPUWRF_AOT_HLO_AUTOTUNE_SEED=1 also pools XLA autotune decisions there "
+        "(gpuwrf.runtime.aot_hlo_store)."
     )

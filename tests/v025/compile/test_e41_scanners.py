@@ -144,7 +144,8 @@ def test_tools_and_fixtures_work_from_clean_git_archive(tmp_path):
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(tmp_path, filter="data")
     clean_fixtures = tmp_path / "tests/v025/compile/fixtures/e41"
-    for name in ["tiny.cubin", "tiny.ptx", "callgraph.resources.txt", "callgraph.sass.txt", "transpose.optimized.hlo"]:
+    for name in ["tiny.cubin", "tiny.ptx", "callgraph.resources.txt", "callgraph.sass.txt", "transpose.optimized.hlo",
+                 "g0_identity_convert.jaxcache.zst", "g0_add.jaxcache.zst"]:
         assert (clean_fixtures / name).is_file()
     source = """
 import importlib.util

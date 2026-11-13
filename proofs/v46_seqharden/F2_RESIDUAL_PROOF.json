@@ -1,0 +1,251 @@
+{
+ "schema": "v46-seqharden.f2_residual.v1",
+ "utc": "2026-10-31T22:09:26Z",
+ "verdict": "PASS",
+ "v11_sha256": "7844cc809711067639ed2f77ac9bddf95d8dc102f86ee4c9a14176142e05522a",
+ "pre_fix_v111_sha256": "08c81531ac08f6cb939df34426b8342ddf7bcd1577552a22f06c2970ba5c7c54",
+ "pre_fix_v112_sha256": "f6c3bcc71486dd177142291d5742888d4600ff503e7de7ca66a13cf2abb346b0",
+ "pre_fix_v113_sha256": "03ea9a3f4ce4b7712430f5b71e3f45384a461974a823de0f0ba8bd83cc9766f5",
+ "new": {
+  "R1": {
+   "N1_reused_session_leader": {
+    "ok": true,
+    "alive": "",
+    "want": "",
+    "anchor_rc": null,
+    "state": "101 1000\n"
+   },
+   "N2_reused_root_other_sid": {
+    "ok": true,
+    "alive": "",
+    "want": "",
+    "anchor_rc": null,
+    "state": "101 1000\n"
+   },
+   "N3_sid_reused_after_session_end": {
+    "ok": true,
+    "alive": "",
+    "want": "",
+    "anchor_rc": null,
+    "state": "300 500\n"
+   },
+   "N4_root_absent_at_spawn_then_reused": {
+    "ok": true,
+    "alive": "",
+    "want": "",
+    "anchor_rc": 3,
+    "state": ""
+   },
+   "N5_no_anchor_scan_only": {
+    "ok": true,
+    "alive": "",
+    "want": "",
+    "anchor_rc": null,
+    "state": ""
+   },
+   "P1_valid_root_session_descendants": {
+    "ok": true,
+    "alive": "101 102 103 104",
+    "want": "101 102 103 104",
+    "anchor_rc": null,
+    "state": "101 1000\n102 1001\n103 1002\n104 1003\n"
+   },
+   "P2_leader_exited_anchored_member_keeps_session": {
+    "ok": true,
+    "alive": "105 106",
+    "want": "105 106",
+    "anchor_rc": null,
+    "state": "101 1000\n105 1005\n106 1006\n"
+   },
+   "P3_spawn_anchor_then_scan": {
+    "ok": true,
+    "alive": "101 102",
+    "want": "101 102",
+    "anchor_rc": 0,
+    "state": "101 1000\n102 1001\n"
+   },
+   "P4_forked_setsid_child_leader": {
+    "ok": true,
+    "alive": "100 101 102",
+    "want": "100 101 102",
+    "anchor_rc": null,
+    "state": "100 990\n101 1000\n102 1001\n"
+   },
+   "P5_zombie_not_alive": {
+    "ok": true,
+    "alive": "101",
+    "want": "101",
+    "anchor_rc": null,
+    "state": "101 1000\n102 1001\n"
+   }
+  },
+  "R2": {
+   "RA_survivor_after_KILL": {
+    "ok": true,
+    "rc": "1",
+    "left": "999999999",
+    "kills": [
+     "kill -TERM 999999999",
+     "kill -KILL 999999999"
+    ]
+   },
+   "RB_exits_after_TERM": {
+    "ok": true,
+    "rc": "0",
+    "left": "",
+    "kills": [
+     "kill -TERM 4242"
+    ]
+   },
+   "RC_exits_after_KILL": {
+    "ok": true,
+    "rc": "0",
+    "left": "",
+    "kills": [
+     "kill -TERM 4242",
+     "kill -KILL 4242"
+    ]
+   }
+  },
+  "R1V": {
+   "V1_same_identity": {
+    "ok": true,
+    "rc": 0,
+    "want": 0
+   },
+   "V2_reused_pid_new_start": {
+    "ok": true,
+    "rc": 1,
+    "want": 1
+   },
+   "V3_same_start_other_session": {
+    "ok": true,
+    "rc": 1,
+    "want": 1
+   },
+   "V4_no_anchor_then_reused": {
+    "ok": true,
+    "rc": 1,
+    "want": 1
+   },
+   "V5_root_gone": {
+    "ok": true,
+    "rc": 1,
+    "want": 1
+   }
+  },
+  "R3T": {
+   "T3_no_anchor_fail_closed": {
+    "ok": true,
+    "rc": 10,
+    "steps": [
+     [
+      "p-one",
+      "FAIL"
+     ],
+     [
+      "p-two",
+      "NOT-STARTED"
+     ]
+    ],
+    "first_error": "no ownership anchor at spawn - launcher not released, nothing recorded or signalled; (empty step log)",
+    "alive_after": [],
+    "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/f2res_20261031T220905Z/T3_no_anchor_fail_closed"
+   },
+   "T4_timeout_verified_root_killed": {
+    "ok": true,
+    "rc": 10,
+    "steps": [
+     [
+      "p-one",
+      "TIMEOUT"
+     ],
+     [
+      "p-two",
+      "SKIPPED"
+     ]
+    ],
+    "first_error": "stopped at window end 2026-10-31T22:49:10Z; log: (empty step log)",
+    "alive_after": [],
+    "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/f2res_20261031T220905Z/T4_timeout_verified_root_killed"
+   },
+   "T5_timeout_unverified_root_not_signalled": {
+    "ok": true,
+    "rc": 10,
+    "steps": [
+     [
+      "p-one",
+      "FAIL"
+     ],
+     [
+      "p-two",
+      "NOT-STARTED"
+     ]
+    ],
+    "first_error": "root pid 360979 not verified at timeout (pid,starttime,session) - not signalled; stopped at window end 2026-10-31T22:49:11Z; log: (empty step log)",
+    "alive_after": [
+     "child",
+     "root"
+    ],
+    "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/f2res_20261031T220905Z/T5_timeout_unverified_root_not_signalled"
+   }
+  },
+  "R3": {
+   "T1_own_survivor_KILL_disabled": {
+    "ok": true,
+    "rc": 10,
+    "steps": [
+     [
+      "p-one",
+      "FAIL"
+     ],
+     [
+      "p-two",
+      "NOT-STARTED"
+     ]
+    ],
+    "first_error": "teardown unresolved: own pid(s) 361413 alive after TERM/KILL",
+    "survivor_was_alive_after": true,
+    "markers": [
+     "s1.started"
+    ],
+    "wall_s": 8.4,
+    "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/f2res_20261031T220905Z/T1_own_survivor_KILL_disabled"
+   },
+   "T2_control_KILL_enabled": {
+    "ok": true,
+    "rc": 0,
+    "steps": [
+     [
+      "p-one",
+      "OK"
+     ],
+     [
+      "p-two",
+      "OK"
+     ]
+    ],
+    "first_error": "",
+    "survivor_was_alive_after": false,
+    "markers": [
+     "entry_ok.started",
+     "s1.started"
+    ],
+    "wall_s": 6.6,
+    "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/f2res_20261031T220905Z/T2_control_KILL_enabled"
+   }
+  }
+ },
+ "old_negatives_fail_by_assertion": {
+  "N1_reused_session_leader": true,
+  "N2_reused_root_other_sid": true,
+  "N3_sid_reused_after_session_end": true,
+  "RA_survivor_after_KILL": true,
+  "v113.V2_reused_pid_new_start": true,
+  "v113.V3_same_start_other_session": true,
+  "v113.V4_no_anchor_then_reused": true,
+  "v112.N4_root_absent_at_spawn_then_reused": true,
+  "v112.N5_no_anchor_scan_only": true
+ },
+ "scope": "R1/R2 fully fake proc/kill/sleep; R3 own private processes only (lslocks/nvidia-smi stubbed empty), no GPU/real lock/cross/lease/foreign signals"
+}

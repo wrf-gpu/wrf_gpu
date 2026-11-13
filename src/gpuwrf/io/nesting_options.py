@@ -51,7 +51,7 @@ def admit_feedback(namelist,names,*,feedback=None):
         ('physics','cu_physics'):(0,1),('physics','sf_urban_physics'):(0,),
         ('physics','sf_lake_physics'):(0,),('physics','sst_update'):(0,),
         ('physics','swint_opt'):(0,),('physics','prec_acc_dt'):(0,),
-        ('physics','do_radar_ref'):(0,),('time_control','nwp_diagnostics'):(0,),
+        ('physics','do_radar_ref'):(0,),('time_control','nwp_diagnostics'):(0,),('afwa','afwa_severe_opt'):(0,),
         ('physics','bl_mynn_tkeadvect'):(0,),('dynamics','hypsometric_opt'):(2,),
         ('fdda','grid_fdda'):(0,),('fdda','obs_nudge_opt'):(0,)}
     defaults={'mp_physics':8,'bl_pbl_physics':5,'sf_sfclay_physics':5,'sf_surface_physics':4,

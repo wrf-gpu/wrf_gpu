@@ -244,6 +244,13 @@ def _walk(h: "hashlib._Hash", obj: Any, depth: int) -> None:
         # #114: date-blind. Two namelists differing only in date MUST share a key.
         _upd(h, b"DATECLOCK")
         return
+    if cls_name == "_StochasticConfigHolder" and type(obj).__module__ == "gpuwrf.runtime.operational_mode":
+        # Value-blind like the holder's own hash/eq: seeds, nens, pattern scales and the host-only
+        # nest_init_rounds live in device carry / initial values, never in the traced step. Only the
+        # static switch layout selects the program (critic FIX v50-stoch finding 10).
+        _upd(h, b"HSTOCH")
+        _walk(h, obj.value._layout(), depth + 1)
+        return
     if any(base.__name__ == "_StaticHolder" and
            base.__module__ == "gpuwrf.runtime.operational_mode"
            for base in type(obj).__mro__):
@@ -1201,6 +1208,10 @@ HLO_AFFECTING_ENV_DENYLIST: frozenset[str] = frozenset(
         "GPUWRF_NESTED_AOT",
         "GPUWRF_NESTED_AOT_PREWARM",
         "GPUWRF_AOT_VERIFY",
+        # Content-addressed AOT store (aot_hlo_store): a location, never a program.
+        "GPUWRF_AOT_HLO_STORE",
+        "GPUWRF_AOT_HLO_SEEDS",
+        "GPUWRF_AOT_HLO_AUTOTUNE_SEED",
         # Export format only (attested in AotMeta); both formats load.
         "GPUWRF_AOT_COMPILED_THUNKS",
         # JAX persistent-cache entry format only; written after the key.

@@ -71,6 +71,10 @@ lead into the physics-selection and continuous-parameter tools on this page.
    copies; their host/file scope is qualified, while edited forecast gates
    remain open. The [porosity helper](soil_porosity.md) checks effective soil
    caps without changing the soil or qualifying a parameter scheme.
+   [Static-field patches](static_patch.md) (`gpuwrf patch`, v0.5.0 development) change
+   land-use class, soil, roughness or terrain (via geo_em and real.exe) with
+   consistency checks across fields and nests; land-use and terrain variants each
+   need their own compile.
 5. **Separate initialization from physics.** [Land cycling](cycling.md) carries
    soil/snow state; [atmospheric warm start](atmospheric-warm-start.md) (experimental,
    GPU checks pending) also carries the atmosphere, using WRF's cycling initialization.

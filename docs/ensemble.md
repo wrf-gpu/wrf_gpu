@@ -182,6 +182,25 @@ logic. For offline work set `JAX_PLATFORMS=cpu`; for a GPU launch, run the
 command in your normal GPU environment. The CPU tests with fake members make no
 hardware throughput or fidelity claim.
 
+### Several members on one GPU (measured with v0.5.0 development code)
+
+Members on one GPU run as separate processes over one warm compile cache
+(`scripts/parallel_cases.py`, `--max-parallel N`); the scheduler admits them by
+VRAM and host RAM. On an RTX 5090 (32 GB) with three different dates of a
+nine-nest Canary Islands case (3 h each, warm cache, no new compiles):
+
+| Members at once | Wall for the three members | Throughput vs one at a time | GPU memory peak | Host RSS peak |
+|---|---:|---:|---:|---:|
+| 1 | 387 s | 1.00× | 11.2 GiB | 8.4 GiB |
+| 2 | 309 s | 1.25× | 19.8 GiB | 17.7 GiB |
+| 3 | 242 s | 1.60× | 28.3 GiB | 24.2 GiB |
+
+The `wrfout` files of every member are byte-identical to the one-at-a-time runs.
+Each nine-nest member used about 8.6 GiB of GPU memory and 9.7 GiB of host
+memory when warm (a cold compile needs 20–22 GiB of host memory), so three
+members fit on 32 GB only with little else on the card. Expect more than 1.6×
+only for smaller grids.
+
 After a run, create the product inventory from the chosen domain's actual
 wrfout files under each `runs/member-*/wrfout`. Batch runs are independent cases;
 only combine them into ensemble products if valid times/grid/meaning actually

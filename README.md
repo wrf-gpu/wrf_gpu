@@ -1,6 +1,6 @@
 # wrf_gpu
 
-[![Version](https://img.shields.io/badge/version-v0.4.6-2ea44f)](release_notes/RELEASE_NOTES_v0.4.6.md)
+[![Version](https://img.shields.io/badge/version-v0.5.0-2ea44f)](release_notes/RELEASE_NOTES_v0.5.0.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-user%20guide-informational)](https://wrf-gpu.github.io/wrf_gpu/)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
@@ -12,37 +12,39 @@ It reads WPS/`real.exe` inputs and `namelist.input`, and writes WRF NetCDF
 history for your existing tools. The goal is faster regional forecasting
 with less energy per forecast hour.
 
-v0.4.6 improves WRF initialization and graupel entry handling. Its 72-hour
-rain-floor check passes with a disclosed final-frame graupel trace difference;
-matched timings show no resolved speed change from v0.4.5. [Measurements and
-limits](release_notes/RELEASE_NOTES_v0.4.6.md).
+v0.5.0 adds tools for many short, controlled experiments: surface variants
+from one spin-up, stochastic physics in nests, land-use and terrain patches,
+and evaluation output during the run. With these off, the forecast programs
+equal v0.4.6. [Checks and
+limits](release_notes/RELEASE_NOTES_v0.5.0.md).
 
 [First forecast](#your-first-forecast-in-three-steps) ·
 [User guide](https://wrf-gpu.github.io/wrf_gpu/) ·
 [Published support matrix (v0.4.4)](docs/release/SUPPORT_MATRIX_v0.4.4.md) ·
 [Validation](docs/release/VALIDATION_v0.4.0.md) ·
-[Release notes](release_notes/RELEASE_NOTES_v0.4.6.md)
+[Release notes](release_notes/RELEASE_NOTES_v0.5.0.md)
 
 `wrf_gpu` is an independent project, not WRF itself, and is not affiliated
 with or endorsed by UCAR/NCAR.
 
-## What's new in v0.4.6
+## What's new in v0.5.0
 
-- **Emissivity at start:** Noah-MP now begins with the same seasonal land-use emissivity as WRF for the first radiation step.
-- **Graupel:** the Thompson scheme now keeps WRF's small incoming graupel amounts below the threshold. The cause of the final-hour trace difference remains open.
+Released 13 November 2026; new options are off by default.
 
-[Release notes](release_notes/RELEASE_NOTES_v0.4.6.md) · [Known issues](KNOWN_ISSUES.md)
+- **Branch series:** spin up once, then run many surface variants from that checkpoint without recompiling ([guide](docs/checkpoint-branching.md#branch-series-many-value-variants-from-one-spin-up)).
+- **Stochastic physics in nests** (SKEBS, SPPT, SPP) as in WRF, checked against CPU-WRF ([guide](docs/stochastic.md)).
+- **Checked patches** for land use, roughness and terrain ([guide](docs/static_patch.md)).
+- **Evaluation files during the run**, optionally without history ([guide](docs/extract.md)), and WRF's AFWA 10 m wind maximum ([guide](docs/ONLINE_DIAGNOSTICS.md#afwa-severe-10-m-maximum-wind-wspd10max)).
+- **Three nine-nest members per GPU** give 1.6× the throughput of one ([numbers](docs/ensemble.md#several-members-on-one-gpu-measured-with-v050-development-code)).
+
+[Release notes](release_notes/RELEASE_NOTES_v0.5.0.md) · [Known issues](KNOWN_ISSUES.md)
 
 ## Tune WRF for your region: inverse modelling
 
 The RE-Toolkit tests whether local surface or physics settings move simulated
-wind and temperature toward your observations. Choose land-class surface
-multipliers and bounds; ensemble Kalman inversion updates the parameter
-ensemble using the same station/time operator, regularisation and observation
-errors. Runtime surface values reuse compiled programs within one signature.
-
-For excessive coastal wind, test roughness and compare a separate MYNN mixing
-arm. MYNN remains a manual study, not an automatic inversion control.
+wind and temperature toward your observations. Ensemble Kalman inversion
+updates land-class surface multipliers within your bounds; changing these
+values reuses the compiled programs.
 
 Surface controls have Swiss GPU/CPU-WRF response checks; the inverse estimator
 has **synthetic-twin tests only**. Real-station calibration and forecast
@@ -290,8 +292,9 @@ shows the largest parts of a time step.
 - Results match WRF closely but not bit for bit, and differences grow with
   forecast length.
 - The first run of a new grid or physics selection compiles for several
-  minutes and needs more host memory than later runs.
-- Older GPUs (Pascal, Turing) are not supported.
+  minutes and needs more host memory.
+- Older NVIDIA and AMD GPUs are compile-checked only, not validated
+  ([details](release_notes/RELEASE_NOTES_v0.5.0.md#portability-compile-checked-not-validated)).
 - Heavy rain can differ from CPU-WRF in long forecasts: one 72-hour case has
   about 12–15 % fewer heavy-rain cells on days 2 and 3
   ([under investigation](KNOWN_ISSUES.md#v042-heavy-rain-cells-on-the-1-km-tenerife-domain)).
@@ -302,11 +305,11 @@ shows the largest parts of a time step.
 
 | Version | Highlights |
 |---|---|
+| v0.5.0 | Experiment toolkit: branch series, stochastic physics in nests, patches, in-run evaluation output, AFWA wind maximum |
 | v0.4.6 | WRF emissivity initialization and graupel entry mass; disclosed trace |
 | v0.4.4 | Initialization/clock fixes, nested shading, experimental MYNN coefficients; 72-hour gate passes with disclosed exceptions |
 | v0.4.3 | The v0.4.2 model with identical compiled programs, a three-nest qualification table, answers to user reports, host-suspend detection |
 | v0.4.2 | Shortwave fix confirmed against WRF, faster WDM6, four boundary layers validated inside nests, radiation without clouds |
-| v0.4.1 | Experimental data assimilation, terrain-corrected winds, shortwave aerosol and cloud options, nested runs compiled once per grid ([v0.3.x cache note](release_notes/RELEASE_NOTES_v0.4.1.md#note-for-users-of-v030-to-v034-nested-runs-with-a-shared-compile-cache)) |
 | v0.4.0 | More than 80 WRF 4.7.1 physics options, nudging, two-way nesting, stochastic physics, ensembles and forecast tools; 66 configurations checked against CPU-WRF |
 | v0.3.2 | Historical speed and energy measurements shown above |
 
@@ -322,7 +325,7 @@ If you use `wrf_gpu` in your work, please cite the software and WRF itself:
   title   = {wrf_gpu: a GPU rewrite of the WRF ARW model in JAX},
   author  = {{wrf_gpu contributors}},
   year    = {2026},
-  version = {0.4.4},
+  version = {0.5.0},
   url     = {https://github.com/wrf-gpu/wrf_gpu}
 }
 ```

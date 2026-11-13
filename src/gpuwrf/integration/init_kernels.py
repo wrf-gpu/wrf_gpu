@@ -119,6 +119,9 @@ class InitKernelCache:
             except Exception:
                 pass  # ABI guard rejected the hit; lower the exact call below
             else:
+                from gpuwrf.runtime import aot_hlo_store
+
+                aot_hlo_store.note_init_kernel(name, hit=True, lowered=False, cheap_key=True)
                 self.events.append({
                     "kernel": name, "hlo_sha256": status.get("hlo_sha256"),
                     "cheap_key": ckey, "hit": True, "lower_s": 0.0,
@@ -131,6 +134,12 @@ class InitKernelCache:
         # No enclosing jit, fusion boundary change, or new arithmetic is added.
         lowered = fn.lower(*args, **kwargs)
         digest = aotx.hlo_sha256_from_lowered(lowered)
+        # Content-addressed store (default off -> (None, None), no work): a stored
+        # executable of this exact program is placed at the exact-HLO address first.
+        from gpuwrf.runtime import aot_hlo_store
+
+        content_key, content_status = aot_hlo_store.prepare(
+            name, lowered, digest, cache_dir=self.cache_dir)
         lowered_at = time.perf_counter()
         call, status = aotp.load_domain_blob(
             name, self.cache_dir, hlo_sha256=digest, return_status=True,
@@ -144,17 +153,41 @@ class InitKernelCache:
                 # A rejected call contract cannot silently serve a wrong result.
                 status = {**status, "call_error": f"{type(exc).__name__}: {exc}"}
                 hit = False
+        store_hit = str((content_status or {}).get("state", "")).startswith("hit")
+        # With a content key the compile is published BEFORE it runs: if another
+        # valid binary holds the program, that one runs (one binary per program).
+        publish_first = (not hit) and content_key is not None
         if not hit:
             call = lowered.compile()
-            result = call(*args, **dynamic_kwargs)
-        if not hit or ckey:
+            if not publish_first:
+                result = call(*args, **dynamic_kwargs)
+        if hit and ckey and store_hit:
+            # The shared executable keeps its bytes: alias the metadata address to
+            # it instead of compiling a second binary for that address.
+            alias = aotp.alias_cheap_key_to_hlo(name, ckey, digest, self.cache_dir)
+            alias["verified"] = aot_hlo_store.verify_local(
+                name, blob_sha256=content_status["blob_sha256"], cache_dir=self.cache_dir,
+                cheap_key=ckey)
+            status = {**status, "cheap_key_alias": alias}
+        elif not hit or ckey:
             # A legacy exact-HLO hit can publish the new metadata address once.
             # The AOT writer quarantines collisions instead of overwriting them.
+            # (That second compile is not the binary this call ran, so it is not
+            # offered to the content store.)
             compiled = lowered.compile() if hit else call
             status = {**status, **aotp._serialize_domain_blob(
                 name, compiled, self.cache_dir, hlo_sha256=digest, lowered=lowered,
                 cheap_key=ckey, key_schema=ck.KEY_SCHEMA,
+                **({"content_key": content_key} if publish_first else {}),
             )}
+        if publish_first:
+            call = aot_hlo_store.take_winner(content_key) or call
+            result = call(*args, **dynamic_kwargs)
+        if hit and not store_hit:
+            aot_hlo_store.note_local_hit(name, content_key)  # ran this cache's own binary: unshared
+        aot_hlo_store.note_init_kernel(name, hit=hit, lowered=True, cheap_key=bool(ckey))
+        if content_status is not None:
+            status = {**status, "content_store_lookup": content_status}
         self.events.append({
             "kernel": name, "hlo_sha256": digest, "hit": hit,
             "lower_s": lowered_at - started,

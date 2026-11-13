@@ -50,6 +50,14 @@ def history_fields(carry, nz, ny, nx):
         if pattern is not None and pattern.cosine.size:
             result[f'SPFORCC{suffix}']=pattern.cosine
             result[f'SPFORCS{suffix}']=pattern.sine
+        elif pattern is not None:
+            # Registry stoch_param_perturb allocates these 'irh' arrays on EVERY
+            # domain when spp_on; a child (or a non-producing root) never runs
+            # SETUP_RAND_PERTURB, so original WRF writes their alloc value
+            # initial_data_value=0 (frame/wrf_num_bytes_between.c). Zero-copy.
+            zero=np.broadcast_to(np.float32(0),(ny+1,nx+1))
+            result[f'SPFORCC{suffix}']=zero
+            result[f'SPFORCS{suffix}']=zero
     return result
 
 

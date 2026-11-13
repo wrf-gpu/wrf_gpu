@@ -7,6 +7,7 @@ Default discovery always includes AOT stepping blobs; JIT_GLOB filters only JIT.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from dataclasses import dataclass
 import hashlib
 import importlib.util
@@ -20,6 +21,13 @@ import struct
 DEFAULT_JIT_GLOB = "jit__advance_chunk*,jit_fused_jit*"
 TOOLS = Path(__file__).resolve().parent / "e41"
 STEP_PROGRAM = re.compile(r"(?:fused_)?d\d+\Z")
+# A JAX-cache executable without native CUDA ELF is accepted ONLY when its optimized HLO moves/aliases buffers and
+# nothing else (eager identity converts lower to `parameter -> copy`: a memcpy, no kernel). Any other op without ELF
+# (fusion, custom-call, while, conditional, collectives, sort, ...) stays a refusal. AOT stepping blobs never qualify.
+NO_KERNEL_OPS = frozenset({"parameter", "copy", "bitcast", "tuple", "get-tuple-element", "constant"})
+_HLO_SECTION = frozenset({"FileNames", "FunctionNames", "FileLocations", "StackFrames"})
+_HLO_INSTR = re.compile(r"\s*(?:ROOT\s+)?%?[\w.\-]+\s*=\s*(?P<rest>\S.*)\Z")
+_HLO_OPCODE = re.compile(r"\s*(?P<op>[a-z][a-z0-9\-]*)\(")
 
 
 @dataclass(frozen=True)
@@ -78,9 +86,18 @@ def proof_programs(path: Path) -> set[str]:
     return {name.replace("/", "_") for name in programs}
 
 
+def is_no_kernel(record: dict) -> bool:
+    if record.get("kernel_class") != "NO_KERNEL":
+        return False
+    if record.get("elfs") or record.get("source_kind") != "jax_cache" or not record.get("no_kernel_hlo_ops"):
+        raise ValueError(f"inconsistent NO_KERNEL record: {record.get('path')}")
+    return True
+
+
 def assert_coverage(expected: list[Executable], records: list[dict], required: set[str] = frozenset()):
     paths = {str(entry.path) for entry in expected}
-    measured = {record["path"] for record in records if record.get("elfs")}
+    # A NO_KERNEL JIT entry is scanned (its whole HLO was classified); it never covers an AOT stepping program.
+    measured = {record["path"] for record in records if record.get("elfs") or is_no_kernel(record)}
     if missing := paths - measured:
         raise ValueError(f"unscanned stepping executable(s): {sorted(missing)}")
     programs = {record.get("program") for record in records if record.get("elfs")}
@@ -154,18 +171,97 @@ def _record(blob, index, ax, asm):
     raise ValueError(f"missing Riegeli record {index}")
 
 
-def _optimized_hlo(blob, ax, asm):
-    import jaxlib._jax as J
+def _optimized_hlo_proto(blob, ax, asm):
     gpu = _gpu_payload(blob, ax, asm)
     if ax._gpu_blob_format(blob) == ax.GPU_THUNK_FORMAT:
-        begin, info, data_pos = asm._chunks(gpu)[-1]
+        chunks = asm._chunks(gpu)
+        begin, info, data_pos = chunks[-1]
         data, _ = asm._read_logical(gpu, data_pos, info["data_size"])
-        if info["type"] != ord("r") or info["num_records"] != 1:
+        if info["type"] != ord("r") or info["num_records"] < 1:
             raise ValueError("missing single optimized-HLO rest record")
-        (gpu,) = asm._decode_simple_chunk(data, info["num_records"])
+        records = asm._decode_simple_chunk(data, info["num_records"])
+        if sum(map(len, records)) != info["decoded_size"]:
+            raise ValueError("Riegeli decoded size mismatch")
+        # The optimized HLO is the LAST record of the thunk executable. Most writers flush it as its own one-record final
+        # chunk; small executables (e.g. jit_wrapped initializers) pack all records into one final chunk. Accept only that
+        # packing: exactly one record-chunk in total (signature chunk 's' with 0 records excepted), so the HLO record is
+        # still the single last record of the executable and record index 2 (native ELF) is unchanged.
+        if info["num_records"] != 1:
+            data_chunks = [c for c in chunks if not (c[1]["type"] == ord("s") and c[1]["num_records"] == 0)]
+            if len(data_chunks) != 1:
+                raise ValueError("missing single optimized-HLO rest record")
+        gpu = records[-1]
     hwc = next(v for f, w, v in ax._proto_fields(gpu) if f == 1)
-    proto = next(v for f, w, v in ax._proto_fields(hwc) if f == 1)
-    return J.HloModule.from_serialized_hlo_module_proto(proto).to_string()
+    return next(v for f, w, v in ax._proto_fields(hwc) if f == 1)
+
+
+def _optimized_hlo(blob, ax, asm):
+    import jaxlib._jax as J
+    return J.HloModule.from_serialized_hlo_module_proto(_optimized_hlo_proto(blob, ax, asm)).to_string()
+
+
+def hlo_text_opcodes(text: str) -> Counter:
+    """Opcode multiset of every instruction in every computation of an HloModule text. Fail-closed: any line that is not
+    module header, debug-metadata section, computation header/close or a parsed instruction is a refusal."""
+    ops, inside, computations = Counter(), False, 0
+    for line in text.splitlines():
+        stripped = line.strip()
+        if inside:
+            if stripped == "}":
+                inside = False
+                continue
+            m = _HLO_INSTR.match(line)
+            if not m:
+                raise ValueError(f"unparsed HLO instruction line: {stripped[:120]}")
+            rest, i = m["rest"], 0
+            if rest.startswith("("):  # tuple shape: balanced parentheses
+                depth = 0
+                for i, c in enumerate(rest):
+                    depth += (c == "(") - (c == ")")
+                    if depth == 0:
+                        break
+                else:
+                    raise ValueError(f"unbalanced HLO tuple shape: {stripped[:120]}")
+                i += 1
+            else:
+                i = rest.find(" ")
+            op = _HLO_OPCODE.match(rest, i) if i > 0 else None
+            if not op:
+                raise ValueError(f"HLO opcode not found: {stripped[:120]}")
+            ops[op["op"]] += 1
+        elif not stripped or stripped in _HLO_SECTION or stripped.startswith("HloModule ") or re.match(r"\d+ ", stripped):
+            continue
+        elif stripped.endswith("{") and "->" in stripped:
+            inside, computations = True, computations + 1
+        else:
+            raise ValueError(f"unparsed HLO module line: {stripped[:120]}")
+    if inside or not computations or not ops:
+        raise ValueError("truncated or empty HLO module text")
+    return ops
+
+
+def hlo_proto_opcodes(proto: bytes, ax) -> Counter:
+    """Same multiset from the serialized HloModuleProto (computations = 3, instructions = 2, opcode = 2)."""
+    ops = Counter()
+    for f, w, comp in ax._proto_fields(proto):
+        if f == 3 and w == 2:
+            for g, v, instr in ax._proto_fields(comp):
+                if g == 2 and v == 2:
+                    codes = [o for h, x, o in ax._proto_fields(instr) if h == 2 and x == 2]
+                    if len(codes) != 1:
+                        raise ValueError("HLO instruction without a single opcode")
+                    ops[codes[0].decode("ascii")] += 1
+    return ops
+
+
+def classify_no_kernel(text: str, proto_ops: Counter | None = None) -> Counter:
+    """Return the opcode multiset when the HLO is kernel-free, else raise. The text and proto multisets must agree."""
+    ops = hlo_text_opcodes(text)
+    if proto_ops is not None and proto_ops != ops:
+        raise ValueError(f"HLO text/proto opcode multisets differ: {dict(ops)} vs {dict(proto_ops)}")
+    if bad := sorted(set(ops) - NO_KERNEL_OPS):
+        raise ValueError(f"kernel-bearing HLO ops {bad}")
+    return ops
 
 
 def checked_resource_rows(rows):
@@ -213,7 +309,16 @@ def scan_executable(entry: Executable, out: Path, db: Path) -> dict:
         finally:
             cp.unlink(missing_ok=True)
     if not rec["elfs"]:
-        raise ValueError(f"no native CUDA ELF in executable: {entry.path}")
+        if entry.kind != "jax_cache":
+            raise ValueError(f"no native CUDA ELF in executable: {entry.path}")
+        try:
+            ops = classify_no_kernel(_optimized_hlo(blob, ax, asm), hlo_proto_opcodes(_optimized_hlo_proto(blob, ax, asm), ax))
+        except Exception as exc:
+            raise ValueError(f"no native CUDA ELF in executable: {entry.path} ({type(exc).__name__}: {exc})") from exc
+        rec.update(kernel_class="NO_KERNEL", no_kernel_hlo_ops=dict(sorted(ops.items())),
+                   kinput_transpose_status="NO_KERNEL_IDENTITY_HLO", kinput_transpose_over500=[])
+        return rec
+    rec["kernel_class"] = "KERNEL"
     try:
         text = _optimized_hlo(blob, ax, asm)
         if re.search(r"%?slim\.(?:zero|convert|out|root)[.\s=]", text):
@@ -254,12 +359,18 @@ def run_gate(cache: Path, out: Path, pattern=DEFAULT_JIT_GLOB, run_proof=None, s
         db.unlink(missing_ok=True)
     # Identical native code is not proof of identical optimized-HLO counts.
     # Compact AOT metadata remains UNKNOWN even if another JIT has the same ELF.
+    no_kernel = [rec for rec in records if is_no_kernel(rec)]
+    no_kernel_ops = sum((Counter(rec["no_kernel_hlo_ops"]) for rec in no_kernel), Counter())
+    no_measured_kernels = len(no_kernel) == len(records)  # only kernel-free entries: nothing was measured -> FAIL
     hard = any(elf["stack_over256"] for rec in records for elf in rec["elfs"])
     conservative = any(elf["nonleaf_over1k"] for rec in records for elf in rec["elfs"]) or any(rec.get("kinput_transpose_over500") for rec in records)
     unknown_native = any(elf.get("callgraph_unknown") for rec in records for elf in rec["elfs"])
     unknown_hlo = any(rec.get("kinput_transpose_status", "").startswith("UNKNOWN") for rec in records)
-    verdict = "FAIL" if hard or conservative else ("INCOMPLETE" if unknown_native or unknown_hlo else "PASS")
+    verdict = "FAIL" if hard or conservative or no_measured_kernels else ("INCOMPLETE" if unknown_native or unknown_hlo else "PASS")
     gate = {"cache": str(cache), "entries": records, "n_entries": len(records), "e41_gate": verdict,
+            "n_no_kernel": len(no_kernel), "no_kernel_hlo_ops": dict(sorted(no_kernel_ops.items())),
+            "no_kernel_entries": [rec["entry"] if "entry" in rec else rec["path"] for rec in no_kernel],
+            "no_measured_kernels": no_measured_kernels,
             "hard_stack_gate": "FAIL" if hard else "PASS", "conservative_flags": bool(conservative),
             "coverage": {"status": "PASS", "aot_programs": sorted({entry.program for entry in entries if entry.kind == "aot"}),
                          "required_run_programs": sorted(required), "run_proofs": [str(p) for p in proofs],
@@ -281,7 +392,7 @@ def main(argv=None):
         raise SystemExit("wave_cubin_gate is CPU-only: set JAX_PLATFORMS=cpu")
     gate = run_gate(args.cache, args.out, args.module_glob, args.run_proof)
     print("E41", gate.get("e41_gate", gate["hard_stack_gate"]), "| STACK>256", gate["hard_stack_gate"], "| callee/HLO flags", gate["conservative_flags"],
-          "| entries", gate["n_entries"], "| AOT programs", gate["coverage"]["aot_programs"], flush=True)
+          "| entries", gate["n_entries"], "| NO_KERNEL", gate.get("n_no_kernel", 0), "| AOT programs", gate["coverage"]["aot_programs"], flush=True)
     return 0 if gate.get("e41_gate", gate["hard_stack_gate"]) == "PASS" else 2
 
 

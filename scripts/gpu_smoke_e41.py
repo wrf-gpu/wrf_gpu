@@ -45,7 +45,7 @@ def scan(cache: Path, out: Path) -> dict:
     (out / "e41.json").unlink(missing_ok=True)
     result = _gate_module().run_gate(cache, out)
     result.update(tool="scripts/e41 (tracked full gate)", unscanned=[],
-                  max_stack_B=max(e["max_stack_B"] for r in result["entries"] for e in r["elfs"]))
+                  max_stack_B=max((e["max_stack_B"] for r in result["entries"] for e in r["elfs"]), default=None))
     (out / "e41.json").write_text(json.dumps(result, indent=1, allow_nan=False) + "\n")
     return result
 

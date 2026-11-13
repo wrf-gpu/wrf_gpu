@@ -1313,6 +1313,7 @@ class OperationalNamelist:
     nwp_diagnostics: int = 0
     do_radar_ref: int = 0
     diagnostic_history_interval: float = 60.0  # WRF &time_control minutes, per domain.
+    afwa_severe_opt: int = 0  # &afwa afwa_diag_opt=1+afwa_severe_opt=1: AFWA WSPD10MAX only (diagnostics.afwa).
     swint_opt: int = 0  # WRF-Solar surface interpolation; absent on the default path.
     rad_diag: int = 0  # &gpuwrf: held RRTMG heating and input-condensate history.
     icloud_bl: int = 1  # WRF: 0 skips the radiation-only MYNN cloud merge.
@@ -1790,10 +1791,16 @@ class OperationalNamelist:
             aux += (("cycling", True),)
         if self.bl_mynn_cloudpdf != 2:
             aux += (("bl_mynn_cloudpdf", self.bl_mynn_cloudpdf),)
+        if self.afwa_severe_opt:  # last in, first out; absent keeps the released treedef/key
+            aux += (("afwa_severe", int(self.afwa_severe_opt), float(self.diagnostic_history_interval)),)
         return children, aux
 
     @classmethod
     def tree_unflatten(cls, aux, children):
+        afwa_severe_opt, afwa_history_interval = 0, None
+        if aux and isinstance(aux[-1], tuple) and aux[-1][0] == "afwa_severe":
+            _, afwa_severe_opt, afwa_history_interval = aux[-1]
+            aux = aux[:-1]
         bl_mynn_cloudpdf = 2
         if aux and isinstance(aux[-1], tuple) and aux[-1][0] == "bl_mynn_cloudpdf":
             bl_mynn_cloudpdf = int(aux[-1][1])
@@ -1937,6 +1944,8 @@ class OperationalNamelist:
         if aux and isinstance(aux[-1], tuple) and aux[-1][0] == "online_diagnostics":
             _, nwp_diagnostics, do_radar_ref, diagnostic_history_interval = aux[-1]
             aux = aux[:-1]
+        if afwa_history_interval is not None:
+            diagnostic_history_interval = afwa_history_interval
         prec_acc_dt = 0.0
         if aux and isinstance(aux[-1], tuple) and aux[-1][0] == "prec_acc_dt":
             prec_acc_dt = aux[-1][1]
@@ -2209,6 +2218,7 @@ class OperationalNamelist:
             icloud_bl=icloud_bl,
             bl_mynn_cloudpdf=bl_mynn_cloudpdf,
             cycling=cycling,
+            afwa_severe_opt=afwa_severe_opt,
             stochastic_config=stochastic_config,
             gfdl_grid=gfdl_grid,
             tracer_opt=tracer_opt, tracer_adv_opt=tracer_adv_opt, tracer_mix2_off=tracer_mix2_off,
@@ -8100,7 +8110,8 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
             state=result.state.replace(xland=jnp.asarray(bundle.xland,result.state.xland.dtype),
                                        lakemask=jnp.asarray(bundle.lakemask,result.state.lakemask.dtype)),
             history_diagnostics=seed_history_diagnostics(enforced))
-    if _explicit_ruc(namelist) or _explicit_ssib(namelist) or float(namelist.prec_acc_dt) > 0.0 or namelist.nwp_diagnostics:
+    if (_explicit_ruc(namelist) or _explicit_ssib(namelist) or float(namelist.prec_acc_dt) > 0.0 or namelist.nwp_diagnostics
+            or namelist.afwa_severe_opt):
         from gpuwrf.runtime.operational_state import seed_history_diagnostics
         result = result.replace(history_diagnostics=seed_history_diagnostics(enforced))
     if cu_opt == 1:
@@ -8266,6 +8277,11 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
             result=result.replace(nwp_diagnostics=seed_nwp(enforced))
         if namelist.do_radar_ref or int(namelist.mp_physics) in (9,18,19,21,22,50,51,52,53,55):
             result=result.replace(radar_reflectivity=jnp.zeros_like(enforced.qv,dtype=jnp.float32))
+    if namelist.afwa_severe_opt:
+        from gpuwrf.diagnostics.afwa import seed_afwa, validate_options as validate_afwa
+        from gpuwrf.coupling.kf_rk import kf_tend_rk_enabled
+        validate_afwa(namelist, wrf_order=_microphysics_wrf_order_enabled(), kf_rk=kf_tend_rk_enabled())
+        result = result.replace(afwa_diagnostics=seed_afwa(enforced))
     if namelist.swint_opt:
         from gpuwrf.diagnostics.solar import seed_solar
         from gpuwrf.diagnostics.solar_config import validate_options
@@ -11288,8 +11304,14 @@ def _physics_boundary_step_in_window(
             from gpuwrf.diagnostics.online import nwp_inputs
             nwp_held_inputs=nwp_inputs(physical_origin,next_state,carry.base_state,namelist,
                                        _microphysics_spec_zone(namelist))
+        if carry.afwa_diagnostics is not None:
+            # grid%z of the AFWA driver: post-RK pre-microphysics ph inside the microphysics zone,
+            # step-entry ph on the spec_zone ring (moist_physics_prep_em; critic FIX 2).
+            from gpuwrf.diagnostics.afwa import heights as afwa_heights
+            afwa_ph = afwa_heights(physical_origin, next_state, carry.base_state,
+                                   _microphysics_spec_zone(namelist))
         if (carry.noahmp_precipitation is not None or carry.precipitation_buckets is not None
-                or carry.radar_reflectivity is not None):
+                or carry.radar_reflectivity is not None or carry.afwa_diagnostics is not None):
             if carry.radar_reflectivity is not None:
                 next_state,precip,radar_context=_apply_post_rk_microphysics(
                     next_state,namelist,return_precipitation=True,return_radar_context=True,
@@ -11325,6 +11347,13 @@ def _physics_boundary_step_in_window(
                 carry = carry.replace(precipitation_buckets=update_buckets(
                     carry.precipitation_buckets, raincv, rainncv, snowncv,
                     carry.history_diagnostics.t2, physics_lead_seconds, namelist.prec_acc_dt))
+            if carry.afwa_diagnostics is not None:
+                # AFWA afwa_precip = RAINCV + RAINNCV of this step (module_diag_afwa.F:315), the same
+                # raw Thompson/KF amounts as the prec_acc_dt buckets (validate_options: mp=8, cu=0/1).
+                from gpuwrf.diagnostics.precipitation import thompson_amounts
+                afwa_rainncv, _ = thompson_amounts(precip, spec_zone=_microphysics_spec_zone(namelist))
+                afwa_amounts = (rain_increment if int(namelist.cu_physics) == 1
+                                else jnp.zeros_like(afwa_rainncv), afwa_rainncv)
         else:
             next_state = _apply_post_rk_microphysics(
                 next_state, namelist, **nssl_kwargs)
@@ -11436,6 +11465,12 @@ def _physics_boundary_step_in_window(
     if final_carry.nwp_diagnostics is not None:
         from gpuwrf.diagnostics.online import after_step
         final_carry=after_step(final_carry,namelist,step_index,nwp_held_inputs)
+    if final_carry.afwa_diagnostics is not None:
+        # WRF diagnostics_driver after all RK steps: step-start u_phy/v_phy (phy_prep RK1),
+        # grid%z of moist_physics_prep_em (afwa_ph), this step's U10/V10 and precipitation.
+        from gpuwrf.diagnostics.afwa import after_step as afwa_after_step
+        final_carry = afwa_after_step(final_carry, namelist, step_index, physical_origin, afwa_amounts,
+                                      afwa_ph)
     final_carry = final_carry.replace(census=count_work(final_carry.census, "steps"))
     if capture_rca:
         state_health.append(_rca_state_health(next_state))

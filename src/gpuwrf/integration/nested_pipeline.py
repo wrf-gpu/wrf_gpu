@@ -169,6 +169,8 @@ class NestedPipelineConfig:
     surface_controls: Path | None = None
     batch_surface_controls: tuple[Path | None, ...] | None = None
     runtime_parameters: Path | None = None
+    # Opt-in host-side in-run extract (gpuwrf.extract.request.ExtractRequest); None = OFF.
+    extract: Any = None
 
 
 def domain_names_for(max_dom: int) -> tuple[str, ...]:
@@ -920,8 +922,14 @@ def _load_domains(
         from gpuwrf.io.namelist_check import refuse_single_domain_mp_nested, refuse_unqualified_nested_options
         raw_namelist = Gen2Run(run_dir).namelist
         from gpuwrf.io.nesting_options import admit_feedback
-        admit_feedback(raw_namelist,names,feedback=config.feedback)
         from gpuwrf.io.nesting_options import resolve_nesting_options
+        from gpuwrf.io.stochastic_config import stochastic_nesting_refusals
+        refused = stochastic_nesting_refusals(
+            raw_namelist, names, feedback=resolve_nesting_options(raw_namelist, feedback=config.feedback)['feedback'],
+            batch_size=_batch_ensemble_size_from_env())
+        if refused:
+            raise ValueError("; ".join(refused))
+        admit_feedback(raw_namelist,names,feedback=config.feedback)
         if resolve_nesting_options(raw_namelist,feedback=config.feedback)['feedback']:
             if _batch_ensemble_size_from_env()>1:
                 raise ValueError('two-way feedback is qualified for B=1; batched feedback is unqualified')
@@ -1116,6 +1124,11 @@ def _load_domains(
         # filter/diffusion knobs; <=v0.3.3 silently ran from_grid's defaults.
         # Absent keys keep the values above (release namelists: same program).
         namelist = bind_namelist_options(namelist, run.namelist, name)
+        if namelist.stochastic_config is not None:
+            # RAND nest-init rounds = d01 children this run actually opens (critic FIX finding 3).
+            from gpuwrf.io.stochastic_config import with_executed_d01_children
+            namelist = dataclass_replace(namelist, stochastic_config=with_executed_d01_children(
+                namelist.stochastic_config, name, hierarchy.children(name) if name == names[0] else ()))
         topo_wind = _domain_physics_int(run, "topo_wind", name, 0)
         if topo_wind:
             # WRF start_em CTOPO/CTOPO2 from the resolved domain terrain (io.topo_wind_static).
@@ -1853,6 +1866,10 @@ def _load_batched_domains(
         loaded = _bind_batch_surface_controls(loaded, names, config.batch_surface_controls, batch_size)
 
     ref_hierarchy, ref_bundles, ref_meta, ref_run_start, ref_dt, ref_carries = loaded[0]
+    if int(batch_size) > 1 and any(getattr(b.namelist, "stochastic_config", None) is not None
+                                   for lane in loaded for b in lane[1].values()):
+        raise ValueError("stochastic physics with batched members (B>1) is not qualified; "
+                         "run members as separate B=1 runs")
     # Tenerife B=4: extract the genuinely per-lane Noah-MP arrays (tbot/shdfac/
     # shdmax) BEFORE canonicalization shares the reference statics -- the lane
     # values must survive to feed the per-lane clock bases.
@@ -2164,6 +2181,9 @@ def run_batched_operational_domain_tree(
         _resolve_operational_suite(bundle.namelist)
         if int(bundle.namelist.rk_order) != 3:
             raise ValueError(f"{name}: operational nesting currently supports RK3 only")
+        if int(getattr(bundle.namelist, "afwa_severe_opt", 0) or 0):
+            # The AFWA Pallas kernel is not batched (critic FIX 5: vmap of the B=1 kernel).
+            raise ValueError(f"{name}: AFWA WSPD10MAX (afwa_severe_opt=1) is qualified for B=1 only")
 
     effective_feedback = tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
     if effective_feedback:
@@ -2973,6 +2993,13 @@ class _PerDomainWrfoutWriter:
     """
 
     wants_carry = True
+    _extract = None  # gpuwrf.extract.collector.ExtractCollector when --extract-spec is set
+    stochastic_phase = None  # _StochasticHistoryPhase when a stochastic carry is nested (v50-stoch FIX5)
+
+    def history_view(self, name: str, own_step: int, carries: Any, own_steps: Any) -> Any:
+        """Carry the writer receives at a history boundary (domain_tree.maybe_output hook)."""
+        phase = self.stochastic_phase
+        return carries[name] if phase is None else phase.view(name, int(own_step), carries, own_steps)
 
     def __init__(
         self,
@@ -3188,7 +3215,10 @@ class _PerDomainWrfoutWriter:
         # Record the deterministic path NOW (step thread, before any background
         # work) so ``self.written`` is order-deterministic and the output-present
         # count is valid regardless of when the materialize/write lands.
-        self.written[name].append(str(path))
+        # Extract RAW off (opt-in): the frame feeds the extract only; no wrfout path exists.
+        raw_off = getattr(self, "_extract", None) is not None and not self._extract.raw_history
+        if not raw_off:
+            self.written[name].append(str(path))
 
         if self._output_pipeline is not None:
             # S1: hand the post-step carry (device leaves by reference) + host
@@ -3222,7 +3252,7 @@ class _PerDomainWrfoutWriter:
             "lead_hours": float(lead_hours),
             "own_step": int(own_step),
             "all_finite": True,
-            "wrfout": str(path),
+            "wrfout": None if raw_off else str(path),
             "prepared_full_variable_set": bool(self._full_variable_set),
             "full_variable_count": int(len(FULL_WRFOUT_VARIABLES)) if self._full_variable_set else None,
         }
@@ -3251,6 +3281,11 @@ class _PerDomainWrfoutWriter:
 
         perf_timers = getattr(self, "_perf_timers", _NestedOutputPerfTimers.disabled())
         state = getattr(carry, "state", carry)
+        # Opt-in in-run extract (gpuwrf.extract): under a reduced history subset the
+        # extract inputs join the single device->host fetch; OFF => the written subset.
+        extract = getattr(self, "_extract", None)
+        fetch_subset = (self._variable_subset if extract is None
+                        else extract.prepare_subset(self._variable_subset, name))
         t0 = perf_timers.start()
         try:
             assert_state_finite_at_boundary(
@@ -3260,6 +3295,8 @@ class _PerDomainWrfoutWriter:
             perf_timers.stop(
                 "finite_guard", t0, domain=name, own_step=int(own_step)
             )
+        if extract is not None and not extract.raw_history and not extract.wants(name):
+            return  # RAW off and this nest is not extracted: nothing to fetch or write
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
         noahmp_land = getattr(carry, "noahmp_land", None)
@@ -3276,7 +3313,7 @@ class _PerDomainWrfoutWriter:
                     state, namelist, self.run_start, lead_seconds=lead_seconds,
                     noahmp_land=None, noahmp_rad=None,
                     radiation_diagnostics=getattr(carry, "radiation_diagnostics", None),
-                    history=carry.history_diagnostics, variable_subset=self._variable_subset,
+                    history=carry.history_diagnostics, variable_subset=fetch_subset,
                     output_radiation_work=radiation_work,
                 )
             elif bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
@@ -3288,7 +3325,7 @@ class _PerDomainWrfoutWriter:
                     noahmp_land=noahmp_land,
                     noahmp_rad=getattr(carry, "noahmp_rad", None),
                     radiation_diagnostics=getattr(carry, "radiation_diagnostics", None),
-                    variable_subset=self._variable_subset,
+                    variable_subset=fetch_subset,
                     **({"output_radiation_work": radiation_work} if radiation_work is not None else {}),
                     history_diagnostics=getattr(carry, "history_diagnostics", None),
                 )
@@ -3298,7 +3335,7 @@ class _PerDomainWrfoutWriter:
                     namelist,
                     self.run_start,
                     lead_seconds=lead_seconds,
-                    variable_subset=self._variable_subset,
+                    variable_subset=fetch_subset,
                     **({"output_radiation_work": radiation_work} if radiation_work is not None else {}),
                 )
             diagnostics = self._merge_output_diagnostics(
@@ -3321,6 +3358,10 @@ class _PerDomainWrfoutWriter:
             if getattr(carry,"nwp_diagnostics",None) is not None:
                 from gpuwrf.diagnostics.nwp import history_fields as nwp_history_fields
                 diagnostics=dict(diagnostics or {},**nwp_history_fields(carry.nwp_diagnostics))
+            if getattr(carry,"afwa_diagnostics",None) is not None:
+                # AFWA severe WSPD10MAX (refused together with nwp_diagnostics: one owner).
+                from gpuwrf.diagnostics.afwa import history_fields as afwa_history_fields
+                diagnostics=dict(diagnostics or {},**afwa_history_fields(carry.afwa_diagnostics))
             if getattr(carry,"radar_reflectivity",None) is not None:
                 diagnostics=dict(diagnostics or {},REFL_10CM=carry.radar_reflectivity)
                 mp=(namelist.get("physics",namelist).get("mp_physics",8)
@@ -3360,7 +3401,7 @@ class _PerDomainWrfoutWriter:
                 diagnostics = dict(diagnostics or {}, **held_rad_fields)
             if initial is not None and type(rad).__name__ == 'GoddardRadiationDiagnostics':
                 from gpuwrf.coupling.goddard_radiation import history_fields as goddard_history_fields
-                diagnostics = dict(diagnostics or {}, **goddard_history_fields(rad, self._variable_subset))
+                diagnostics = dict(diagnostics or {}, **goddard_history_fields(rad, fetch_subset))
             for wrf_name,attr in (("COD2D_OUT","cod2d_out"),("CTOP2D_OUT","ctop2d_out")):
                 value=getattr(rad,attr,None)
                 if value is not None:
@@ -3484,7 +3525,7 @@ class _PerDomainWrfoutWriter:
                 run_start=self.run_start,
                 diagnostics=diagnostics,
                 land_state=noahmp_land,
-                variable_subset=self._variable_subset,
+                variable_subset=fetch_subset,
                 include_mandatory_coords=self._variable_subset is not None,
                 full_variable_set=self._full_variable_set,
                 **({"source_global_attrs": self.writer_global_attrs[name]}
@@ -3494,6 +3535,11 @@ class _PerDomainWrfoutWriter:
             perf_timers.stop(
                 "prepare_payload", t0, domain=name, own_step=int(own_step), path=path
             )
+        if extract is not None:
+            # Host arrays by reference + ZNT; the computation runs on the extract thread.
+            extract.submit(name, int(own_step), prepared, state, sources=(diagnostics, state, noahmp_land))
+            if not extract.raw_history:
+                return  # RAW off: extract only -- no wrfout, no history publication
         if getattr(self, "history_journal", None) is not None:
             prepared = dataclass_replace(prepared, restart_publication=self.history_journal.publish)
         if self.census_io_ledger is not None:
@@ -3601,6 +3647,8 @@ def _emit_initial_history_frames(
     initial_carries: dict[str, Any],
     *,
     enabled: bool,
+    tree: Any = None,
+    bundles: Any = None,
 ) -> tuple[Any, ...]:
     """Route each exact initialized carry through the normal writer at lead zero.
 
@@ -3615,7 +3663,129 @@ def _emit_initial_history_frames(
     missing = [name for name in names if name not in initial_carries]
     if missing:
         raise ValueError(f"initial history carries missing domains: {missing}")
+    if tree is not None and bundles is not None:
+        initial_carries = lead_zero_stochastic_carries(names, initial_carries, tree, bundles)
     return tuple(writer(name, 0, initial_carries[name]) for name in names)
+
+
+def lead_zero_stochastic_carries(names, initial_carries, tree, bundles):
+    """Carries for the lead-zero history frames only: stochastic fields at original-WRF phase.
+
+    Original WRF writes a child's first history inside ``integrate(child)``, which runs after the
+    parent's first solve and the parent->child force-down (frame/module_integrate.F:375,393-430;
+    registry.stoch p2c SINT). d01 itself writes before its first solve, so its pattern grids stay at
+    their initial value. A child's lead-zero stochastic fields are therefore the SINT of its parent's
+    patterns after one parent step: d01 advanced once (advance_stochastic, the step's own update),
+    and for a grandchild the child after its own first step (forced from d01, then its SPPT cap).
+    No numerical carry, clock or later output changes: the scheduler forces the same fields again
+    before every child step. Domains without stochastic carries are returned unchanged.
+    """
+    if not any(getattr(initial_carries.get(n), "stochastic", None) is not None for n in names):
+        return initial_carries
+    from types import SimpleNamespace  # noqa: PLC0415
+
+    from gpuwrf.nesting.stochastic import force_child_stochastic  # noqa: PLC0415
+    from gpuwrf.physics.stochastic_driver import grid_spacing, lead_zero_advance  # noqa: PLC0415
+
+    parent_edge = {edge.child: edge for edges in dict(getattr(tree, "edges", None) or {}).values() for edge in edges}
+    out, advanced = dict(initial_carries), {}
+    for name in names:
+        carry = initial_carries[name]
+        stoch = getattr(carry, "stochastic", None)
+        if stoch is None:
+            continue
+        edge = parent_edge.get(name)
+        if edge is not None:
+            source = advanced.get(edge.parent)
+            if source is None:
+                raise ValueError(f"{name}: stochastic child of {edge.parent} without a parent stochastic carry")
+            # Same jitted SINT program (and cache entry) as the operational force-down helper.
+            carry = force_child_stochastic(carry, SimpleNamespace(stochastic=source), edge.weights,
+                                           int(edge.parent_grid_ratio))
+            stoch = carry.stochastic
+            out[name] = carry
+        namelist = bundles[name].namelist
+        dx, dy = grid_spacing(namelist.grid)  # same operands as the step (operational_mode advance_stochastic)
+        advanced[name] = lead_zero_advance(stoch, namelist.stochastic_config, float(dx), float(dy))
+    return out
+
+
+class _StochasticHistoryPhase:
+    """Original-WRF phase of forced child stochastic leaves at every later child history frame.
+
+    Generalizes the lead-zero view (``lead_zero_stochastic_carries``, critic FIX v50-stoch F2) to
+    history frames whose valid time is also a parent step start (GPU arm 11.11, G12): original WRF
+    writes a child's history inside ``integrate(child)`` AFTER the parent's next solve and the
+    parent->child SINT force-down (frame/module_integrate.F:375,393-430), whereas the scheduler emits
+    the child frame from the carry at the end of the previous child subcycle. Only the forced
+    stochastic grids differ (children never produce; within one parent step they are constant), so
+    the view replaces exactly those: starting at the highest ancestor whose step boundary is this
+    instant (only a root changes anything), that ancestor is advanced once (``lead_zero_advance``: the
+    root's own AR(1)/RNG update) and each descendant on the path is SINT-forced from its advanced parent
+    (and given its SPPT cap in turn for the next level). The final frame of the run is left alone: WRF takes no
+    further parent step there. No carry, clock, seed or prognostic field changes: the returned carry
+    is a view for the writer only, and the scheduler still forces the same fields before every child step.
+    """
+
+    def __init__(self, tree: Any, bundles: Any, *, final_root_step: int) -> None:
+        self.parent_edge = {edge.child: edge for edges in dict(getattr(tree, "edges", None) or {}).values()
+                            for edge in edges}
+        self.bundles = bundles
+        children: dict[str, list[Any]] = {}
+        for edge in self.parent_edge.values():
+            children.setdefault(edge.parent, []).append(edge)
+        roots = [name for name in children if name not in self.parent_edge]
+        self.final_step: dict[str, int] = {}
+        pending = [(root, int(final_root_step)) for root in roots]
+        while pending:
+            name, step = pending.pop()
+            self.final_step[name] = step
+            pending.extend((edge.child, step * int(edge.parent_grid_ratio)) for edge in children.get(name, ()))
+
+    def view(self, name: str, own_step: int, carries: Any, own_steps: Any) -> Any:
+        carry = carries[name]
+        if getattr(carry, "stochastic", None) is None or name not in self.parent_edge:
+            return carry
+        if int(own_step) >= self.final_step.get(name, -1):
+            return carry                       # end of run: no further parent step in WRF either
+        chain, step, current = [name], int(own_step), name
+        while current in self.parent_edge:
+            edge = self.parent_edge[current]
+            ratio = int(edge.parent_grid_ratio)
+            if step % ratio:
+                break
+            step //= ratio
+            current = edge.parent
+            if int(own_steps[current]) != step:
+                raise ValueError(f"{name}: history view at step {own_step} but {current} is at step "
+                                 f"{own_steps[current]}, expected {step}")
+            if getattr(carries[current], "stochastic", None) is None:
+                raise ValueError(f"{name}: stochastic child of {current} without a parent stochastic carry")
+            chain.append(current)
+        if len(chain) == 1 or chain[-1] in self.parent_edge:
+            # Inside a parent step, or the highest aligned ancestor is itself a child whose own parent is
+            # mid-step: its pattern is constant there and its cap idempotent, so the carry already holds
+            # the WRF value (re-forcing would only add work and rounding).
+            return carry
+        from types import SimpleNamespace  # noqa: PLC0415
+
+        from gpuwrf.nesting.stochastic import force_child_stochastic  # noqa: PLC0415
+        from gpuwrf.physics.stochastic_driver import grid_spacing, lead_zero_advance  # noqa: PLC0415
+
+        def advanced(domain: str, stoch: Any) -> Any:
+            namelist = self.bundles[domain].namelist
+            dx, dy = grid_spacing(namelist.grid)  # same operands as the step and the lead-zero view
+            return lead_zero_advance(stoch, namelist.stochastic_config, float(dx), float(dy))
+
+        source = advanced(chain[-1], carries[chain[-1]].stochastic)
+        view = carry
+        for domain in reversed(chain[:-1]):
+            edge = self.parent_edge[domain]
+            view = force_child_stochastic(carries[domain], SimpleNamespace(stochastic=source), edge.weights,
+                                          int(edge.parent_grid_ratio))
+            if domain != name:
+                source = advanced(domain, view.stochastic)
+        return view
 
 
 def _finite_stats_host(state: Any) -> dict[str, Any]:
@@ -3728,8 +3898,23 @@ def _admit_cammg_inputs(config: NestedPipelineConfig) -> None:
         validate_input_dir(input_dir)
 
 
+def _drain_outputs_for_checkpoint(output_pipeline, async_writer, writer) -> None:
+    """Before a restart generation is saved: drain the output stages, then (extract ON) wait until every
+    submitted extract frame is staged with fsync -- a RAW-off frame has no other replay source."""
+    from gpuwrf.runtime.restart_store import drain_checkpoint_output
+    drain_checkpoint_output(output_pipeline, async_writer)
+    extract = getattr(writer, "_extract", None)
+    if extract is not None:
+        extract.join()
+
+
 def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     """Run the nested pipeline and join all owned AOT loader threads on exit."""
+    if getattr(config, "extract", None) is not None:
+        if _batch_ensemble_size_from_env() > 1:
+            raise ValueError("--extract-spec currently requires B=1; batched extract is unverified")
+        if config.branch_from is not None:
+            raise ValueError("--extract-spec with --branch-from is not supported by extract V1")
     if config.resume_checkpoint is not None and config.branch_from is None:
         from gpuwrf.io.wrfbdy_coverage import require_wrfbdy_coverage
         # Preserve the existing coverage-first refusal for resumed extensions,
@@ -3742,6 +3927,9 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             config.checkpoint_max_bytes, config.checkpoint_max_generations,
             config.checkpoint_reserve_bytes,
         ), config.resume_checkpoint)
+        # Extract binding after the existing coverage/journal refusals (they keep their order).
+        from gpuwrf.extract.request import require_resume_policy as require_extract_policy
+        require_extract_policy(config.resume_checkpoint, getattr(config, "extract", None))
     _admit_cammg_inputs(config)
     prefetch_handles = []
     try:
@@ -3853,8 +4041,10 @@ def _execute_nested_pipeline(
     if config.branch_from is not None:
         if config.resume_checkpoint is not None:
             raise ValueError("branch and ordinary resume are mutually exclusive")
+        if config.feedback:
+            raise ValueError("checkpoint branching supports one-way nesting only (feedback=0); two-way is refused")
         from gpuwrf.runtime.checkpoint_branch import validate_paths
-        validate_paths(config.branch_from, config.output_dir, config.checkpoint_dir)
+        validate_paths(config.branch_from, config.output_dir, config.checkpoint_dir, config.scratch_dir)
     config.output_dir.mkdir(parents=True, exist_ok=True)
     config.proof_dir.mkdir(parents=True, exist_ok=True)
 
@@ -4144,15 +4334,33 @@ def _execute_nested_pipeline(
         writer.history_journal = HistoryJournal(restart_store, restart_identity, stream)
         if restart_snapshot is not None:
             restart_report["replayed_history"] = writer.history_journal.recover(restart_snapshot["driver_state"]["outputs"])
+    if getattr(config, "extract", None) is not None:
+        from gpuwrf.extract.collector import ExtractCollector, plan_for
+        if config.extract.raw_history and writer._variable_subset is None and not writer._full_variable_set:
+            raise ValueError("--extract-spec needs the full history stream or a variable subset "
+                             "(the operational reduced list lacks C1H/C2H/DNW)")
+        writer._extract = ExtractCollector(
+            config.extract, run_start=run_start, input_dir=Path(config.input_dir),
+            resumed=restart_snapshot is not None,
+            plans={name: plan_for(name, bundles[name].namelist, dt_by_domain[name],
+                                  history_interval_minutes[name], output_alarm_schedule[name],
+                                  bool(config.emit_initial_history),
+                                  dx_m=bundles[name].grid.projection.dx_m) for name in names},
+        )
 
     # WRF-compatible lead-zero history is an explicit corrected-validation opt-in.
     # It uses the same authenticated per-domain writer before the first numerical
     # advance; the domain-tree scheduler and every later callback remain untouched.
+    if int(batch_size) == 1 and len(names) > 1 and any(
+            getattr(initial_carries.get(name), "stochastic", None) is not None for name in names):
+        writer.stochastic_phase = _StochasticHistoryPhase(tree, bundles, final_root_step=int(root_steps))
     initial_history_results = _emit_initial_history_frames(
         writer,
         names,
         initial_carries,
         enabled=bool(config.emit_initial_history) and restart_snapshot is None,
+        tree=tree,
+        bundles=bundles,
     )
 
     # MEMORY-BOUNDED segmented host loop (v0.12.0 nested-OOM fix).  The whole
@@ -4321,9 +4529,9 @@ def _execute_nested_pipeline(
                 restart_report["resume_to_first_segment_ready_s"] = time.perf_counter() - overall_start
                 first_resumed_segment = False
             if config.checkpoint_dir is not None and (start % config.checkpoint_interval_steps == 0 or start == root_steps):
-                from gpuwrf.runtime.restart_store import drain_checkpoint_output, output_receipts, writer_census_snapshot
+                from gpuwrf.runtime.restart_store import output_receipts, writer_census_snapshot
                 checkpoint_t0 = time.perf_counter()
-                drain_checkpoint_output(output_pipeline, async_writer)
+                _drain_outputs_for_checkpoint(output_pipeline, async_writer, writer)
                 generation, storage_receipt = restart_store.save(
                     carries, own_steps, dt_by_domain, restart_identity,
                     driver_state={
@@ -4409,8 +4617,19 @@ def _execute_nested_pipeline(
             except BaseException:
                 if sys.exc_info()[0] is None:
                     raise
+        if getattr(writer, "_extract", None) is not None:
+            # After every writer stage has joined (no submit can follow); idempotent.
+            try:
+                writer._extract.close()
+            except BaseException:
+                if sys.exc_info()[0] is None:
+                    raise
         if regional_output_error is not None and regional_body_error is None:
             raise regional_output_error
+    if getattr(writer, "_extract", None) is not None:
+        # Published only after the forecast, every writer join and the regional-stream close succeeded.
+        from gpuwrf.extract.collector import engine_identity
+        extract_report = writer._extract.finalize(engine=engine_identity())
     result = DomainTreeResult(
         carries=carries or {},
         states=final_states,
@@ -4437,6 +4656,8 @@ def _execute_nested_pipeline(
             seam = restart_snapshot["driver_state"]["branch_start_steps"][name]
             expected_outputs = sum(step > seam for step in output_alarm_schedule[name])
         expected_output_files = expected_outputs * int(batch_size)
+        if getattr(writer, "_extract", None) is not None and not writer._extract.raw_history:
+            expected_output_files = 0  # extract RAW off: the frames feed the extract only
         output_ok = len(outputs) == expected_output_files
         all_finite = all_finite and finite_ok
         all_output_present = all_output_present and output_ok
@@ -4457,6 +4678,12 @@ def _execute_nested_pipeline(
     perf_timer_summary = perf_timers.summary()
     if perf_timer_summary is not None:
         meta["nested_output_perf_timers"] = perf_timer_summary
+    from gpuwrf.runtime import aot_hlo_store as _content_store
+
+    if _content_store.enabled() or _content_store.report()["events"] or _content_store.CONFIG_ERRORS:
+        # Content-addressed AOT store (default off: key absent): every lookup and
+        # publication of this process with the executable each program variant ran.
+        meta["aot_content_store"] = _content_store.report()
     if int(batch_size) == 1:
         meta["nested_runtime"] = {
             "prepared_runtime_reuse": bool(prepared_runtime_reuse),
@@ -4474,6 +4701,8 @@ def _execute_nested_pipeline(
                 "cascade_counts": dict(cascade_counts),
             }
     verdict = "PIPELINE_GREEN" if (all_finite and all_output_present) else "PIPELINE_PARTIAL"
+    if getattr(writer, "_extract", None) is not None and extract_report["status"] != "READY":
+        verdict = "PIPELINE_PARTIAL"  # a non-READY extract is never a green run
 
     payload: dict[str, Any] = {
         "schema": "M7DailyPipelineRun",
@@ -4529,6 +4758,8 @@ def _execute_nested_pipeline(
             "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke.",
         ],
     }
+    if getattr(writer, "_extract", None) is not None:
+        payload["extract"] = extract_report
     if config.emit_initial_history:
         payload["initial_history_output"] = {
             "enabled": True,

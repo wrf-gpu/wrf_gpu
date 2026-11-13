@@ -1,7 +1,7 @@
 {
  "note": "proofs files of this release kept in the private repository (bytecode, dumps, raw case outputs, working archives, per-run logs, receipts > 1 MiB, raw data no public test reads); path, size and SHA-256 identify each one",
- "version": "0.4.6",
- "private_commit": "65b9e97a9b6b067a7e20d4eee53477388aa89e0d",
+ "version": "0.5.0",
+ "private_commit": "b42a02bbc980aa0373be9be968d8172bad36c8bf",
  "files": {
   "proofs/o5-9nest/results/ring0_trace.json": {
    "bytes": 1213707,
@@ -14961,6 +14961,11 @@
   "proofs/v45_rc/tools_v6/nvtx_marker.cc": {
    "bytes": 468,
    "sha256": "c72161391f2c39cebbc2fc7f4fbacca74bd7526a4f7c1d3bf2dee72c1a2e9eb1",
+   "reason": "raw data no public test consumes"
+  },
+  "proofs/v46_seqharden/gate_conf_example_R16.conf": {
+   "bytes": 1349,
+   "sha256": "b9e8232fc2978099b9db68ee53d5b7112bea13c89605e1f6c68dfd3f85db33e1",
    "reason": "raw data no public test consumes"
   },
   "proofs/w41_bundle041/receipts/SHA256SUMS": {

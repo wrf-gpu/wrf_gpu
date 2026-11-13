@@ -1,0 +1,362 @@
+{
+ "schema": "v46-seqharden.seq_smoke.v1",
+ "utc_start": "2026-10-31T01:44:32Z",
+ "utc_end": "2026-10-31T02:00:02Z",
+ "verdict": "PASS",
+ "fails": [],
+ "ram_retries": {},
+ "v11_sha256": "08c81531ac08f6cb939df34426b8342ddf7bcd1577552a22f06c2970ba5c7c54",
+ "gate_sha256": "ec92c5faeede50822ef071db821e9d62e1667505de7618cec398f703cd22ec0d",
+ "v9_sha256": "1b1ea03093f160d00fb5f01603cf1d6fe6c566ea86714562ac59ee974a9001c4",
+ "real_entry_sha256": "093d9e108caddc69584029e0ae0de6549000a387fb7b242cf62efabea37e4f0c",
+ "real_cross_files_named_STEP_NOTE": [],
+ "mutants": {
+  "M1_no_stop_branch": {
+   "killed": true,
+   "signature": [
+    "J_M1_no_stop_branch: entry not logged NOT-STARTED",
+    "J_M1_no_stop_branch: entry was RUN after inputs FAIL",
+    "J_M1_no_stop_branch: entry stub started (marker present)",
+    "J_M1_no_stop_branch: results statuses != [FAIL, NOT-STARTED]",
+    "J_M1_no_stop_branch: STEP note lacks NOT-STARTED entry"
+   ],
+   "rc": 10
+  },
+  "M2_exit0": {
+   "killed": true,
+   "signature": [
+    "J_M2_exit0: rc 0 != 10"
+   ],
+   "rc": 0
+  },
+  "M3_first_error_const": {
+   "killed": true,
+   "signature": [
+    "J_M3_first_error_const: STEP note lacks inputs first error"
+   ],
+   "rc": 10
+  },
+  "M4_reqenv_bypass": {
+   "killed": true,
+   "signature": "rc 0, markers ['entry_ok.started', 'inputs_ok.started']",
+   "rc": 0
+  },
+  "M5_stop_only_explicit": {
+   "killed": true,
+   "signature": [
+    "J_M5_stop_only_explicit: entry not logged NOT-STARTED",
+    "J_M5_stop_only_explicit: entry was RUN after inputs FAIL",
+    "J_M5_stop_only_explicit: entry stub started (marker present)",
+    "J_M5_stop_only_explicit: results statuses != [FAIL, NOT-STARTED]",
+    "J_M5_stop_only_explicit: STEP note lacks NOT-STARTED entry"
+   ],
+   "rc": 10
+  }
+ },
+ "proof_path": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/PROOF.json",
+ "cases": {
+  "A_r15_real_entry": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 252.5,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "statuses": [
+    "FAIL",
+    "NOT-STARTED"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:48:48Z: Zwischenschritt FAIL (1 fehlgeschlagen, 1 nicht gestartet; Sequenzer rc 10) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- v45-waveops-w1a-inputs: FAIL rc=1 \u2014 erster Fehler: ValueError: SCREEN6 explicit J2 result pin required\n- v45-waveops-w1a: NICHT GESTARTET (not started: stop-on-fail after v45-waveops-w1a-inputs)\n"
+  },
+  "B_inputs_fail_stop": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 9.4,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "statuses": [
+    "FAIL",
+    "NOT-STARTED"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:48:57Z: Zwischenschritt FAIL (1 fehlgeschlagen, 1 nicht gestartet; Sequenzer rc 10) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-inputs: FAIL rc=1 \u2014 erster Fehler: ValueError: SCREEN6 explicit J2 result pin required\n- w-entry: NICHT GESTARTET (not started: stop-on-fail after w-inputs)\n"
+  },
+  "C_all_ok": {
+   "ok": true,
+   "rc": 0,
+   "wall_s": 8.9,
+   "markers": [
+    "entry_ok.started",
+    "inputs_ok.started"
+   ],
+   "statuses": [
+    "OK",
+    "OK"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:49:06Z: Zwischenschritt OK (alle 2 geplanten Schritte rc 0) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-inputs: OK rc=0\n- w-entry: OK rc=0\n"
+  },
+  "D_both_fail_all_errors": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 7.3,
+   "markers": [
+    "entry_fail.started",
+    "inputs_fail.started"
+   ],
+   "statuses": [
+    "FAIL",
+    "FAIL"
+   ],
+   "note": null
+  },
+  "D2_stop_on_fail_env": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 3.5,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "statuses": [
+    "FAIL",
+    "NOT-STARTED"
+   ],
+   "note": null
+  },
+  "E1_missing_all": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 0.3,
+   "markers": [],
+   "statuses": [],
+   "note": null
+  },
+  "E2_budget_empty": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 0.2,
+   "markers": [],
+   "statuses": [],
+   "note": null
+  },
+  "E3_budget_lowercase_none": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 0.2,
+   "markers": [],
+   "statuses": [],
+   "note": null
+  },
+  "E4_step_pin_short": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 0.2,
+   "markers": [],
+   "statuses": [],
+   "note": null
+  },
+  "E5_all_good": {
+   "ok": true,
+   "rc": 0,
+   "wall_s": 5.6,
+   "markers": [
+    "entry_ok.started",
+    "inputs_ok.started"
+   ],
+   "statuses": [
+    "OK",
+    "OK"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:49:24Z: Zwischenschritt OK (alle 2 geplanten Schritte rc 0) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-inputs: OK rc=0\n- w-entry: OK rc=0\n"
+  },
+  "F_time_skip_stop": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 1.9,
+   "markers": [],
+   "statuses": [
+    "SKIPPED",
+    "NOT-STARTED"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:49:25Z: Zwischenschritt FAIL (1 fehlgeschlagen, 1 nicht gestartet; Sequenzer rc 10) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-inputs: SKIPPED rc=- \u2014 erster Fehler: skipped: 1 min left < cap 10 + 2\n- w-entry: NICHT GESTARTET (not started: stop-on-fail after w-inputs)\n"
+  },
+  "G_timeout_stop": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 139.2,
+   "markers": [
+    "slow.started"
+   ],
+   "statuses": [
+    "TIMEOUT",
+    "NOT-STARTED"
+   ],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:51:44Z: Zwischenschritt FAIL (1 fehlgeschlagen, 1 nicht gestartet; Sequenzer rc 10) \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-slow: TIMEOUT rc=124 \u2014 erster Fehler: timeout after cap 1+1 min; log: slow stub: sleeping past cap\n- w-entry: NICHT GESTARTET (not started: stop-on-fail after w-slow)\n"
+  },
+  "H_v9_before": {
+   "ok": true,
+   "rc": 0,
+   "wall_s": 9.9,
+   "markers": [
+    "entry_ok.started",
+    "inputs_fail.started"
+   ],
+   "statuses": [],
+   "note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:51:54Z: Zwischenschritt beendet \u2014 Slot l\u00e4uft weiter (KEINE R\u00fcckgabe)\n\n- w-inputs rc=1\n- w-entry rc=0\n"
+  }
+ },
+ "gate": {
+  "GA_r15_real_entry_STOP": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 56.3,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "lease_left": [],
+   "cross_files": [
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_START.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STEP.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STOPPED.md"
+   ],
+   "stop_note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:54:26Z: W1a SCREEN6 smoke STOPPED \u2014 FAIL (Sequenzer rc 10; Gate rc 10) \u2014 KEIN sauberes Paketende, GPU frei\n- Abweichungen: v45-waveops-w1a-inputs:FAIL(rc=1) v45-waveops-w1a:NOT-STARTED\n- Alle Schritte (jeder Fehler mit erster Fehlerzeile):\n  - v45-waveops-w1a-inputs: FAIL rc 1 \u2014 erster Fehler: ValueError: SCREEN6 explicit J2 result pin required\n  - v45-waveops-w1a: NICHT GESTARTET (not started: stop-on-fail after v45-waveops-w1a-inputs)\n- Lock-Halter jetzt: 0\n"
+  },
+  "GB_all_ok_DONE": {
+   "ok": true,
+   "rc": 0,
+   "wall_s": 95.3,
+   "markers": [
+    "entry_ok.started",
+    "inputs_ok.started"
+   ],
+   "lease_left": [],
+   "cross_files": [
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_DONE.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_START.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STEP.md"
+   ],
+   "stop_note": null
+  },
+  "GC_arm_refuse_empty_budget": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 6.4,
+   "markers": [],
+   "lease_left": [],
+   "cross_files": [],
+   "stop_note": null
+  },
+  "GD_arm_refuse_stripped_pin": {
+   "ok": true,
+   "rc": 2,
+   "wall_s": 14.7,
+   "markers": [],
+   "lease_left": [],
+   "cross_files": [],
+   "stop_note": null
+  },
+  "GE_seq_abort_STOP": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 21.1,
+   "markers": [],
+   "lease_left": [],
+   "cross_files": [
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_START.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STOPPED.md"
+   ],
+   "stop_note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:56:47Z: W1a SCREEN6 smoke STOPPED \u2014 FAIL (Sequenzer rc 4; Gate rc 10) \u2014 KEIN sauberes Paketende, GPU frei\n- Abweichungen: results-json-missing\n- Alle Schritte (jeder Fehler mit erster Fehlerzeile):\n  - w-inputs: NICHT GELAUFEN (Sequenzer ohne Ergebnis: ABORT: wind300 not finished before cutoff (smoke stand-in))\n  - w-entry: NICHT GELAUFEN (Sequenzer ohne Ergebnis: ABORT: wind300 not finished before cutoff (smoke stand-in))\n- Lock-Halter jetzt: 0\n"
+  },
+  "GM_GM1_stop_note_first_step_only": {
+   "ok": true,
+   "rc": 10,
+   "wall_s": 71.7,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "lease_left": [],
+   "cross_files": [
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_START.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STEP.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STOPPED.md"
+   ],
+   "stop_note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:57:58Z: W1a SCREEN6 smoke STOPPED \u2014 FAIL (Sequenzer rc 10; Gate rc 10) \u2014 KEIN sauberes Paketende, GPU frei\n- Abweichungen: v45-waveops-w1a-inputs:FAIL(rc=1) v45-waveops-w1a:NOT-STARTED\n- Alle Schritte (jeder Fehler mit erster Fehlerzeile):\n  - v45-waveops-w1a-inputs: FAIL rc 1 \u2014 erster Fehler: ValueError: SCREEN6 explicit J2 result pin required\n- Lock-Halter jetzt: 0\n"
+  },
+  "GM_GM2_gate_rc0": {
+   "ok": true,
+   "rc": 0,
+   "wall_s": 62.3,
+   "markers": [
+    "inputs_fail.started"
+   ],
+   "lease_left": [],
+   "cross_files": [
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_START.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STEP.md",
+    "TO_ALISIOS_MGR_FROM_WRF_GPU2_SMOKE_STOPPED.md"
+   ],
+   "stop_note": "# wrf_gpu2 \u2192 alisios_mgr, 2026-10-31T01:59:03Z: W1a SCREEN6 smoke STOPPED \u2014 FAIL (Sequenzer rc 10; Gate rc 10) \u2014 KEIN sauberes Paketende, GPU frei\n- Abweichungen: v45-waveops-w1a-inputs:FAIL(rc=1) v45-waveops-w1a:NOT-STARTED\n- Alle Schritte (jeder Fehler mit erster Fehlerzeile):\n  - v45-waveops-w1a-inputs: FAIL rc 1 \u2014 erster Fehler: ValueError: SCREEN6 explicit J2 result pin required\n  - v45-waveops-w1a: NICHT GESTARTET (not started: stop-on-fail after v45-waveops-w1a-inputs)\n- Lock-Halter jetzt: 0\n"
+  }
+ },
+ "real_mode": {
+  "K1_ram_wait_crosses_end": {
+   "ok": true,
+   "rc": 10,
+   "markers": [],
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/K1_ram_wait_crosses_end"
+  },
+  "K2_clock_jump_window_end": {
+   "ok": true,
+   "rc": 10,
+   "first_error": "stopped at window end 2026-10-31T02:32:01Z; log: (empty step log)",
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/K2_clock_jump_window_end"
+  },
+  "K3_foreign_holder_untouched": {
+   "ok": true,
+   "rc": 10,
+   "foreign_alive": true,
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/K3_foreign_holder_untouched"
+  },
+  "K4_own_leftovers_reaped": {
+   "ok": true,
+   "rc": 0,
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/K4_own_leftovers_reaped"
+  },
+  "K5_file_modes": {
+   "ok": true,
+   "rc": 10,
+   "modes": {
+    "night_seq_20261031T015258Z.log.results.json": "0o600",
+    "night_seq_20261031T015258Z.log.steps.tsv": "0o600",
+    "night_seq_20261031T015258Z.log.p-fail": "0o600",
+    "night_seq_20261031T015258Z.log.p-fail.owned": "0o600",
+    "night_seq_20261031T015258Z.log": "0o600"
+   },
+   "dir": "<USER_HOME>/wrf_gpu2_lanes/v46-seqharden/smoke/run_20261031T014432Z/K5_file_modes"
+  },
+  "KM_MF1_no_dispatch_recheck": {
+   "ok": true,
+   "mutant": true,
+   "killed": true
+  },
+  "KM_MF1_no_end_clamp": {
+   "ok": true,
+   "mutant": true,
+   "killed": true
+  },
+  "KM_MF2_v9_foreign_kill": {
+   "ok": true,
+   "mutant": true,
+   "killed": true
+  },
+  "KM_MF2_no_own_reap": {
+   "ok": true,
+   "mutant": true,
+   "killed": true
+  },
+  "KM_MF3_no_umask": {
+   "ok": true,
+   "mutant": true,
+   "killed": true
+  }
+ }
+}

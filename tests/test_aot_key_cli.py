@@ -409,3 +409,30 @@ def test_single_domain_case_is_refused_without_writes(tmp_path):
     assert _bundle_ok(bundle)
     assert sorted(tmpdir.rglob("*")) == [] and sorted(home.rglob("*")) == []
     assert sorted(p.name for p in case.iterdir()) == ["namelist.input"]
+
+
+def test_surface_control_value_sets_of_one_case_are_compared(monkeypatch, tmp_path, capsys):
+    """Branch series pre-check: --compare-surface-controls alone compares two value sets of --input-dir."""
+    seen = []
+
+    def case_keys(input_dir, *, hours, scratch, surface_controls=None):
+        seen.append((input_dir, None if surface_controls is None else surface_controls.name))
+        key = "k-on" if surface_controls is not None else "k-off"
+        return {"d01": {"cheap_key": key, "components": {name: key for name in aot_key_cli._COMPONENTS}}}
+
+    monkeypatch.setattr(aot_key_cli, "case_keys", case_keys)
+    case = tmp_path / "case"
+    case.mkdir()
+    (case / "namelist.input").write_text("&domains\n max_dom = 2\n/\n")
+    a, b = tmp_path / "neutral.npz", tmp_path / "variant.npz"
+    args = build_parser().parse_args(["aot-key", "--input-dir", str(case), "--surface-controls", str(a),
+                                      "--compare-surface-controls", str(b), "--json", str(tmp_path / "r.json")])
+    assert aot_key_cli.command(args) == 0
+    assert seen == [(case, "neutral.npz"), (case, "variant.npz")]
+    out = capsys.readouterr().out
+    assert "d01          SHARED" in out and "NOT SHARED" not in out
+    seen.clear()
+    args = build_parser().parse_args(["aot-key", "--input-dir", str(case), "--compare-surface-controls", str(b)])
+    assert aot_key_cli.command(args) == 0
+    assert seen == [(case, None), (case, "variant.npz")]
+    assert "NOT SHARED" in capsys.readouterr().out

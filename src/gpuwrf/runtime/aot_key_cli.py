@@ -59,6 +59,11 @@ def register(subparsers: Any) -> None:
     parser.add_argument("--namelist", type=Path, help="namelist.input to use instead of the one in --input-dir")
     parser.add_argument("--compare-input-dir", type=Path, help="second case directory to compare with")
     parser.add_argument("--compare-namelist", type=Path, help="namelist for --compare-input-dir")
+    parser.add_argument("--surface-controls", type=Path, help="control file bound as in `gpuwrf run --surface-controls`")
+    parser.add_argument("--compare-surface-controls", type=Path,
+                        help="control file for the compare case (default: the compare case runs without controls); "
+                        "with --compare-surface-controls alone the compare case is --input-dir itself, so two value "
+                        "sets of one case are compared (checkpoint-branch series: same keys = no recompile)")
     parser.add_argument("--hours", type=float, default=3.0, help="forecast length the keys are computed for")
     parser.add_argument("--json", type=Path, help="also write the full report (incl. components) as JSON")
     parser.set_defaults(func=command)
@@ -76,7 +81,7 @@ def _case_dir(input_dir: Path, namelist: Path | None, scratch: Path) -> Path:
     return view
 
 
-def case_keys(input_dir: Path, *, hours: float, scratch: Path) -> dict[str, Any]:
+def case_keys(input_dir: Path, *, hours: float, scratch: Path, surface_controls: Path | None = None) -> dict[str, Any]:
     """Load one case and return its per-program key records (with components)."""
     from gpuwrf.cli import _namelist_max_dom
     from gpuwrf.integration import nested_pipeline as pipeline
@@ -88,7 +93,7 @@ def case_keys(input_dir: Path, *, hours: float, scratch: Path) -> dict[str, Any]
         raise ValueError("aot-key covers nested runs (max_dom >= 2); single-domain runs use another path")
     names = pipeline.domain_names_for(max_dom)
     config = pipeline.NestedPipelineConfig(input_dir, scratch / "out", scratch / "proof", hours=hours,
-                                           max_dom=max_dom, scratch_dir=scratch)
+                                           max_dom=max_dom, scratch_dir=scratch, surface_controls=surface_controls)
     hierarchy, bundles, meta, _start, _dt, carries = pipeline._load_domains(config, names)
     nesting = meta.get("nesting", {"feedback": bool(config.feedback), "spec_zone": 1, "smooth_option": 1})
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=nesting["feedback"],
@@ -227,17 +232,24 @@ def command(args: argparse.Namespace) -> int:
               f"{bundle}/tools/bundle_consumer.sh --layer <dir outside the bundle>", file=sys.stderr)
     with tempfile.TemporaryDirectory(prefix="gpuwrf_aot_key_") as tmp, removed_on_signal(Path(tmp)):
         scratch = Path(tmp)
-        cases = [("case", args.input_dir, args.namelist)]
-        if args.compare_input_dir is not None:
-            cases.append(("compare", args.compare_input_dir, args.compare_namelist))
+        controls = getattr(args, "surface_controls", None)
+        compare_controls = getattr(args, "compare_surface_controls", None)
+        cases = [("case", args.input_dir, args.namelist, controls)]
+        if args.compare_input_dir is not None or compare_controls is not None:
+            cases.append(("compare", args.compare_input_dir or args.input_dir,
+                          args.compare_namelist if args.compare_input_dir is not None else args.namelist,
+                          compare_controls))
         with private_compile_caches(scratch / "cache"):
-            for label, input_dir, namelist in cases:
+            for label, input_dir, namelist, surface_controls in cases:
                 case_scratch = scratch / label
                 case_scratch.mkdir()
                 directory = _case_dir(input_dir, namelist, case_scratch)
                 report[label] = {"input_dir": str(input_dir),
                                  "namelist": str(namelist or input_dir / "namelist.input"),
-                                 "programs": case_keys(directory, hours=args.hours, scratch=case_scratch)}
+                                 "surface_controls": None if surface_controls is None else str(surface_controls),
+                                 "programs": case_keys(directory, hours=args.hours, scratch=case_scratch,
+                                                       **({} if surface_controls is None else
+                                                          {"surface_controls": surface_controls}))}
     for label in ("case", "compare"):
         if label in report:
             print(f"{label}: {report[label]['input_dir']}")

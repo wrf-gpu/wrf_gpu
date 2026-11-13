@@ -35,6 +35,26 @@ installed matching JAX backend. This change does not install accelerator plugins
 or emulate unavailable float64/integer64 support. A rejected plugin or unsupported
 primitive remains an error; the model does not silently downcast DOUBLE islands.
 
+## v0.5.0 compile check
+
+Done on 11 November 2026 on the v0.5.0 model source (the same `src/` as the release), with the
+two-domain 9/3 km Canary Islands case and the release defaults. These are compile results, not validations: accuracy and
+speed on these GPUs are untested.
+
+| Target | Full two-domain program | Notes |
+|---|---|---|
+| NVIDIA Ampere / Ada (A100, RTX 30, RTX 40; sm_80/86/89) | Compiles (standard install, no GPU needed) | Stack at most 32 B per kernel, no local-memory spill. Never run on these GPUs |
+| NVIDIA RTX 5090 (sm_120) | Compiles | Control: the release GPU |
+| AMD MI250X / MI300X (gfx90a/942) | Compiles with `GPUWRF_ROCM_TRITON_NATIVE=1` | No vector-register spill (small scratch in a few compiler fusions). Nothing executed on AMD hardware; control flow stays host-driven on ROCm |
+| AMD RX 7900 (gfx1100) | Compiles with `GPUWRF_ROCM_TRITON_NATIVE=1` | The acoustic-coefficient kernel spills (26 vector registers, 108 B scratch), so it would be slower. Not executed |
+| NVIDIA Pascal / Volta / Turing (sm_61/70/75) | Standard install refuses them (its compiler needs compute capability 8.0) | With `GPUWRF_PRE_AMPERE_KERNEL_CALL=1` and a CUDA 12 JAX install, all 127 kernel bodies of the nested program compile for all three; the acoustic-coefficient kernel spills (and one radiation kernel by 16 B on Volta) |
+
+Real run on one GTX 1080 Ti (sm_61, 11 GB) with the pre-Ampere route: a 3-hour two-domain forecast finished with all
+output finite (cold run 803 s including compilation, warm run 146 s, 5.1 GB host memory warm; one sample each). The warm
+output equals the cold output byte for byte; that is a determinism check only. No fidelity comparison was run on that
+card, and Volta and Turing have not run on hardware. The CLI still prints an outdated warning on this route that the
+default kernels will fail; it can be ignored.
+
 ## NVIDIA assumptions and their boundaries
 
 | Assumption | Location | Portable behavior |
@@ -74,7 +94,8 @@ Status: the whole production step compiles for gfx942, gfx90a and gfx1100 with
 XLA-ROCm on a CPU host (no device). No AMD device has executed it, no WRF oracle
 has run on AMD hardware, and ROCm command buffers cannot hold conditional/while
 nodes, so control flow is host-driven. Treat it as unqualified. Evidence:
-`proofs/o5_port/REPORT.md`.
+`proofs/o5_port/REPORT.md` (October 2026 development tree; the v0.5.0 result is in
+[v0.5.0 compile check](#v050-compile-check)).
 
 `GPUWRF_ROCM_INTERPRET_KERNELS=name1,name2` keeps individual kernels on the
 interpreter while the others run natively (an escape for a kernel that fails on
@@ -92,7 +113,8 @@ change. Setting the variable does change the cache key of saved compiled
 programs, so the first run after setting it compiles once more. The product
 preflight still asks for `GPUWRF_ALLOW_UNSUPPORTED_GPU=1` on these GPUs.
 
-Measured on one GTX 1080 Ti (sm_61) with the release defaults: the bundled Swiss
+On an earlier development tree (October 2026), measured on one GTX 1080 Ti (sm_61)
+with the release defaults: the bundled Swiss
 case ran 24 hours at 4.15 s per forecast hour for the whole run (2.5 s in steady
 state) and passed the D6 comparison against original CPU-WRF over all 24 hours;
 the two-domain (9/3 km) Canary Islands case ran at 25.8 s per forecast hour in 11 GB. The frozen WRF

@@ -55,6 +55,7 @@ v0.13-GPU-followup once ``flatbuffers``/export-executable lands.
 from __future__ import annotations
 
 import argparse
+import functools
 import importlib
 import json
 import multiprocessing
@@ -687,8 +688,15 @@ def _serialize_domain_blob(
     lowered: Any | None = None,
     cheap_key: str | None = None,
     key_schema: str | None = None,
+    content_key: Any | None = None,
 ) -> dict[str, Any]:
     """Serialize ``compiled`` to the version-keyed AOT dir (Step B). Fail-open.
+
+    ``content_key`` (an :class:`aot_hlo_store.ContentKey`, only passed while the
+    content-addressed store is on) offers the blob to that store first. If another
+    valid binary already holds the key it is loaded, the local addresses receive
+    it and the caller must run it instead of ``compiled``
+    (:func:`aot_hlo_store.take_winner`); see ``out["content_store"]``.
 
     When both ``cheap_key`` and the exact lowered-HLO digest are available, the
     blob is published at BOTH addresses. The cheap-key address is normally an
@@ -725,6 +733,24 @@ def _serialize_domain_blob(
             status=out,
         )
         import pickle as _pickle
+
+        store_pub = None
+        if content_key is not None:
+            from gpuwrf.runtime import aot_hlo_store as _store
+
+            store_pub = _store.publish(content_key, blob, meta, name=name)
+            if store_pub.get("state") == "exists-differs":
+                # Another valid binary holds this program. It is loaded here; the
+                # caller runs it (aot_hlo_store.take_winner) and the local
+                # addresses receive it, so one binary serves the program.
+                adopted = _store.adopt_winner(content_key, store_pub, meta, name=name)
+                if adopted is not None:
+                    blob, meta = adopted
+            store_pub.pop("winner", None)
+            if _store.autotune_seed_enabled():
+                store_pub["autotune_export"] = _store.autotune_export(content_key)
+            _store.record_publication(name, content_key, store_pub)
+            out["content_store"] = store_pub
 
         # --- P0-1 collision guard: decide whether the cheap-key address is safe. ---
         write_cheap_key = cheap_key
@@ -805,7 +831,12 @@ def _serialize_domain_blob(
             written.append("legacy")
         if hlo_paths is not None:
             hlo_blob_path, hlo_meta_path = hlo_paths
-            _atomic_write_bytes(hlo_blob_path, blob)
+            linked = None
+            if store_pub is not None and store_pub.get("blob_sha256") == meta.blob_sha256:
+                # Same bytes as the verified store entry: share its inode if possible.
+                linked = _store.link_local(content_key, store_pub, hlo_blob_path)
+            if linked is None:
+                _atomic_write_bytes(hlo_blob_path, blob)
             _atomic_write_bytes(hlo_meta_path, meta_bytes)
             written.append("hlo")
             out["aot_hlo_path"] = str(hlo_blob_path)
@@ -844,6 +875,18 @@ def _serialize_domain_blob(
         out["aot_kept_buffers"] = (
             len(meta.kept_var_idx) if meta.kept_var_idx is not None else None
         )
+        if store_pub is not None:
+            # Hash what is installed before reporting it as written (the cheap
+            # address is a link made after the bytes were hashed).
+            verified = (hlo_paths is None or _store.verify_local(
+                name, blob_sha256=meta.blob_sha256, cache_dir=cache_dir,
+                hlo_sha256=meta.hlo_sha256)) and (cheap_paths is None or _store.verify_local(
+                    name, blob_sha256=meta.blob_sha256, cache_dir=cache_dir,
+                    cheap_key=write_cheap_key))
+            store_pub["local_verified"] = bool(verified)
+            if not verified:
+                out["aot_written"] = False
+                out["aot_error"] = "content store: installed AOT artifact failed verification"
     except BaseException as exc:  # noqa: BLE001 - serialize is best-effort
         out["aot_error"] = f"{type(exc).__name__}: {exc}"
     return out
@@ -959,8 +1002,15 @@ def _compile_lowered_threads(jobs, *, max_workers=2):
         # JAX x64 is thread-local when the caller uses an explicit context.
         with jax.enable_x64(x64):
             # stepping programs only (_advance_chunk_fori jobs): GPUWRF_STEP_CMDBUF options at the compile site
+            extra = ()
+            if "store" in job:  # content-addressed store on (aot_hlo_store); absent otherwise
+                content_key, shared = job["store"](
+                    lowered, op.step_compile_options(ax.export_compile_options()))
+                if shared is not None:  # the shared executable is placed and aliased: no compile
+                    return shared
+                extra = (content_key,)
             compiled = lowered.compile(op.step_compile_options(ax.export_compile_options()))
-            return job["finish"](compiled, lowered)
+            return job["finish"](compiled, lowered, *extra)
 
     with ThreadPoolExecutor(max_workers=max(1, min(2, int(max_workers))),
                             thread_name_prefix="wrf-cold") as pool:
@@ -978,6 +1028,33 @@ def _compile_lowered_threads(jobs, *, max_workers=2):
             except Exception as exc:
                 failures.append({"name": name, "error": f"{type(exc).__name__}: {exc}"})
     return results, failures
+
+
+def _content_store_enabled() -> bool:
+    from gpuwrf.runtime import aot_hlo_store
+
+    return aot_hlo_store.enabled()
+
+
+def _content_store_job(name, cheap_key, lowered, options):
+    """Threaded-prewarm hook of the content-addressed store.
+
+    Returns ``(content_key, result)``. ``result`` is a finished job record when a
+    stored executable of this exact program was placed at the exact-HLO address
+    and aliased to ``cheap_key`` (no compile); otherwise ``None`` and the caller
+    compiles and publishes under ``content_key``.
+    """
+    from gpuwrf.runtime import aot_executable as ax, aot_hlo_store
+
+    hlo = ax.hlo_sha256_from_lowered(lowered)
+    content_key, status = aot_hlo_store.prepare(name, lowered, hlo, compile_options=options)
+    if status is not None and str(status.get("state", "")).startswith("hit"):
+        alias = alias_cheap_key_to_hlo(name, cheap_key, hlo)
+        if (alias.get("aliased") or alias.get("reason") == "already-present") and (
+                aot_hlo_store.verify_local(name, blob_sha256=status["blob_sha256"], cheap_key=cheap_key)):
+            return content_key, {"name": name, "cheap_key": cheap_key, "status": {
+                "aot_written": True, "content_store_lookup": status, "cheap_key_alias": alias}}
+    return content_key, None
 
 
 def prewarm_runtime_threads(tree, *, carries, max_workers=2):
@@ -1050,15 +1127,23 @@ def prewarm_runtime_threads(tree, *, carries, max_workers=2):
                 def lower(args=args, kwargs=kwargs):
                     return op._advance_chunk_fori.lower(*args, **kwargs)
 
-                def finish(compiled, lowered, name=name, key=key):
+                def finish(compiled, lowered, content_key=None, name=name, key=key):
                     status = _serialize_domain_blob(name, compiled, None, lowered=lowered,
                         hlo_sha256=ax.hlo_sha256_from_lowered(lowered),
-                        cheap_key=key, key_schema=ck.KEY_SCHEMA)
+                        cheap_key=key, key_schema=ck.KEY_SCHEMA,
+                        **({"content_key": content_key} if content_key is not None else {}))
+                    if content_key is not None:
+                        from gpuwrf.runtime import aot_hlo_store
+
+                        aot_hlo_store.take_winner(content_key)  # nothing runs here: release it
                     if not status.get("aot_written"):
                         raise RuntimeError(status.get("aot_error") or "AOT capture failed")
                     return {"name": name, "cheap_key": key, "status": status}
 
-                jobs.append({"name": name, "lower": lower, "finish": finish})
+                job = {"name": name, "lower": lower, "finish": finish}
+                if _content_store_enabled():
+                    job["store"] = functools.partial(_content_store_job, name, key)
+                jobs.append(job)
             report["active"] = bool(jobs)
             report["results"], report["errors"] = _compile_lowered_threads(
                 jobs, max_workers=report["workers"])

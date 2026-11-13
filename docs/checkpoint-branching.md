@@ -156,6 +156,48 @@ dtypes; changing static namelist options is refused.
 The requested run must match the declared digests exactly. See the parameter
 family documentation for supported names and qualification status.
 
+## Branch series: many value variants from one spin-up
+
+For a series that differs only in surface-control values (for example z0mvt
+per nest), run the parent once with a neutral control file that enables the
+family on **every nest any variant will touch** (factor 1 reproduces the table
+values byte for byte). Give every nest explicitly: `--set z0mvt=1` without a
+`dNN:` prefix writes d01 only.
+
+```bash
+gpuwrf surface-params basis --input-dir case --max-dom 3 --output basis.npz
+gpuwrf surface-params expand --basis basis.npz --output neutral.npz \
+  --set d01:z0mvt=1 --set d02:z0mvt=1 --set d03:z0mvt=1
+gpuwrf surface-params expand --basis basis.npz --output z0x2_d03.npz \
+  --set d01:z0mvt=1 --set d02:z0mvt=1 --set d03:z0mvt=2
+gpuwrf aot-key --input-dir case --surface-controls neutral.npz \
+  --compare-surface-controls z0x2_d03.npz        # every program SHARED = no recompile
+gpuwrf run --input-dir case --domains-from-namelist --hours 12 --surface-controls neutral.npz \
+  --output-dir parent --checkpoint-dir ckpt --checkpoint-interval-steps 800
+```
+
+Then list the variants in a series file and run them from the parent
+generation with `scripts/branch_series.py SERIES.json` (format in the script).
+It writes each variant's manifest (the control digest of every changed nest),
+refuses a control file whose nests, names, shapes or dtypes differ from the
+parent's (that would be another program; the CLI refuses it as an undeclared
+`namelists` change), and checks that the parent control file reproduces the
+checkpoint's recorded digests. `--mode process` runs one CLI process per
+variant; `--mode inprocess` runs all variants in one process and reuses imports
+and loaded programs; it stops at the first failure. Receipts go to
+`OUT_ROOT/series_receipt.json` (it keeps each variant's `wall_clock_total_s` and
+`wall_clock_forecast_only_s`, and in-process JAX counters including cache-disabled
+and fresh compiles). On CUDA, `--mode inprocess` needs the verified GPU lock
+(`scripts/with_gpu_lock.sh`: lock fd and holder token); the runner never forces
+the VRAM preflight and refuses `--force-gpu-run` / `GPUWRF_FORCE_GPU_RUN`.
+`cli_args` go through the real `gpuwrf run` parser with abbreviations disabled.
+Only `--domains-from-namelist`, `--max-dom`, `--domain`, `--emit-initial-history`,
+`--aot-prefetch` and `--runtime-parameters` may appear there. Branching supports
+one-way nesting only: a parent or branch with two-way feedback is refused. The
+parallel launcher still refuses branches.
+Seed variants are not available: SKEBS/SPPT seeds live in the checkpointed
+carry and `nens`/`iseed_*` are part of the static namelist identity.
+
 ## Cost and qualification
 
 Branch admission runs once on host checkpoint arrays before restoring them to
