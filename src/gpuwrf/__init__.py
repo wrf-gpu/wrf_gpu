@@ -4,7 +4,7 @@
 # version-keys its cache dir by ``gpuwrf.__version__`` (B1), so the attribute
 # must already exist when ``configure_compilation_cache()`` runs at import. (It
 # is re-exported via ``__all__`` at the foot of the module.)
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 # Offline entry points must work without loading JAX or configuring a backend.
 import sys as _sys

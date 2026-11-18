@@ -220,6 +220,12 @@ installed syntax. These workflows supplement the forecast:
 
 Read [known issues](KNOWN_ISSUES.md#v050-limits-of-the-new-options) before combining these options.
 
+### v0.5.1 option (off by default)
+
+| Need | Switch | Guide and limits |
+| --- | --- | --- |
+| Bare-ground roughness per nest on a fixed grid | `gpuwrf run --surface-controls FILE.npz` with a file from `scripts/z0bare_grid_controls.py build`; `--history-znt` writes ZNT | [z0bare](docs/surface_params.md#experimental-bare-ground-roughness-z0bare) (experimental, not WRF-faithful; [limits](KNOWN_ISSUES.md#v051-limits-of-the-new-options)) |
+
 Product definitions distinguish instantaneous samples from interval totals
 and extrema. A finite smoke, a matching header or an analysis tool does not
 establish station skill. Selected large runtime tables must match the installed

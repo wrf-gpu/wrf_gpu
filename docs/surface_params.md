@@ -2,10 +2,16 @@
 
 `gpuwrf run --surface-controls CONTROLS.npz` replaces selected Noah-MP surface parameters with per-cell value
 fields **without recompiling**: the fields are runtime inputs of the compiled step program, so every parameter
-set of one grid reuses the same cached executable (same AOT key). Without the option the released program is
-unchanged (frozen release identities Swiss `3356e249…` and Canary Islands 9 km domain `196aed9f…`, verified on this feature's tree).
+set of one grid reuses the same candidate executable for that control signature (same AOT key).
+Without the option, this tree uses its candidate-default path. Its scoped evidence is CPU-only;
+the private research bundle uses cold layers. This does not establish equivalence to the released
+v0.4.6 GPU executable, frozen identities or paid cache (see Cache scope below).
 
 Status: experimental, opt-in, Noah-MP (`sf_surface_physics = 4`) only. Checked so far:
+
+The historical released-program verification below covers the original Track-P
+controls; it does not qualify this candidate tree. The new `z0bare` control has
+separate CPU evidence and pending GPU qualification, described below.
 
 - every control equals running the released code on an MPTABLE edited the same way (byte-exact, every control);
 - two different parameter sets use one compiled program (same cache key on CPU and on the GPU: a second Swiss
@@ -30,6 +36,7 @@ real-station runs and the roughness pilot are planned in `proofs/w41_trackp/P1_G
 
 | Control | Replaces (Noah-MP consumer) | WRF source | Needs |
 | --- | --- | --- | --- |
+| `z0bare` (EXPERIMENTAL) | ground-tile roughness → Z0MG → ZNT/UST | ENERGY local `Z0 = 0.002 m` | spatial extension, not WRF-faithful; real GPU qualification pending |
 | `z0mvt` | vegetation roughness → Z0M/Z0WRF → ZNT → surface layer | MPTABLE `Z0MVT(VEGTYP)` | – |
 | `eg` | ground emissivity → EMG → FIRA/TRAD/EMISS | MPTABLE `EG` (soil) | – |
 | `albsat`, `albdry` | saturated/dry soil albedo (vis, nir) → GROUNDALB → SAV/SAG, ALBEDO | MPTABLE `ALBSAT/ALBDRY(SOILCOLOR)` | – |
@@ -57,6 +64,50 @@ Semantics: a field built from multipliers is `round_once(table value × multipli
 multiplier this is byte-identical to running the released code on an MPTABLE whose row was edited the same way
 (tested for every control). Glacier and lake cells do not run Noah-MP SFLX, so controls there are inert.
 
+## Experimental bare-ground roughness (`z0bare`)
+
+`z0bare` replaces ENERGY's ground-tile `Z0` in metres, including the ground below
+vegetation. Original CPU-WRF uses the single constant `0.002` at every land cell;
+a land-use mask is an experimental spatial extension and is **not WRF-faithful**.
+It leaves the snow contribution intact: `Z0MG = z0bare*(1-FSNO) + Z0SNO*FSNO`.
+Urban overrides, displacement and the existing `Z0H = Z0MG` logic are unchanged.
+Values must be finite and in `[0.0001, 0.5]` m and are validated on the host before
+device allocation. With no control file the default program has no new array or
+kernel. ON adds one traced float32 `(ny,nx)` field (4 bytes/cell) per controlled
+domain; values share a program signature, but enabling the control changes that
+signature. CPU proofs do not qualify GPU fusion, cost or default-value identity.
+
+The float64 basis is exactly `0.002`; a `{VEGTYP: factor}` map changes only those
+categories before one rounding to the consumer dtype. `static.parameters.isbarren`
+identifies barren land (class 16 for MODIS; check this for other land-use tables).
+For the requested MODIS pilot, use 0.02 m on barren cells in d03–d09 only:
+
+```bash
+gpuwrf surface-params expand --basis basis.npz --output bare.npz \
+    --class d03:z0bare:16=10 --class d04:z0bare:16=10 \
+    --class d05:z0bare:16=10 --class d06:z0bare:16=10 \
+    --class d07:z0bare:16=10 --class d08:z0bare:16=10 \
+    --class d09:z0bare:16=10
+```
+
+`float32(float64(0.002)*10)` equals `float32(0.02)` byte for byte. Omit d01/d02
+entries to retain their default programs. Explicit value fields of 0.002 express
+the ON-default comparison. Checkpoint digests cover the field bytes, and B>1
+members must use the same names/shapes/dtypes with values carried per lane.
+Batched z0bare forecast coverage is unverified; the research pilot is serial B=1.
+The older Track-P table-edit and GPU evidence above does not qualify `z0bare`.
+
+CPU development evidence: both the no-file comparison against v0.4.6 and the
+explicit 0.002 m file comparison preserve all 355 carry leaves byte for byte
+after one real PROD two-domain root step. The no-file programs have identical
+full HLO protos using an AST-identical, source-aligned v0.4.6 control. Four mask,
+ignored-control and snow-term mutants trigger genuine assertions. A private
+original-WRF `Z0 = 0.02` build matches the existing ENERGY tolerances on two real
+barren daytime/nighttime columns (34 field checks; the established QSFC exclusion
+is retained). These are CPU regression and scoped column checks, not GPU or
+forecast qualification. In these CPU programs, enabling the native REAL field adds 4 input
+bytes per cell and 8 temporary bytes per domain, with unchanged output size.
+
 ## Workflow
 
 ```bash
@@ -69,8 +120,9 @@ gpuwrf surface-params expand --basis basis.npz --output rough.npz \
 gpuwrf run --input-dir CASE --output-dir OUT --surface-controls rough.npz
 ```
 
-Per-domain entries are optional (`d01`, `d02`, …); domains without an entry run the released program. For a
-nested case, prefix entries with their domain (`--set d02:albdry=0.95`) and run all domains with
+Per-domain entries are optional (`d01`, `d02`, …); domains without an entry use this tree's
+candidate-default path without surface-control overrides, with the CPU/cold-layer evidence limits above.
+For a nested case, prefix entries with their domain (`--set d02:albdry=0.95`) and run all domains with
 `--domains-from-namelist` (or `--max-dom N`): a control for a domain outside the run is refused.
 `basis` refuses ALISIOS data before reading anything: the case directory (directory links followed, files named in
 the namelist), and every runtime root the load reads (WRF tables via `GPUWRF_WRF_ROOT`, asset and compile caches,
@@ -147,3 +199,81 @@ Proposed support-matrix row (v0.4.1): *Track P surface controls — experimental
 (byte-exact), one compiled program per grid (CPU + GPU), Swiss 24 h GPU forecast response matches original CPU-WRF
 on the edited MPTABLE (median hourly response ratios 0.986–1.009); restart refuses mismatched controls. EKI calibration: scaffold + synthetic twin (OSSE)
 only — not done against real stations in v0.4.1.*
+
+## Optional carried ZNT history
+
+`gpuwrf run --history-znt ...` adds `ZNT` (m) to history frames in both the
+control and no-control arms. This output option defaults off and is independent
+of surface controls. The API equivalent is `WRFOUT_ZNT=1` on daily/nested output.
+It writes the existing carried `State.roughness_m`, without a physics re-solve:
+after a Noah-MP surface step this is current `z0wrf` on land and the current
+surface-layer roughness on water. Lead-zero frames contain the initialized
+roughness, before the first surface step. Snow retains the normal blend.
+
+A host-only adapter outside the traced AOT source closure appends ZNT to the
+unpublished NetCDF temporary before atomic publication or checkpoint journaling.
+The base writer and model program remain unchanged; OFF delegates directly to
+the original writer. ON copies one float32 2-D field at each output frame and
+writes that field once; it can require an additional output-boundary device-to-host
+read, but adds no timestep kernels or model-state leaves. For a declared variable subset, ZNT is written only when that subset explicitly
+names ZNT; this also holds when one shared asynchronous payload feeds full and
+subset streams. An excluded subset makes no ZNT publication/append. The option
+is currently refused for B>1 before model work; the pilot is B=1. Real GPU output
+cost has not been measured.
+
+CPU output checks preserve all 375 existing variables byte for byte on a real
+Swiss history frame; ON adds ZNT as variable 376. Current land and water
+provenance, asynchronous publication, journal composition and no-replace failure
+handling are tested. Fresh CPU step retraces under OFF/ON give the same full HLO
+proto (apart from replay module ID) and AOT key; the traced-source fingerprint
+also remains unchanged. GPU output wall time has not been measured.
+
+For a B/ZB pilot, use `--history-znt` in both arms; add `--surface-controls` only
+to ZB. The two NSRT input namelists currently request 72 hours of hourly history;
+pass the intended `--hours 42` override for the proposed pilot. The ordinary full
+history stream contains U/V on all 44 mass levels and PH/PHB on all 45 interfaces,
+at every history event. The compact training subset omits UST, so use full
+history for the pilot's joint 3-D/surface comparison. Initialize-time ZNT and
+conditional no-snow static maps are distinct from evolved forecast ZNT.
+
+
+The history-ZNT selection is fixed for a writer/run and bound in the checkpoint's
+output policy. An ordinary resume that changes it in either direction is refused
+before model initialization or history recovery. An absent legacy policy value
+means OFF. Full history still adds ZNT when enabled; a named subset must include
+ZNT explicitly. Batched z0bare forecasting, GPU output costs and E41 qualification
+remain unverified/open.
+
+Cache scope: the output-selector comparisons above are within the candidate
+source. The earlier z0bare ENERGY source change alters the traced-source
+fingerprint relative to released v0.4.6, so its source-keyed AOT entries are not
+reusable. The manager accepted cold layers for the private research bundle.
+CPU carry/full-constant-HLO and source-aligned-proto checks do not establish
+identity of the released GPU executable or paid cache. The real-GPU no-file
+comparison and readiness/cost qualification remain separate gates.
+
+FIX1 CPU transport checks exercise the actual checkpoint store, native resume
+path and history-journal recovery with both policy values, refusing OFF→ON and
+ON→OFF before initialization. Shared asynchronous payloads respect each write's
+subset, and B>1 is refused. A real two-domain PROD CPU run writes ZNT at lead0
+and after one root step (54 s, d01/d02 own steps 1/3); every value matches the
+current carry, with post-step land values matching current Noah-MP roughness.
+This short CPU model/IO integration is not a forecast-fidelity or GPU-cost gate.
+
+## Grid-locked static control files (z0bare Nightly path)
+
+`scripts/z0bare_grid_controls.py build --input-dir <case> --out <file.npz> --evidence <json>` writes the
+z0bare control file for one 9-nest grid (0.02 m on IVGTYP 16 in d03–d09, float32 0.002 elsewhere, no control
+in d01/d02) and embeds a grid lock (`gpuwrf.surface_params.grid_lock`): a fingerprint of the wrfinput geometry,
+land classification, LANDMASK and HGT per locked domain. `gpuwrf run --surface-controls` re-derives the
+fingerprint from the run's own wrfinput files and refuses on any difference, on a locked domain missing from the
+run or from the file, and on an altered lock. A grid change therefore stops the run instead of silently running
+OFF or applying the control to the wrong cells. `verify --controls <file> --input-dir <case>` performs the same
+check offline (rc 2 on refusal). Files without a lock keep the previous behaviour. EXPERIMENTAL, not WRF-faithful.
+
+The lock is enforced at the native runtime boundary, not only by the CLI: `execute_nested_pipeline` admits
+`surface_controls` and every `batch_surface_controls` entry against the case directories it actually resolves
+(B=1 input dir, `batch_input_dirs`, or `GPUWRF_BATCH_INPUT_DIRS` lanes) before any initialization, and
+`_load_domains` / the B>1 lane binder admit again against the directory they load (memoized: one fingerprint per
+distinct lock, case dir, run domains and wrfinput file identity). `bind_domain_controls` refuses a locked file
+unless it is given the `grid_admission` receipt from `grid_lock.admit_control_source` for that file's lock.

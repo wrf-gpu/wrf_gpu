@@ -25,13 +25,15 @@
   "host_static_patch_v1": "Host-only `gpuwrf patch` tool (io/static_patch.py, io/geo_em_patch.py, v0.5.0 item 0.3): reads a case's wrfinput_dNN/geo_em.dNN/namelist.input/real.exe wrfinput plus optional mask/value .npy/.npz/.json specs, and writes patched COPIES into a fresh output dir (refuses existing targets; never in place). Source and output SHA256 are recorded in PATCH_PROTOCOL.json / GEO_PATCH_PROTOCOL.json (z0: basis and output SHA256 in its manifest), sources are re-hashed before atomic publish, and verify/check-real record source/patched/real/geo_em SHA256; stale dependents and missing aux are refused. Runs before a forecast as case preparation; the patched files then enter the normal case input binding. Never inside the step program; no AOT key behaviour change.",
   "aot_content_store_v1": "Content-addressed AOT executable store (runtime/aot_hlo_store.py, v0.5.0 item 0.d). Default OFF: active only with GPUWRF_AOT_HLO_STORE / GPUWRF_AOT_HLO_SEEDS; the ON path is not GPU-qualified. No scientific table, case input or model state is read here. (1) Compile-input identity probes whose CONTENT enters the content key of an executable: /proc/cpuinfo model and flags on the CPU backend, the NVIDIA kernel-module version file, SHA256 of ptxas, libnvvm and libdevice under the CUDA data directory named in the compile options, SHA256 of an explicit --xla_gpu_load_autotune_results_from file; if one of them cannot be resolved the case gets no key and compiles as without the store. The XLA_FLAGS file is read only to scope the autotune pool directory; the key itself binds the flags XLA parsed. (2) Store entries: a record JSON must re-hash to its key and carry a matching attestation digest; the blob lives under that key, is read through one descriptor and must match the recorded size and SHA256; the installed local AOT blob and any cheap-key alias are hashed again before they are reported; local AOT metadata is read only from this cache's own AOT directory (same trust as runtime/aot_precompile.py). The attestation is a consistency seal, not a signature: whoever can rewrite a whole entry can forge it. Seed roots are never written. (3) XLA per-fusion autotune decision files copied between the live cache and the store pool by name pattern and size cap, never replaced; they select among equivalent emitters and their effect on GPU compiles is unmeasured. (4) Per-key lock files (flock) and temporary files for atomic, first-writer-wins publication. (5) Scanner literals that are not files: MLIR pass, attribute and op names (strip-debuginfo, mhlo.backend_config, stablehlo.custom_call, __gpu$xla.gpu.triton) and format specifications. Every failure falls back to ordinary lower + compile. The switch names are cheap-key inert; no AOT cheap-key or step-program change.",
   "host_extract_v1": "Host-only in-run/offline extract (gpuwrf.extract, EXTRACT_SPEC V1): request JSON and points CSVs are SHA256-bound in the request/BINDING.json and refused on change; case namelist.input/wrfbdy_d01/wrfinput_dNN, the extract code (code_sha256) and every published NPZ/JSON/CSV carry SHA256 in manifest.json; offline re-extract wrfouts are checked by Times/GRID_ID. Staging/temporary/readback IO is derived output. Extension of a completed run re-reads the published base/segment manifests (READY + identical policy required) and binds them by SHA256 in the new segment manifest; the offline schedule reads the case namelist.input (bound in inputs_sha256). Every parent artifact is re-hashed (bytes + SHA256) against its manifest before an extension. Never inside the step program; no AOT key behavior change.",
-  "host_thermo_perturb_v1": "Host-only `gpuwrf perturb --thermo-config` case preparation (perturb/thermo.py, v0.5.0 item 0.2a, WRF-external research recipe): reads a strict JSON recipe (schema gpuwrf.perturb.thermo.v1, unknown keys refused), the case namelist.input (max_dom, spec_bdy_width) and the case wrfinput_dNN files, copies the selected wrfinput files into fresh member-NNN directories under a new output dir (existing output refused; never in place), edits only the private copies (T/QVAPOR/THM inside the interior, seeded PCG64) and links every other input. Source SHA256 is recorded before copying, each copy is re-hashed against it, the source case is re-hashed after preparation, and perturb_manifest.json records config/source/prepared SHA256. The prepared member then enters the normal case input binding; never inside the step program; no AOT key behaviour change."
+  "host_thermo_perturb_v1": "Host-only `gpuwrf perturb --thermo-config` case preparation (perturb/thermo.py, v0.5.0 item 0.2a, WRF-external research recipe): reads a strict JSON recipe (schema gpuwrf.perturb.thermo.v1, unknown keys refused), the case namelist.input (max_dom, spec_bdy_width) and the case wrfinput_dNN files, copies the selected wrfinput files into fresh member-NNN directories under a new output dir (existing output refused; never in place), edits only the private copies (T/QVAPOR/THM inside the interior, seeded PCG64) and links every other input. Source SHA256 is recorded before copying, each copy is re-hashed against it, the source case is re-hashed after preparation, and perturb_manifest.json records config/source/prepared SHA256. The prepared member then enters the normal case input binding; never inside the step program; no AOT key behaviour change.",
+  "host_surface_control_grid_lock": "Host-only grid lock of a static surface-control file (surface_params.grid_lock). Reads the run's own wrfinput_dNN geometry/land-class fields and global attributes (already bound as native case input) and compares their fingerprint with the lock embedded in the control-file provenance (sha256 digest-checked); any difference refuses the run before model work. Values never enter traced code or the AOT key; the schema literal is an identifier, not a file. This category creates no data/table exemption. FIX1: admission (admit_control_source/admit_manifest) runs once per distinct (lock digest, resolved case dir, run domains, wrfinput stat identity) for the case/lane dirs actually loaded; the stat identity only keys the memo so a same-path replacement is re-fingerprinted."
  },
  "reader_sites": [
   "__init__.py:<module>:path:0.4.4",
   "__init__.py:<module>:path:0.4.5",
   "__init__.py:<module>:path:0.4.6",
   "__init__.py:<module>:path:0.5.0",
+  "__init__.py:<module>:path:0.5.1",
   "asset/scripts/extract_rrtmg_tables.py:<module>._lw_planck_tables:call:2e2162852923b8095d13a34eadf3a0ed978345a0bc886f8cbdd6f5c486fb0599:1",
   "asset/scripts/extract_rrtmg_tables.py:<module>._lw_planck_tables:path:totplk16\\((\\d+):(\\d+)\\)\\s*=\\s*\\(/\\s*&(?P<body>.*?)\\s*/\\)",
   "asset/scripts/extract_rrtmg_tables.py:<module>._lw_planck_tables:path:totplnk\\((\\d+):(\\d+),\\s*(\\d+)\\)\\s*=\\s*\\(/\\s*&(?P<body>.*?)\\s*/\\)",
@@ -1795,6 +1797,12 @@
   "io/wrfrst_netcdf.py:<module>:path:v0.25-wrfrst-netcdf-5",
   "io/wrfsfdda.py:<module>.attach_surface_fdda:call:576dac4b3c6fbb9aa2f7adbe13a0e4fd564c41ff431441fe9c4ce15b1f42fedc:1",
   "io/wrfsfdda.py:<module>.attach_surface_fdda:call:5d7e06a689a700731a634a1f71461d35662d2aa5e713316748d7125ab59efdf2:1",
+  "io/znt_history.py:<module>._ZntPublication.__call__:call:1dd516bb9d2bf0e8e1662f86164788ad27997de1de8178ab292cff42b012333b:1",
+  "io/znt_history.py:<module>._ZntPublication.__call__:call:43b9bf1831a5d1adb6bb3ecaa0f833303fbf547cb880333be3705a30ccc1cb46:1",
+  "io/znt_history.py:<module>._ZntPublication.__call__:call:cd75e645e00c22e93520c7c420853ff71016e10f058f1b89607ad0f4bd0bdeec:1",
+  "io/znt_history.py:<module>.require_resume_policy:call:211bb77c40af8b72fe95e30760df3f7c2607874f534a1fb00de9b7a2859f3a9e:1",
+  "io/znt_history.py:<module>.require_resume_policy:call:46e1e28911ac9f81dc6539161640dd4f8dc644bee1c27d5b95b2234ea4290f0a:1",
+  "io/znt_history.py:<module>.require_resume_policy:path:manifest.json",
   "kernels/_triton_kernel_call.py:<module>._lowering:path:.",
   "kernels/_triton_kernel_call.py:<module>._stock_triton:path:(\\d+)\\.(\\d+)(?![0-9])",
   "kernels/_triton_kernel_call.py:<module>._stock_triton_root:call:ecf033eb91cf55fa9c7f82d7e6aad035c7b568b78a0f3cabe9d26caca7bb9aae:1",
@@ -2981,6 +2989,12 @@
   "surface_params/controls.py:<module>.save_controls:call:b14c9982e32cabedff3d89287e5ee3370c90d0a401f634585a55e046f34cfdf5:1",
   "surface_params/controls.py:<module>.save_controls:call:c4b629495a6e643da3774e82f742688d4a24128b1ff8b4448236e96c64f51421:1",
   "surface_params/controls.py:<module>.save_controls:path:.tmp",
+  "surface_params/grid_lock.py:<module>._wrfinput_identity:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+  "surface_params/grid_lock.py:<module>.admit_manifest:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+  "surface_params/grid_lock.py:<module>.domain_fingerprint:call:1d4586af4f6f0fe8a71418458c7ebc203ea6343a0b85d8df8374aa59b915f13b:1",
+  "surface_params/grid_lock.py:<module>.domain_fingerprint:call:9c56b238111dea95472527a824ad89cb202e65f1dc54acdecfcd1073d5c0127a:1",
+  "surface_params/grid_lock.py:<module>.fingerprint:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+  "surface_params/grid_lock.py:<module>:path:gpuwrf.surface_controls.grid_lock.v1",
   "surface_params/osse.py:<module>._fixture:call:a10351c43c469fe3322ff1dde7157ff038ebf7c1427bada1ca626c28d8086c66:1",
   "surface_params/stations.py:<module>.collect:call:b576df39568de6d3cb277691d08e13cb4d426adc5e2960c6fa3ba295b7e74085:1",
   "surface_params/stations.py:<module>.is_alisios_data:call:01cfeb8769c81b03969070392c3320729fdb0374e6a84ba4abf38cef147e9332:1",
@@ -3696,6 +3710,31 @@
     "perturb/thermo.py:<module>.prepare:path:namelist.input",
     "perturb/thermo.py:<module>.prepare:path:perturb_manifest.json",
     "perturb/thermo.py:<module>:path:gpuwrf.perturb.thermo.v1"
+   ]
+  },
+  "z0bare_znt_history_resume_and_publication": {
+   "module": "io/znt_history.py",
+   "binding": "bindings.case_and_restart",
+   "reader_sites": [
+    "io/znt_history.py:<module>._ZntPublication.__call__:call:1dd516bb9d2bf0e8e1662f86164788ad27997de1de8178ab292cff42b012333b:1",
+    "io/znt_history.py:<module>._ZntPublication.__call__:call:43b9bf1831a5d1adb6bb3ecaa0f833303fbf547cb880333be3705a30ccc1cb46:1",
+    "io/znt_history.py:<module>._ZntPublication.__call__:call:cd75e645e00c22e93520c7c420853ff71016e10f058f1b89607ad0f4bd0bdeec:1",
+    "io/znt_history.py:<module>.require_resume_policy:call:211bb77c40af8b72fe95e30760df3f7c2607874f534a1fb00de9b7a2859f3a9e:1",
+    "io/znt_history.py:<module>.require_resume_policy:call:46e1e28911ac9f81dc6539161640dd4f8dc644bee1c27d5b95b2234ea4290f0a:1",
+    "io/znt_history.py:<module>.require_resume_policy:path:manifest.json"
+   ],
+   "note": "--history-znt (default OFF): require_resume_policy reads the checkpoint generation manifest.json identity (output policy only); _ZntPublication appends ZNT to the run's own temporary history file, fsyncs it and hands it to the existing authenticated history publisher. No table input."
+  },
+  "host_surface_control_grid_lock": {
+   "module": "surface_params/grid_lock.py",
+   "binding": "bindings.host_surface_control_grid_lock",
+   "reader_sites": [
+    "surface_params/grid_lock.py:<module>._wrfinput_identity:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+    "surface_params/grid_lock.py:<module>.admit_manifest:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+    "surface_params/grid_lock.py:<module>.domain_fingerprint:call:1d4586af4f6f0fe8a71418458c7ebc203ea6343a0b85d8df8374aa59b915f13b:1",
+    "surface_params/grid_lock.py:<module>.domain_fingerprint:call:9c56b238111dea95472527a824ad89cb202e65f1dc54acdecfcd1073d5c0127a:1",
+    "surface_params/grid_lock.py:<module>.fingerprint:call:3fd8dd608ca026f4b9bb2396e668af74856ecd0a1da7773ad5e599431322f1ae:1",
+    "surface_params/grid_lock.py:<module>:path:gpuwrf.surface_controls.grid_lock.v1"
    ]
   }
  },

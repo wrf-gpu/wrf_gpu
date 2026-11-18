@@ -119,6 +119,7 @@ def _nested_output_policy(config, bundles):
     from gpuwrf.integration import nested_pipeline as pipeline
     from gpuwrf.io import wrfout_writer as writer
     from gpuwrf.io.data_inventory import colonfree_output_enabled
+    from gpuwrf.io.znt_history import enabled as znt_enabled
     from gpuwrf.runtime import operational_mode
     from gpuwrf.streams.config import FILENAME, read_streams
 
@@ -145,6 +146,9 @@ def _nested_output_policy(config, bundles):
             "domains": list(names), "interval_minutes": intervals,
             "emit_initial": bool(config.emit_initial_history),
             "full_wrfout": full,
+            # Missing is the canonical legacy OFF representation, so old OFF
+            # policy dictionaries and journal owners remain byte-for-byte stable.
+            **({"history_znt": True} if znt_enabled() else {}),
             "variable_order": list(writer.FULL_WRFOUT_VARIABLES if full else writer.OPERATIONAL_WRFOUT_VARIABLES),
             "variable_subset": None if subset is None else sorted(subset),
             "mandatory_coordinates": [] if subset is None else sorted(writer.MANDATORY_WRFOUT_COORDINATES),
@@ -878,6 +882,9 @@ class RestartStore:
         manifest = json.loads((generation / "manifest.json").read_text())
         if manifest.get("format") != FORMAT:
             raise ValueError("unsupported synchronized restart format")
+        if expected_identity is not None:
+            from gpuwrf.io.znt_history import require_same_policy
+            require_same_policy(manifest['identity'], expected_identity)
         if expected_identity is not None and manifest["identity"] != expected_identity:
             raise ValueError("restart run/configuration/source identity mismatch")
         payload_path = generation / "snapshot.pkl"

@@ -85,6 +85,8 @@ CONTROLS: dict[str, ControlSpec] = {
                         "PHENOLOGY LAI -> ELAI -> TWOSTREAM/VEGE_FLUX/EMV"),
     "saim": ControlSpec("energy", "month", 0.0, 20.0, "m2 m-2", "MPTABLE SAIM(VEGTYP,month)",
                         "PHENOLOGY SAI -> ESAI -> TWOSTREAM/VEGE_FLUX/EMV"),
+    "z0bare": ControlSpec("energy", "col", 1.0e-4, 0.5, "m", "EXPERIMENTAL ENERGY Z0 = 0.002 m (source constant)",
+                          "ENERGY Z0MG = Z0*(1-FSNO)+Z0SNO*FSNO; spatial extension, not WRF-faithful"),
     "shdmax": ControlSpec("static", "col", 0.0, 1.0, "1", "wrfinput VEGMAX/100 (FVGMAX)",
                           "PHENOLOGY FVEG=SHDMAX (dveg=4) -> tile blend"),
 }
@@ -259,6 +261,9 @@ def table_base(name: str, namelist) -> np.ndarray:
         return lsm_base(name, namelist)
     if name in HOST_CONTROLS:
         return np.asarray(namelist.topo_wind_static.ctopo, dtype=np.float64)
+    if name == "z0bare":
+        from gpuwrf.physics.noahmp.energy import Z0_BARE
+        return np.full(grid_shape(namelist), Z0_BARE, dtype=np.float64)
     static = namelist.noahmp_static
     p = static.parameters
     shape = grid_shape(namelist)
@@ -492,12 +497,25 @@ def has_host_controls(source) -> bool:
     return any(name in HOST_CONTROLS for controls in by_domain.values() for name in controls)
 
 
-def bind_domain_controls(namelist, source, domain: str, *, allow_host: bool = True, land_state=None, cold_start=True):
+def bind_domain_controls(namelist, source, domain: str, *, allow_host: bool = True, land_state=None, cold_start=True,
+                         grid_admission=None):
     """Namelist with the validated controls of ``domain`` (unchanged if the file has none for it).
 
     Traced controls go to ``namelist.surface_controls`` (clock base); host controls replace the value of the
-    already traced namelist child (``topo_wind_static.ctopo``), so a host-only set keeps the default program."""
-    by_domain, _manifest = load_controls(source) if not isinstance(source, Mapping) else (source, None)
+    already traced namelist child (``topo_wind_static.ctopo``), so a host-only set keeps the default program.
+    A grid-locked file (``provenance["grid_lock"]``) binds only with the ``grid_admission`` receipt that
+    ``grid_lock.admit_control_source`` returned for the case dir actually loaded; otherwise it is refused."""
+    by_domain, manifest = load_controls(source) if not isinstance(source, Mapping) else (source, None)
+    lock = ((manifest or {}).get("provenance") or {}).get("grid_lock")
+    if lock is not None and not (isinstance(grid_admission, Mapping)
+                                 and grid_admission.get("status") == "GRID_LOCK_PASS"
+                                 and grid_admission.get("digest") == (lock or {}).get("digest")):
+        raise ValueError("surface controls: grid-locked file needs grid admission against the actual case "
+                         "input dir before binding (grid_lock.admit_control_source); no silent OFF")
+    if lock is not None:
+        missing = sorted(set((lock or {}).get("domains", {})) - set(by_domain))
+        if missing:  # a receipt for another file sharing this lock cannot admit a file lacking locked domains
+            raise ValueError(f"surface controls: locked domains without controls in the file: {missing}; no silent OFF")
     refuse_unqualified_controls({name for controls in by_domain.values() for name in controls})
     import jax.numpy as jnp
     controls = by_domain.get(domain)

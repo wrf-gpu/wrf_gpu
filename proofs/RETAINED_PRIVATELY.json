@@ -1,7 +1,7 @@
 {
  "note": "proofs files of this release kept in the private repository (bytecode, dumps, raw case outputs, working archives, per-run logs, receipts > 1 MiB, raw data no public test reads); path, size and SHA-256 identify each one",
- "version": "0.5.0",
- "private_commit": "b42a02bbc980aa0373be9be968d8172bad36c8bf",
+ "version": "0.5.1",
+ "private_commit": "272421fb8fa6ebb77db2b90fe11912dc496b2ebe",
  "files": {
   "proofs/o5-9nest/results/ring0_trace.json": {
    "bytes": 1213707,

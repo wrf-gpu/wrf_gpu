@@ -7,6 +7,23 @@ WRF v4 GPU port — see `PROJECT_PLAN.md`).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.1] — 2026-11-17
+
+- New experimental, off-by-default `z0bare` surface control: bare-ground roughness per nest as a traced input
+  (`--surface-controls`), not WRF-faithful by design. Static control files are built per grid with
+  `scripts/z0bare_grid_controls.py`; a file whose grid lock does not match the input is refused at the command line and at the
+  runtime boundary. New output option `--history-znt` (carried ZNT in history, B=1, no program or cache-key change).
+- Default forecast programs identical to v0.5.0: PROD root/force-down/nest step and all six programs of the WN3 three-nest
+  72-hour case (lowered programs incl. constants and GPU kernels). RW1/RW2/RW4, Swiss 24 h and the compiled-resource gate pass.
+  Speed and memory within 2 % of v0.5.0 in the same session.
+- RW3 72-hour check passes with two disclosed items: the known d03 graupel trace at hour 72 (cause open), and d03 accumulated
+  rain at hours 67–72 that differs from CPU-WRF +3.8 to +19.1 % more than v0.5.0 did. The programs are the same and the
+  difference comes from a fresh compile; it was seen in one pair of compiles, so it is not an upper bound.
+  All rows stay within the floor rule.
+- Nine-nest qualification against the operated nightly (two cases, 72 h): undecided (56 of 60 cells green, nothing red; `z0bare` switch
+  60 of 60 green). The nightly stays on v0.3.3; dew point at elevation and the winter case are not cleared for serving.
+- Release notes: `release_notes/RELEASE_NOTES_v0.5.1.md`. Entries for v0.4.4 to v0.5.0 are in their release notes.
+
 ## [0.4.3] — 2026-10-21
 
 - Forecast model unchanged from v0.4.2: model source identical except the version line (519-file compile-key closure,

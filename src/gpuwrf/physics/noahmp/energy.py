@@ -142,7 +142,7 @@ class EnergyParams(NamedTuple):
     # --- Track P traced controls (gpuwrf.surface_params): per-column monthly LAIM/SAIM
     # (12, ny, nx) for PHENOLOGY; None = the table gather (released program).
     laim: jnp.ndarray | None = None
-    saim: jnp.ndarray | None = None; w2_coefficients: dict | None = None
+    saim: jnp.ndarray | None = None; w2_coefficients: dict | None = None; z0bare: jnp.ndarray | None = None
 
 
 # ----------------------------------------------------------------------------------
@@ -975,7 +975,7 @@ def noahmp_energy_canopy(
     urban = (static.ivgtyp == isurban) if isurban is not None else jnp.zeros_like(veg)
 
     # roughness / displacement (ENERGY :2075-2109)
-    z0mg = Z0_BARE * (1.0 - fsno) + p.z0sno * fsno
+    z0mg = (Z0_BARE if p.z0bare is None else p.z0bare) * (1.0 - fsno) + p.z0sno * fsno
     zpdg = land_state.snowh
     z0m = jnp.where(veg, p.z0mvt, z0mg)
     zpd = jnp.where(veg, jnp.maximum(0.65 * p.hvt, land_state.snowh), zpdg)

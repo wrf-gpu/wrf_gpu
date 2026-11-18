@@ -32,7 +32,7 @@ def register(subparsers):
     expand.add_argument("--set", action="append", default=[], metavar="[DOM:]NAME=FACTOR",
                         help="uniform multiplier, e.g. z0mvt=1.2 or d02:albsat=0.9 (repeatable)")
     expand.add_argument("--class", dest="classes", action="append", default=[], metavar="[DOM:]NAME:CLASS=FACTOR",
-                        help="1-based category: IVGTYP for vegetation, ISLTYP for soil; e.g. z0mvt:5=1.5 (repeatable)")
+                        help="1-based category: IVGTYP for vegetation, ISLTYP for soil; e.g. z0mvt:5=1.5 or d03:z0bare:16=10 (EXPERIMENTAL, not WRF-faithful; repeatable)")
     expand.set_defaults(func=command)
     eki = actions.add_parser("eki", help="ensemble Kalman inversion scaffold (host fp64)")
     steps = eki.add_subparsers(dest="eki_action", required=True)

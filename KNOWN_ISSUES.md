@@ -1,6 +1,27 @@
-# Known issues — v0.5.0
+# Known issues — v0.5.1
 
-**v0.5.0: the new experiment options are off by default; their limits are listed first. Older items below still apply.**
+**v0.5.1: the new options are off by default; their limits are listed first. The v0.5.0 items and older items below still apply.**
+
+## v0.5.1: limits of the new options
+
+- **`z0bare` bare-ground roughness** is experimental and not WRF-faithful by design: WRF uses one fixed ground roughness
+  (0.002 m) and has no such control. It ran on the GPU with the v0.5.1 release build in the nine-nest qualification (two cases,
+  72 hours); a benefit at stations is not shown. Switching it on compiles its own program, so compare
+  `z0bare` runs with a twin from the same program (see the noise item below). Batched members (B > 1) with `z0bare` are
+  unverified.
+- **Grid-locked control files:** the lock is checked on CPU (a changed land-use cell or a 1 m terrain change is refused).
+  Control files without a lock (for example from v0.5.0 research runs) are still accepted, but nothing checks their grid;
+  rebuild them with `scripts/z0bare_grid_controls.py build`.
+- **`--history-znt`** runs one member at a time (B=1); a checkpoint resumes only with the same `--history-znt` setting.
+- **Accumulated rain between two compiles:** on the 72-hour Tenerife check, the 1 km `RAINNC` difference to CPU-WRF at
+  hours 67–72 was +3.8 to +19.1 % larger than with v0.5.0, although both versions run the same lowered programs (same start
+  frame, different compiled binaries). This was observed in one pair of compiles on one case and is **not** an upper bound:
+  no same-build twin was run. Compare rain between builds only against a same-build twin. All six rows stay inside the frozen
+  floor rule ([details](release_notes/RELEASE_NOTES_v0.5.1.md#accumulated-rain-on-the-1-km-nest-two-compiles-of-the-same-program)).
+- **Nine-nest qualification:** undecided; the operated nightly stays on v0.3.3. Dew point at elevation and the winter case are not
+  cleared for serving; a transfer test against station measurements is pending ([details](release_notes/RELEASE_NOTES_v0.5.1.md#nine-nest-qualification)).
+- **72-hour Tenerife check:** six floor-limited rows (d03 accumulated rain at hours 67–72, as in v0.5.0), 0 real failures, and
+  the known d03 graupel trace at hour 72, cause still open (see the v0.4.5 item below).
 
 ## v0.5.0: limits of the new options
 

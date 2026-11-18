@@ -64,6 +64,7 @@ CLI_REFUSED = {"--input-dir": "set per case by the launcher", "--output-dir": "s
                "--extend-run": _NO_RESTART,
                "--decompose": "domain decomposition spans several GPUs per case; run it alone with the CLI",
                "--surface-controls": "per-case control file; use the launcher's --case-surface-controls NAME",
+               "--history-znt": "EXPERIMENTAL z0bare ZNT history output is a single-run research option (resume-bound, B>1 refused)",
                "--minutes": _SINGLE_CASE, "--end-time": _SINGLE_CASE,
                "--branch-from": _SINGLE_CASE, "--branch-manifest": _SINGLE_CASE,
                "-h": "not a case option", "--help": "not a case option"}

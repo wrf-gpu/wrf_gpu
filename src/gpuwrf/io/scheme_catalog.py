@@ -1153,10 +1153,10 @@ RUNTIME_PARAMETER_FAMILIES = {
     },
     "surface_controls": {
         "option": "--surface-controls",
-        "parameters": ("z0mvt", "eg", "vcmx25", "mp", "albsat", "albdry", "rhol", "rhos",
+        "parameters": ("z0bare", "z0mvt", "eg", "vcmx25", "mp", "albsat", "albdry", "rhol", "rhos",
                        "laim", "saim", "shdmax", "ctopo",
                        "smcmax", "dksat", "bexp", "psisat", "rsmin", "hvt", "hvb", "z0sno", "snow_emis"),
-        "qualification": "Existing Track-P runtime path; authenticated CTOPO checkpoint integration is a research candidate. W2 soil/canopy/snow controls are research candidates; native E41/GPU cost remains pending.",
+        "qualification": "Existing Track-P runtime path; z0bare is EXPERIMENTAL, a spatial extension of the WRF ENERGY ground-tile constant, not WRF-faithful (real GPU qualification pending). Authenticated CTOPO checkpoint integration is a research candidate. W2 soil/canopy/snow controls are research candidates; native E41/GPU cost remains pending.",
     },
     "diffusion_parameters": {
         "option": "--runtime-parameters",

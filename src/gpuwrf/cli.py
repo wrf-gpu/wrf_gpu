@@ -160,6 +160,8 @@ def build_parser() -> argparse.ArgumentParser:
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+    run.add_argument('--history-znt', action='store_true',
+                     help='Output option: add current carried ZNT roughness (m) to history frames; default off. Independent of surface controls; no model/AOT-key change.')
     run.add_argument(
         "--namelist",
         required=False,
@@ -271,7 +273,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--branch-manifest", type=Path, default=None, metavar="JSON",
                      help="Required with --branch-from: versioned declared state/land/traced-parameter changes.")
     run.add_argument("--surface-controls", type=Path, default=None, metavar="CONTROLS.npz",
-                     help="EXPERIMENTAL (Track P): Noah-MP surface-parameter fields (z0mvt, eg, albedo, LAI, ...) "
+                     help="EXPERIMENTAL (Track P): Noah-MP surface-parameter fields (z0bare, z0mvt, eg, albedo, LAI, ...) "
                      "from `gpuwrf surface-params expand`, read as traced inputs (no recompile per parameter set). "
                      "Default off. W2 soil/canopy/snow controls and Jarvis rsmin are unavailable in v0.4.4 "
                      "(failed GPU qualification; see KNOWN_ISSUES).")
@@ -868,6 +870,15 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
     suspend_watch = SuspendWatch()  # host sleep during the run invalidates its timings (E60)
     dry_run = bool(getattr(args, "dry_run", False))
+    import os
+    os.environ["WRFOUT_ZNT"] = "1" if getattr(args, "history_znt", False) else "0"
+    if getattr(args, 'history_znt', False):
+        from gpuwrf.io.znt_history import require_serial
+        from gpuwrf.integration.nested_pipeline import _batch_ensemble_size_from_env
+        try:
+            require_serial(_batch_ensemble_size_from_env())
+        except ValueError as exc:
+            return _fail(str(exc))
 
     # Domain-count selectors are mutually exclusive (cheap check, pre-anything).
     if bool(getattr(args, "domains_from_namelist", False)) and args.max_dom is not None:
@@ -1102,8 +1113,16 @@ def _cmd_run(args: argparse.Namespace) -> int:
         unused = sorted(set(_sc_manifest["domains"]) - {f"d{i:02d}" for i in range(1, int(max_dom) + 1)})
         if unused:
             return _fail(f"--surface-controls: entries for domains outside this run: {unused}")
+        try:  # static per-grid files carry a grid lock: refuse any grid change (host-only, before init)
+            from gpuwrf.surface_params.grid_lock import require_grid_lock
+
+            _sc_lock = require_grid_lock(_sc_manifest, getattr(args, "input_dir", None),
+                                         {f"d{i:02d}" for i in range(1, int(max_dom) + 1)})
+        except (OSError, ValueError, KeyError) as exc:
+            return _fail(f"--surface-controls: {exc}")
         run_metadata["surface_controls"] = {"path": str(Path(surface_controls).resolve()),
-                                            "domains": {d: e["digest"] for d, e in _sc_manifest["domains"].items()}}
+                                            "domains": {d: e["digest"] for d, e in _sc_manifest["domains"].items()},
+                                            **({"grid_lock": _sc_lock} if _sc_lock else {})}
     extract_request = None
     extract_args = [getattr(args, k, None) for k in ("extract_spec", "extract_config", "extract_dir")]
     if any(v is not None for v in extract_args):

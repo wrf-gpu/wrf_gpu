@@ -61,9 +61,8 @@ from gpuwrf.io.wrfout_writer import (
     FULL_WRFOUT_VARIABLES,
     MINIMAL_TRAINING_SET,
     bind_wrfout_domain_authority,
-    prepare_wrfout_payload,
-    write_prepared_wrfout,
 )
+from gpuwrf.io.znt_history import prepare_wrfout_payload, attach_publication, write_prepared_wrfout
 from gpuwrf.nesting.boundary_construction import (
     build_child_boundary_package,
     initialize_child_scalar_boundaries,
@@ -913,6 +912,11 @@ def _load_domains(
 
     from gpuwrf.io.cammg_config import validate_input_dir
     validate_input_dir(config.input_dir)
+    grid_admission = None
+    if getattr(config, "surface_controls", None) is not None:
+        # Grid-locked control files: refuse a changed grid against THIS case dir before any init (no silent OFF).
+        from gpuwrf.surface_params.grid_lock import admit_control_source  # noqa: PLC0415
+        grid_admission = admit_control_source(config.surface_controls, config.input_dir, names)
     if _init_kernel_call is None:
         from gpuwrf.integration.init_kernels import InitKernelCache
         _init_kernel_call = InitKernelCache()
@@ -1328,7 +1332,7 @@ def _load_domains(
         initial_carries[name] = carry
         if getattr(config, "surface_controls", None) is not None:
             from gpuwrf.surface_params.controls import bind_domain_controls  # noqa: PLC0415
-            namelist = bind_domain_controls(namelist, config.surface_controls, name, land_state=carry.noahmp_land, cold_start=not bool(getattr(config, "resume_checkpoint", None) or getattr(config, "branch_from", None)))
+            namelist = bind_domain_controls(namelist, config.surface_controls, name, land_state=carry.noahmp_land, cold_start=not bool(getattr(config, "resume_checkpoint", None) or getattr(config, "branch_from", None)), grid_admission=grid_admission)
         if getattr(config, "runtime_parameters", None) is not None:
             from gpuwrf.runtime_parameters import bind_domain_parameters
             namelist = bind_domain_parameters(namelist, config.runtime_parameters, name)
@@ -1854,6 +1858,7 @@ def _load_batched_domains(
     from gpuwrf.io.cammg_config import validate_input_dir
     for input_dir in dict.fromkeys(input_dirs):
         validate_input_dir(input_dir)
+    _admit_batch_control_locks(config, names, input_dirs)
     loaded = []
     loaded_by_path = {}
     for path in input_dirs:
@@ -1863,7 +1868,7 @@ def _load_batched_domains(
             loaded_by_path[resolved_path] = _load_domains(lane_config, names, record_windows=False)
         loaded.append(loaded_by_path[resolved_path])
     if getattr(config, "batch_surface_controls", None) is not None:
-        loaded = _bind_batch_surface_controls(loaded, names, config.batch_surface_controls, batch_size)
+        loaded = _bind_batch_surface_controls(loaded, names, config.batch_surface_controls, batch_size, input_dirs=input_dirs)
 
     ref_hierarchy, ref_bundles, ref_meta, ref_run_start, ref_dt, ref_carries = loaded[0]
     if int(batch_size) > 1 and any(getattr(b.namelist, "stochastic_config", None) is not None
@@ -1926,19 +1931,36 @@ def _load_batched_domains(
     )
 
 
-def _bind_batch_surface_controls(loaded, names, sources, batch_size):
+def _admit_batch_control_locks(config, names, input_dirs):
+    """Grid-locked controls vs every ACTUAL resolved lane dir (shared and per-lane), before any lane loads."""
+    shared = getattr(config, "surface_controls", None)
+    per_lane = getattr(config, "batch_surface_controls", None)
+    if shared is None and per_lane is None:
+        return
+    from gpuwrf.surface_params.grid_lock import admit_control_source  # noqa: PLC0415
+    for lane, input_dir in enumerate(input_dirs):
+        admit_control_source(shared, input_dir, names)
+        if per_lane is not None and lane < len(per_lane):
+            admit_control_source(per_lane[lane], input_dir, names)
+
+
+def _bind_batch_surface_controls(loaded, names, sources, batch_size, *, input_dirs=None):
     """Per-lane Track P controls (B>1): every lane carries its own traced fields, same signature."""
     from gpuwrf.surface_params.controls import bind_domain_controls, signature, refuse_unqualified_sources  # noqa: PLC0415
 
     if len(sources) != int(batch_size):
         raise ValueError(f"batch_surface_controls has {len(sources)} entries for B={int(batch_size)}")
     rebound = []; refuse_unqualified_sources(sources)
+    from gpuwrf.surface_params.grid_lock import admit_control_source  # noqa: PLC0415
+    admissions = [admit_control_source(sources[lane], None if input_dirs is None else input_dirs[lane], names)
+                  for lane in range(len(loaded))]  # every lane before binding any
     for lane, (hierarchy, bundles, meta, run_start, dt_by_domain, carries) in enumerate(loaded):
         lane_bundles = dict(bundles)
         for name in names:
             namelist = dataclass_replace(bundles[name].namelist, surface_controls=None)
             if sources[lane] is not None:
-                namelist = bind_domain_controls(namelist, sources[lane], name, allow_host=False)
+                namelist = bind_domain_controls(namelist, sources[lane], name, allow_host=False,
+                                                grid_admission=admissions[lane])
             lane_bundles[name] = dataclass_replace(bundles[name], namelist=namelist)
         rebound.append((hierarchy, lane_bundles, meta, run_start, dt_by_domain, carries))
     for name in names:
@@ -3038,6 +3060,8 @@ class _PerDomainWrfoutWriter:
         self._output_pipeline = output_pipeline
         self._perf_timers = perf_timers or _NestedOutputPerfTimers.disabled()
         # Opt-in compact training output (#122): None => full byte-identical output.
+        from gpuwrf.io.znt_history import enabled as znt_enabled
+        self._history_znt = znt_enabled()
         self._variable_subset = _resolve_training_output_subset()
         self._full_variable_set = _resolve_full_wrfout_variables()
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
@@ -3525,6 +3549,7 @@ class _PerDomainWrfoutWriter:
                 run_start=self.run_start,
                 diagnostics=diagnostics,
                 land_state=noahmp_land,
+                history_znt=getattr(self, "_history_znt", None),
                 variable_subset=fetch_subset,
                 include_mandatory_coords=self._variable_subset is not None,
                 full_variable_set=self._full_variable_set,
@@ -3541,7 +3566,7 @@ class _PerDomainWrfoutWriter:
             if not extract.raw_history:
                 return  # RAW off: extract only -- no wrfout, no history publication
         if getattr(self, "history_journal", None) is not None:
-            prepared = dataclass_replace(prepared, restart_publication=self.history_journal.publish)
+            prepared = attach_publication(prepared, self.history_journal.publish)
         if self.census_io_ledger is not None:
             self._census_persist_info[str(path)] = (name, sum(radiation_work))
         if self._async_writer is not None:
@@ -3915,12 +3940,15 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             raise ValueError("--extract-spec currently requires B=1; batched extract is unverified")
         if config.branch_from is not None:
             raise ValueError("--extract-spec with --branch-from is not supported by extract V1")
+    from gpuwrf.io.znt_history import require_serial, require_resume_policy
+    require_serial(_batch_ensemble_size_from_env())
     if config.resume_checkpoint is not None and config.branch_from is None:
         from gpuwrf.io.wrfbdy_coverage import require_wrfbdy_coverage
         # Preserve the existing coverage-first refusal for resumed extensions,
         # including when the supplied generation itself does not exist (E142).
         for input_dir in config.batch_input_dirs or (config.input_dir,):
             require_wrfbdy_coverage(input_dir, config.hours, domain="d01")
+        require_resume_policy(config.resume_checkpoint)
         from gpuwrf.runtime.restart_store import RestartStore, require_resume_history
         require_resume_history(RestartStore(
             config.checkpoint_dir or Path(config.resume_checkpoint).parent,
@@ -3931,6 +3959,10 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         from gpuwrf.extract.request import require_resume_policy as require_extract_policy
         require_extract_policy(config.resume_checkpoint, getattr(config, "extract", None))
     _admit_cammg_inputs(config)
+    if getattr(config, "surface_controls", None) is not None or getattr(config, "batch_surface_controls", None) is not None:
+        # Grid-locked control files vs the ACTUAL resolved case/lane dirs (GPUWRF_BATCH_INPUT_DIRS included).
+        _admit_batch_control_locks(config, domain_names_for(config.max_dom),
+                                   _resolve_batch_input_dirs(config, _batch_ensemble_size_from_env()))
     prefetch_handles = []
     try:
         from gpuwrf.dfi.driver import apply_dfi_prepass  # &dfi_control TDFI (o2-dfi)

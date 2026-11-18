@@ -41,8 +41,9 @@ from typing import Optional
 from gpuwrf.io.wrfout_writer import (
     PreparedWrfout,
     WrfoutDomainAuthority,
-    write_prepared_wrfout,
 )
+
+from gpuwrf.io.znt_history import write_prepared_wrfout
 
 
 @dataclass(frozen=True)
